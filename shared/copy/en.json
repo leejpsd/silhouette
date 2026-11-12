@@ -317,5 +317,18 @@
   "outbound.field.installation": "App installation id (no personal data)",
   "outbound.field.model-request": "Model request",
   "answers.criterion.notMet": "not met",
-  "answers.criterion.notSent": "not known: this answer stays on the device or was skipped"
+  "answers.criterion.notSent": "not known: this answer stays on the device or was skipped",
+  "doc.share.received": "Text shared from another app. Check it, then continue.",
+  "doc.photo.camera": "Take a photo",
+  "doc.photo.gallery": "Choose a photo",
+  "preview.sample": "This is a built-in sample. Its fields are filled in from fixed sample answers on this device. Nothing is sent.",
+  "preview.sampleButton": "Fill in the sample answers",
+  "preview.noExtractor": "This version of the app cannot read documents automatically yet, so nothing will be sent. Type the numbers from your paystub instead.",
+  "badge.sampleKey": "Sample answers, no AI",
+  "reason.sample-answer-key": "built-in sample",
+  "outbound.status.answeredOnDevice": "Not sent: answered on this device",
+  "outbound.showSilhouette": "Show the silhouette",
+  "model.device.downloadable": "This device can download a reading model, so photos and documents are read on the device. The download can take several minutes.",
+  "model.device.downloading": "Downloading the on-device model: {size}",
+  "model.device.unavailable": "This device has no on-device reading model. The document silhouette can be read in the cloud instead."
 }

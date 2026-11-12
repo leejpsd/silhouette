@@ -317,5 +317,18 @@
   "outbound.field.installation": "Identificador de instalación de la app (sin datos personales)",
   "outbound.field.model-request": "Solicitud al modelo",
   "answers.criterion.notMet": "no se cumple",
-  "answers.criterion.notSent": "no se sabe: esta respuesta se queda en el dispositivo o se omitió"
+  "answers.criterion.notSent": "no se sabe: esta respuesta se queda en el dispositivo o se omitió",
+  "doc.share.received": "Texto compartido desde otra app. Revísalo y luego continúa.",
+  "doc.photo.camera": "Tomar una foto",
+  "doc.photo.gallery": "Elegir una foto",
+  "preview.sample": "Este es un documento de muestra incluido. Sus campos se llenan con respuestas de muestra fijas en este dispositivo. No se envía nada.",
+  "preview.sampleButton": "Llenar con las respuestas de muestra",
+  "preview.noExtractor": "Esta versión de la app todavía no puede leer documentos automáticamente, así que no se enviará nada. Escribe los números de tu talón de pago.",
+  "badge.sampleKey": "Respuestas de muestra, sin IA",
+  "reason.sample-answer-key": "muestra incluida",
+  "outbound.status.answeredOnDevice": "No enviado: se respondió en este dispositivo",
+  "outbound.showSilhouette": "Ver la silueta",
+  "model.device.downloadable": "Este dispositivo puede descargar un modelo de lectura para leer fotos y documentos en el dispositivo. La descarga puede tardar varios minutos.",
+  "model.device.downloading": "Descargando el modelo en el dispositivo: {size}",
+  "model.device.unavailable": "Este dispositivo no tiene un modelo de lectura. La silueta del documento se puede leer en la nube."
 }

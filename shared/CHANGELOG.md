@@ -1,5 +1,16 @@
 # Contract changelog
 
+## v1.8 — 2026-11-13
+
+From the Android integration of Firebase AI Logic.
+
+| Change | Why |
+|---|---|
+| Validation: the `dates-parsed` check ignores `null` dates, like every other check. Fixture `null-fields-are-absent` now expects `skipped` | v1.6 said `null` is absent, but the reference still counted `null` dates as given and reported `warn` |
+| `schemas/MODEL_SCHEMA.md`: when an on-device API has no schema parameter, the on-device schema is appended to the prompt text | Android's on-device request takes text and images only |
+| `routing.json`: `offlineSample` with reason `sample-answer-key` | A bundled sample must still work with no network and no device model, and say plainly that no model was used |
+| 13 copy keys in en, es and ko: a request answered on this device, camera and gallery, device wording for model states, sample answers, text shared from another app | |
+
 ## v1.7 — 2026-11-13
 
 From building explanations and questions in the Web app.

@@ -2,7 +2,9 @@
 
 A pointer schema (`schemas/pointer.*.json`) annotates fields with `x-kind` and uses `$ref`, `$defs`, `oneOf`, `pattern` and `additionalProperties`. Model APIs accept a smaller schema language. The **model schema** is derived from the pointer schema deterministically.
 
-Every platform passes the identical object to its cloud model and to its on-device model:
+Every platform derives the identical object for its cloud model and for its on-device model. Where a platform's on-device API has no schema parameter (Android's on-device request takes text and images only), the on-device schema object is serialized as JSON and appended to the prompt text after the line `Answer with JSON that matches this schema:`. The reply is untrusted either way and goes through the same validation and rehydration (`skeleton/SPEC.md` section 5).
+
+The derived object:
 
 - Firebase AI Logic: `generationConfig.responseJsonSchema` or `responseSchema`;
 - Chrome: `promptOptions.responseConstraint`;

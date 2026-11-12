@@ -183,7 +183,7 @@ function checkStub(s, raw) {
     add('ytd-periods', ytd2 >= n * gross && ytd2 <= 3n * n * gross ? 'ok' : 'warn');
   } else add('ytd-periods', 'skipped');
 
-  const dates = [[raw.payDate, s.payDate], [raw.periodStart, s.periodStart], [raw.periodEnd, s.periodEnd]].filter(([t]) => t !== undefined);
+  const dates = [[raw.payDate, s.payDate], [raw.periodStart, s.periodStart], [raw.periodEnd, s.periodEnd]].filter(([t]) => t !== undefined && t !== null);
   add('dates-parsed', dates.length === 0 ? 'skipped' : dates.every(([, d]) => d !== null) ? 'ok' : 'warn');
   return checks;
 }
