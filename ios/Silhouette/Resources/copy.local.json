@@ -1,0 +1,6 @@
+{
+  "_note": "App strings that are not in shared/copy yet. Lookup per key: shared/copy/{locale}, the rule pack's copy/{locale}, this file {locale}, then the same three for en.",
+  "en": {},
+  "es": {},
+  "ko": {}
+}

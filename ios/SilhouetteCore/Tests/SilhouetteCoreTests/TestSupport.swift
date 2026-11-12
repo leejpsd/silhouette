@@ -82,12 +82,14 @@ enum FixtureError: String {
     case generalize = "GeneralizeError"
     case rule = "RuleError"
     case input = "InputError"
+    case validation = "ValidationInputError"
 
     func matches(_ error: any Error) -> Bool {
         switch self {
         case .generalize: error is GeneralizeError
         case .rule: error is RuleError || { if case .rule = error as? VerdictError { true } else { false } }()
         case .input: error is InputError || { if case .input = error as? VerdictError { true } else { false } }()
+        case .validation: error is ValidationInputError
         }
     }
 }

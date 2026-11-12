@@ -1,35 +1,48 @@
-// Skeletonizer and Rehydrator. Contract: shared/skeleton/SPEC.md (v1.1).
+// Skeletonizer and Rehydrator. Contract: shared/skeleton/SPEC.md (v1.5).
 // Must stay byte-identical with shared/reference/silhouette.mjs.
 //
-// Tokenization is by Unicode code point, as in the JavaScript reference (`u` flag). Swift `String`
-// works on grapheme clusters (and String subscripts round indices to them), so this file uses
-// NSRegularExpression (ICU, code-point semantics) and slices with NSString UTF-16 ranges.
+// Tokenization is deny by default and by Unicode code point: an explicit safe-character list, no
+// Unicode property classes. Swift `String` works on grapheme clusters (and String subscripts round
+// indices to them), so this file uses NSRegularExpression (ICU, code-point semantics) with
+// explicit code-point classes, and slices with NSString UTF-16 ranges.
 
 import Foundation
 
 // MARK: - Allowlist
 
-/// The union of allowlist files (SPEC.md section 4: app locale ∪ en). Words compare by exact code
+/// The union of allowlist files (SPEC.md section 4: the document's language ∪ en). Words compare by exact code
 /// points, like a JavaScript `Set<string>`.
 public struct Allowlist: Sendable {
     let words: Set<ExactKey>
+    /// Role labels and function words that stand in front of a name (section 4.2).
+    let introducers: Set<ExactKey>
 
-    public init(words: some Sequence<String>) {
+    public init(words: some Sequence<String>, introducers: some Sequence<String> = [String]()) {
         self.words = Set(words.map(ExactKey.init))
+        self.introducers = Set(introducers.map(ExactKey.init))
     }
 
-    /// Builds the allowlist from `skeleton/allowlist/{locale}.json` files (`{"words": [...]}`).
+    /// Builds the allowlist from `skeleton/allowlist/{language}.json` files
+    /// (`{"words": [...], "introducers": [...]}`), normally the document's language and `en`.
     public init(files: [JSON]) throws(ContractFileError) {
-        var all: [String] = []
-        for file in files {
-            guard let words = file["words"]?.arrayValue else { throw ContractFileError("allowlist file has no words list") }
-            for word in words {
-                guard let w = word.stringValue else { throw ContractFileError("allowlist word is not a string") }
-                all.append(w)
+        func strings(_ value: JSON?, _ what: String) throws(ContractFileError) -> [String] {
+            var out: [String] = []
+            for item in value?.arrayValue ?? [] {
+                guard let s = item.stringValue else { throw ContractFileError("allowlist \(what) entry is not a string") }
+                out.append(s)
             }
+            return out
         }
-        self.init(words: all)
+        var words: [String] = [], introducers: [String] = []
+        for file in files {
+            guard file["words"]?.arrayValue != nil else { throw ContractFileError("allowlist file has no words list") }
+            words += try strings(file["words"], "words")
+            introducers += try strings(file["introducers"], "introducers")
+        }
+        self.init(words: words, introducers: introducers)
     }
+
+    func isIntroducer(_ word: String) -> Bool { introducers.contains(ExactKey(word.lowercased())) }
 
     public var count: Int { words.count }
 
@@ -85,11 +98,65 @@ public struct SkeletonResult: Sendable {
 // MARK: - Skeletonizer
 
 public enum Skeletonizer {
-    /// The combined reference regex from SPEC.md section 2. Groups: 1 DATE, 2 NUM, 3 WORD, 4 OTHER.
-    public static let tokenPattern =
-        #"([0-9]{1,4}[/.\-][0-9]{1,2}[/.\-][0-9]{1,4})|([0-9]+(?:[.,][0-9]+)*)|([\p{L}\p{M}]+(?:['’\-][\p{L}\p{M}]+)*)|([\s\S])"#
+    /// Characters kept verbatim that never belong to a word (SPEC.md section 2), as ICU class
+    /// content written with explicit code points. Everything else that is not an ASCII digit is
+    /// word material. `@` and `_` are deliberately not listed.
+    public static let safeClass =
+        #"\u0009\u000A\u0020\u00A0\u2000-\u200A\u202F\u205F\u3000"# // whitespace
+        + #"\u0021-\u002F\u003A-\u003F\u005B-\u005E\u0060\u007B-\u007E"# // ASCII punctuation and symbols
+        + #"\u00A2\u00A3\u00A5\u00A7\u00B0\u00B1\u00B6\u00B7\u00D7\u00F7"# // ¢ £ ¥ § ° ± ¶ · × ÷
+        + #"\u2013\u2014\u2018\u2019\u201C\u201D\u2022\u2026\u20A9\u20AC\u2116"# // – — ‘ ’ “ ” • … ₩ € №
+        + #"\u3001\u3002\u3008-\u3011\u3014\u3015\u30FB"# // CJK punctuation
+        + #"\uFF01\uFF05\uFF08\uFF09\uFF0B-\uFF0F\uFF1A\uFF1B\uFF1D\uFF1F\uFF3B\uFF3D\uFF5E"# // fullwidth punctuation
+
+    /// Month names (English full and abbreviated, Spanish full).
+    public static let monthNames: [[String]] = [
+        ["january", "jan", "enero"], ["february", "feb", "febrero"], ["march", "mar", "marzo"], ["april", "apr", "abril"],
+        ["may", "mayo"], ["june", "jun", "junio"], ["july", "jul", "julio"], ["august", "aug", "agosto"],
+        ["september", "sept", "sep", "septiembre", "setiembre"], ["october", "oct", "octubre"],
+        ["november", "nov", "noviembre"], ["december", "dec", "diciembre"],
+    ]
+
+    /// A literal matched ASCII case-insensitively, as explicit classes (`[oO][cC][tT]`). ICU's
+    /// case-insensitive mode folds by Unicode rules (U+017F ſ matches `s`), which the spec excludes.
+    static func asciiInsensitive(_ word: String) -> String {
+        word.map { c in
+            c.isASCII && c.isLetter ? "[\(c.lowercased())\(c.uppercased())]" : String(c)
+        }.joined()
+    }
+
+    /// Longest alternative first, then alphabetical (as in the reference).
+    static let monthAlternation: String = {
+        let names = monthNames.flatMap { $0 }.sorted { a, b in
+            a.count != b.count ? a.count > b.count : a.utf16.lexicographicallyPrecedes(b.utf16)
+        }
+        return "(?:" + names.map(asciiInsensitive).joined(separator: "|") + ")"
+    }()
+
+    /// "October 17, 2026", "Oct. 17 2026", "17 October 2026", "17 de octubre de 2026".
+    static let monthDatePattern: String = {
+        let ordinal = "(?:" + ["st", "nd", "rd", "th"].map(asciiInsensitive).joined(separator: "|") + ")"
+        let de = asciiInsensitive("de"), l = asciiInsensitive("l")
+        let m = monthAlternation
+        // Month first: MONTH\.? [0-9]{1,2}(?:st|nd|rd|th)?,? [0-9]{4}(?![0-9])
+        // Day first:   [0-9]{1,2}(?:st|nd|rd|th)? (?:de )?MONTH\.?,? (?:del? )?[0-9]{4}(?![0-9])
+        return "\(m)\\.? [0-9]{1,2}\(ordinal)?,? [0-9]{4}(?![0-9])"
+            + "|[0-9]{1,2}\(ordinal)? (?:\(de) )?\(m)\\.?,? (?:\(de)\(l)? )?[0-9]{4}(?![0-9])"
+    }()
+
+    /// The token regex of SPEC.md section 2. Groups: 1 DATE, 2 NUM, 3 WORD, 4 OTHER.
+    public static let tokenPattern: String = {
+        let x = "[^0-9\(safeClass)]"
+        return "(\(monthDatePattern)|[0-9]{1,4}[/.\\-][0-9]{1,2}[/.\\-][0-9]{1,4})"
+            + "|([0-9]+(?:[.,][0-9]+)*)"
+            + "|(\(x)+(?:['\\u2019\\-]\(x)+)*)"
+            + "|([\\s\\S])"
+    }()
 
     private static let tokenRegex = try! NSRegularExpression(pattern: tokenPattern)
+
+    /// Separators that keep two words in one phrase (section 4.1).
+    static let phraseJoiners: Set<String> = [" ", ", ", " & "]
 
     /// SPEC.md section 1: NFC, `\r\n` and `\r` to `\n`, delete U+27E6 and U+27E7. In this order.
     public static func normalize(_ text: String) -> String {
@@ -104,41 +171,81 @@ public enum Skeletonizer {
             default: out.append(scalar)
             }
         }
-        // Bracket removal happens after newline conversion, as in the reference.
         out.removeAll { $0 == "\u{27E6}" || $0 == "\u{27E7}" }
         return String(out)
     }
 
-    /// Turns Raw document text into a Skeleton. One of the two functions allowed to produce a
-    /// cloud-safe value from Raw.
-    public static func skeletonize(_ text: Raw<String>, allowlist: Allowlist) -> SkeletonResult {
-        let input = normalize(text.value) as NSString
-        var counters = (d: 0, n: 0, w: 0)
-        var map = PlaceholderMap()
-        var skeleton = ""
+    private struct Token {
+        enum Kind: Character { case date = "D", number = "N", word = "W", other = "O" }
+        let kind: Kind
+        var text: String
+        var keep = false
+        var hidden = false
+    }
 
-        func placeholder(_ kind: Character, _ value: String) -> String {
-            let n: Int
-            switch kind {
-            case "D": counters.d += 1; n = counters.d
-            case "N": counters.n += 1; n = counters.n
-            default: counters.w += 1; n = counters.w
-            }
-            let id = "\(kind)\(n)"
-            map.add(id, value)
-            return "\u{27E6}\(id)\u{27E7}"
+    /// Turns Raw document text into a Skeleton. One of the two functions allowed to produce a
+    /// cloud-safe value from Raw. `allowlist` is the document language's list ∪ en; `hide` holds
+    /// lowercase words the user chose to hide in this document (section 4.3).
+    public static func skeletonize(_ text: Raw<String>, allowlist: Allowlist, hide: Raw<[String]> = Raw([])) -> SkeletonResult {
+        let input = normalize(text.value) as NSString
+        let hidden = Set(hide.value.map(ExactKey.init))
+        func isHidden(_ word: String) -> Bool {
+            let lower = word.lowercased()
+            return hidden.contains(ExactKey(lower))
+                || lower.splitExactly(on: UInt8(ascii: "-")).contains { hidden.contains(ExactKey($0)) }
         }
 
+        // Pass 1: tokens. Consecutive safe characters form one separator token.
+        var tokens: [Token] = []
         tokenRegex.enumerateMatches(in: input as String, range: NSRange(location: 0, length: input.length)) { match, _, _ in
             guard let match else { return }
             func group(_ i: Int) -> String? {
                 let r = match.range(at: i)
                 return r.location == NSNotFound ? nil : input.substring(with: r)
             }
-            if let date = group(1) { skeleton += placeholder("D", date) }
-            else if let num = group(2) { skeleton += placeholder("N", num) }
-            else if let word = group(3) { skeleton += allowlist.isAllowlisted(word) ? word : placeholder("W", word) }
-            else if let other = group(4) { skeleton += other }
+            if let date = group(1) { tokens.append(Token(kind: .date, text: date)) }
+            else if let num = group(2) { tokens.append(Token(kind: .number, text: num)) }
+            else if let word = group(3) {
+                let h = !hidden.isEmpty && isHidden(word)
+                tokens.append(Token(kind: .word, text: word, keep: !h && allowlist.isAllowlisted(word), hidden: h))
+            }
+            else if let other = group(4) {
+                if let last = tokens.last, last.kind == .other { tokens[tokens.count - 1].text += other }
+                else { tokens.append(Token(kind: .other, text: other)) }
+            }
+        }
+
+        // Pass 2: a phrase is masked as a whole (section 4.1), after its leading introducers (4.2).
+        var i = 0
+        while i < tokens.count {
+            guard tokens[i].kind == .word else { i += 1; continue }
+            var j = i
+            while j + 2 < tokens.count, tokens[j + 1].kind == .other,
+                  phraseJoiners.contains(where: { $0.exactlyEquals(tokens[j + 1].text) }), tokens[j + 2].kind == .word {
+                j += 2
+            }
+            // Leading introducers (section 4.2: "Employee", "This Lease is made between") are labels in
+            // front of a name and keep their own decision; the rest of the phrase is decided together.
+            // A phrase in which the user hid a word is masked whole, introducers included (4.3).
+            let userHidden = stride(from: i, through: j, by: 2).contains { tokens[$0].hidden }
+            var start = i
+            while !userHidden, start < j, tokens[start].keep, allowlist.isIntroducer(tokens[start].text) { start += 2 }
+            let keep = stride(from: start, through: j, by: 2).allSatisfy { tokens[$0].keep }
+            for k in stride(from: start, through: j, by: 2) { tokens[k].keep = keep }
+            i = j + 1
+        }
+
+        // Pass 3: placeholders, numbered in document order.
+        var counters: [Character: Int] = [:]
+        var map = PlaceholderMap()
+        var skeleton = ""
+        for t in tokens {
+            if t.kind == .other || (t.kind == .word && t.keep) { skeleton += t.text; continue }
+            let n = (counters[t.kind.rawValue] ?? 0) + 1
+            counters[t.kind.rawValue] = n
+            let id = "\(t.kind.rawValue)\(n)"
+            map.add(id, t.text)
+            skeleton += "\u{27E6}\(id)\u{27E7}"
         }
         return SkeletonResult(skeleton: Skeleton(text: skeleton), map: Raw(map))
     }
@@ -157,6 +264,17 @@ public enum Rehydrator {
         guard numberFormat.firstMatch(in: token, range: NSRange(location: 0, length: ns.length)) != nil else { return nil }
         // Correctly rounded and locale-independent, like JavaScript's Number().
         return Double(String(token.unicodeScalars.filter { $0 != "," }))
+    }
+
+    /// A money amount typed by the user: trim spaces and one leading currency symbol
+    /// ($ € £ ¥ ₩), then accept only the number format of SPEC.md section 5 (`28,000.50` and
+    /// `28000.5` are valid, `28.000,50` is not). `nil` for anything else.
+    public static func parseTypedAmount(_ text: String) -> Double? {
+        var scalars = Substring(Validator.jsTrim(text)).unicodeScalars[...]
+        if let first = scalars.first, ["$", "\u{20AC}", "\u{A3}", "\u{A5}", "\u{20A9}"].contains(first) {
+            scalars = scalars.dropFirst()
+        }
+        return parseNumber(Validator.jsTrim(String(String.UnicodeScalarView(scalars))))
     }
 
     private static func isRef(_ value: JSON?, in map: PlaceholderMap, kind: UInt8) -> String? {

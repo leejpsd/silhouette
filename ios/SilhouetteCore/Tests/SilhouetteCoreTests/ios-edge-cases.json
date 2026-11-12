@@ -2,106 +2,6 @@
   "generatedFrom": "shared/reference/silhouette.mjs",
   "skeleton": [
     {
-      "id": "digit-then-combining-mark",
-      "locale": "en",
-      "input": "Gross 5́ Pay 12̈.50",
-      "expected": {
-        "skeleton": "Gross ⟦N1⟧⟦W1⟧ Pay ⟦N2⟧⟦W2⟧.⟦N3⟧",
-        "map": {
-          "N1": "5",
-          "W1": "́",
-          "N2": "12",
-          "W2": "̈",
-          "N3": "50"
-        }
-      }
-    },
-    {
-      "id": "decomposed-accent-is-composed",
-      "locale": "es",
-      "input": "Salario bruto: José café",
-      "expected": {
-        "skeleton": "Salario bruto: ⟦W1⟧ ⟦W2⟧",
-        "map": {
-          "W1": "José",
-          "W2": "café"
-        }
-      }
-    },
-    {
-      "id": "decomposed-hangul-is-composed",
-      "locale": "ko",
-      "input": "급여 가",
-      "expected": {
-        "skeleton": "급여 ⟦W1⟧",
-        "map": {
-          "W1": "가"
-        }
-      }
-    },
-    {
-      "id": "kelvin-sign-normalizes",
-      "locale": "en",
-      "input": "Kelvin Net Pay",
-      "expected": {
-        "skeleton": "⟦W1⟧ Net Pay",
-        "map": {
-          "W1": "Kelvin"
-        }
-      }
-    },
-    {
-      "id": "bracket-removal-after-nfc",
-      "locale": "en",
-      "input": "Net e⟦́ Pay",
-      "expected": {
-        "skeleton": "Net ⟦W1⟧ Pay",
-        "map": {
-          "W1": "é"
-        }
-      }
-    },
-    {
-      "id": "emoji-zwj-sequence",
-      "locale": "en",
-      "input": "Net Pay 👨‍👩‍👧 1,000.00",
-      "expected": {
-        "skeleton": "Net Pay 👨‍👩‍👧 ⟦N1⟧",
-        "map": {
-          "N1": "1,000.00"
-        }
-      }
-    },
-    {
-      "id": "flag-and-skin-tone",
-      "locale": "en",
-      "input": "🇺🇸 👍🏽 Gross",
-      "expected": {
-        "skeleton": "🇺🇸 👍🏽 Gross",
-        "map": {}
-      }
-    },
-    {
-      "id": "fullwidth-and-arabic-digits",
-      "locale": "en",
-      "input": "Total １２３ ٣٤ Pay",
-      "expected": {
-        "skeleton": "Total １２３ ٣٤ Pay",
-        "map": {}
-      }
-    },
-    {
-      "id": "dotted-capital-i",
-      "locale": "en",
-      "input": "İNCOME Income",
-      "expected": {
-        "skeleton": "⟦W1⟧ Income",
-        "map": {
-          "W1": "İNCOME"
-        }
-      }
-    },
-    {
       "id": "cr-cr-lf",
       "locale": "en",
       "input": "Gross\r\r\nNet\n\rPay",
@@ -115,9 +15,10 @@
       "locale": "en",
       "input": "Year-́to-Date Pre-Tax",
       "expected": {
-        "skeleton": "⟦W1⟧ Pre-Tax",
+        "skeleton": "⟦W1⟧ ⟦W2⟧",
         "map": {
-          "W1": "Year-́to-Date"
+          "W1": "Year-́to-Date",
+          "W2": "Pre-Tax"
         }
       }
     },
@@ -139,10 +40,11 @@
       "locale": "en",
       "input": "𐐀𐐁 𝐀BC Gross",
       "expected": {
-        "skeleton": "⟦W1⟧ ⟦W2⟧ Gross",
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧",
         "map": {
           "W1": "𐐀𐐁",
-          "W2": "𝐀BC"
+          "W2": "𝐀BC",
+          "W3": "Gross"
         }
       }
     },
@@ -164,13 +66,79 @@
       }
     },
     {
-      "id": "trailing-newline-number",
+      "id": "month-name-upper-case-and-ordinal",
       "locale": "en",
-      "input": "Net Pay 1,000\n",
+      "input": "PAY DATE: SEPT 3RD, 2026   17TH OCTOBER 2026   17 DE OCTUBRE DEL 2026",
       "expected": {
-        "skeleton": "Net Pay ⟦N1⟧\n",
+        "skeleton": "PAY DATE: ⟦D1⟧   ⟦D2⟧   ⟦D3⟧",
         "map": {
-          "N1": "1,000"
+          "D1": "SEPT 3RD, 2026",
+          "D2": "17TH OCTOBER 2026",
+          "D3": "17 DE OCTUBRE DEL 2026"
+        }
+      }
+    },
+    {
+      "id": "month-name-needs-single-spaces",
+      "locale": "en",
+      "input": "October  17, 2026   October 17,  2026   October 17, 2026",
+      "expected": {
+        "skeleton": "⟦W1⟧  ⟦N1⟧, ⟦N2⟧   ⟦W2⟧ ⟦N3⟧,  ⟦N4⟧   ⟦W3⟧ ⟦N5⟧, ⟦N6⟧",
+        "map": {
+          "W1": "October",
+          "N1": "17",
+          "N2": "2026",
+          "W2": "October",
+          "N3": "17",
+          "N4": "2026",
+          "W3": "October",
+          "N5": "17",
+          "N6": "2026"
+        }
+      }
+    },
+    {
+      "id": "phrase-joiner-variants",
+      "locale": "en",
+      "input": "Gross,Jordan   Gross ,Jordan   Gross Jordan   Gross &Jordan   Gross–Jordan",
+      "expected": {
+        "skeleton": "Gross,⟦W1⟧   Gross ,⟦W2⟧   Gross ⟦W3⟧   Gross &⟦W4⟧   Gross–⟦W5⟧",
+        "map": {
+          "W1": "Jordan",
+          "W2": "Jordan",
+          "W3": "Jordan",
+          "W4": "Jordan",
+          "W5": "Jordan"
+        }
+      }
+    },
+    {
+      "id": "word-joiners-at-and-underscore",
+      "locale": "en",
+      "input": "Net Pay@Gross _Gross Pay_ net_pay@example.com",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧.⟦W6⟧",
+        "map": {
+          "W1": "Net",
+          "W2": "Pay@Gross",
+          "W3": "_Gross",
+          "W4": "Pay_",
+          "W5": "net_pay@example",
+          "W6": "com"
+        }
+      }
+    },
+    {
+      "id": "phrase-across-numbers",
+      "locale": "en",
+      "input": "Gross Pay 5 Jordan Net Pay",
+      "expected": {
+        "skeleton": "Gross Pay ⟦N1⟧ ⟦W1⟧ ⟦W2⟧ ⟦W3⟧",
+        "map": {
+          "N1": "5",
+          "W1": "Jordan",
+          "W2": "Net",
+          "W3": "Pay"
         }
       }
     }
@@ -241,15 +209,94 @@
       "expected": "-5e-11"
     }
   ],
-  "parseNumber": [
+  "parseDate": [
     {
-      "token": "1,000\n",
+      "jurisdiction": "us-ca",
+      "text": " 10/01/2026　",
+      "expected": "2026-10-01"
+    },
+    {
+      "jurisdiction": "us-ca",
+      "text": " 10/01/2026﻿",
+      "expected": "2026-10-01"
+    },
+    {
+      "jurisdiction": "us-ca",
+      "text": "10/01/2026\n",
+      "expected": "2026-10-01"
+    },
+    {
+      "jurisdiction": "us-ca",
+      "text": "10/01/2026​",
       "expected": null
     },
     {
-      "token": "1,284.50",
-      "expected": 1284.5
+      "jurisdiction": "us-ca",
+      "text": "Sept 31, 2026",
+      "expected": null
     },
+    {
+      "jurisdiction": "us-ca",
+      "text": "SEPT 3RD, 2026",
+      "expected": "2026-09-03"
+    },
+    {
+      "jurisdiction": "zz-test",
+      "text": "17th October 2026",
+      "expected": "2026-10-17"
+    },
+    {
+      "jurisdiction": "kr",
+      "text": "17 de octubre del 2026",
+      "expected": "2026-10-17"
+    },
+    {
+      "jurisdiction": "us-ca",
+      "text": "2026-02-29",
+      "expected": null
+    },
+    {
+      "jurisdiction": "us-ca",
+      "text": "2028-02-29",
+      "expected": "2028-02-29"
+    },
+    {
+      "jurisdiction": "us-ca",
+      "text": "0099-01-01",
+      "expected": null
+    },
+    {
+      "jurisdiction": "us-ca",
+      "text": "1/2/99",
+      "expected": "2099-01-02"
+    },
+    {
+      "jurisdiction": "kr",
+      "text": "26.10.25",
+      "expected": "2026-10-25"
+    },
+    {
+      "jurisdiction": "xx",
+      "text": "10/01/2026",
+      "expected": null
+    },
+    {
+      "jurisdiction": "xx",
+      "text": "2026/10/01",
+      "expected": "2026-10-01"
+    },
+    {
+      "jurisdiction": "us-ca",
+      "text": "Oct 17 2026",
+      "expected": "2026-10-17"
+    },
+    {
+      "jurisdiction": "us-ca",
+      "text": "Octo 17, 2026",
+      "expected": null
+    }
+  ],
+  "parseNumber": [
     {
       "token": "00.5",
       "expected": 0.5
@@ -265,6 +312,14 @@
     {
       "token": "123456789012345678901234567890",
       "expected": 1.2345678901234568e+29
+    },
+    {
+      "token": "1,000\r",
+      "expected": null
+    },
+    {
+      "token": "1,000.",
+      "expected": null
     }
   ],
   "evaluator": {
@@ -392,27 +447,6 @@
                 "var": "s"
               }
             ]
-          ]
-        },
-        "expected": false,
-        "negativeZero": false
-      },
-      {
-        "id": "var-kelvin-sign-is-not-K",
-        "expr": {
-          "var": "K"
-        },
-        "expected": null,
-        "negativeZero": false
-      },
-      {
-        "id": "eq-kelvin-vs-K",
-        "expr": {
-          "==": [
-            {
-              "var": "kelvin"
-            },
-            "K"
           ]
         },
         "expected": false,

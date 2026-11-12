@@ -10,7 +10,9 @@ import Testing
 struct ConformanceTests {
     /// Files this suite knows how to run. A new file in the folder fails the suite until a runner
     /// is added.
-    static let knownFiles: Set<String> = ["evaluator.json", "generalize.json", "rehydrate.json", "skeleton.json", "verdict.json"]
+    static let knownFiles: Set<String> = [
+        "evaluator.json", "generalize.json", "model-schema.json", "rehydrate.json", "skeleton.json", "validate.json", "verdict.json",
+    ]
 
     @Test("every file in the folder has a runner, and every runner has a file")
     func folderIsFullyCovered() throws {
@@ -26,7 +28,8 @@ struct ConformanceTests {
     func skeleton(_ k: FixtureCase) throws {
         let input = try #require(k["input"]?.stringValue)
         let allow = try Shared.allowlist(try #require(k["locale"]?.stringValue))
-        let result = Skeletonizer.skeletonize(Raw(input), allowlist: allow)
+        let hide = (k["hide"]?.arrayValue ?? []).compactMap(\.stringValue)
+        let result = Skeletonizer.skeletonize(Raw(input), allowlist: allow, hide: Raw(hide))
         let map = result.map.value
 
         expectExactString(result.skeleton.text, k["expected"]?["skeleton"]?.stringValue, "\(k.id): skeleton")
@@ -41,6 +44,7 @@ struct ConformanceTests {
         for m in words.matches(in: stripped, range: NSRange(location: 0, length: ns.length)) {
             let word = ns.substring(with: m.range)
             #expect(allow.contains(word.lowercased()), "\(k.id): \"\(word)\" survived but is not allowlisted")
+            #expect(!hide.contains(word.lowercased()), "\(k.id): hidden word \"\(word)\" survived")
         }
 
         // Skeleton + map reconstruct the normalized input exactly.
@@ -135,5 +139,36 @@ struct ConformanceTests {
         }
         let result = try RulesEngine.verdicts(pack: pack, bands: bands, answers: Raw(answers))
         expectIdentical(.array(result.map(\.json)), k["expected"], k.id)
+    }
+
+    // MARK: validate.json
+
+    @Test("validate.json", arguments: try Shared.cases("validate.json"))
+    func validate(_ k: FixtureCase) throws {
+        let jurisdiction = try #require(k["jurisdiction"]?.stringValue)
+        let stubs = try #require(k["stubs"]?.arrayValue)
+        if let error = k["expectedError"]?.stringValue {
+            expectFixtureError(error, k.id) { _ = try Validator.validatePaystubs(Raw(stubs), jurisdiction: jurisdiction) }
+            return
+        }
+        let result = try Validator.validatePaystubs(Raw(stubs), jurisdiction: jurisdiction)
+        expectIdentical(result.json, k["expected"], k.id)
+    }
+
+    // MARK: model-schema.json
+
+    @Test("model-schema.json", arguments: try Shared.cases("model-schema.json"))
+    func modelSchema(_ k: FixtureCase) throws {
+        let schema = try #require(k["schema"])
+        let options = k["options"]
+        let requiredNullable = options?["requiredNullable"]?.boolValue ?? false
+        let dialect = try #require(ModelSchema.Dialect(rawValue: options?["dialect"]?.stringValue ?? "openapi"))
+        if k["expectedError"] != nil {
+            #expect(throws: ModelSchemaError.self, "\(k.id)") {
+                try ModelSchema.derive(schema, requiredNullable: requiredNullable, dialect: dialect)
+            }
+            return
+        }
+        expectIdentical(try ModelSchema.derive(schema, requiredNullable: requiredNullable, dialect: dialect), k["expected"], k.id)
     }
 }

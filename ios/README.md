@@ -1,8 +1,12 @@
 # Silhouette for iOS
 
 Silhouette finds public benefits a person may qualify for. Exact document values stay on the
-device; cloud calls only ever receive a silhouette. This folder holds the iOS app and its
-deterministic core.
+device; cloud calls only ever receive a silhouette. This folder holds the iOS app, its
+deterministic core, and the app logic that sits between them.
+
+The app currently runs the Quick Check end to end, fully on the device: start screen, one
+question per screen, results grouped by verdict, and a verdict card per program. It makes no
+network calls.
 
 The cross-platform contracts live in [`../shared`](../shared/README.md). Nothing in this folder
 copies them: tests read them from `shared/` directly, and the app build copies them into the app
@@ -12,10 +16,13 @@ bundle.
 
 | Path | What it is |
 |---|---|
-| `SilhouetteCore/` | Swift package with no UI or model dependencies: the data types (`Raw`, `Skeleton`, `Generalized`, `Public`, `CloudSafe`), the Skeletonizer and Rehydrator (`shared/skeleton/SPEC.md`), the Generalizer, the expression evaluator and the verdict engine (`shared/rulepacks/SPEC.md`), and a small order-preserving JSON type |
-| `SilhouetteCore/Tests/` | Conformance tests over every file in `shared/fixtures/conformance/`, the canary leak test over `shared/fixtures/canary/`, Swift/JavaScript edge cases, and runtime checks of `Raw` |
+| `SilhouetteCore/` | Swift package with no UI or model dependencies: the data types (`Raw`, `Skeleton`, `Generalized`, `Public`, `CloudSafe`), the Skeletonizer and Rehydrator (`shared/skeleton/SPEC.md`), the Generalizer, the expression evaluator and the verdict engine (`shared/rulepacks/SPEC.md`), validation and annualization (`shared/validation/SPEC.md`), the model schema derivation (`shared/schemas/MODEL_SCHEMA.md`), and a small order-preserving JSON type |
+| `SilhouetteCore/Sources/SilhouetteKit/` | App logic without UI: the Quick Check flow (steps from the pack's `questionOrder`, validation, engine answers, grouping), the encrypted answer store, the outbound log, UI copy with per-key fallback, and design tokens |
+| `SilhouetteCore/Tests/` | Conformance tests over every file in `shared/fixtures/conformance/`, the canary leak test over `shared/fixtures/canary/`, Swift/JavaScript edge cases, runtime checks of `Raw`, and unit tests for SilhouetteKit |
 | `SilhouetteCore/RoutingProof/` | Small Swift files that must, or must not, compile against `SilhouetteCore` |
-| `Silhouette/` | SwiftUI app (iOS 26.0 or later) |
+| `Silhouette/` | SwiftUI app (iOS 26.0 or later): screens, chrome and the theme |
+| `Silhouette/Resources/copy.local.json` | App strings not yet in `shared/copy/` (never shadows a shared key; a test checks this) |
+| `SilhouetteUITests/` | XCUITests for the Quick Check flows, and a screenshot tour |
 | `project.yml` | XcodeGen spec; `Silhouette.xcodeproj` is generated from it |
 | `scripts/sync-shared.sh` | Build phase: copies `shared/copy`, `shared/rulepacks/zz-test`, `shared/bands`, `shared/design/tokens.json` and `shared/skeleton/allowlist` into the app bundle under `Shared/` |
 | `scripts/routing-proof.sh` | Type-checks the probes in `RoutingProof/` |
@@ -33,11 +40,48 @@ No signing team is needed for simulator builds.
 ## Commands
 
 ```sh
-make test            # swift test in SilhouetteCore
+make test            # swift test in SilhouetteCore (macOS)
+make test-ios        # the same package tests on the iOS simulator (the Skeletonizer uses the OS's ICU)
+make ui-test         # XCUITests on the iOS simulator
+make screenshots     # screenshot tour into SCREENSHOT_DIR (default build/screenshots)
 make routing-proof   # compile-time routing check
 make build           # xcodebuild for SIMULATOR (default "iPhone 18 Pro")
 make project         # xcodegen generate
 ```
+
+## The app
+
+- **Quick Check.** Steps follow the rule pack's `questionOrder` (the reserved step `income`
+  offers the bands and an exact amount). A typed amount accepts spaces and one leading currency
+  symbol, then only the number format of `shared/skeleton/SPEC.md` section 5 (`28,000.50` and
+  `28000.5` are read as written, `28.000,50` is refused), and the screen shows the amount as
+  understood before the user continues. Every question can be skipped. Choosing none of a
+  multiple-choice list is an answer, distinct from skipping. Sensitive questions and the exact
+  income say that the answer never leaves the device.
+- **Results.** Programs grouped as *may qualify*, *possible*, *depends*, *probably not*, from
+  `RulesEngine.verdicts`. A program's card lists each criterion with its state; each answer it
+  depends on opens that question and returns to the card.
+- **Answers stay `Raw`.** `QuickCheckSession` keeps the answers inside `Raw` and hands them only
+  to the verdict engine, the encrypted store, and the question screen that shows the user their
+  own answer.
+- **Encrypted at rest.** Answers are sealed with AES-GCM using a 256-bit key kept in the
+  Keychain (this device only). The file has complete file protection and is excluded from
+  backup. *Delete everything* removes the file, the key and the language setting.
+- **Leaving your device.** The bar at the bottom reads `OutboundLog`, the single place every
+  network call is to be recorded (`OutboundLog.send` records, then sends). A logged payload is
+  a `CloudText`, so only cloud-safe content can appear there. Today the log is empty and the
+  bar says so.
+- **Copy and languages.** Strings come from `shared/copy/`, the pack's `copy/` folder and
+  `copy.local.json`, with per-key fallback to English. The language (English, Español, 한국어)
+  defaults to the device language and can be changed from the globe menu.
+- **Theme.** Colors (light and dark), type scale, spacing and radii come from
+  `shared/design/tokens.json`. Type scales with Dynamic Type. Verdicts never rely on color: the
+  silhouette mark is solid (may qualify), half filled (possible), dashed (depends) or faint
+  (probably not), and always sits next to text.
+- **Demo banner.** Shown on every screen while the synthetic `zz-test` pack is in use.
+
+UI tests and screenshots use launch arguments that are ignored otherwise: `-UITestResetAll`
+(start from a clean state) and `-UITestAppearance dark|light`.
 
 ## The routing rule in code
 
@@ -60,8 +104,14 @@ can only return a `CloudText` that `SilhouetteCore` created, so it still cannot 
 The core follows `shared/reference/silhouette.mjs` byte for byte. Points where Swift's defaults
 differ from JavaScript and how the core handles them:
 
-- **Code points, not grapheme clusters.** Tokenization uses `NSRegularExpression` (ICU) and
-  slices with UTF-16 ranges, so a digit followed by a combining mark splits as in JavaScript.
+- **Code points, not grapheme clusters.** Tokenization uses `NSRegularExpression` (ICU) with the
+  spec's explicit safe-character list (no Unicode property classes) and slices with UTF-16
+  ranges, so a digit followed by a combining mark splits as in JavaScript.
+- **Phrases and introducers.** A phrase of words is masked as a whole when any word is not
+  allowlisted, after its leading introducers (`Employee`, `between` …) from the allowlist files
+  (`shared/skeleton/SPEC.md` sections 4.1 and 4.2).
+- **Month names.** Month-name dates match ASCII case-insensitively, written as explicit
+  `[oO][cC][tT]` classes: ICU's case-insensitive mode would also fold `ſ` (U+017F) to `s`.
 - **Exact string comparison.** Swift `==`, `Set` and `Dictionary` treat canonically equivalent
   strings as equal (even `"\u{212A}" == "K"`). Allowlist lookups, object keys, `==`, `in` and
   placeholder ids compare exact code points instead.
@@ -71,5 +121,6 @@ differ from JavaScript and how the core handles them:
   `Math.max` handle `-0` as JavaScript does.
 - **Lowercasing.** `lowercased()` does not apply JavaScript's Final_Sigma rule. A test checks
   that no allowlist word contains σ or ς, the only case where this could change a skeleton.
-- **Unicode tables.** Apple's ICU classifies 68 private-use code points (U+F870 to U+F8D6) as
-  letters, so they are masked on iOS but kept as punctuation by the reference.
+- **Exact integers.** Validation holds money as integer cents and computes ratios with `Int128`.
+- **JavaScript `trim()`.** Date text is trimmed with JavaScript's whitespace set (including
+  U+FEFF and U+3000), not Foundation's.

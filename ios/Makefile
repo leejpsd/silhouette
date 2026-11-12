@@ -2,13 +2,29 @@
 SIMULATOR ?= iPhone 18 Pro
 DERIVED   := build/DerivedData
 
-.PHONY: all test routing-proof project build edge-cases clean
+SCREENSHOT_DIR ?= $(CURDIR)/build/screenshots
+DESTINATION := 'platform=iOS Simulator,name=$(SIMULATOR)'
+
+.PHONY: all test test-ios ui-test screenshots routing-proof project build edge-cases clean
 
 all: test routing-proof build
 
 ## SilhouetteCore unit and conformance tests (reads ../shared directly)
 test:
 	cd SilhouetteCore && swift test
+
+## SilhouetteCore and SilhouetteKit tests on the iOS simulator (the Skeletonizer uses the OS's ICU)
+test-ios:
+	cd SilhouetteCore && xcodebuild test -scheme SilhouetteCore-Package -destination $(DESTINATION) -derivedDataPath ../build/PackageDerivedData
+
+## XCUITests for the Quick Check flows
+ui-test:
+	xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/QuickCheckUITests
+
+## Screenshot tour (light/dark, en/ko/es, largest accessibility text) into SCREENSHOT_DIR
+screenshots:
+	mkdir -p $(SCREENSHOT_DIR)
+	TEST_RUNNER_SCREENSHOT_DIR=$(SCREENSHOT_DIR) xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/ScreenshotTour
 
 ## Compile-time check that Raw cannot reach a cloud-capable call
 routing-proof:
@@ -20,7 +36,7 @@ project:
 
 ## Build the app for the simulator
 build:
-	xcodebuild -scheme Silhouette -destination 'platform=iOS Simulator,name=$(SIMULATOR)' -derivedDataPath $(DERIVED) build
+	xcodebuild -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) build
 
 ## Regenerate the Swift/JavaScript edge cases from shared/reference (needs node)
 edge-cases:

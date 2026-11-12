@@ -39,6 +39,17 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "67BAE40195988A6D2B10AFB8"
+               BuildableName = "SilhouetteUITests.xctest"
+               BlueprintName = "SilhouetteUITests"
+               ReferencedContainer = "container:Silhouette.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>
