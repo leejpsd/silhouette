@@ -22,13 +22,13 @@ import {
   planNearby,
   programCurrentStatus,
   readAloud,
-  requestPreview,
+  requestBody,
   TTS_MODEL,
   type ExplainInput,
   type ProgramFacts,
 } from './tasks';
-import { askFreeText } from './on-device';
-import { EXPLAIN_V1 } from './prompts';
+import { askFreeText, explainPersonal, type PersonalResult } from './on-device';
+import { ASK_V2, EXPLAIN_V3 } from './prompts';
 
 const shared = (rel: string) => readFileSync(new URL(`../../../shared/${rel}`, import.meta.url), 'utf8');
 const pack = JSON.parse(shared('rulepacks/zz-test/pack.json')) as RulePack;
@@ -40,8 +40,6 @@ const facts: ProgramFacts = {
   name: 'Test Utility Discount',
   facts: 'This program checks: Your income is under the limit; You rent or own your home.',
   criteria: { 'income-limit': 'Your income is under the limit', housing: 'You rent or own your home' },
-  verdictWords: { likely: 'You may qualify', maybe: 'Possible', depends: 'Depends on an answer you skipped', unlikely: 'Probably not' },
-  stateNotes: { fail: 'not met', unknown: 'not known: this answer stays on the device or was skipped' },
 };
 const verdict = silhouetteVerdicts(pack, bands, profile).find((v) => v.programId === 'utility-discount')!;
 const input: ExplainInput = { profile, verdict, program: asPublic(facts), locale: 'en' };
@@ -74,16 +72,18 @@ afterEach(() => {
 });
 
 describe('silhouette verdicts', () => {
-  it('criteria the silhouette cannot decide are marked as not sent, not as skipped', () => {
+  it('criteria the silhouette cannot decide are listed as checked on the device, never with a verdict', () => {
     const food = silhouetteVerdicts(pack, bands, profile).find((v) => v.programId === 'food-help')!;
     const plan = planExplain({ ...input, verdict: food, program: asPublic({ ...facts, programId: 'food-help', criteria: { 'income-limit': 'Income', residency: 'Residency' } }) }, 'short');
-    expect(plan.prompt).toContain('Criteria not met or unknown: Residency (not known: this answer stays on the device or was skipped)');
+    expect(plan.prompt).toContain('Met from the general facts: Income');
+    expect(plan.prompt).toContain('Not met from the general facts: none');
+    expect(plan.prompt).toContain('Checked on the device (not known here): Residency');
+    expect(plan.prompt).not.toMatch(/Verdict|likely|qualif/i);
   });
 
-  it('use only the silhouette: a sensitive answer is unknown, so the result can only be "depends" or weaker', () => {
+  it('use only the silhouette: a sensitive answer is unknown', () => {
     const food = silhouetteVerdicts(pack, bands, profile).find((v) => v.programId === 'food-help')!;
     expect(food.criteria.find((c) => c.id === 'residency')?.state).toBe('unknown');
-    expect(food.verdict).not.toBe('likely');
     expect(verdict).toEqual({ programId: 'utility-discount', verdict: 'likely', criteria: [{ id: 'income-limit', state: 'pass' }, { id: 'housing', state: 'pass' }] });
   });
 });
@@ -107,30 +107,36 @@ describe('explain.short / explain.long routing', () => {
     expect(planExplain({ ...input, locale: 'ko' }, 'short').taskId).toBe('explain.short');
   });
 
-  it('fills shared/prompts/explain.v1.md with the silhouette, the facts and the silhouette verdict only', () => {
+  it('fills shared/prompts/explain.v3.md with the silhouette, the facts and three lists of criterion states', () => {
     const plan = planExplain(input, 'short');
-    expect(plan.systemInstruction).toBe(EXPLAIN_V1.system.replace('{locale}', 'English'));
+    expect(plan.systemInstruction).toBe(EXPLAIN_V3.system.replace('{locale}', 'English'));
     expect(plan.prompt).toBe(
       [
         'Profile: {"jurisdiction":"zz-test","incomeBand":"B","householdSize":3,"childAgeBands":null,"county":null,"housing":"renter"}',
         'Program: Test Utility Discount',
         `Program facts: ${facts.facts}`,
-        'Verdict: You may qualify',
-        'Criteria met: Your income is under the limit; You rent or own your home',
-        'Criteria not met or unknown: -',
+        'Met from the general facts: Your income is under the limit; You rent or own your home',
+        'Not met from the general facts: none',
+        'Checked on the device (not known here): none',
         'Write 60 words or fewer.',
       ].join('\n'),
     );
     expect(plan.prompt).not.toContain('21000');
   });
+
+  it('prepared questions use shared/prompts/ask.v2.md', () => {
+    const plan = planAskChip(input, asPublic({ id: 'apply', question: 'How do I apply?' }));
+    expect(plan.systemInstruction).toBe(ASK_V2.system.replace('{locale}', 'English'));
+    expect(plan.prompt.endsWith('Question: How do I apply?\nWrite 80 words or fewer.')).toBe(true);
+  });
 });
 
 describe('running explanations and chips', () => {
   it('returns the answer with source, reason and route; the chip answer too', async () => {
-    const calls = fake(() => ({ text: () => ' You may qualify because… ', inferenceSource: 'on_device' }));
+    const calls = fake(() => ({ text: () => ' This program lowers utility bills… ', inferenceSource: 'on_device' }));
     const result = await explainProgram(planExplain(input, 'short'));
     expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', reason: 'short-text', route: { words: 60 } });
-    expect(result.value.text).toBe('You may qualify because…');
+    expect(result.value.text).toBe('This program lowers utility bills…');
     expect(calls[0]!.params.mode).toBe('prefer_on_device');
     const chip = await askChip(planAskChip(input, asPublic({ id: 'apply', question: 'How do I apply?' })));
     expect(chip.reason).toBe('prepared-question');
@@ -144,27 +150,86 @@ describe('running explanations and chips', () => {
     expect(calls.map((c) => c.params.mode)).toEqual(['prefer_on_device', 'only_in_cloud']);
   });
 
-  it('the preview shows the request that is sent, and the record names what it carries', () => {
+  it('the body shown is the SDK serialization, keys and order included, and the record names what it carries', () => {
     const plan = planExplain(input, 'long');
-    const body = requestPreview(plan);
-    expect(body['contents']).toEqual([{ role: 'user', parts: [{ text: plan.prompt }] }]);
-    expect(body['systemInstruction']).toEqual({ role: 'system', parts: [{ text: plan.systemInstruction }] });
+    const body = requestBody(plan);
+    expect(Object.keys(JSON.parse(body) as object)).toEqual(['generationConfig', 'safetySettings', 'systemInstruction', 'contents']);
+    expect(body).toContain('"maxOutputTokens":720');
+    expect(JSON.parse(body)).toMatchObject({
+      contents: [{ role: 'user', parts: [{ text: plan.prompt }] }],
+      systemInstruction: { role: 'system', parts: [{ text: plan.systemInstruction }] },
+      safetySettings: [],
+    });
     fake(() => ({ text: () => 'x' }));
     void explainProgram(plan);
     const url = new URL('https://firebasevertexai.googleapis.com/v1beta/projects/p/models/gemini-3.5-flash-lite:generateContent');
-    expect(classify(url, JSON.stringify(body)).fields).toEqual(['profile-silhouette', 'program-facts']);
+    expect(classify(url, body).fields).toEqual(['profile-silhouette', 'program-facts']);
+  });
+
+  it('a reply that states a result is asked for again, then refused; it is never returned', async () => {
+    let n = 0;
+    fake(() => ({ text: () => (++n === 1 ? 'You may qualify for this program.' : 'This program helps renters.'), inferenceSource: 'in_cloud' }));
+    expect((await explainProgram(planExplain(input, 'long'))).value.text).toBe('This program helps renters.');
+    expect(n).toBe(2);
+    fake(() => ({ text: () => 'You qualify.', inferenceSource: 'in_cloud' }));
+    await expect(explainProgram(planExplain(input, 'long'))).rejects.toMatchObject({ kind: 'blocked' });
+  });
+
+  it('a cancelled request rejects with kind cancelled and its reply is dropped', async () => {
+    let release: () => void = () => undefined;
+    setModelProviderForTests(async () => ({
+      generateContent: () => new Promise((resolve) => (release = () => resolve({ response: { text: () => 'late', inferenceSource: 'in_cloud' } }))),
+    }));
+    const abort = new AbortController();
+    const pending = explainProgram(planExplain(input, 'long'), { signal: abort.signal });
+    await new Promise((r) => setTimeout(r, 0));
+    abort.abort();
+    release();
+    await expect(pending).rejects.toMatchObject({ kind: 'cancelled' });
+  });
+
+  it('a daily limit is told apart from a busy minute', async () => {
+    fake(() => Object.assign(new Error('Quota exceeded for metric: generate_requests_per_model_per_day, limit: 500'), { customErrorData: { status: 429 } }));
+    await expect(explainProgram(planExplain(input, 'long'))).rejects.toMatchObject({ kind: 'quota-daily' });
+    fake(() => Object.assign(new Error('Resource exhausted, please retry'), { customErrorData: { status: 429 } }));
+    await expect(explainProgram(planExplain(input, 'long'))).rejects.toMatchObject({ kind: 'quota' });
   });
 });
 
-describe('ask.freeText (typed question)', () => {
-  it('runs ONLY_ON_DEVICE and refuses a cloud answer', async () => {
-    const calls = fake(() => ({ text: () => 'On device answer', inferenceSource: 'on_device' }));
-    const result = await askFreeText(Raw.of('Can I apply if I moved here last month?'), input);
-    expect(result).toEqual({ value: 'On device answer', inferenceSource: 'ON_DEVICE', reason: 'typed-text-may-be-personal' });
+const personal: PersonalResult = {
+  locale: 'en',
+  programName: 'Test Food Help',
+  facts: 'This program checks: income; residency.',
+  verdictLabel: 'Probably not',
+  criteriaLines: '- Your income is under the limit: met (limit 34,000, yours 33,333)\n- You meet the residency rule: not met',
+};
+
+describe('the person\'s own result (on device only)', () => {
+  it('explain.personal runs ONLY_ON_DEVICE with the result, limits and values, and refuses a cloud answer', async () => {
+    const calls = fake(() => ({ text: () => 'The rules say probably not, because the residency rule is not met.', inferenceSource: 'on_device' }));
+    const result = await explainPersonal(Raw.of(personal));
+    expect(result).toEqual({ value: 'The rules say probably not, because the residency rule is not met.', inferenceSource: 'ON_DEVICE', reason: 'your-result-stays-on-device' });
     expect(calls[0]!.params.mode).toBe('only_on_device');
     expect(calls[0]!.params.inCloudParams).toBeUndefined();
+    expect(calls[0]!.prompts[0]).toContain('Result from the rules: Probably not');
+    expect(calls[0]!.prompts[0]).toContain('(limit 34,000, yours 33,333)');
     fake(() => ({ text: () => 'x', inferenceSource: 'in_cloud' }));
-    await expect(askFreeText(Raw.of('q'), { ...input, locale: 'es' })).rejects.toMatchObject({ kind: 'on-device-unavailable' });
+    await expect(explainPersonal(Raw.of({ ...personal, locale: 'es' }))).rejects.toMatchObject({ kind: 'on-device-unavailable' });
+  });
+
+  it('hedged wording is fine for the person\'s own result, a definite claim is not', async () => {
+    fake(() => ({ text: () => 'You may qualify once your residency is confirmed.', inferenceSource: 'on_device' }));
+    expect((await explainPersonal(Raw.of(personal))).value).toContain('You may qualify');
+    fake(() => ({ text: () => 'You do not qualify.', inferenceSource: 'on_device' }));
+    await expect(explainPersonal(Raw.of(personal))).rejects.toMatchObject({ kind: 'blocked' });
+  });
+
+  it('a typed question runs ONLY_ON_DEVICE with shared/prompts/ask-personal.v1.md', async () => {
+    const calls = fake(() => ({ text: () => 'On device answer', inferenceSource: 'on_device' }));
+    const result = await askFreeText(Raw.of('Can I apply if I moved here last month?'), Raw.of(personal));
+    expect(result).toEqual({ value: 'On device answer', inferenceSource: 'ON_DEVICE', reason: 'typed-text-may-be-personal' });
+    expect(calls[0]!.params.mode).toBe('only_on_device');
+    expect(calls[0]!.prompts[0]).toContain('Question: Can I apply if I moved here last month?');
   });
 });
 
@@ -251,6 +316,7 @@ describe('readAloud', () => {
       return { text: () => 'Plain explanation.', inferenceSource: 'in_cloud' };
     });
     const answer = await explainProgram(planExplain(input, 'long'));
+    expect(answer.value.text).toBe('Plain explanation.');
     const speech = await readAloud(answer.value, 'en');
     expect(speech).toMatchObject({ value: { data: 'AAAA', mimeType: 'audio/L16;codec=pcm;rate=24000' }, inferenceSource: 'IN_CLOUD', reason: 'speech' });
   });

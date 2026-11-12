@@ -7,7 +7,7 @@
 import paystubV2 from '../../../shared/schemas/pointer.paystub.json';
 import leaseV2 from '../../../shared/schemas/pointer.lease.json';
 import type { PointerSchema } from '../core/skeleton';
-import { POINTER_EXTRACT, POINTER_EXTRACT_V3, type PromptTemplate } from './prompts';
+import { POINTER_EXTRACT, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, type PromptTemplate } from './prompts';
 import type { ModelSchemaOptions } from './model-schema';
 
 export type DocType = 'paystub' | 'lease';
@@ -63,10 +63,17 @@ export const POINTER_V2: PointerConfig = {
  */
 export const POINTER_V3: PointerConfig = { ...POINTER_V2, id: 'v3', prompt: POINTER_EXTRACT_V3 };
 
+/**
+ * shared/prompts/pointer-extract.v4.md: v3 plus "hours worked and hourly rate are those of the
+ * Regular (base pay) line". Same schemas and settings.
+ */
+export const POINTER_V4: PointerConfig = { ...POINTER_V2, id: 'v4', prompt: POINTER_EXTRACT_V4 };
+
 /** Bundled prompt versions, by the number in shared/prompts/pointer-extract.v{n}.md. */
 export const POINTER_CONFIGS: ReadonlyMap<number, PointerConfig> = new Map([
   [2, POINTER_V2],
   [3, POINTER_V3],
+  [4, POINTER_V4],
 ]);
 
 /** The bundled configuration for a prompt version; an unknown version gets the newest bundled one. */

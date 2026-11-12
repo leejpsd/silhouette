@@ -10,12 +10,14 @@ import { ASK_WORDS, EXPLAIN_WORDS, explainRoute, parseListLines, parseStatusLine
 import type { PointerSchema } from '../core/skeleton';
 import routing from '../../../shared/routing.json';
 import { classifyError, TaskError, type TaskErrorKind } from './errors';
-import { modelFor, sourceOf, type InferenceSource, type UsageMetadata } from './model-port';
+import { deviceAvailability, modelFor, sourceOf, type InferenceSource, type UsageMetadata } from './model-port';
 import { SHARED_POINTER_SCHEMAS, pointerConfigFor, type DocType, type PointerConfig } from './pointer-config';
 import { appConfig } from '../data/remote-config';
-import { describeAiModel, describeAiRequests } from '../data/net-monitor';
+import { describeAiModel, describeAiRequests, expectRequestBody } from '../data/net-monitor';
+import outputChecks from '../../../shared/prompts/output-checks.json';
+import { modelTextIsBlocked, type OutputChecks, type OutputScope } from '../core/output-check';
 import { toModelSchema } from './model-schema';
-import { ASK_V1, CURRENT_STATUS_V1, DISCOVER_V1, NEARBY_V1, READ_ALOUD_V1, explainPromptFor, fill, type PromptTemplate } from './prompts';
+import { ASK_V2, CURRENT_STATUS_V1, DISCOVER_V1, NEARBY_V1, READ_ALOUD_V1, explainPromptFor, fill, type PromptTemplate } from './prompts';
 import type { ModelResponse } from './model-port';
 
 export { TaskError } from './errors';
@@ -35,7 +37,9 @@ export type RoutingReason =
   | 'needs-places'
   | 'speech'
   /** A PREFER_ON_DEVICE call failed on the device and was repeated in the cloud with the same cloud-safe input. */
-  | 'on-device-failed';
+  | 'on-device-failed'
+  | 'your-result-stays-on-device'
+  | 'sample-answer-key';
 
 /** Every model response carries its provenance: where it ran, and why. */
 export interface TaskResult<T> {
@@ -44,6 +48,8 @@ export interface TaskResult<T> {
   readonly reason: RoutingReason;
   /** For explanations: the length and language that decided the route (shown in the reason chip). */
   readonly route?: ExplainRoute | undefined;
+  /** A device-first call ran in the cloud because this device has no model (shown in the reason chip). */
+  readonly ranInCloudBecause?: 'no-device-model' | undefined;
 }
 
 /** Languages of Chrome's on-device model. Other languages fall back to the cloud. */
@@ -130,7 +136,7 @@ export interface PointerResult extends TaskResult<unknown> {
 }
 
 /** Errors that come from the cloud side; repeating the call in the cloud would not help. */
-const CLOUD_FAILURES: ReadonlySet<TaskErrorKind> = new Set(['app-check', 'permission', 'api-not-enabled', 'quota', 'network']);
+const CLOUD_FAILURES: ReadonlySet<TaskErrorKind> = new Set(['app-check', 'permission', 'api-not-enabled', 'quota', 'quota-daily', 'network']);
 
 async function callPointerModel(
   skeleton: Skeleton,
@@ -192,7 +198,10 @@ export async function extractPointers(
   const reason = POINTER_TASK.reason as RoutingReason;
   try {
     const r = await callPointerModel(skeleton, docType, language, options);
-    return { value: r.value, inferenceSource: r.source, reason, usage: r.usage };
+    // Device-first, but answered in the cloud because this device has no model: the chip says so.
+    const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
+    const noModel = !options.forceCloud && r.source === 'IN_CLOUD' && (await deviceAvailability(createOptions)) !== 'available';
+    return { value: r.value, inferenceSource: r.source, reason, usage: r.usage, ranInCloudBecause: noModel ? 'no-device-model' : undefined };
   } catch (error) {
     if (options.forceCloud || !failedOnDevice(error)) throw classifyError(error);
     const deviceError = classifyError(error).detail;
@@ -216,22 +225,15 @@ export type ProgramFacts = {
   readonly facts: string;
   /** Criterion labels by criterion id. */
   readonly criteria: Readonly<Record<string, string>>;
-  /** How each verdict is worded in the UI ("You may qualify", …). */
-  readonly verdictWords: Readonly<Record<SilhouetteVerdict['verdict'], string>>;
-  /**
-   * Notes added to criteria that are not met: "not met", and for criteria the silhouette cannot
-   * decide, that the answer was not sent (so a model does not claim the person skipped it).
-   */
-  readonly stateNotes: { readonly fail: string; readonly unknown: string };
 };
 
 /** A prepared question chip. Static app content. */
 export type QuestionChip = { readonly id: string; readonly question: string };
 
 /**
- * What explanations and prepared questions are given: the profile silhouette, the verdict the engine
- * reaches from that silhouette alone, and the program's facts. Exact values and answers to
- * sensitive questions are not part of it.
+ * What the general explanation and prepared questions are given: the profile silhouette, the
+ * criterion states the engine reaches from that silhouette alone (shared/rulepacks/SPEC.md section 7),
+ * and the program's facts. Never a verdict, exact values or answers to sensitive questions.
  */
 export interface ExplainInput {
   readonly profile: Generalized<GeneralizedProfile>;
@@ -244,9 +246,9 @@ export interface ExplainInput {
 const answerBrand: unique symbol = Symbol('model-answer');
 
 /**
- * The text of an explanation or a prepared-question answer. Only explainProgram() and askChip()
- * create one, and both take CloudSafe input only, so readAloud() can send it to the cloud. An answer
- * to a typed question (Raw input) is a plain string and cannot be read aloud.
+ * The text of a general explanation or a prepared-question answer. Only explainProgram() and
+ * askChip() create one, and both take CloudSafe input only, so readAloud() can send it to the cloud.
+ * Answers about the person's own result (on-device tasks) are plain strings and cannot be read aloud.
  */
 export type ModelAnswer = { readonly text: string; readonly [answerBrand]: true };
 
@@ -263,21 +265,24 @@ const MODES = {
 } as const;
 type RoutingMode = keyof typeof MODES;
 
-/** Placeholder values of explain.v1 and ask.v1. */
+/**
+ * Placeholder values of explain.v3 and ask.v2: criteria in state `pass` and `fail` go to the first two
+ * lists, `unknown` and `mixed` to the third; an empty list is written as `none`.
+ */
 export function explainValues(input: ExplainInput, maxWords: number, question?: string): Record<string, string> {
   const { program, verdict } = input;
   const label = (id: string) => program.criteria[id] ?? id;
-  const met = verdict.criteria.filter((c) => c.state === 'pass').map((c) => label(c.id));
-  const other = verdict.criteria
-    .filter((c) => c.state !== 'pass')
-    .map((c) => `${label(c.id)} (${c.state === 'fail' ? program.stateNotes.fail : program.stateNotes.unknown})`);
+  const list = (states: readonly string[]) => {
+    const labels = verdict.criteria.filter((c) => states.includes(c.state)).map((c) => label(c.id));
+    return labels.length > 0 ? labels.join('; ') : 'none';
+  };
   const values: Record<string, string> = {
     generalizedProfileCanonicalJson: canonicalJson(input.profile),
     programName: program.name,
     programSummaryFromRulePack: program.facts,
-    verdict: program.verdictWords[verdict.verdict],
-    passedCriteriaLabels: met.length > 0 ? met.join('; ') : '-',
-    otherCriteriaLabels: other.length > 0 ? other.join('; ') : '-',
+    passedCriteriaLabels: list(['pass']),
+    failedCriteriaLabels: list(['fail']),
+    unknownCriteriaLabels: list(['unknown', 'mixed']),
     maxWords: String(maxWords),
   };
   if (question !== undefined) values['question'] = question;
@@ -297,7 +302,7 @@ function canonicalJson(profile: Generalized<GeneralizedProfile>): string {
   });
 }
 
-/** Everything that fixes one text model call: shown in the "Leaving your device" panel before it is made. */
+/** Everything that fixes one model call: shown in the "Leaving your device" step before it is made. */
 export interface PlannedCall {
   readonly taskId: string;
   readonly mode: RoutingMode;
@@ -311,18 +316,24 @@ export interface PlannedCall {
   readonly route?: ExplainRoute | undefined;
   /** What the request carries, for the record of outgoing requests (never values). */
   readonly fields: readonly string[];
+  /** Model output checks (shared/prompts/OUTPUT_CHECKS.md) for tasks that show text about a program. */
+  readonly checks?: OutputScope | undefined;
+  /** The on-device createOptions, for the availability check that explains where a call ran. */
+  readonly deviceOptions?: Readonly<Record<string, unknown>> | undefined;
 }
 
-/** The request body as Firebase AI Logic sends it to the cloud, for display before sending. */
-export function requestPreview(call: PlannedCall): Record<string, unknown> {
-  const body: Record<string, unknown> = {
-    contents: [{ role: 'user', parts: [{ text: call.prompt }] }],
-    generationConfig: call.generationConfig,
-  };
-  if (call.systemInstruction !== '') body['systemInstruction'] = { role: 'system', parts: [{ text: call.systemInstruction }] };
+/**
+ * The request body exactly as Firebase AI Logic serializes it for the cloud (generateContent:
+ * generationConfig, safetySettings, tools, toolConfig, systemInstruction, contents, in that order).
+ * This string is shown before sending, registered with the network monitor, and is the body sent.
+ */
+export function requestBody(call: PlannedCall): string {
+  const body: Record<string, unknown> = { generationConfig: call.generationConfig, safetySettings: [] };
   if (call.tools) body['tools'] = call.tools;
   if (call.toolConfig) body['toolConfig'] = call.toolConfig;
-  return body;
+  if (call.systemInstruction !== '') body['systemInstruction'] = { role: 'system', parts: [{ text: call.systemInstruction }] };
+  body['contents'] = [{ role: 'user', parts: [{ text: call.prompt }] }];
+  return JSON.stringify(body);
 }
 
 function taskOf(taskId: keyof typeof routing.tasks): { mode: RoutingMode; reason: RoutingReason } {
@@ -337,21 +348,26 @@ function textCall(
   values: Record<string, string>,
   locale: string,
   maxWords: number,
-  fields: readonly string[],
   route?: ExplainRoute,
 ): PlannedCall {
   const { mode, reason } = taskOf(taskId);
+  const systemInstruction = fill(prompt.system, { locale: languageName(locale) });
   return {
     taskId,
     mode,
     reason,
     model: CLOUD_MODEL,
-    systemInstruction: fill(prompt.system, { locale: languageName(locale) }),
+    systemInstruction,
     prompt: fill(prompt.user, values),
     // Room for the words asked for, in any of the app's languages.
     generationConfig: { maxOutputTokens: Math.max(256, maxWords * 4) },
     route,
-    fields,
+    fields: taskId === 'ask.chip' ? ['profile-silhouette', 'program-facts', 'prepared-question'] : ['profile-silhouette', 'program-facts'],
+    checks: 'general',
+    deviceOptions: {
+      expectedInputs: [{ type: 'text', languages: ['en', locale] }],
+      expectedOutputs: [{ type: 'text', languages: [locale] }],
+    },
   };
 }
 
@@ -365,15 +381,11 @@ export function planExplain(input: ExplainInput, length: ExplainLength): Planned
     onDeviceLocales: config.onDeviceLocales,
   });
   const prompt = explainPromptFor(config.promptExplainV);
-  return textCall(route.task, prompt, explainValues(input, route.words), input.locale, route.words, ['profile-silhouette', 'program-facts'], route);
+  return textCall(route.task, prompt, explainValues(input, route.words), input.locale, route.words, route);
 }
 
 export function planAskChip(input: ExplainInput, chip: Public<QuestionChip>): PlannedCall {
-  return textCall('ask.chip', ASK_V1, explainValues(input, ASK_WORDS, chip.question), input.locale, ASK_WORDS, [
-    'profile-silhouette',
-    'program-facts',
-    'prepared-question',
-  ]);
+  return textCall('ask.chip', ASK_V2, explainValues(input, ASK_WORDS, chip.question), input.locale, ASK_WORDS);
 }
 
 function hybridParams(call: PlannedCall, forceCloud: boolean): HybridParams {
@@ -385,59 +397,98 @@ function hybridParams(call: PlannedCall, forceCloud: boolean): HybridParams {
   if (call.tools) inCloudParams['tools'] = call.tools;
   if (call.toolConfig) inCloudParams['toolConfig'] = call.toolConfig;
   const params: Record<string, unknown> = { mode, inCloudParams };
-  if (!forceCloud && call.mode !== 'ONLY_IN_CLOUD') {
-    const locale = call.route?.locale ?? 'en';
+  if (!forceCloud && call.mode !== 'ONLY_IN_CLOUD' && call.deviceOptions) {
     params['onDeviceParams'] = {
-      createOptions: {
-        expectedInputs: [{ type: 'text', languages: ['en', locale] }],
-        expectedOutputs: [{ type: 'text', languages: [locale] }],
-        initialPrompts: [{ role: 'system', content: call.systemInstruction }],
-      },
+      createOptions: { ...call.deviceOptions, initialPrompts: [{ role: 'system', content: call.systemInstruction }] },
     };
   }
   return params as unknown as HybridParams;
 }
 
-async function runCall(call: PlannedCall, forceCloud: boolean): Promise<{ response: ModelResponse; source: InferenceSource }> {
+/** Options of one run: an abort signal for "Cancel". */
+export interface RunOptions {
+  readonly signal?: AbortSignal | undefined;
+}
+
+/** Thrown when a request was cancelled; the late reply, if any, is never shown. */
+function throwIfAborted(signal: AbortSignal | undefined): void {
+  if (signal?.aborted) throw new TaskError('cancelled', 'cancelled by the person');
+}
+
+async function runCall(call: PlannedCall, forceCloud: boolean, options: RunOptions): Promise<{ response: ModelResponse; source: InferenceSource }> {
   const key = `${call.taskId}:${forceCloud ? 'cloud' : call.mode}:${call.systemInstruction}`;
   const model = await modelFor(key, () => hybridParams(call, forceCloud));
-  const { response } = await model.generateContent(call.prompt);
-  return { response, source: sourceOf(response, call.mode === 'ONLY_IN_CLOUD' || forceCloud ? 'IN_CLOUD' : 'ON_DEVICE') };
+  throwIfAborted(options.signal);
+  // What is shown is what is sent: the network monitor sends exactly these bytes for this request.
+  const release = expectRequestBody(requestBody(call));
+  try {
+    const { response } = await model.generateContent(call.prompt, options.signal ? { signal: options.signal } : undefined);
+    throwIfAborted(options.signal);
+    return { response, source: sourceOf(response, call.mode === 'ONLY_IN_CLOUD' || forceCloud ? 'IN_CLOUD' : 'ON_DEVICE') };
+  } catch (error) {
+    throwIfAborted(options.signal);
+    throw error;
+  } finally {
+    release();
+  }
+}
+
+const OUTPUT_CHECKS = outputChecks as unknown as OutputChecks;
+
+/** Why a device-first call ran in the cloud when the device had no model to try. */
+async function noDeviceModel(call: PlannedCall, source: InferenceSource): Promise<boolean> {
+  if (source !== 'IN_CLOUD' || call.mode !== 'PREFER_ON_DEVICE' || !call.deviceOptions) return false;
+  return (await deviceAvailability(call.deviceOptions)) !== 'available';
 }
 
 /**
  * Runs a planned text call. A PREFER_ON_DEVICE call that fails on the device is repeated once with
  * ONLY_IN_CLOUD (routing.json onDeviceFailure); its input is CloudSafe, so nothing new is sent.
+ * A reply that states a result is asked for once more, then refused (OUTPUT_CHECKS.md).
  */
-async function runText(call: PlannedCall): Promise<TaskResult<ModelAnswer>> {
-  try {
-    const { response, source } = await runCall(call, false);
-    return { value: modelAnswer(response.text()), inferenceSource: source, reason: call.reason, route: call.route };
-  } catch (error) {
-    if (call.mode !== ON_DEVICE_FAILURE.appliesTo || !failedOnDevice(error)) throw classifyError(error);
+async function runText(call: PlannedCall, options: RunOptions): Promise<TaskResult<ModelAnswer>> {
+  const once = async (): Promise<TaskResult<ModelAnswer>> => {
     try {
-      const { response, source } = await runCall(call, true);
-      return { value: modelAnswer(response.text()), inferenceSource: source, reason: ON_DEVICE_FAILURE.reason as RoutingReason, route: call.route };
-    } catch (cloudError) {
-      throw classifyError(cloudError);
+      const { response, source } = await runCall(call, false, options);
+      const detail = (await noDeviceModel(call, source)) ? 'no-device-model' : undefined;
+      return { value: modelAnswer(response.text()), inferenceSource: source, reason: call.reason, route: call.route, ranInCloudBecause: detail };
+    } catch (error) {
+      if (error instanceof TaskError && error.kind === 'cancelled') throw error;
+      if (call.mode !== ON_DEVICE_FAILURE.appliesTo || !failedOnDevice(error)) throw classifyError(error);
+      try {
+        const { response, source } = await runCall(call, true, options);
+        return { value: modelAnswer(response.text()), inferenceSource: source, reason: ON_DEVICE_FAILURE.reason as RoutingReason, route: call.route };
+      } catch (cloudError) {
+        throw classifyError(cloudError);
+      }
     }
-  }
+  };
+  return checked(once, call.checks ?? 'general', call.route?.locale ?? 'en', (r) => r.value.text);
+}
+
+/** Shows a model's text only when it passes the checks: one retry, then TaskError('blocked'). */
+export async function checked<T>(run: () => Promise<T>, scope: OutputScope, locale: string, text: (result: T) => string): Promise<T> {
+  const first = await run();
+  if (!modelTextIsBlocked(text(first), locale, scope, OUTPUT_CHECKS)) return first;
+  const second = await run();
+  if (!modelTextIsBlocked(text(second), locale, scope, OUTPUT_CHECKS)) return second;
+  throw new TaskError('blocked', 'the reply stated a result twice');
 }
 
 /**
  * Tasks `explain.short` (PREFER_ON_DEVICE, reason `short-text`) and `explain.long` (PREFER_IN_CLOUD,
- * reason `long-or-unsupported-locale`): explains the silhouette verdict in plain language.
- * The route is decided by planExplain(); pass the plan that was shown to the user.
+ * reason `long-or-unsupported-locale`): explains the program in general, never the person's result.
+ * Pass the plan that was shown to the person.
  */
-export function explainProgram(call: PlannedCall): Promise<TaskResult<ModelAnswer>> {
+export function explainProgram(call: PlannedCall, options: RunOptions = {}): Promise<TaskResult<ModelAnswer>> {
   if (call.taskId !== 'explain.short' && call.taskId !== 'explain.long') throw new Error('not an explanation call');
-  return runText(call);
+  return runText(call, options);
 }
 
 /** Task `ask.chip`: PREFER_ON_DEVICE, reason `prepared-question`. Pass a plan from planAskChip(). */
-export function askChip(call: PlannedCall): Promise<TaskResult<ModelAnswer>> {
+export function askChip(call: PlannedCall, options: RunOptions = {}): Promise<TaskResult<ModelAnswer>> {
   if (call.taskId !== 'ask.chip') throw new Error('not a prepared-question call');
-  return runText(call);
+  return runText(call, options);
 }
 
 // ---------- Grounded tasks (cloud only, behind Remote Config flags) ----------
@@ -455,9 +506,9 @@ function searchGrounding(response: ModelResponse): SearchGrounding {
   return { sources, searchEntryPoint: typeof html === 'string' && html.trim() !== '' ? html : undefined };
 }
 
-async function runGrounded(call: PlannedCall): Promise<{ response: ModelResponse; source: InferenceSource }> {
+async function runGrounded(call: PlannedCall, options: RunOptions): Promise<{ response: ModelResponse; source: InferenceSource }> {
   try {
-    return await runCall(call, false);
+    return await runCall(call, false, options);
   } catch (error) {
     throw classifyError(error);
   }
@@ -505,9 +556,9 @@ export interface CurrentStatus {
  * Task `program.currentStatus`: ONLY_IN_CLOUD with Google Search, reason `needs-current-info`.
  * One request for every program of the pack (never only the ones the person may qualify for).
  */
-export async function programCurrentStatus(input: StatusInput): Promise<TaskResult<CurrentStatus>> {
+export async function programCurrentStatus(input: StatusInput, options: RunOptions = {}): Promise<TaskResult<CurrentStatus>> {
   const call = planCurrentStatus(input);
-  const { response, source } = await runGrounded(call);
+  const { response, source } = await runGrounded(call, options);
   const statuses = parseStatusLines(response.text(), input.programs.map((p) => p.id));
   return { value: { statuses, grounding: searchGrounding(response) }, inferenceSource: source, reason: call.reason };
 }
@@ -540,9 +591,9 @@ export interface Leads {
 }
 
 /** Task `discover.leads`: ONLY_IN_CLOUD with Google Search, reason `needs-current-info`. Never verified. */
-export async function discoverLeads(input: DiscoverInput): Promise<TaskResult<Leads>> {
+export async function discoverLeads(input: DiscoverInput, options: RunOptions = {}): Promise<TaskResult<Leads>> {
   const call = planDiscover(input);
-  const { response, source } = await runGrounded(call);
+  const { response, source } = await runGrounded(call, options);
   return { value: { leads: parseListLines(response.text(), 5), grounding: searchGrounding(response) }, inferenceSource: source, reason: call.reason };
 }
 
@@ -585,9 +636,9 @@ export interface NearbyHelp {
 }
 
 /** Task `nearby.help`: ONLY_IN_CLOUD with Google Maps at the county centroid, reason `needs-places`. */
-export async function nearbyHelp(input: NearbyInput): Promise<TaskResult<NearbyHelp>> {
+export async function nearbyHelp(input: NearbyInput, options: RunOptions = {}): Promise<TaskResult<NearbyHelp>> {
   const call = planNearby(input);
-  const { response, source } = await runGrounded(call);
+  const { response, source } = await runGrounded(call, options);
   const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
   const maps = chunks.flatMap((c) => (c.maps ? [c.maps] : []));
   const links = safeSources(maps);
@@ -622,9 +673,9 @@ export interface Speech {
 }
 
 /** Task `readAloud`: ONLY_IN_CLOUD speech model, reason `speech`. Only explanation and chip answers. */
-export async function readAloud(answer: ModelAnswer, locale: string): Promise<TaskResult<Speech>> {
+export async function readAloud(answer: ModelAnswer, locale: string, options: RunOptions = {}): Promise<TaskResult<Speech>> {
   const call = planReadAloud(answer, locale);
-  const { response, source } = await runGrounded(call);
+  const { response, source } = await runGrounded(call, options);
   const part = response.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
   if (!part?.inlineData?.data) throw new TaskError('bad-output', 'the speech model returned no audio');
   return { value: { data: part.inlineData.data, mimeType: part.inlineData.mimeType ?? 'audio/L16;rate=24000' }, inferenceSource: source, reason: call.reason };

@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { Raw, reveal } from './types';
+import { Raw, brandGeneralized, reveal } from './types';
 import {
   TOKEN_FLAGS,
   TOKEN_SOURCE,
@@ -23,7 +23,8 @@ import {
   type PlaceholderMap,
   type PointerSchema,
 } from './skeleton';
-import { GeneralizeError, canonical, generalize, type Bands, type ExactProfile } from './generalize';
+import { GeneralizeError, canonical, generalize, silhouetteVerdicts, type Bands, type ExactProfile, type GeneralizedProfile } from './generalize';
+import { modelTextIsBlocked, type OutputChecks, type OutputScope } from './output-check';
 import { InputError, RuleError, UNKNOWN, evaluate, verdicts, type Answers, type RulePack } from './rules';
 import { ValidationInputError, validatePaystubs, type PaystubValues } from './validate';
 import { toModelSchema, type ModelSchemaOptions } from '../ai/model-schema';
@@ -204,6 +205,19 @@ const runners: Record<string, (fixture: unknown) => void> = {
 };
 
 const extraRunners: Record<string, (fixture: unknown) => void> = {
+  'silhouette-verdict.json': (raw) => {
+    const fixture = raw as { pack: string; bands: string; cases: { id: string; profile: GeneralizedProfile; expected: unknown }[] };
+    const pack = readJson<RulePack>(fixture.pack);
+    const bands = readJson<Bands>(fixture.bands);
+    it('has cases', () => expect(fixture.cases.length).toBeGreaterThan(0));
+    for (const k of fixture.cases) it(k.id, () => expectExact(silhouetteVerdicts(pack, bands, brandGeneralized(k.profile)), k.expected));
+  },
+  'output-check.json': (raw) => {
+    const fixture = raw as { checks: string; cases: { id: string; locale: string; scope: OutputScope; text: string; blocked: boolean }[] };
+    const checks = readJson<OutputChecks>(`prompts/${fixture.checks.replace(/^prompts\//, '')}`);
+    it('has cases', () => expect(fixture.cases.length).toBeGreaterThan(0));
+    for (const k of fixture.cases) it(k.id, () => expect(modelTextIsBlocked(k.text, k.locale, k.scope, checks)).toBe(k.blocked));
+  },
   'validate.json': (raw) => {
     const fixture = raw as { cases: ({ id: string; jurisdiction: string; stubs: PaystubValues[] } & ({ expected: unknown } | { expectedError: string }))[] };
     it('has at least 40 cases', () => expect(fixture.cases.length).toBeGreaterThanOrEqual(40));
@@ -233,12 +247,14 @@ Object.assign(runners, extraRunners);
 const conformanceFiles = readdirSync(CONFORMANCE_DIR).sort();
 
 describe('shared/fixtures/conformance', () => {
-  it('contains the seven known files (contract v1.3) and every file has a runner', () => {
+  it('contains the nine known files (contract v1.9) and every file has a runner', () => {
     expect(conformanceFiles).toEqual([
       'evaluator.json',
       'generalize.json',
       'model-schema.json',
+      'output-check.json',
       'rehydrate.json',
+      'silhouette-verdict.json',
       'skeleton.json',
       'validate.json',
       'verdict.json',

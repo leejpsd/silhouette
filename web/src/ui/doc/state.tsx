@@ -14,6 +14,7 @@ export interface Extraction {
   readonly review: readonly ReviewField[];
   readonly inferenceSource: InferenceSource;
   readonly reason: RoutingReason;
+  readonly ranInCloudBecause?: 'no-device-model' | undefined;
 }
 
 export interface DocumentState {

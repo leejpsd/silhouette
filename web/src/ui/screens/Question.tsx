@@ -2,9 +2,9 @@
 // that the answer never leaves the device.
 import { useId, useRef, useState, type FormEvent } from 'react';
 import { useApp } from '../context';
-import { dynamicKey, formatAmount, formatNumber, lookup, type Translate, type Locale } from '../i18n';
+import { dynamicKey, formatAmount, formatNumber, lookup, type CopyKey, type Translate, type Locale } from '../i18n';
 import { isIncomeAnswer, validateAnswer, type AnswerValue, type IncomeAnswer, type Step } from '../quickcheck';
-import { parseTypedAmount } from '../../core/skeleton';
+import { parseTypedAmount, readTypedAmount } from '../../core/skeleton';
 import { navigate, type Route } from '../router';
 import { ScreenHeading } from '../Heading';
 import type { IncomeBand } from '../../core/generalize';
@@ -86,7 +86,12 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
     const value = draftToValue(step, draft);
     const problem = value === undefined ? 'q.error.choose' : validateAnswer(step, value);
     if (problem !== null || value === undefined) {
-      const key = step.kind === 'int' && value === undefined ? 'q.error.integer' : (problem ?? 'q.error.choose');
+      let key: CopyKey = step.kind === 'int' && value === undefined ? 'q.error.integer' : (problem ?? 'q.error.choose');
+      // Section 5.1 rule 4: "60.000" is refused with a message that shows the accepted form.
+      if (key === 'q.error.amount' && step.kind === 'income' && draft.choice === 'exact') {
+        const read = readTypedAmount(draft.text);
+        if (!read.ok && read.reason === 'decimals') key = 'q.error.amountDecimals';
+      }
       setError(
         step.kind === 'int' ? t(key, { min: step.min, max: step.max }) : t(key),
       );

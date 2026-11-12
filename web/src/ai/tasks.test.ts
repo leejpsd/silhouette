@@ -11,9 +11,9 @@ import { classifyError, TaskError } from './errors';
 import { setModelProviderForTests, type ModelPort } from './model-port';
 import { CLOUD_MODEL, POINTER_SCHEMAS, activePointerConfig, extractPointers, pointerModelParams } from './tasks';
 import { setConfigForTests } from '../data/remote-config';
-import { POINTER_V2, POINTER_V3, pointerConfigFor } from './pointer-config';
+import { POINTER_V2, POINTER_V3, POINTER_V4, pointerConfigFor } from './pointer-config';
 import { readPhoto } from './on-device';
-import { POINTER_EXTRACT, POINTER_EXTRACT_V3, parsePrompt } from './prompts';
+import { POINTER_EXTRACT, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, parsePrompt } from './prompts';
 import { toModelSchema } from './model-schema';
 
 const shared = (rel: string) => readFileSync(new URL(`../../../shared/${rel}`, import.meta.url), 'utf8');
@@ -202,14 +202,16 @@ describe('schema and prompt from /shared', () => {
 
   it('selects the bundled prompt version named by Remote Config, the newest for an unknown value', () => {
     try {
+      expect(activePointerConfig()).toBe(POINTER_V4);
+      expect(pointerModelParams('paystub', 'en').inCloudParams?.systemInstruction).toBe(POINTER_EXTRACT_V4.system);
+      setConfigForTests({ promptPointerExtractV: 3 });
       expect(activePointerConfig()).toBe(POINTER_V3);
-      expect(pointerModelParams('paystub', 'en').inCloudParams?.systemInstruction).toBe(POINTER_EXTRACT_V3.system);
       setConfigForTests({ promptPointerExtractV: 2 });
       expect(activePointerConfig()).toBe(POINTER_V2);
       expect(pointerModelParams('paystub', 'en').inCloudParams?.systemInstruction).toBe(POINTER_EXTRACT.system);
       setConfigForTests({ promptPointerExtractV: 99 });
-      expect(activePointerConfig()).toBe(POINTER_V3);
-      expect(pointerConfigFor(1)).toBe(POINTER_V3);
+      expect(activePointerConfig()).toBe(POINTER_V4);
+      expect(pointerConfigFor(1)).toBe(POINTER_V4);
     } finally {
       setConfigForTests(null);
     }

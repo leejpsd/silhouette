@@ -19,13 +19,6 @@ export function programFacts(t: Translate, locale: Locale, program: Program): Pu
     name: programName(locale, program),
     facts: sentences.join(' '),
     criteria,
-    verdictWords: {
-      likely: t('verdict.likely'),
-      maybe: t('verdict.maybe'),
-      depends: t('verdict.depends'),
-      unlikely: t('verdict.unlikely'),
-    },
-    stateNotes: { fail: t('answers.criterion.notMet'), unknown: t('answers.criterion.notSent') },
   });
 }
 

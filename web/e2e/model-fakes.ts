@@ -64,7 +64,7 @@ export function placeholderFor(caseId: string, text: string): string {
  */
 export async function fakeOnDeviceModel(
   context: BrowserContext,
-  options: { availability: string; replies: Record<string, string>; throwMessage?: string },
+  options: { availability: string; replies: Record<string, string>; throwMessage?: string; initialPromptTooLarge?: boolean },
 ) {
   await context.addInitScript((opts) => {
     let state = opts.availability;
@@ -82,7 +82,9 @@ export async function fakeOnDeviceModel(
     }
     (window as unknown as { LanguageModel: unknown }).LanguageModel = {
       availability: async () => state,
-      create: async (o?: { monitor?: (m: EventTarget) => void }) => {
+      create: async (o?: { monitor?: (m: EventTarget) => void; initialPrompts?: unknown[] }) => {
+        // Like Chromium's small built-in model: a long initial prompt does not fit its context.
+        if (opts.initialPromptTooLarge && o?.initialPrompts?.length) throw new DOMException('The input is too large.', 'QuotaExceededError');
         if (state === 'downloadable' || state === 'downloading') {
           const monitor = new EventTarget();
           o?.monitor?.(monitor);
@@ -132,6 +134,10 @@ export const SEARCH_SUGGESTIONS_HTML =
 interface AnswerFakes {
   /** Text for explanations and chip answers; the prompt is passed in. */
   text?: (prompt: string) => string;
+  /** Answer with this HTTP error instead (for example a daily-limit 429). */
+  error?: { status: number; message: string };
+  /** Never answer. */
+  hang?: boolean;
   status?: string;
   leads?: string;
   places?: string;
@@ -154,6 +160,11 @@ export async function fakeAnswerModels(
     const body = route.request().postData() ?? '';
     bodies.push(body);
     paths.push(new URL(route.request().url()).pathname);
+    if (fakes.hang) return;
+    if (fakes.error) {
+      await route.fulfill({ status: fakes.error.status, contentType: 'application/json', body: JSON.stringify({ error: { code: fakes.error.status, message: fakes.error.message, status: 'RESOURCE_EXHAUSTED' } }) });
+      return;
+    }
     const json = JSON.parse(body) as { contents?: { parts?: { text?: string }[] }[]; tools?: Record<string, unknown>[] };
     const prompt = (json.contents ?? []).flatMap((c) => c.parts ?? []).map((p) => p.text ?? '').join('\n');
     const tool = Object.keys(json.tools?.[0] ?? {})[0];
@@ -179,7 +190,7 @@ export async function fakeAnswerModels(
         },
       };
     } else {
-      candidate = { content: { role: 'model', parts: [{ text: fakes.text ? fakes.text(prompt) : 'You may qualify because your income range is under the limit and you rent your home.' }] } };
+      candidate = { content: { role: 'model', parts: [{ text: fakes.text ? fakes.text(prompt) : 'This program lowers utility bills for households that rent or own their home and stay under an income limit.' }] } };
     }
     await route.fulfill({
       status: 200,

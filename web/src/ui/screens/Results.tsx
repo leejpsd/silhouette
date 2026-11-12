@@ -1,4 +1,6 @@
 // Results: programs grouped by verdict, each linking to its verdict card.
+import { useSyncExternalStore } from 'react';
+import { outboundState, subscribeOutbound } from '../../data/outbound';
 import { useApp } from '../context';
 import { dynamicKey, formatNumber, programName } from '../i18n';
 import { PACK } from '../pack';
@@ -6,11 +8,13 @@ import { groupByVerdict } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { SilhouetteMark } from '../SilhouetteMark';
-import { MoreHelpLinks } from '../answers/MoreHelp';
+import { MoreHelpLinks } from '../answers/MoreHelpLinks';
 
 export function ResultsScreen() {
   const { t, locale, steps, results } = useApp();
   const groups = groupByVerdict(results);
+  // Once anything has left the device, the lead must not say that nothing was sent.
+  const sentSomething = useSyncExternalStore(subscribeOutbound, () => outboundState().entries.length > 0, () => false);
   const hasMaybe = results.some((r) => r.verdict === 'maybe');
   const nameOf = (id: string) => {
     const program = PACK.programs.find((p) => p.id === id);
@@ -20,7 +24,9 @@ export function ResultsScreen() {
   return (
     <div className="screen results">
       <ScreenHeading>{t('results.title')}</ScreenHeading>
-      <p className="lead">{t('results.lead')}</p>
+      <p className="lead" data-testid="results-lead">
+        {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
+      </p>
       {groups.map((group) => (
         <section key={group.verdict} className={`group verdict-${group.verdict}`} aria-labelledby={`group-${group.verdict}`}>
           <h2 id={`group-${group.verdict}`} className="group-title">

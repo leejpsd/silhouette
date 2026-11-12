@@ -107,7 +107,7 @@ export function LeavingBar() {
                   {e.body !== undefined && (
                     <details>
                       <summary>{t('outbound.showPayload')}</summary>
-                      <pre className="payload" data-testid="outbound-payload">
+                      <pre className="payload" data-testid="outbound-payload" tabIndex={0} aria-label={t('outbound.showPayload')}>
                         {e.body}
                       </pre>
                     </details>

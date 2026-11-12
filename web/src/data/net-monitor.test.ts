@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { clearOutbound, outboundState, restoreOutbound } from './outbound';
-import { AI_LOGIC_HOST, aiPayloadText, classify, describeAiRequests, displayBody, installNetMonitor, modelOf } from './net-monitor';
+import { AI_LOGIC_HOST, aiPayloadText, bodyToSend, classify, describeAiRequests, expectRequestBody, installNetMonitor, modelOf } from './net-monitor';
 
 afterEach(() => clearOutbound(null));
 
@@ -25,10 +25,23 @@ describe('network monitor', () => {
     expect(modelOf('/v1beta/projects/p/models/x:generateContent')).toBe('x');
   });
 
-  it('removes credential-like fields from a displayed body', () => {
-    const shown = displayBody(JSON.stringify({ contents: [], appCheckToken: 'T', nested: { api_key: 'K', apiKey: 'K2', keep: 1 } }));
-    expect(shown).not.toMatch(/"T"|"K"|"K2"/);
-    expect(JSON.parse(shown)).toEqual({ contents: [], nested: { keep: 1 } });
+  it('records the body byte for byte, keeping keys that merely contain "token"', () => {
+    const body = '{"generationConfig":{"maxOutputTokens":256},"safetySettings":[],"contents":[]}';
+    const info = classify(new URL(`https://${AI_LOGIC_HOST}/v1beta/projects/p/models/m:generateContent`), body);
+    expect(info.body).toBe(body);
+  });
+
+  it('sends the bytes that were shown when the SDK serializes the same request, and refuses a different one', () => {
+    const shown = '{"generationConfig":{"maxOutputTokens":256},"safetySettings":[],"systemInstruction":{"role":"system","parts":[{"text":"S"}]},"contents":[{"role":"user","parts":[{"text":"P"}]}]}';
+    const release = expectRequestBody(shown);
+    const reordered = JSON.stringify({ contents: [{ parts: [{ text: 'P' }], role: 'user' }], generationConfig: { maxOutputTokens: 256 }, safetySettings: [], systemInstruction: { role: 'system', parts: [{ text: 'S' }] } });
+    expect(bodyToSend(reordered)).toBe(shown);
+    const changed = reordered.replace('"P"', '"Q"');
+    expect(bodyToSend(changed)).toBeNull();
+    const unrelated = JSON.stringify({ systemInstruction: { parts: [{ text: 'OTHER' }] }, contents: [] });
+    expect(bodyToSend(unrelated)).toBe(unrelated);
+    release();
+    expect(bodyToSend(changed)).toBe(changed);
   });
 
   it('records attempted, then sent or failed, with the reason; drops queries and App Check bodies', async () => {

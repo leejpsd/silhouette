@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { deleteEverything, loadRecord, saveRecord, PREF_PREFIX } from '../data/store';
 import { isLocale, translator, type Locale } from './i18n';
 import { AppContext, type AppState } from './context';
@@ -10,9 +10,6 @@ import { StartScreen } from './screens/Start';
 import { QuestionScreen } from './screens/Question';
 import { ResultsScreen } from './screens/Results';
 import { ProgramScreen } from './screens/Program';
-import { DocumentAddScreen } from './screens/DocumentAdd';
-import { DocumentPreviewScreen } from './screens/DocumentPreview';
-import { DocumentReviewScreen } from './screens/DocumentReview';
 import { DocumentContext, emptyDocument, type DocumentContextValue, type DocumentState } from './doc/state';
 import { clearOutbound } from '../data/outbound';
 import { resetModelInstances } from '../ai/model-port';
@@ -20,8 +17,15 @@ import { resetConfig } from '../data/remote-config';
 import { resetCloudRequests } from '../data/net-monitor';
 import { clearSession } from './answers/session';
 import { forgetCounty } from './answers/county-choice';
-import { DiscoverScreen, NearbyScreen } from './answers/MoreHelp';
 import { LEDGER_CLEARED_KEY, startOutboundPersistence } from '../data/outbound-store';
+
+// Screens that use models are loaded on demand (the service worker keeps them for offline use), so the
+// Quick Check and its results start without the model SDK.
+const DocumentAddScreen = lazy(() => import('./screens/DocumentAdd').then((m) => ({ default: m.DocumentAddScreen })));
+const DocumentPreviewScreen = lazy(() => import('./screens/DocumentPreview').then((m) => ({ default: m.DocumentPreviewScreen })));
+const DocumentReviewScreen = lazy(() => import('./screens/DocumentReview').then((m) => ({ default: m.DocumentReviewScreen })));
+const DiscoverScreen = lazy(() => import('./answers/MoreHelp').then((m) => ({ default: m.DiscoverScreen })));
+const NearbyScreen = lazy(() => import('./answers/MoreHelp').then((m) => ({ default: m.NearbyScreen })));
 
 const ANSWERS_RECORD = 'quickcheck.answers';
 const LOCALE_PREF = `${PREF_PREFIX}locale`;
@@ -154,7 +158,7 @@ export function App() {
       <Header onLocale={changeLocale} />
       {isDemoPack(PACK) && <DemoBanner compact={route.name !== 'start'} />}
       <main id="main" tabIndex={-1} aria-busy={!loaded}>
-        {screen}
+        <Suspense fallback={null}>{screen}</Suspense>
       </main>
       <Footer onDelete={onDelete} />
       <LeavingBar />

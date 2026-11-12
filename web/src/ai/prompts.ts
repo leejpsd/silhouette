@@ -1,13 +1,15 @@
-// Prompts are loaded from ../shared/prompts at build time (never pasted here). Tasks that have no
-// shared prompt yet use the files in ./prompts/, in the same format.
+// Prompts are loaded from ../shared/prompts at build time (never pasted here).
 import pointerExtractV2 from '../../../shared/prompts/pointer-extract.v2.md?raw';
 import pointerExtractV3 from '../../../shared/prompts/pointer-extract.v3.md?raw';
-import explainV1 from '../../../shared/prompts/explain.v1.md?raw';
-import askV1 from './prompts/ask.v1.md?raw';
-import currentStatusV1 from './prompts/current-status.v1.md?raw';
-import discoverV1 from './prompts/discover.v1.md?raw';
-import nearbyV1 from './prompts/nearby.v1.md?raw';
-import readAloudV1 from './prompts/read-aloud.v1.md?raw';
+import pointerExtractV4 from '../../../shared/prompts/pointer-extract.v4.md?raw';
+import explainV3 from '../../../shared/prompts/explain.v3.md?raw';
+import askV2 from '../../../shared/prompts/ask.v2.md?raw';
+import explainPersonalV1 from '../../../shared/prompts/explain-personal.v1.md?raw';
+import askPersonalV1 from '../../../shared/prompts/ask-personal.v1.md?raw';
+import currentStatusV1 from '../../../shared/prompts/current-status.v1.md?raw';
+import discoverV1 from '../../../shared/prompts/discover.v1.md?raw';
+import nearbyV1 from '../../../shared/prompts/nearby.v1.md?raw';
+import readAloudV1 from '../../../shared/prompts/read-aloud.v1.md?raw';
 import photoReadV1 from '../../../shared/prompts/photo-read.v1.md?raw';
 
 export interface PromptTemplate {
@@ -36,16 +38,25 @@ export function fill(template: string, values: Readonly<Record<string, string>>)
 
 export const POINTER_EXTRACT = parsePrompt('pointer-extract.v2', pointerExtractV2);
 export const POINTER_EXTRACT_V3 = parsePrompt('pointer-extract.v3', pointerExtractV3);
-export const EXPLAIN_V1 = parsePrompt('explain.v1', explainV1);
+export const POINTER_EXTRACT_V4 = parsePrompt('pointer-extract.v4', pointerExtractV4);
 export const PHOTO_READ = parsePrompt('photo-read.v1', photoReadV1);
-export const ASK_V1 = parsePrompt('ask.v1', askV1);
+/** General explanation and prepared questions: the silhouette's criterion states, never a result. */
+export const EXPLAIN_V3 = parsePrompt('explain.v3', explainV3);
+export const ASK_V2 = parsePrompt('ask.v2', askV2);
+/** The person's own result: on the device only. */
+export const EXPLAIN_PERSONAL_V1 = parsePrompt('explain-personal.v1', explainPersonalV1);
+export const ASK_PERSONAL_V1 = parsePrompt('ask-personal.v1', askPersonalV1);
 export const CURRENT_STATUS_V1 = parsePrompt('current-status.v1', currentStatusV1);
 export const DISCOVER_V1 = parsePrompt('discover.v1', discoverV1);
 export const NEARBY_V1 = parsePrompt('nearby.v1', nearbyV1);
 export const READ_ALOUD_V1 = parsePrompt('read-aloud.v1', readAloudV1);
 
-/** Bundled explain prompts by version (Remote Config prompt_explain_v); unknown → the newest. */
-const EXPLAIN_PROMPTS: ReadonlyMap<number, PromptTemplate> = new Map([[1, EXPLAIN_V1]]);
+/**
+ * Bundled general-explanation prompts by version (Remote Config prompt_explain_v); an unknown version
+ * gets the newest. Only v3 is bundled: earlier versions were sent a verdict, which a model that only
+ * knows the silhouette must not be given.
+ */
+const EXPLAIN_PROMPTS: ReadonlyMap<number, PromptTemplate> = new Map([[3, EXPLAIN_V3]]);
 
 export function explainPromptFor(version: number): PromptTemplate {
   return EXPLAIN_PROMPTS.get(version) ?? (EXPLAIN_PROMPTS.get(Math.max(...EXPLAIN_PROMPTS.keys())) as PromptTemplate);

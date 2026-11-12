@@ -1,12 +1,10 @@
 // UI copy: shared/copy/*.json (app-wide) and shared/rulepacks/{jurisdiction}/copy/*.json (pack
 // labels, key conventions in shared/rulepacks/SPEC.md section 1).
-// Per-key lookup: shared/{locale} → pack/{locale} → shared/en → pack/en → copy.local.json (English
-// strings of screens whose copy is not in shared/copy yet).
+// Per-key lookup: shared/{locale} → pack/{locale} → shared/en → pack/en.
 
 import sharedEn from '../../../shared/copy/en.json';
 import sharedEs from '../../../shared/copy/es.json';
 import sharedKo from '../../../shared/copy/ko.json';
-import localEn from './copy.local.json';
 import { PACK_COPY } from './pack';
 
 export const LOCALES = ['en', 'es', 'ko'] as const;
@@ -15,11 +13,10 @@ export type Locale = (typeof LOCALES)[number];
 /** Language names in their own language (not translated). */
 export const LOCALE_NAMES: Record<Locale, string> = { en: 'English', es: 'Español', ko: '한국어' };
 
-export type CopyKey = keyof typeof sharedEn | keyof typeof localEn;
+export type CopyKey = keyof typeof sharedEn;
 
 type Table = Readonly<Record<string, string>>;
 const SHARED: Record<Locale, Table> = { en: sharedEn, es: sharedEs, ko: sharedKo };
-const LOCAL: Table = localEn;
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
@@ -31,7 +28,7 @@ function inLocale(locale: Locale, key: string): string | undefined {
 
 /** Looks up a key with per-key fallback to English. Returns undefined when no table has it. */
 export function lookup(locale: Locale, key: string): string | undefined {
-  return inLocale(locale, key) ?? inLocale('en', key) ?? LOCAL[key];
+  return inLocale(locale, key) ?? inLocale('en', key);
 }
 
 export type Params = Readonly<Record<string, string | number>>;

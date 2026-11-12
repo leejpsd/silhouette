@@ -1064,3 +1064,57 @@ html {
 main {
   padding-bottom: calc(var(--space-xl) + 4rem);
 }
+
+/* Narrow screens and zoom: the record of outgoing requests never scrolls sideways. Long hosts, paths
+   and titles wrap; only a request body scrolls, inside its own box. The open record takes at most
+   part of the viewport, so the page stays usable at 200 % zoom. */
+.leaving-panel {
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.outbound-list {
+  grid-template-columns: minmax(0, 1fr);
+  max-height: none;
+  overflow: visible;
+}
+
+.outbound-list li,
+.outbound-list li > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.outbound-list .payload,
+.send-panel .payload {
+  max-height: 40vh;
+  overflow: auto;
+  padding: var(--space-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-sunken);
+}
+
+/* Model text and anything quoted from it wraps, even one long unbroken string. */
+.answer,
+.answer p,
+.send-lines li,
+.criterion-text,
+.status-line {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+/* The reason pill is one run of text that wraps as a whole; never columns. */
+.chip {
+  display: inline-block;
+  padding-block: 0.2em;
+  line-height: var(--type-small-line);
+}
+
+.criterion-limit {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--type-small-size);
+}

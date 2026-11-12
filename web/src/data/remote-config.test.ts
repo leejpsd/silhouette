@@ -4,8 +4,8 @@ import { CONFIG_DEFAULTS, appConfig, applyConfigValues, parseConfig, resetConfig
 afterEach(() => resetConfig());
 
 describe('Remote Config values', () => {
-  it('defaults keep paid features off and select prompt v3', () => {
-    expect(CONFIG_DEFAULTS).toMatchObject({ groundingSearch: false, groundingMaps: false, tts: false, promptPointerExtractV: 3, promptExplainV: 1 });
+  it('defaults keep paid features off and select pointer prompt v4 and explain v3', () => {
+    expect(CONFIG_DEFAULTS).toMatchObject({ groundingSearch: false, groundingMaps: false, tts: false, promptPointerExtractV: 4, promptExplainV: 3 });
     expect(parseConfig({})).toEqual(CONFIG_DEFAULTS);
   });
 

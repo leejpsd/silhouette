@@ -9,84 +9,175 @@ async function openProgram(page: Page, id: string) {
   await expect(page.getByTestId('verdict-card')).toBeVisible();
 }
 
-test.describe('explanations, questions and current information', () => {
-  test('nothing is requested until a tap; the panel shows the silhouette and the exact request, then the answer carries its provenance', async ({ page, context }) => {
+const explainButton = (page: Page) => page.getByRole('button', { name: 'Explain this program' });
+const shortAnswer = (page: Page) => page.getByTestId('explain-short').getByTestId('answer');
+
+test.describe('the person\'s result, and the program explained in general', () => {
+  test('nothing is requested until a tap; what is shown before sending is byte for byte what is sent and recorded', async ({ page, context }) => {
     await noOnDeviceModel(context);
     const cloud = await fakeAnswerModels(page);
     await page.goto('/');
     await completeQuickCheck(page);
     await openProgram(page, 'utility-discount');
-    await expect(page.getByTestId('explain-section')).toBeVisible();
+    await expect(page.getByTestId('about-lead')).toContainText('It does not know your result');
     expect(cloud.bodies).toHaveLength(0);
     await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
 
-    await page.getByRole('button', { name: 'Explain this result' }).click();
+    await explainButton(page).click();
     const panel = page.getByTestId('send-panel');
-    await expect(panel).toBeVisible();
     await expect(panel.getByRole('heading', { name: 'Leaving your device' })).toBeFocused();
-    await expect(page.getByTestId('send-lines')).toContainText('Income range: C (30,000–44,999)');
-    await expect(page.getByTestId('send-lines')).toContainText('Household size: 3');
-    await expect(page.getByTestId('send-lines')).toContainText('Program: Test Utility Discount');
+    const lines = page.getByTestId('send-lines');
+    await expect(lines).toContainText('Income range: 30,000 to 44,999 (C)');
+    await expect(lines).toContainText('Housing: I rent (renter)');
+    await expect(lines).toContainText('It never carries your result.');
     await panel.getByText('Show the exact request').click();
-    const payload = await page.getByTestId('send-payload').textContent();
-    expect(payload).toContain('\\"incomeBand\\":\\"C\\"');
-    expect(payload).not.toContain('30524');
+    const shown = (await page.getByTestId('send-payload').textContent()) ?? '';
+    expect(shown).not.toContain('30524');
+    expect(shown).not.toMatch(/Verdict|"model"/);
     expect(cloud.bodies).toHaveLength(0);
 
     await panel.getByRole('button', { name: 'Send' }).click();
-    const answer = page.getByTestId('explain-short').getByTestId('answer');
-    await expect(answer).toContainText('You may qualify because');
-    const badge = answer.getByTestId('inference-badge');
+    await expect(page.getByRole('heading', { name: 'About this program' })).toBeFocused();
+    await expect(shortAnswer(page)).toContainText('This program lowers utility bills');
+    const badge = shortAnswer(page).getByTestId('inference-badge');
     await expect(badge).toHaveAttribute('data-source', 'IN_CLOUD');
     await expect(badge).toHaveAttribute('data-reason', 'short-text');
-    await expect(badge).toContainText('60 words, limit 80');
-    // The result from the rules stays first and unchanged.
+    // Why it ran in the cloud: the preference was device-first, but there is no model on this device.
+    await expect(badge).toContainText('no model on this device');
+    await expect(badge.locator('.visually-hidden')).toHaveText('Cloud: short text, no model on this device.');
+
+    // Shown before sending = sent = recorded, byte for byte.
+    expect(cloud.bodies).toHaveLength(1);
+    expect(shown).toBe(cloud.bodies[0]);
+    expect(shown).toContain('"maxOutputTokens":256');
+    const bar = page.getByTestId('leaving-bar');
+    await bar.getByRole('button', { name: 'Details' }).click();
+    const model = bar.locator('li[data-channel="ai-cloud"]');
+    await model.getByText('Show exactly what was sent').click();
+    expect(await model.getByTestId('outbound-payload').textContent()).toBe(cloud.bodies[0]);
+    await expect(bar).toContainText('Profile silhouette');
+    await bar.getByRole('button', { name: 'Hide details' }).click();
     await expect(page.getByTestId('verdict-card')).toHaveAttribute('data-verdict', 'likely');
 
-    expect(cloud.bodies).toHaveLength(1);
-    const sent = JSON.parse(cloud.bodies[0]!) as { contents: { parts: { text: string }[] }[]; systemInstruction: { parts: { text: string }[] } };
-    const text = sent.contents[0]!.parts[0]!.text;
-    // The request is what the panel showed.
-    expect(payload).toContain(JSON.stringify(text).slice(1, 40));
-    expect(text).toContain('"incomeBand":"C"');
-    for (const exact of ['30524', '30,524', 'residentStatus', 'eligible']) expect(cloud.bodies[0]).not.toContain(exact);
-    await expect(page.getByTestId('leaving-bar')).toContainText('Profile silhouette');
-
-    // Same silhouette, another program: no second panel; the request is still recorded.
+    // Cached for the session.
     await openProgram(page, 'food-help');
-    await page.getByRole('button', { name: 'Explain this result' }).click();
-    await expect(page.getByTestId('explain-short').getByTestId('answer')).toBeVisible();
-    await expect(page.getByTestId('send-panel')).toHaveCount(0);
-    // food-help depends on a private answer the silhouette does not carry: the explanation says so.
-    await expect(page.getByTestId('silhouette-note')).toBeVisible();
-    expect(cloud.bodies).toHaveLength(2);
-
-    // Cached for the session: going back shows the answer without a new request.
     await openProgram(page, 'utility-discount');
-    await expect(page.getByTestId('explain-short').getByTestId('answer')).toBeVisible();
-    expect(cloud.bodies).toHaveLength(2);
-
-    // "Tell me more" is explain.long.
-    await page.getByRole('button', { name: 'Tell me more' }).click();
-    const long = page.getByTestId('explain-long').getByTestId('inference-badge');
-    await expect(long).toHaveAttribute('data-reason', 'long-or-unsupported-locale');
-    await expect(long).toContainText('180 words, limit 80');
+    await expect(shortAnswer(page)).toBeVisible();
+    expect(cloud.bodies).toHaveLength(1);
   });
 
-  test('keeping everything on the device sends nothing', async ({ page, context }) => {
+  test('agreeing to a device-first request that stayed on the device does not cover a cloud-first one', async ({ page, context }) => {
+    await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Program: Test Utility Discount': 'An explanation written on this device.' } });
+    const cloud = await fakeAnswerModels(page);
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await openProgram(page, 'utility-discount');
+    await explainButton(page).click();
+    await expect(page.getByTestId('send-panel')).toHaveAttribute('data-destination', 'device-first');
+    await expect(page.getByTestId('send-panel')).toContainText("if this device can't write it itself");
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(shortAnswer(page)).toContainText('written on this device');
+    await expect(shortAnswer(page).getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
+    expect(cloud.bodies).toHaveLength(0);
+    await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
+
+    // "Tell me more" goes to the cloud first: the step comes back, with the cloud wording.
+    await page.getByRole('button', { name: 'Tell me more' }).click();
+    const panel = page.getByTestId('explain-long').getByTestId('send-panel');
+    await expect(panel).toHaveAttribute('data-destination', 'cloud');
+    await expect(panel).toContainText('will be sent to Firebase AI Logic in the cloud');
+    expect(cloud.bodies).toHaveLength(0);
+    await panel.getByRole('button', { name: 'Send' }).click();
+    await expect(page.getByTestId('explain-long').getByTestId('answer')).toBeVisible();
+    expect(cloud.bodies).toHaveLength(1);
+  });
+
+  test('without a device model, the second request with the same silhouette says it was sent before; a changed silhouette asks again', async ({ page, context }) => {
     await noOnDeviceModel(context);
     const cloud = await fakeAnswerModels(page);
     await page.goto('/');
     await completeQuickCheck(page);
     await openProgram(page, 'utility-discount');
-    await page.getByRole('button', { name: 'Explain this result' }).click();
+    await explainButton(page).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(shortAnswer(page)).toBeVisible();
+
+    await page.getByRole('button', { name: 'How do I apply?' }).click();
+    const chip = page.getByTestId('chip-apply');
+    await expect(chip.getByTestId('answer')).toBeVisible();
+    await expect(chip.getByTestId('send-panel')).toHaveCount(0);
+    await expect(chip.getByTestId('send-once')).toContainText('was sent with your earlier question');
+    expect(cloud.bodies).toHaveLength(2);
+
+    // Household 3 → 4: another silhouette, so the step is shown again.
+    await page.goto('/#/q/householdSize?then=program/utility-discount');
+    await page.locator('#main input[inputmode="numeric"]').fill('4');
+    await page.getByRole('button', { name: /^(Next|See results)$/ }).click();
+    await expect(page.getByTestId('verdict-card')).toBeVisible();
+    await explainButton(page).click();
+    await expect(page.getByTestId('send-panel')).toBeVisible();
+    await expect(page.getByTestId('send-lines')).toContainText('Household size: 4');
+    expect(cloud.bodies).toHaveLength(2);
+  });
+
+  test('after "Keep everything on this device" the button is still there, and nothing was sent', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    const cloud = await fakeAnswerModels(page);
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await openProgram(page, 'utility-discount');
+    await explainButton(page).click();
     await page.getByRole('button', { name: 'Keep everything on this device' }).click();
-    await expect(page.getByText('Nothing was sent.')).toBeVisible();
+    await expect(page.getByTestId('explain-short').getByTestId('request-status')).toHaveText(/Nothing was sent/);
+    await expect(explainButton(page)).toBeVisible();
     expect(cloud.bodies).toHaveLength(0);
     await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
   });
 
-  test('prepared questions work without a device model; typed questions are offered only with one, and say why', async ({ page, context }) => {
+  test('"Why this result" shows limits and values from the rules; the general explanation never states a result', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    const cloud = await fakeAnswerModels(page, { text: () => 'You may qualify for this program.' });
+    await page.goto('/');
+    await completeQuickCheck(page, { resident: 'No' });
+    await openProgram(page, 'food-help');
+    await expect(page.getByTestId('verdict-card')).toHaveAttribute('data-verdict', 'unlikely');
+    const why = page.getByTestId('why-section');
+    await expect(why.getByTestId('why-income-limit')).toContainText('limit 34,000, yours 30,524');
+    await expect(why.getByTestId('why-residency')).toHaveAttribute('data-state', 'fail');
+    await expect(why.getByTestId('why-unavailable')).toContainText('needs a model on this device');
+
+    await explainButton(page).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    // Asked twice, both replies stated a result: neither is shown.
+    const error = page.getByTestId('explain-short').getByTestId('answer-error');
+    await expect(error).toHaveAttribute('data-kind', 'blocked');
+    await expect(error).toContainText('only the rules can make');
+    await expect(page.getByText('You may qualify for this program.')).toHaveCount(0);
+    expect(cloud.bodies).toHaveLength(2);
+    for (const body of cloud.bodies) {
+      expect(body).not.toMatch(/Verdict|not-eligible|residentStatus|30524/);
+      expect(body).toMatch(/Checked on the device \(not known here\): [^\n]*You meet the residency rule/);
+    }
+  });
+
+  test('with a device model, the person\'s own result is explained on this device only', async ({ page, context }) => {
+    await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Result from the rules: Probably not': 'The rules say probably not: the residency rule is not met.' } });
+    const cloud = await fakeAnswerModels(page);
+    await page.goto('/');
+    await completeQuickCheck(page, { resident: 'No' });
+    await openProgram(page, 'food-help');
+    await page.getByRole('button', { name: 'Explain my result on this device' }).click();
+    const answer = page.getByTestId('why-answer');
+    await expect(answer).toContainText('residency rule is not met');
+    await expect(answer.getByTestId('inference-badge')).toHaveAttribute('data-reason', 'your-result-stays-on-device');
+    await expect(answer.getByRole('button', { name: 'Read aloud' })).toHaveCount(0);
+    const prompts = await page.evaluate(() => (window as unknown as { __fakePrompts: string[] }).__fakePrompts.join('\n'));
+    expect(prompts).toContain('limit 34,000, yours 30,524');
+    expect(cloud.bodies).toHaveLength(0);
+    await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
+  });
+
+  test('prepared questions work without a device model; typed questions are offered only with one, and say why; focus stays on the chip', async ({ page, context }) => {
     await noOnDeviceModel(context);
     const cloud = await fakeAnswerModels(page, { text: (p) => (p.includes('Question: How do I apply?') ? 'Apply on the official website.' : 'x') });
     await page.goto('/');
@@ -94,13 +185,21 @@ test.describe('explanations, questions and current information', () => {
     await openProgram(page, 'utility-discount');
     await expect(page.getByTestId('free-text-unavailable')).toContainText('needs a model on this device');
     await expect(page.getByRole('textbox')).toHaveCount(0);
-    await page.getByRole('button', { name: 'How do I apply?' }).click();
+    const chipButton = page.getByRole('button', { name: 'How do I apply?' });
+    await chipButton.click();
     await expect(page.getByTestId('send-lines')).toContainText('Question: How do I apply?');
     await page.getByRole('button', { name: 'Send' }).click();
+    await expect(chipButton).toBeFocused();
     const answer = page.getByTestId('chip-apply').getByTestId('answer');
     await expect(answer).toContainText('Apply on the official website.');
     await expect(answer.getByTestId('inference-badge')).toHaveAttribute('data-reason', 'prepared-question');
-    expect(cloud.bodies).toHaveLength(1);
+    await expect(chipButton).toBeFocused();
+    // A second chip goes without the step (the silhouette was sent) and keeps focus on itself.
+    const second = page.getByRole('button', { name: 'What papers might I need?' });
+    await second.click();
+    await expect(page.getByTestId('chip-documents').getByTestId('answer')).toBeVisible();
+    await expect(second).toBeFocused();
+    expect(cloud.bodies).toHaveLength(2);
   });
 
   test('a typed question is answered on this device and never sent', async ({ page, context }) => {
@@ -109,8 +208,7 @@ test.describe('explanations, questions and current information', () => {
     await page.goto('/');
     await completeQuickCheck(page);
     await openProgram(page, 'utility-discount');
-    const box = page.getByLabel('Your own question');
-    await box.fill('Can I apply from abroad?');
+    await page.getByRole('textbox', { name: 'Your own question' }).fill('Can I apply from abroad?');
     await page.getByRole('button', { name: 'Ask on this device' }).click();
     const answer = page.getByTestId('free-text').getByTestId('answer');
     await expect(answer).toContainText('Check the official website.');
@@ -120,7 +218,93 @@ test.describe('explanations, questions and current information', () => {
     expect(cloud.bodies.join('\n')).not.toContain('abroad');
   });
 
-  test('with the flags off every page is complete: official information, no dead buttons', async ({ page, context }) => {
+  test('once something has left, the results lead says so', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await fakeAnswerModels(page);
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await expect(page.getByTestId('results-lead')).toContainText('Nothing you entered has been sent anywhere');
+    await openProgram(page, 'utility-discount');
+    await explainButton(page).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(shortAnswer(page)).toBeVisible();
+    await page.goto('/#/results');
+    await expect(page.getByTestId('results-lead')).toContainText('Only what is listed under “Leaving your device” has left it.');
+    await expect(page.getByTestId('results-lead')).not.toContainText('Nothing you entered');
+  });
+
+  test('a daily limit says so, without "try again in a minute" or a retry button', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await fakeAnswerModels(page, { error: { status: 429, message: 'Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, limit: 500. Please retry in 15h42m.' } });
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await openProgram(page, 'utility-discount');
+    await explainButton(page).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    const error = page.getByTestId('explain-short').getByTestId('answer-error');
+    await expect(error).toHaveAttribute('data-kind', 'quota-daily');
+    await expect(error).toContainText("free daily limit has been reached");
+    await expect(error).not.toContainText('in a minute');
+    await expect(error.getByRole('button', { name: 'Try again' })).toHaveCount(0);
+  });
+
+  test('a request that does not answer can be cancelled, and says when it is slow', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.clock.install();
+    const cloud = await fakeAnswerModels(page, { hang: true });
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await openProgram(page, 'utility-discount');
+    await explainButton(page).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    const status = page.getByTestId('explain-short').getByTestId('request-status');
+    await expect(status).toHaveText('Writing the answer…');
+    await page.clock.fastForward(16_000);
+    await expect(status).toContainText('This is taking longer than usual.');
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(status).toHaveText('Cancelled. Nothing more will be shown for this request.');
+    await expect(explainButton(page)).toBeVisible();
+    expect(cloud.bodies).toHaveLength(1);
+    // The record says truthfully that the request did not complete.
+    const bar = page.getByTestId('leaving-bar');
+    await bar.getByRole('button', { name: 'Details' }).click();
+    await expect(bar.locator('li[data-channel="ai-cloud"]')).toHaveAttribute('data-status', 'failed');
+  });
+
+  test('a language change never leaves an answer in the old language; the panel shows translated values', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    const cloud = await fakeAnswerModels(page);
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await openProgram(page, 'utility-discount');
+    await explainButton(page).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(shortAnswer(page)).toBeVisible();
+    await page.getByLabel('Language').selectOption('es');
+    await expect(page.getByRole('heading', { name: 'Sobre este programa' })).toBeVisible();
+    await expect(shortAnswer(page)).toHaveCount(0);
+    await page.getByRole('button', { name: 'Explicar este programa' }).click();
+    // Already sent once in this session: no step, but it says so; nothing is re-sent without a tap.
+    await expect(shortAnswer(page)).toBeVisible();
+    expect(cloud.bodies).toHaveLength(2);
+    await page.getByTestId('chip-apply').getByRole('button').click();
+    await expect(page.getByTestId('chip-apply').getByTestId('send-once')).toBeVisible();
+  });
+
+  test('translated step before sending', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await fakeAnswerModels(page);
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await page.getByLabel('Language').selectOption('es');
+    await openProgram(page, 'utility-discount');
+    await page.getByRole('button', { name: 'Explicar este programa' }).click();
+    const lines = page.getByTestId('send-lines');
+    await expect(lines).toContainText('Vivienda: Rento (renter)');
+    await expect(lines).toContainText('Rango de ingresos: De 30.000 a 44.999 (C)');
+  });
+
+  test('with the flags off every page is complete: official information and the way back, no dead buttons', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await fakeAnswerModels(page);
     await page.goto('/');
@@ -129,13 +313,16 @@ test.describe('explanations, questions and current information', () => {
     await openProgram(page, 'utility-discount');
     await expect(page.getByTestId('current-section')).toHaveCount(0);
     await expect(page.getByTestId('official-info')).toContainText('This demo rule set lists no official websites.');
-    await page.goto('/#/discover');
-    await expect(page.getByTestId('discover-screen')).toHaveAttribute('data-enabled', 'false');
-    await expect(page.getByTestId('discover-screen')).toContainText('not switched on');
-    await expect(page.getByTestId('discover-screen').getByRole('button')).toHaveCount(0);
-    await page.goto('/#/nearby');
-    await expect(page.getByTestId('nearby-screen')).toHaveAttribute('data-enabled', 'false');
-    await expect(page.getByTestId('nearby-screen').getByRole('button')).toHaveCount(0);
+    for (const path of ['/#/discover', '/#/nearby']) {
+      await page.goto(path);
+      const screen = page.getByTestId(path.includes('discover') ? 'discover-screen' : 'nearby-screen');
+      await expect(screen).toHaveAttribute('data-enabled', 'false');
+      await expect(screen.getByRole('button')).toHaveCount(0);
+      const back = screen.getByTestId('back-nav');
+      await expect(back.getByRole('link')).toHaveCount(6);
+      await expect(back.getByRole('link', { name: 'Test Food Help' })).toBeVisible();
+      await expect(back).toContainText('You may qualify');
+    }
   });
 
   test('current information: one search for every program, Search Suggestions and sources shown as given', async ({ page, context }) => {
@@ -146,11 +333,10 @@ test.describe('explanations, questions and current information', () => {
     await completeQuickCheck(page);
     await openProgram(page, 'utility-discount');
     await page.getByRole('button', { name: 'Check current information for all 5 programs' }).click();
-    const lines = page.getByTestId('send-lines');
+    const lines = page.getByTestId('current-status').getByTestId('send-lines');
     await expect(lines).toContainText('Test Work Credit');
-    await expect(lines).toContainText('Test Senior Food Path');
     await expect(lines).not.toContainText('Income range');
-    await page.getByRole('button', { name: 'Send' }).click();
+    await page.getByTestId('current-status').getByRole('button', { name: 'Send' }).click();
     await expect(page.getByTestId('current-line')).toHaveText('Applications are open all year.');
     await expect(page.getByTestId('current-status').getByTestId('inference-badge')).toHaveAttribute('data-reason', 'needs-current-info');
     await expect(page.getByTestId('sources').getByRole('link', { name: 'example.gov' })).toHaveAttribute('target', '_blank');
@@ -159,7 +345,6 @@ test.describe('explanations, questions and current information', () => {
     for (const id of ['work-credit', 'food-help', 'utility-discount', 'phone-discount', 'senior-food']) expect(body).toContain(`[${id}]`);
     expect(body).toContain('googleSearch');
     expect(body).not.toContain('incomeBand');
-
     await openProgram(page, 'food-help');
     await expect(page.getByTestId('current-line')).toHaveText('No current information found.');
     expect(cloud.bodies).toHaveLength(1);
@@ -177,7 +362,6 @@ test.describe('explanations, questions and current information', () => {
     const leads = page.getByTestId('leads');
     await expect(leads.getByRole('heading', { name: 'Leads — not verified' })).toBeVisible();
     await expect(leads).toContainText('City Fan Program');
-    await expect(leads).toContainText('does not say whether you qualify');
     await expect(leads.getByTestId('search-suggestions')).toBeVisible();
     expect(cloud.bodies[0]).toContain('Already listed');
     expect(cloud.bodies[0]).not.toContain('30524');
@@ -197,31 +381,56 @@ test.describe('explanations, questions and current information', () => {
     const places = page.getByTestId('places');
     await expect(places.getByRole('link', { name: 'Testshire Help Center' })).toHaveAttribute('href', 'https://maps.google.com/?cid=123');
     await expect(places.getByTestId('maps-attribution')).toHaveText('Google Maps');
-    await expect(places.getByTestId('inference-badge')).toHaveAttribute('data-reason', 'needs-places');
     const body = JSON.parse(cloud.bodies[0]!) as { toolConfig: unknown; tools: unknown };
     expect(body.tools).toEqual([{ googleMaps: {} }]);
     expect(body.toolConfig).toMatchObject({ retrievalConfig: { latLng: { latitude: 0, longitude: 0 } } });
-    expect(cloud.bodies[0]).not.toContain('incomeBand');
   });
 
-  test('read aloud sends only the answer text to the speech model, after its own Send', async ({ page, context }) => {
+  test('read aloud sends only the answer text to the speech model, after its own step', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await seedRemoteConfig(context, ALL_ON);
     const cloud = await fakeAnswerModels(page, {}, ALL_ON);
     await page.goto('/');
     await completeQuickCheck(page);
     await openProgram(page, 'utility-discount');
-    await page.getByRole('button', { name: 'Explain this result' }).click();
+    await explainButton(page).click();
     await page.getByRole('button', { name: 'Send' }).click();
-    const answer = page.getByTestId('explain-short').getByTestId('answer');
+    const answer = shortAnswer(page);
     await answer.getByRole('button', { name: 'Read aloud' }).click();
     await expect(answer.getByTestId('send-lines')).toContainText('The text of the answer above');
     await answer.getByRole('button', { name: 'Send' }).click();
     await expect(answer.getByText(/Reading aloud\.|Stopped reading\./)).toBeVisible();
     expect(cloud.paths[1]).toContain('gemini-3.1-flash-tts-preview');
-    const body = JSON.parse(cloud.bodies[1]!) as { contents: { parts: { text: string }[] }[]; systemInstruction?: unknown };
-    expect(body.contents[0]!.parts[0]!.text).toContain('You may qualify because');
+    expect(cloud.bodies[1]).toContain('This program lowers utility bills');
     expect(cloud.bodies[1]).not.toContain('incomeBand');
-    await expect(page.getByTestId('leaving-bar')).toContainText('Answer text (read aloud)');
+  });
+});
+
+test.describe('narrow screens and zoom', () => {
+  test.use({ viewport: { width: 320, height: 640 } });
+
+  test('the open record and a long unbroken answer never make the page scroll sideways; the reason pill is one block', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await fakeAnswerModels(page, { text: () => `See ${'https://example.org/'.padEnd(260, 'x')} for details.` });
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await openProgram(page, 'utility-discount');
+    await explainButton(page).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(shortAnswer(page)).toBeVisible();
+    const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    // The pill is one box of wrapping text: never a flex container that splits into columns.
+    expect(await shortAnswer(page).locator('.chip').evaluate((el) => getComputedStyle(el).display)).not.toMatch(/flex/);
+    const bar = page.getByTestId('leaving-bar');
+    await bar.getByRole('button', { name: 'Details' }).click();
+    await bar.getByText('Show exactly what was sent').first().click();
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    const list = bar.getByTestId('outbound-list');
+    expect(await list.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+    // The open record leaves part of the screen for the page (200 % zoom is about 640 x 320 CSS px).
+    await page.setViewportSize({ width: 640, height: 320 });
+    const panelHeight = await bar.locator('.leaving-panel').evaluate((el) => el.getBoundingClientRect().height);
+    expect(panelHeight).toBeLessThanOrEqual(320 * 0.6 + 1);
   });
 });

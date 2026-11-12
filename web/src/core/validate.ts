@@ -270,7 +270,7 @@ function checkStub(s: Stub, raw: PaystubValues): Check[] {
 
   // dates-parsed: every date that was given parsed.
   const dates = ([[raw.payDate, s.payDate], [raw.periodStart, s.periodStart], [raw.periodEnd, s.periodEnd]] as const).filter(
-    ([text]) => text !== undefined,
+    ([text]) => text !== undefined && text !== null,
   );
   add('dates-parsed', dates.length === 0 ? 'skipped' : dates.every(([, d]) => d !== null) ? 'ok' : 'warn');
   return checks;

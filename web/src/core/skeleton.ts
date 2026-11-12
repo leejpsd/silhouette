@@ -205,10 +205,24 @@ const NUMBER_FORMAT = /^(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.[0-9]+)?$/;
  * "28000.5"). Anything else, such as "28.000,50" or "1,2345", is rejected (undefined).
  */
 export function parseTypedAmount(text: string): number | undefined {
-  // Section 5.1: trim tab, LF, CR, space and no-break space only (not every Unicode space), then
-  // one leading currency sign and the same characters after it.
+  const read = readTypedAmount(text);
+  return read.ok ? read.value : undefined;
+}
+
+/**
+ * Section 5.1 with the reason for a refusal: `decimals` when only rule 4 refuses it (more than two
+ * digits after the dot, as in `60.000`), so the message can show the accepted form.
+ */
+export function readTypedAmount(text: string): { readonly ok: true; readonly value: number } | { readonly ok: false; readonly reason: 'format' | 'decimals' } {
+  // Rules 1-2: trim tab, LF, CR, space and no-break space only (not every Unicode space), then one
+  // leading currency sign and the same characters after it.
   const trimmed = text.replace(/^[\t\n\r \u00A0]+|[\t\n\r \u00A0]+$/g, '').replace(/^[$€£¥₩][\t\n\r \u00A0]*/u, '');
-  return parseNumber(trimmed);
+  const value = parseNumber(trimmed);
+  if (value === undefined) return { ok: false, reason: 'format' };
+  // Rule 4: at most two digits after the dot.
+  const dot = trimmed.indexOf('.');
+  if (dot !== -1 && trimmed.length - dot - 1 > 2) return { ok: false, reason: 'decimals' };
+  return { ok: true, value };
 }
 
 /** SPEC.md section 5 step 2. Returns undefined for any token that does not match the format. */

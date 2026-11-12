@@ -21,15 +21,15 @@ export interface AppConfig {
   readonly promptExplainV: number;
 }
 
-/** Bundled defaults. Paid features (grounding, read aloud) are off until Remote Config turns them on. */
+/** Bundled defaults (shared/CHANGELOG.md). Paid features (grounding, read aloud) are off until Remote Config turns them on. */
 export const CONFIG_DEFAULTS: AppConfig = {
   routeShortTextMaxWords: 80,
   onDeviceLocales: ['en', 'es'],
   groundingSearch: false,
   groundingMaps: false,
   tts: false,
-  promptPointerExtractV: 3,
-  promptExplainV: 1,
+  promptPointerExtractV: 4,
+  promptExplainV: 3,
 };
 
 /** Remote Config parameter names and the defaults in the form the SDK takes. */

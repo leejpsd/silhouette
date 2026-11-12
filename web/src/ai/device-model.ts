@@ -2,7 +2,9 @@
 // `LanguageModel.availability()` is used only to show status; downloads go through
 // Firebase AI Logic's initializeDeviceModel() and must start from a user gesture.
 
-import { pointerModel, pointerModelParams, type DocType } from './tasks';
+import { InferenceMode } from 'firebase/ai';
+import { CLOUD_MODEL, pointerModelParams, type DocType } from './tasks';
+import { modelFor } from './model-port';
 
 export type DeviceStatus = 'unavailable' | 'downloadable' | 'downloading' | 'available';
 
@@ -62,9 +64,24 @@ export async function askDeviceStatus(locale: string): Promise<DeviceStatus> {
   }
 }
 
-/** Starts (or joins) the on-device model download. Call only from a user gesture. */
+/**
+ * Starts (or joins) the on-device model download. Call only from a user gesture.
+ *
+ * The download is requested with the language options only, never with a task's system prompt: the
+ * model is the same for every task, and creating a session with a long initial prompt can fail ("The
+ * input is too large") on a device with a small context even though the download itself succeeds.
+ */
 export async function downloadDeviceModel(docType: DocType, language: string, onProgress: (fraction: number) => void): Promise<void> {
-  const model = await pointerModel(docType, language);
+  void docType;
+  const createOptions = {
+    expectedInputs: [{ type: 'text', languages: [language] }],
+    expectedOutputs: [{ type: 'text', languages: ['en'] }],
+  };
+  const model = await modelFor(`device.download:${language}`, () => ({
+    mode: InferenceMode.PREFER_ON_DEVICE,
+    inCloudParams: { model: CLOUD_MODEL },
+    onDeviceParams: { createOptions: createOptions as never },
+  }));
   if (!model.initializeDeviceModel) throw new Error('This model cannot be initialized on device');
   await model.initializeDeviceModel(onProgress);
 }

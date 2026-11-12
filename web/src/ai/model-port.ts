@@ -34,7 +34,10 @@ export interface ModelResponse {
 }
 
 export interface ModelPort {
-  generateContent(request: string | readonly (string | { readonly inlineData: { readonly data: string; readonly mimeType: string } })[]): Promise<{
+  generateContent(
+    request: string | readonly (string | { readonly inlineData: { readonly data: string; readonly mimeType: string } })[],
+    options?: { readonly signal?: AbortSignal },
+  ): Promise<{
     readonly response: ModelResponse;
   }>;
   initializeDeviceModel?(onDownloadProgress?: (progress: number) => void): Promise<void>;
@@ -80,4 +83,25 @@ export function sourceOf(response: ModelResponse, fallback: InferenceSource): In
 /** Drops cached model instances (after the Firebase app was closed). */
 export function resetModelInstances(): void {
   instances.clear();
+}
+
+export type DeviceAvailability = 'unavailable' | 'downloadable' | 'downloading' | 'available';
+
+interface LanguageModelStatic {
+  availability(options?: unknown): Promise<string>;
+}
+
+/**
+ * Chrome's on-device model availability for these createOptions. Status only: inference always goes
+ * through Firebase AI Logic.
+ */
+export async function deviceAvailability(createOptions: unknown): Promise<DeviceAvailability> {
+  const lm = (globalThis as { LanguageModel?: LanguageModelStatic }).LanguageModel;
+  if (!lm || typeof lm.availability !== 'function') return 'unavailable';
+  try {
+    const value = await lm.availability(createOptions);
+    return value === 'available' || value === 'downloadable' || value === 'downloading' ? value : 'unavailable';
+  } catch {
+    return 'unavailable';
+  }
 }

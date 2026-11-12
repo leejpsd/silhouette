@@ -8,7 +8,9 @@ import { asPublic, type Generalized, type Public } from '../../core/types';
 import type { ExplainInput, ProgramFacts, ProgramName } from '../../ai/tasks';
 export { programFacts } from './facts';
 import { useApp } from '../context';
-import { programName, type Locale, type Translate } from '../i18n';
+import { lookup, programName, type Locale, type Translate } from '../i18n';
+import { bandLabel } from '../screens/Question';
+import { countiesFor } from './counties';
 import { BANDS, PACK } from '../pack';
 import { exactProfile } from '../quickcheck';
 import { useCounty } from './county-choice';
@@ -43,17 +45,21 @@ export function allProgramNames(locale: Locale): Public<readonly ProgramName[]> 
   return asPublic(PACK.programs.map((p) => ({ id: p.id, name: programName(locale, p) })));
 }
 
-/** Lines describing a silhouette for the "Leaving your device" panel. */
-export function silhouetteLines(t: Translate, profile: GeneralizedProfile): string[] {
+/**
+ * Lines describing a silhouette for the "Leaving your device" step, in the UI language. Each value is
+ * shown as the person knows it, with the form that is sent in brackets where they differ.
+ */
+export function silhouetteLines(t: Translate, locale: Locale, profile: GeneralizedProfile): string[] {
   const none = t('send.unanswered');
   const band = BANDS.annualIncome.find((b) => b.id === profile.incomeBand);
-  const range = band ? `${band.id} (${band.min.toLocaleString('en')}–${band.max === null ? '' : band.max.toLocaleString('en')})` : none;
+  const housing = profile.housing === null ? none : `${lookup(locale, `option.housing.${profile.housing}`) ?? profile.housing} (${profile.housing})`;
+  const county = profile.county === null ? none : (countiesFor(profile.jurisdiction).find((c) => c.id === profile.county)?.name ?? profile.county);
   return [
-    t('send.line.jurisdiction', { value: profile.jurisdiction }),
-    t('send.line.incomeBand', { value: range }),
+    t('send.line.jurisdiction', { value: `${lookup(locale, `pack.${profile.jurisdiction}.name`) ?? profile.jurisdiction} (${profile.jurisdiction})` }),
+    t('send.line.incomeBand', { value: band ? `${bandLabel(t, locale, band)} (${band.id})` : none }),
     t('send.line.householdSize', { value: profile.householdSize === null ? none : String(profile.householdSize) }),
-    t('send.line.housing', { value: profile.housing ?? none }),
+    t('send.line.housing', { value: housing }),
     t('send.line.childAgeBands', { value: profile.childAgeBands === null ? none : profile.childAgeBands.join(', ') || '-' }),
-    t('send.line.county', { value: profile.county ?? none }),
+    t('send.line.county', { value: county }),
   ];
 }

@@ -3,14 +3,14 @@
 // flag off the page still stands on its own: it says so and lists the rule pack's official
 // information, with no button that cannot work.
 
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 import './answers.css';
 import { asPublic } from '../../core/types';
 import { discoverLeads, nearbyHelp, planDiscover, planNearby, type Leads, type NearbyHelp, type TaskResult } from '../../ai/tasks';
 import { useApp } from '../context';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
-import { programName } from '../i18n';
+import { dynamicKey, programName } from '../i18n';
 import { PACK } from '../pack';
 import { routeHref } from '../router';
 import { useConfig } from './config';
@@ -20,36 +20,28 @@ import { OfficialInfo, RequestRegion, SearchSuggestions, SourceList, useRequest 
 import { answerKey } from './session';
 import { silhouetteLines, useSilhouette } from './silhouette';
 
-/** Links to the two pages, shown only for features that are switched on. */
-export function MoreHelpLinks() {
-  const { t } = useApp();
-  const config = useConfig();
-  if (!config.groundingSearch && !config.groundingMaps) return null;
-  return (
-    <nav className="more-help" aria-label={t('more.title')} data-testid="more-help">
-      <h2>{t('more.title')}</h2>
-      <ul>
-        {config.groundingSearch && (
-          <li>
-            <a href={routeHref({ name: 'discover' })}>{t('more.discover')}</a>
-          </li>
-        )}
-        {config.groundingMaps && (
-          <li>
-            <a href={routeHref({ name: 'nearby' })}>{t('more.nearby')}</a>
-          </li>
-        )}
-      </ul>
-    </nav>
-  );
-}
-
+/** The way back: results, and every program of the rule set with its result. */
 function BackToResults() {
-  const { t } = useApp();
+  const { t, locale, results } = useApp();
+  const id = useId();
   return (
-    <a className="button quiet back" href={routeHref({ name: 'results' })}>
-      {t('detail.back')}
-    </a>
+    <nav className="back-nav" aria-labelledby={`${id}-title`} data-testid="back-nav">
+      <h2 id={`${id}-title`}>{t('results.title')}</h2>
+      <ul>
+        {PACK.programs.map((p) => {
+          const verdict = results.find((r) => r.programId === p.id)?.verdict;
+          return (
+            <li key={p.id}>
+              <a href={routeHref({ name: 'program', id: p.id })}>{programName(locale, p)}</a>
+              {verdict && <span className="meta"> · {t(dynamicKey(`verdict.${verdict}`))}</span>}
+            </li>
+          );
+        })}
+      </ul>
+      <a className="button quiet back" href={routeHref({ name: 'results' })}>
+        {t('detail.back')}
+      </a>
+    </nav>
   );
 }
 
@@ -58,7 +50,8 @@ export function DiscoverScreen() {
   const config = useConfig();
   const silhouette = useSilhouette();
   const id = useId();
-  const request = useRequest<TaskResult<Leads>>(silhouette ? answerKey('discover', locale, silhouette.canonical) : null, silhouette?.canonical ?? 'none');
+  const heading = useRef<HTMLHeadingElement>(null);
+  const request = useRequest<TaskResult<Leads>>(silhouette ? answerKey('discover', locale, silhouette.canonical) : null, silhouette?.canonical ?? 'none', heading);
   if (!config.groundingSearch || !silhouette) {
     return (
       <div className="screen discover" data-testid="discover-screen" data-enabled="false">
@@ -70,21 +63,22 @@ export function DiscoverScreen() {
     );
   }
   const input = { profile: silhouette.profile, known: asPublic(PACK.programs.map((p) => programName(locale, p))), locale };
-  const find = () => request.start(planDiscover(input), () => discoverLeads(input));
+  const find = () => request.start(planDiscover(input), (signal) => discoverLeads(input, { signal }));
   return (
     <div className="screen discover" data-testid="discover-screen" data-enabled="true">
-      <ScreenHeading>{t('discover.heading')}</ScreenHeading>
+      <ScreenHeading headingRef={heading}>{t('discover.heading')}</ScreenHeading>
       <p className="lead">{t('discover.lead')}</p>
-      {request.state.status === 'idle' && (
+      {['idle', 'skipped', 'cancelled'].includes(request.state.status) && (
         <button type="button" className="button primary" onClick={find}>
           {t('discover.find')}
         </button>
       )}
       <RequestRegion
         state={request.state}
-        lines={silhouetteLines(t, silhouette.profile)}
+        lines={silhouetteLines(t, locale, silhouette.profile)}
         onSend={request.send}
         onSkip={request.skip}
+        onCancel={request.cancel}
         onRetry={find}
         testId="discover-request"
         render={(result) => (
@@ -120,7 +114,8 @@ export function NearbyScreen() {
   const selectId = useId();
   const counties = countiesFor(PACK.jurisdiction);
   const chosen = counties.find((c) => c.id === county) ?? null;
-  const request = useRequest<TaskResult<NearbyHelp>>(chosen ? answerKey('nearby', locale, chosen.id) : null, `county:${chosen?.id ?? ''}`);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const request = useRequest<TaskResult<NearbyHelp>>(chosen ? answerKey('nearby', locale, chosen.id) : null, `county:${chosen?.id ?? ''}`, heading);
   if (!config.groundingMaps || !silhouette) {
     return (
       <div className="screen nearby" data-testid="nearby-screen" data-enabled="false">
@@ -135,11 +130,11 @@ export function NearbyScreen() {
     ? { profile: silhouette.profile, centroid: asPublic(chosen.centroid), countyName: asPublic(chosen.name), locale }
     : null;
   const find = () => {
-    if (input && input.profile.county !== null) request.start(planNearby(input), () => nearbyHelp(input));
+    if (input && input.profile.county !== null) request.start(planNearby(input), (signal) => nearbyHelp(input, { signal }));
   };
   return (
     <div className="screen nearby" data-testid="nearby-screen" data-enabled="true">
-      <ScreenHeading>{t('nearby.title')}</ScreenHeading>
+      <ScreenHeading headingRef={heading}>{t('nearby.title')}</ScreenHeading>
       <p className="lead">{t('nearby.lead')}</p>
       {counties.length === 0 ? (
         <p>{t('nearby.noCounties')}</p>
@@ -156,7 +151,7 @@ export function NearbyScreen() {
           </select>
         </div>
       )}
-      {chosen && request.state.status === 'idle' && (
+      {chosen && ['idle', 'skipped', 'cancelled'].includes(request.state.status) && (
         <button type="button" className="button primary" onClick={find}>
           {t('nearby.find')}
         </button>
@@ -167,6 +162,7 @@ export function NearbyScreen() {
           lines={[t('send.line.area', { value: chosen.name }), t('send.line.jurisdiction', { value: PACK.jurisdiction })]}
           onSend={request.send}
           onSkip={request.skip}
+          onCancel={request.cancel}
           onRetry={find}
           testId="nearby-request"
           render={(result) => (

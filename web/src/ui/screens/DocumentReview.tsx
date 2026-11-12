@@ -3,7 +3,7 @@
 // Confirmed values feed an exact annualIncome into the verdict engine.
 import { useMemo, useState } from 'react';
 import { Raw } from '../../core/types';
-import { parseTypedAmount, type PointerSchema } from '../../core/skeleton';
+import { parseNumber, readTypedAmount, type PointerSchema } from '../../core/skeleton';
 import type { ReviewField, SourceSegment } from '../../core/review';
 import { validatePaystubs, type Annualization, type PayFrequency, type PaystubValues, type ValidationResult } from '../../core/validate';
 import { POINTER_SCHEMAS } from '../../ai/tasks';
@@ -25,10 +25,13 @@ interface Row {
   readonly text: string;
   readonly status: Status;
   readonly source: readonly (readonly SourceSegment[])[];
+  /** The text was typed by the person (section 5.1 applies), not taken from the document. */
+  readonly typed?: boolean;
 }
 
 interface DeductionRow {
   readonly amount: string;
+  readonly typed?: boolean;
   readonly kind: string;
   readonly status: Status;
   readonly source: readonly (readonly SourceSegment[])[];
@@ -65,18 +68,32 @@ function initialRows(review: readonly ReviewField[] | null): { rows: Row[]; dedu
   return { rows, deductions };
 }
 
-const toNumber = (text: string): number | undefined => parseTypedAmount(text);
+/**
+ * A number on this screen: typed text follows skeleton/SPEC.md section 5.1 (at most two digits after
+ * the dot); a value taken from the document follows section 5 (an hourly rate may have more).
+ */
+const toNumber = (text: string, typed = false): number | undefined => {
+  if (!typed) return parseNumber(text.trim());
+  const read = readTypedAmount(text);
+  return read.ok ? read.value : undefined;
+};
+
+/** The message for a typed number that is refused. */
+const typedProblem = (text: string): 'q.error.amountDecimals' | 'review.invalidNumber' | null => {
+  const read = readTypedAmount(text);
+  return read.ok ? null : read.reason === 'decimals' ? 'q.error.amountDecimals' : 'review.invalidNumber';
+};
 
 function toValues(rows: readonly Row[], deductions: readonly DeductionRow[]): PaystubValues {
   const out: Record<string, unknown> = {};
   for (const row of rows) {
     if (row.status !== 'confirmed' || row.text === '') continue;
-    if (row.kind === 'number') out[row.name] = toNumber(row.text);
+    if (row.kind === 'number') out[row.name] = toNumber(row.text, row.typed);
     else out[row.name] = row.text;
   }
-  const confirmed = deductions.filter((d) => d.status === 'confirmed' && toNumber(d.amount) !== undefined);
+  const confirmed = deductions.filter((d) => d.status === 'confirmed' && toNumber(d.amount, d.typed) !== undefined);
   if (confirmed.length > 0) {
-    out['deductions'] = confirmed.map((d) => ({ amount: toNumber(d.amount) as number, ...(d.kind ? { kind: d.kind } : {}) }));
+    out['deductions'] = confirmed.map((d) => ({ amount: toNumber(d.amount, d.typed) as number, ...(d.kind ? { kind: d.kind } : {}) }));
   }
   if (out['payFrequency'] !== undefined) out['payFrequency'] = out['payFrequency'] as PayFrequency;
   return out as PaystubValues;
@@ -129,7 +146,8 @@ export function DocumentReviewScreen() {
   const [deductions, setDeductions] = useState<DeductionRow[]>(initial.deductions);
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
-  const [invalid, setInvalid] = useState(false);
+  const [invalid, setInvalid] = useState<'q.error.amountDecimals' | 'review.invalidNumber' | null>(null);
+  const [deductionProblem, setDeductionProblem] = useState<{ index: number; key: 'q.error.amountDecimals' | 'review.invalidNumber' } | null>(null);
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [typeAnyway, setTypeAnyway] = useState(false);
   const manual = doc.extraction === null;
@@ -145,13 +163,14 @@ export function DocumentReviewScreen() {
 
   const save = (row: Row) => {
     const text = draft.trim();
-    if (row.kind === 'number' && text !== '' && toNumber(text) === undefined) {
-      setInvalid(true);
+    const problem = row.kind === 'number' && text !== '' ? typedProblem(text) : null;
+    if (problem !== null) {
+      setInvalid(problem);
       return;
     }
-    setRow(row.name, { text, status: text === '' ? 'empty' : 'confirmed' });
+    setRow(row.name, { text, status: text === '' ? 'empty' : 'confirmed', typed: true });
     setEditing(null);
-    setInvalid(false);
+    setInvalid(null);
   };
 
   const check = () => {
@@ -166,7 +185,7 @@ export function DocumentReviewScreen() {
     return (
       <div className="screen doc-review" data-testid="not-a-document">
         <ScreenHeading>{t('review.notDocument.title')}</ScreenHeading>
-        <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} />
+        <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
         <p className="lead">{t('review.notDocument.body')}</p>
         <div className="actions">
           <button type="button" className="button primary" onClick={() => setTypeAnyway(true)}>
@@ -234,13 +253,13 @@ export function DocumentReviewScreen() {
                       value={draft}
                       onChange={(e) => {
                         setDraft(e.target.value);
-                        setInvalid(false);
+                        setInvalid(null);
                       }}
                     />
                   )}
                   {invalid && (
-                    <p className="error" role="alert">
-                      {t('review.invalidNumber')}
+                    <p className="error" role="alert" data-testid="review-number-error">
+                      {t(invalid)}
                     </p>
                   )}
                   <div className="actions">
@@ -282,7 +301,7 @@ export function DocumentReviewScreen() {
                       onClick={() => {
                         setEditing(row.name);
                         setDraft(row.text);
-                        setInvalid(false);
+                        setInvalid(null);
                       }}
                     >
                       {t('review.edit')}
@@ -310,7 +329,8 @@ export function DocumentReviewScreen() {
                     value={d.amount}
                     onChange={(e) => {
                       const amount = e.target.value;
-                      setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, amount, status: 'pending' } : x)));
+                      setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, amount, status: 'pending', typed: true } : x)));
+                      setDeductionProblem(null);
                       setResult(null);
                     }}
                   />
@@ -335,6 +355,11 @@ export function DocumentReviewScreen() {
                   </select>
                 </label>
               </div>
+              {deductionProblem?.index === i && (
+                <p className="error" role="alert" data-testid={`deduction-error-${i}`}>
+                  {t(deductionProblem.key)}
+                </p>
+              )}
               <Source lines={d.source} t={t} />
               <div className="actions compact">
                 {d.status === 'pending' && (
@@ -342,7 +367,9 @@ export function DocumentReviewScreen() {
                     type="button"
                     className="button secondary"
                     onClick={() => {
-                      if (toNumber(d.amount) === undefined) return;
+                      const problem = d.typed ? typedProblem(d.amount) : toNumber(d.amount) === undefined ? 'review.invalidNumber' : null;
+                      if (problem !== null) return setDeductionProblem({ index: i, key: problem });
+                      setDeductionProblem(null);
                       setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, status: 'confirmed' } : x)));
                       setResult(null);
                     }}

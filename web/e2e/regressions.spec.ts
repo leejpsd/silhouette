@@ -14,6 +14,52 @@ async function sendSample(page: Page) {
 const noOverflow = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 
 test.describe('regressions', () => {
+  test('a dot followed by three digits is refused with the accepted form, in English and Spanish', async ({ page }) => {
+    await page.goto('/#/q/income');
+    await page.getByLabel('I know the exact amount').check();
+    const field = page.getByLabel('Yearly household income');
+    for (const typed of ['60.000', '1.271']) {
+      await field.fill(typed);
+      await expect(page.getByTestId('amount-understood')).toHaveText('');
+      await page.getByRole('button', { name: /^(Next|See results)$/ }).click();
+      await expect(page.getByRole('alert')).toHaveText('Use a comma for thousands and a dot for cents, like 60,000 or 60,000.50.');
+    }
+    await page.getByLabel('Language').selectOption('es');
+    await page.getByLabel('Sé la cantidad exacta').check();
+    await page.getByLabel('Ingreso anual del hogar').fill('60.000');
+    await page.getByRole('button', { name: /^(Siguiente|Ver resultados)$/ }).click();
+    await expect(page.getByRole('alert')).toContainText('Usa coma para los miles y punto para los centavos');
+    await page.getByLabel('Ingreso anual del hogar').fill('60,000');
+    await expect(page.getByTestId('amount-understood')).not.toHaveText('');
+  });
+
+  test('a document sent when the daily limit is reached says so, and offers typing instead of "try again"', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await fakeCloudModel(page, { status: 429, body: { error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, limit: 500' } } });
+    await page.goto('/#/doc');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    const notice = page.getByTestId('task-error');
+    await expect(notice).toHaveAttribute('data-kind', 'quota-daily');
+    await expect(notice).toContainText("free daily limit has been reached");
+    await expect(page.getByRole('button', { name: 'Try again' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Type the numbers instead' })).toBeVisible();
+  });
+
+  test('on the review screen a typed "1.271" is refused, while document values with more decimals stay', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+    await sendSample(page);
+    const gross = page.getByTestId('field-grossPay');
+    await gross.getByRole('button', { name: 'Change: Gross pay this period' }).click();
+    await gross.getByRole('textbox').fill('1.271');
+    await gross.getByRole('button', { name: 'Save' }).click();
+    await expect(gross.getByTestId('review-number-error')).toHaveText('Use a comma for thousands and a dot for cents, like 60,000 or 60,000.50.');
+    await gross.getByRole('textbox').fill('1,271.88');
+    await gross.getByRole('button', { name: 'Save' }).click();
+    await expect(gross).toHaveAttribute('data-status', 'confirmed');
+  });
+
   test('an exact income with decimals is read as typed, and the understood amount is shown', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Start Quick Check' }).click();
@@ -56,7 +102,9 @@ test.describe('regressions', () => {
     const body = (await model.getByTestId('outbound-payload').textContent()) ?? '';
     for (const part of ['"systemInstruction"', '"generationConfig"', '"responseSchema"', '"required"', 'Document type: paystub']) expect(body).toContain(part);
     expect(body).not.toMatch(/AIza[0-9A-Za-z_-]{20,}/); // API key
-    expect(body).not.toMatch(/token/i);
+    // Exactly the body that was sent: keys that merely contain "token" stay, credentials are never in it.
+    expect(body).toContain('"maxOutputTokens":1024');
+    expect(body).not.toMatch(/appCheck|x-goog|Authorization/i);
 
     await page.getByRole('button', { name: 'Delete everything' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Delete everything' }).click();

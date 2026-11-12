@@ -67,7 +67,7 @@ export function DocumentPreviewScreen() {
       const result = await extractPointers(skeleton, doc.docType, doc.language);
       const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
-      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason } });
+      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause } });
       navigate({ name: 'doc-review' });
     } catch (error) {
       update({ error: classifyError(error) });
@@ -110,9 +110,12 @@ export function DocumentPreviewScreen() {
         <>
           <TaskErrorNotice error={doc.error} />
           <div className="actions">
-            <button type="button" className="button secondary" onClick={() => void send()}>
-              {t('error.retry')}
-            </button>
+            {/* A daily limit does not recover by trying again now. */}
+            {doc.error.kind !== 'quota-daily' && (
+              <button type="button" className="button secondary" onClick={() => void send()}>
+                {t('error.retry')}
+              </button>
+            )}
             <button type="button" className="button secondary" onClick={() => navigate({ name: 'doc-review' })}>
               {t('error.typeInstead')}
             </button>

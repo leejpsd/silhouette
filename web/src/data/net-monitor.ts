@@ -34,24 +34,6 @@ export function aiPayloadText(body: string): { text: string; hasInlineData: bool
   }
 }
 
-const SECRET_KEY = /token|apikey|api_key|^key$|secret|password|authorization/i;
-
-/** The request body formatted for display, with any credential-like field removed. */
-export function displayBody(body: string): string {
-  const scrub = (v: unknown): unknown => {
-    if (Array.isArray(v)) return v.map(scrub);
-    if (v !== null && typeof v === 'object') {
-      return Object.fromEntries(Object.entries(v).filter(([k]) => !SECRET_KEY.test(k)).map(([k, x]) => [k, scrub(x)]));
-    }
-    return v;
-  };
-  try {
-    return JSON.stringify(scrub(JSON.parse(body)), null, 2);
-  } catch {
-    return body;
-  }
-}
-
 /**
  * What each model task sends, keyed by its system instruction (the tasks register it when they build
  * a model). A request is described by the task whose system instruction it carries, so concurrent
@@ -93,13 +75,57 @@ export function classify(url: URL, body: string | null): { channel: OutboundChan
         (model !== undefined ? AI_MODEL_FIELDS.get(model) : undefined) ?? ['model-request']),
     ];
     if (hasInlineData) fields.push('inline-file');
-    return { channel: 'ai-cloud', fields, body: body === null ? undefined : displayBody(body), model };
+    // The body exactly as sent: model request bodies carry no credentials (the API key and the App
+    // Check token travel in headers, which are never recorded).
+    return { channel: 'ai-cloud', fields, body: body ?? undefined, model };
   }
   if (url.hostname === APP_CHECK_HOST) return { channel: 'app-check', fields: ['app-check-token-request'] };
   if (url.hostname.endsWith('firestore.googleapis.com')) return { channel: 'firestore', fields: ['firestore'] };
   if (url.hostname.endsWith('firebaseremoteconfig.googleapis.com')) return { channel: 'remote-config', fields: ['remote-config'] };
   if (url.hostname.endsWith('firebaseinstallations.googleapis.com')) return { channel: 'remote-config', fields: ['installation'] };
   return { channel: 'other', fields: [url.hostname] };
+}
+
+/**
+ * Request bodies the app showed before sending (tasks/requestBody()). When the SDK sends a request
+ * with the same content, these exact bytes are sent instead of the SDK's own serialization, so what
+ * was shown is byte for byte what leaves. A request that carries a shown system instruction but
+ * different content is refused: it would not be the request the person agreed to.
+ */
+const expectedBodies: { body: string; parsed: unknown; system: string | undefined }[] = [];
+
+export function expectRequestBody(body: string): () => void {
+  const entry = { body, parsed: JSON.parse(body) as unknown, system: systemInstructionOf(body) };
+  expectedBodies.push(entry);
+  return () => {
+    const i = expectedBodies.indexOf(entry);
+    if (i !== -1) expectedBodies.splice(i, 1);
+  };
+}
+
+function sameJson(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  const ka = Object.keys(a);
+  const kb = Object.keys(b);
+  if (ka.length !== kb.length) return false;
+  return ka.every((k) => Object.hasOwn(b, k) && sameJson((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+}
+
+/** The bytes to send for an AI request body: the shown body when it is the same request; null when it differs. */
+export function bodyToSend(body: string): string | null {
+  if (expectedBodies.length === 0) return body;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return body;
+  }
+  const match = expectedBodies.find((e) => sameJson(e.parsed, parsed));
+  if (match) return match.body;
+  const system = systemInstructionOf(body);
+  return system !== undefined && expectedBodies.some((e) => e.system === system) ? null : body;
 }
 
 /** Called once, when the first request to Firebase AI Logic in the cloud is about to leave. */
@@ -130,7 +156,15 @@ export function installNetMonitor(target: { fetch: typeof fetch; location: Locat
       const url = new URL(href, target.location.href);
       // data: and blob: URLs are read locally (the SDK uses them to decode images); never network.
       if ((url.protocol === 'https:' || url.protocol === 'http:') && url.origin !== target.location.origin) {
-        const body = typeof init?.body === 'string' ? init.body : null;
+        let body = typeof init?.body === 'string' ? init.body : null;
+        if (body !== null && url.hostname === AI_LOGIC_HOST) {
+          const send = bodyToSend(body);
+          if (send === null) return Promise.reject(new Error('The request differs from the one shown before sending; it was not sent.'));
+          if (send !== body) {
+            body = send;
+            init = { ...init, body: send };
+          }
+        }
         const info = classify(url, body);
         if (info.channel === 'ai-cloud' && !cloudRequestSeen) {
           cloudRequestSeen = true;

@@ -8,7 +8,7 @@ import { rehydrate, skeletonize, type PlaceholderMap, type PointerSchema } from 
 import { canonical, generalize, silhouetteVerdicts, type Bands, type ExactProfile, type GeneralizedProfile, type SilhouetteVerdict } from '../core/generalize';
 import type { RulePack } from '../core/rules';
 import { askChip, discoverLeads, explainProgram, extractPointers, nearbyHelp, planAskChip, planExplain, readAloud, type ProgramFacts, type QuestionChip } from './tasks';
-import { askFreeText, readPhoto } from './on-device';
+import { askFreeText, explainPersonal, readPhoto, type PersonalResult } from './on-device';
 
 declare const rawText: Raw<string>;
 declare const rawSkeletonLike: Raw<Skeleton>;
@@ -23,6 +23,8 @@ declare const programText: Public<ProgramFacts>;
 declare const chip: Public<QuestionChip>;
 declare const pack: RulePack;
 declare const plainVerdict: SilhouetteVerdict;
+declare const rawResult: Raw<PersonalResult>;
+declare const plainResult: PersonalResult;
 declare const rawPhoto: Raw<Blob>;
 declare const plainPhoto: Blob;
 
@@ -55,12 +57,22 @@ export function routingTypeTests(): void {
   void planExplain({ ...input, profile: rehydrate(schema, {}, rawMap) }, 'short');
   // @ts-expect-error Raw profile cannot reach the search for leads.
   void discoverLeads({ profile: rawProfile, known: asPublic([]), locale: 'en' });
-  // A typed question is Raw: it only goes to the ONLY_ON_DEVICE task, and its answer is a plain
-  // string that cannot be read aloud in the cloud.
-  void askFreeText(rawText, input).then((answer) => {
+  // The person's own result is Raw: it only goes to ONLY_ON_DEVICE tasks, and their answers are plain
+  // strings that cannot be read aloud in the cloud.
+  void askFreeText(rawText, rawResult).then((answer) => {
     // @ts-expect-error An answer to a typed question cannot reach the speech model.
     void readAloud(answer.value, 'en');
   });
+  void explainPersonal(rawResult).then((answer) => {
+    // @ts-expect-error An explanation of the person's own result cannot reach the speech model.
+    void readAloud(answer.value, 'en');
+  });
+  // @ts-expect-error The person's own result cannot be a program's public facts.
+  void planExplain({ ...input, program: rawResult }, 'short');
+  // @ts-expect-error The on-device explanation takes the result as Raw, never plain.
+  void explainPersonal(plainResult);
+  // @ts-expect-error Nor the silhouette input of the general explanation.
+  void explainPersonal(input);
   // @ts-expect-error A typed question cannot be a prepared chip.
   void planAskChip(input, { id: 'x', question: rawText });
   // @ts-expect-error mapRaw keeps the result Raw.

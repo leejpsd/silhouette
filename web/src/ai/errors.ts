@@ -7,6 +7,9 @@ export type TaskErrorKind =
   | 'permission' // 403 for another reason (API key restrictions, API disabled for the key)
   | 'api-not-enabled'
   | 'quota'
+  | 'quota-daily' // the free daily limit: trying again in a minute will not help
+  | 'cancelled' // the person cancelled; a late reply is never shown
+  | 'blocked' // the reply stated a result twice (shared/prompts/OUTPUT_CHECKS.md)
   | 'network'
   | 'on-device-unavailable'
   | 'bad-output' // the model answered, but not with JSON of the expected shape
@@ -46,7 +49,10 @@ export function classifyError(error: unknown): TaskError {
   if (code.endsWith('api-not-enabled')) return new TaskError('api-not-enabled', message, status);
   if (status === 401) return new TaskError('app-check', message, status);
   if (status === 403) return new TaskError('permission', message, status);
-  if (status === 429 || lower.includes('quota') || lower.includes('resource_exhausted')) return new TaskError('quota', message, status);
+  if (status === 429 || lower.includes('quota') || lower.includes('resource_exhausted')) {
+    return new TaskError(/per.?day|daily/i.test(message) ? 'quota-daily' : 'quota', message, status);
+  }
+  if (e.name === 'AbortError' && lower.includes('abort')) return new TaskError('cancelled', message, status);
   if (code.endsWith('fetch-error') || e.name === 'TypeError' || lower.includes('failed to fetch') || lower.includes('network')) {
     return new TaskError('network', message, status);
   }

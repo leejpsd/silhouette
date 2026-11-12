@@ -85,7 +85,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.goto('/');
     await completeQuickCheck(page);
     await page.goto('/#/program/utility-discount');
-    await page.getByRole('button', { name: 'Explain this result' }).click();
+    await page.getByRole('button', { name: 'Explain this program' }).click();
     await page.getByText('Show the exact request').click();
     await scan('leaving your device, before Send');
     await page.getByRole('button', { name: 'Send' }).click();

@@ -146,6 +146,15 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(status).toHaveAttribute('data-status', 'available');
   });
 
+  test('the model download does not depend on a task prompt fitting the device model', async ({ page, context }) => {
+    await fakeOnDeviceModel(context, { availability: 'downloadable', replies: {}, initialPromptTooLarge: true });
+    await page.goto('/#/doc');
+    const status = page.getByTestId('model-status');
+    await status.getByRole('button', { name: 'Download the on-device model' }).click();
+    await expect(status).toHaveAttribute('data-status', 'available');
+    await expect(status.getByRole('alert')).toHaveCount(0);
+  });
+
   test('Korean payslip goes to the cloud as a silhouette; the user picks the pay frequency to annualize', async ({ page, context }) => {
     await noOnDeviceModel(context);
     const cloud = await fakeCloudModel(page, { pointers: fixturePointers('payslip-ko-01-correct') });
