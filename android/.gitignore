@@ -1,0 +1,19 @@
+# Gradle and build outputs
+.gradle/
+.kotlin/
+build/
+**/build/
+
+# Local machine configuration (Android SDK path)
+local.properties
+
+# Temporary toolchain bootstrap folders
+.bootstrap/
+
+# IDE files
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
