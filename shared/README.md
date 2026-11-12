@@ -13,12 +13,13 @@ Platform apps treat this folder as **read-only**. A change here is a contract ch
 | `validation/SPEC.md` | Checks on confirmed paystub values and how they become an exact annual income |
 | `rulepacks/SPEC.md` | Rule pack format and the verdict algorithm |
 | `rulepacks/zz-test/` | Synthetic rule pack used only for conformance tests |
-| `rulepacks/us-ca/`, `rulepacks/kr/` | Real rule packs (human-verified; see their README) |
+| `rulepacks/us-ca/` | Place for the California rule pack. It is in preparation and is published here only after every number has been checked by a person against its official source (see its README) |
+| `rulepacks/kr/` | Reserved for a second jurisdiction; not started |
 | `bands/` | Generalization bands per jurisdiction |
 | `prompts/` | Versioned prompts |
 | `copy/` | UI strings. `en.json` is complete; `es.json` and `ko.json` fall back to English for missing keys |
 | `design/tokens.json` | Colors, type scale, spacing (added with the Web reference build) |
-| `fixtures/conformance/` | Input → expected output cases every platform must pass (skeleton, rehydrate, generalize, evaluator, verdict, validate, model-schema) |
+| `fixtures/conformance/` | Input → expected output cases every platform must pass (skeleton, rehydrate with typed amounts, generalize, evaluator, verdict, silhouette-verdict, validate, model-schema, output-check) |
 | `fixtures/canary/` | Documents seeded with canary strings for leak tests |
 | `samples/` | Synthetic documents for the in-app sample mode |
 | `reference/` | Reference implementation (Node, no build step) that generates and checks the fixtures, plus the rule pack linter |
