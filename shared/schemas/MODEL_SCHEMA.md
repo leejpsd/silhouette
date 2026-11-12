@@ -4,7 +4,7 @@ A pointer schema (`schemas/pointer.*.json`) annotates fields with `x-kind` and u
 
 Every platform derives the identical object for its cloud model and for its on-device model. Where a platform's on-device API has no schema parameter (Android's on-device request takes text and images only), the on-device schema object is serialized as JSON and appended to the prompt text after the line `Answer with JSON that matches this schema:`. The reply is untrusted either way and goes through the same validation and rehydration (`skeleton/SPEC.md` section 5).
 
-The derived object:
+Where a schema parameter exists, the object is passed as:
 
 - Firebase AI Logic: `generationConfig.responseJsonSchema` or `responseSchema`;
 - Chrome: `promptOptions.responseConstraint`;
