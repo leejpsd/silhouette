@@ -16,9 +16,12 @@ test('a skeleton never contains a digit or a non-allowlisted word', () => {
     const { skeleton } = s.skeletonize(k.text, allow);
     const stripped = skeleton.replace(/⟦[DNW][0-9]+⟧/g, '');
     assert.doesNotMatch(stripped, /[0-9]/, `${k.id}: digit survived`);
-    for (const word of stripped.match(/[\p{L}\p{M}]+/gu) ?? []) {
+    // Whatever survives is either an explicitly safe character or part of an allowlisted word.
+    const safe = new RegExp(`[${s.SAFE_CLASS}]`, 'u');
+    for (const word of stripped.split(new RegExp(`[${s.SAFE_CLASS}]+`, 'u')).filter(Boolean)) {
       assert.ok(allow.has(word.toLowerCase()), `${k.id}: "${word}" survived but is not allowlisted`);
     }
+    for (const ch of stripped) assert.ok(safe.test(ch) || /[\p{L}\p{M}]/u.test(ch), `${k.id}: U+${ch.codePointAt(0).toString(16)} survived`);
   }
 });
 
@@ -43,6 +46,14 @@ test('the generalized profile carries no exact value', () => {
   assert.deepEqual(Object.keys(JSON.parse(payload)), ['jurisdiction', 'incomeBand', 'householdSize', 'childAgeBands', 'county', 'housing']);
 });
 
+test('allowlists pass the linter', async () => {
+  const { lintAllowlist } = await import('../lint.mjs');
+  for (const locale of ['en', 'es', 'ko']) assert.deepEqual(lintAllowlist(readJson(`../skeleton/allowlist/${locale}.json`)), [], locale);
+  assert.match(lintAllowlist({ words: ['Gross'] }).join(), /not lowercase/);
+  assert.match(lintAllowlist({ words: ['stra\u00DFe'] }).join(), /case mapping/);
+  assert.match(lintAllowlist({ words: ['401k'] }).join(), /other than letters/);
+});
+
 test('the synthetic pack passes the linter and bad packs are caught', async () => {
   const { lintPack } = await import('../lint.mjs');
   const bands = readJson('../bands/zz-test.json');
@@ -54,6 +65,7 @@ test('the synthetic pack passes the linter and bad packs are caught', async () =
   assert.match(broken((p) => { p.programs[0].criteria[0].logic = { between: [1, 2] }; }), /unsupported operator/);
   assert.match(broken((p) => { p.programs[0].criteria[0].logic = { '+': [{ var: 'annualIncome' }, 1] }; }), /does not return a boolean/);
   assert.match(broken((p) => { p.questions.push({ id: 'constructor', type: 'int', sensitive: false }); }), /malformed or reserved/);
+  assert.match(broken((p) => { delete p.constants; }), /constants must be an object/);
   assert.match(broken((p) => { p.programs[0].criteria[0] = { id: 'has-earnings', requires: ['annualIncome'], logic: { '>': [{ var: 'annualIncome' }, 0] } }; }), /compares annualIncome with 0/);
   assert.match(broken((p) => { p.questionOrder = ['householdSize']; }), /questionOrder must list/);
   assert.match(broken((p) => { delete p.questions[0].min; }), /need integer min and max/);

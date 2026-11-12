@@ -19,6 +19,26 @@ export const skeletonCases = [
   { id: 'edge-crlf', locale: 'en', text: 'Gross Pay 10.00\r\nNet Pay 9.00\rTotal 1' },
   { id: 'edge-es', locale: 'es', text: 'Salario bruto: 1,250.00   Empleado: José Ñandú   Fecha de pago: 15/10/2026' },
   { id: 'edge-ids-and-phones', locale: 'en', text: 'SSN: 123-45-6789  Account 000123456  Check No. 5521  555-123-4567' },
+  // Deny by default: anything that is not explicitly safe is masked, whatever the platform's Unicode tables say.
+  { id: 'deny-non-ascii-digits', locale: 'en', text: 'Gross Pay \u0661\u0662\u0663\u0664 \uFF11\uFF12\uFF13 \u00B2\u00B3 \u0967\u0968\u0969 \u2460 \u216B' },
+  { id: 'deny-emoji-and-joiners', locale: 'en', text: 'Name: \u{1F600} \u{1F468}\u200D\u{1F469}\u200D\u{1F467} Net Pay 5' },
+  { id: 'deny-private-use-and-unassigned', locale: 'en', text: 'Pay \uE000 \uF870 \u{2EBF0} \u{1E5D0} \u{10FFFF} Date' },
+  { id: 'deny-zero-width-inside-word', locale: 'en', text: 'Pay\u200BDate Net\u00ADPay \uFEFFGross' },
+  { id: 'deny-control-characters', locale: 'en', text: 'Net\u0000Pay \u0007 Gross\u001FPay \u007F' },
+  { id: 'safe-punctuation-and-currency', locale: 'en', text: 'Gross \u2013 Net \u2014 \u201CPay\u201D \u2026 \u20AC9 \u20A98 \u00A37 \u00A56 5\u00D74\u00F72\u00B11 3\u00B0 \u2022 \u00B7 \u2116 2' },
+  { id: 'safe-unicode-spaces', locale: 'en', text: 'Net\u00A0Pay\u2003Gross\u3000Pay\u202FTotal\u2009YTD' },
+  { id: 'nfc-then-mask', locale: 'en', text: 'Jose\u0301 \u212A \u1100\u1161 Cafe\u0301-Gross 1\u0332' },
+  { id: 'case-mapping-words', locale: 'en', text: '\u039F\u0394\u039F\u03A3 Stra\u00DFe \u0130stanbul GROSS gross Gross PAY' },
+  { id: 'fullwidth-forms', locale: 'ko', text: '\uC9C0\uAE09\uD569\uACC4\uFF1A\uFF12\uFF0C\uFF14\uFF18\uFF15\uFF0C\uFF10\uFF10\uFF10 \uFF08\uC6D0\uFF09 \uFF27\uFF52\uFF4F\uFF53\uFF53' },
+  { id: 'bracket-removal-after-nfc', locale: 'en', text: 'Net \u27E6N1\u27E7 \u27E6\u27E6W9\u27E7 Pay' },
+  // A phrase is masked as a whole: an allowlisted word next to a masked word is part of the same name.
+  { id: 'phrase-name-with-allowlisted-word', locale: 'en', text: 'Employee: Jordan Gross   Employer: Federal Security Services, Medical Group' },
+  { id: 'phrase-joiners', locale: 'en', text: 'Smith & Gross Pay   Lopez, Net   Gross-Smith Pay   Gross Pay / Jordan   Gross Pay: Jordan' },
+  { id: 'phrase-breaks-on-wide-gaps', locale: 'en', text: 'Net Pay  Jordan   Gross Pay\tLopez\nNet Pay\nJordan' },
+  { id: 'phrase-all-allowlisted-stays', locale: 'en', text: 'Federal Income Tax   Social Security   Year to Date Gross Pay' },
+  { id: 'email-and-usernames', locale: 'en', text: 'Contact payroll@brightharbor.example or @pay or john_gross or net_pay' },
+  { id: 'month-name-dates', locale: 'en', text: 'Pay Date: October 17, 2026   Period: Oct. 1 2026 - 15 October 2026   17 de octubre de 2026   Sept 3rd, 2026   MAY 5, 2026' },
+  { id: 'month-name-not-a-date', locale: 'en', text: 'Mayfield 12, 2026   May 2026   3 March 20267   Mar 5   June Carter' },
 ];
 
 export const rehydrateCases = [
@@ -48,7 +68,7 @@ export const rehydrateCases = [
     } },
 ];
 
-export const numberCases = ['1,284.50', '1.284,50', '004417', '12,34', '2,485,000', '18.50', '1,2345', '0', '.5', '7.'];
+export const numberCases = ['1,284.50', '1.284,50', '004417', '12,34', '2,485,000', '18.50', '1,2345', '0', '.5', '7.', '12\n', ' 12', '\uFF11\uFF12', '1e3', '-5', ''];
 
 export const generalizeCases = [
   { id: 'exact-mid-band', exact: { jurisdiction: 'zz-test', annualIncome: 30524.9, householdSize: 3, childAges: [4, 9], county: 'testshire', housing: 'renter' } },
@@ -65,6 +85,10 @@ export const generalizeCases = [
   { id: 'error-county-not-slug', exact: { jurisdiction: 'zz-test', incomeBand: 'A', county: 'Los Angeles/CA' } },
   { id: 'error-housing-unknown', exact: { jurisdiction: 'zz-test', incomeBand: 'A', housing: 'tenant' } },
   { id: 'error-household-fraction', exact: { jurisdiction: 'zz-test', incomeBand: 'A', householdSize: 2.5 } },
+  { id: 'error-county-trailing-newline', exact: { jurisdiction: 'zz-test', incomeBand: 'A', county: 'testshire\n' } },
+  { id: 'error-county-uppercase', exact: { jurisdiction: 'zz-test', incomeBand: 'A', county: 'Testshire' } },
+  { id: 'error-jurisdiction-trailing-newline', exact: { jurisdiction: 'zz-test\n', incomeBand: 'A' } },
+  { id: 'error-band-id-not-exact', exact: { jurisdiction: 'zz-test', incomeBand: 'a' } },
 ];
 
 // Expression evaluator cases (rulepacks/SPEC.md section 3). `data` is shared by all cases.
@@ -119,6 +143,13 @@ export const evaluatorCases = [
   { id: 'error-unknown-operator', expr: { between: [1, 2, 3] } },
   { id: 'error-var-default-form', expr: { var: ['a', 0] } },
   { id: 'error-eq-array', expr: { '==': [{ var: 'list' }, 1] } },
+  // Strings compare by code points: canonically equivalent strings are different strings.
+  { id: 'eq-kelvin-is-not-k', expr: { '==': ['K', '\u212A'] } },
+  { id: 'eq-composed-is-not-decomposed', expr: { '==': ['\u00E9', 'e\u0301'] } },
+  { id: 'in-composed-is-not-decomposed', expr: { in: ['\u00E9', ['e\u0301', 'x']] } },
+  { id: 'var-path-is-exact', expr: { var: 'constants.limit.\uFF13' } },
+  { id: 'float-sum', expr: { '+': [0.1, 0.2] } },
+  { id: 'zero-equals-negative-zero', expr: { '==': [0, { '*': [-1, 0] }] } },
   { id: 'floor', expr: { floor: { '/': [{ var: 'a' }, { var: 'b' }] } } },
   { id: 'floor-negative', expr: { floor: -2.5 } },
   { id: 'error-floor-string', expr: { floor: 'x' } },

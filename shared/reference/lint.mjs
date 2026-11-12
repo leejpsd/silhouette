@@ -41,6 +41,20 @@ function walk(expr, where, errors, reads) {
   args.forEach((e) => walk(e, where, errors, reads));
 }
 
+/** Allowlist words are lowercase NFC, made of letters only, and free of characters whose case mapping differs by platform. */
+export function lintAllowlist(list) {
+  const errors = [];
+  for (const word of list.words ?? []) {
+    if (typeof word !== 'string' || word === '') { errors.push('allowlist: empty or non-string entry'); continue; }
+    if (word !== word.normalize('NFC')) errors.push(`allowlist: "${word}" is not NFC`);
+    if (word !== word.toLowerCase()) errors.push(`allowlist: "${word}" is not lowercase`);
+    if (!/^[\p{L}\p{M}]+$/u.test(word)) errors.push(`allowlist: "${word}" contains something other than letters`);
+    if (/[\u03C3\u03C2\u0130\u0131\u00DF]/u.test(word)) errors.push(`allowlist: "${word}" uses a letter whose case mapping differs across platforms`);
+  }
+  if (new Set(list.words).size !== (list.words ?? []).length) errors.push('allowlist: duplicate entries');
+  return errors;
+}
+
 export function lintBands(bands) {
   const errors = [];
   const list = bands.annualIncome ?? [];
@@ -60,6 +74,7 @@ export function lintBands(bands) {
 export function lintPack(pack, bands) {
   const errors = lintBands(bands);
   if (!SLUG.test(pack.jurisdiction ?? '')) errors.push('pack: jurisdiction must be a slug');
+  if (pack.constants === null || typeof pack.constants !== 'object' || Array.isArray(pack.constants)) errors.push('pack: constants must be an object (use {} when there are none)');
   if (pack.jurisdiction !== bands.jurisdiction) errors.push('pack: jurisdiction differs from bands file');
   const questionIds = new Set();
   for (const q of pack.questions ?? []) {

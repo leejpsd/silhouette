@@ -1,6 +1,7 @@
 {
-  "$id": "pointer.paystub.v1",
+  "$id": "pointer.paystub.v2",
   "description": "Model output for pointer extraction on a paystub skeleton. Values are placeholder references or closed enums, never document text. x-kind tells the Rehydrator how to read each field.",
+  "$comment": "v2: every property is present in the model output, and null means the field is not in the document. The model schema is derived with required + nullable.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -89,6 +90,20 @@
       }
     }
   },
+  "required": [
+    "employerName",
+    "employeeName",
+    "payFrequency",
+    "payDate",
+    "periodStart",
+    "periodEnd",
+    "grossPay",
+    "netPay",
+    "ytdGross",
+    "hoursWorked",
+    "hourlyRate",
+    "deductions"
+  ],
   "$defs": {
     "ref": {
       "type": "string",

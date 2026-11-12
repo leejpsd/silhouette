@@ -3,8 +3,34 @@
 
 // ---------- Skeletonizer ----------
 
-const TOKEN =
-  /([0-9]{1,4}[/.\-][0-9]{1,2}[/.\-][0-9]{1,4})|([0-9]+(?:[.,][0-9]+)*)|([\p{L}\p{M}]+(?:['’\-][\p{L}\p{M}]+)*)|([\s\S])/gu;
+// Characters that are kept verbatim and never belong to a word (skeleton/SPEC.md section 2).
+// Everything that is not listed here, and is not an ASCII digit, is word material and gets masked
+// unless the whole word is allowlisted. The list is explicit so that it does not depend on the
+// Unicode tables of the platform.
+export const SAFE_CLASS =
+  '\\u0009\\u000A\\u0020\\u00A0\\u2000-\\u200A\\u202F\\u205F\\u3000' + // whitespace
+  '\\u0021-\\u002F\\u003A-\\u003F\\u005B-\\u005E\\u0060\\u007B-\\u007E' + // ASCII punctuation and symbols, except @ and _ (they join words: e-mail addresses, user names)
+  '\\u00A2\\u00A3\\u00A5\\u00A7\\u00B0\\u00B1\\u00B6\\u00B7\\u00D7\\u00F7' + // ¢ £ ¥ § ° ± ¶ · × ÷
+  '\\u2013\\u2014\\u2018\\u2019\\u201C\\u201D\\u2022\\u2026\\u20A9\\u20AC\\u2116' + // – — ‘ ’ “ ” • … ₩ € №
+  '\\u3001\\u3002\\u3008-\\u3011\\u3014\\u3015\\u30FB' + // 、。〈〉《》「」『』【】〔〕・
+  '\\uFF01\\uFF05\\uFF08\\uFF09\\uFF0B-\\uFF0F\\uFF1A\\uFF1B\\uFF1D\\uFF1F\\uFF3B\\uFF3D\\uFF5E'; // fullwidth ！％（）＋，－．／：；＝？［］～
+
+const X = `[^0-9${SAFE_CLASS}]`;
+
+// Month names (English full and abbreviated, Spanish full), matched ASCII case-insensitively.
+export const MONTHS = [
+  ['january', 'jan', 'enero'], ['february', 'feb', 'febrero'], ['march', 'mar', 'marzo'], ['april', 'apr', 'abril'],
+  ['may', 'mayo'], ['june', 'jun', 'junio'], ['july', 'jul', 'julio'], ['august', 'aug', 'agosto'],
+  ['september', 'sept', 'sep', 'septiembre', 'setiembre'], ['october', 'oct', 'octubre'],
+  ['november', 'nov', 'noviembre'], ['december', 'dec', 'diciembre'],
+];
+const MONTH = `(?:${MONTHS.flat().sort((a, b) => b.length - a.length || (a < b ? -1 : 1)).join('|')})`;
+// "October 17, 2026", "Oct. 17 2026", "17 October 2026", "17 de octubre de 2026"
+export const MONTH_DATE_SOURCE =
+  `${MONTH}\\.? [0-9]{1,2}(?:st|nd|rd|th)?,? [0-9]{4}(?![0-9])|[0-9]{1,2}(?:st|nd|rd|th)? (?:de )?${MONTH}\\.?,? (?:del? )?[0-9]{4}(?![0-9])`;
+export const TOKEN_SOURCE =
+  `(${MONTH_DATE_SOURCE}|[0-9]{1,4}[/.\\-][0-9]{1,2}[/.\\-][0-9]{1,4})|([0-9]+(?:[.,][0-9]+)*)|(${X}+(?:['\\u2019\\-]${X}+)*)|([\\s\\S])`;
+const TOKEN = new RegExp(TOKEN_SOURCE, 'giu');
 
 export function normalize(text) {
   return text.normalize('NFC').replace(/\r\n?/g, '\n').replace(/[⟦⟧]/g, '');
@@ -17,26 +43,45 @@ function isAllowlisted(word, allow) {
   return lower.split('-').every((part) => allow.has(part));
 }
 
+// Separators that keep two words in the same phrase: "Jordan Gross", "Smith, John", "Smith & Jones".
+const PHRASE_JOINERS = new Set([' ', ', ', ' & ']);
+
 /**
  * @param {string} text Raw document text
- * @param {Set<string>} allow Lowercase allowlist (locale ∪ en)
+ * @param {Set<string>} allow Lowercase allowlist (document language ∪ en)
  * @returns {{skeleton: string, map: Record<string, string>}}
  */
 export function skeletonize(text, allow) {
   const input = normalize(text);
+  // Pass 1: tokens. Consecutive safe characters form one separator token.
+  const tokens = [];
+  for (const m of input.matchAll(TOKEN)) {
+    if (m[1] !== undefined) tokens.push({ kind: 'D', text: m[1] });
+    else if (m[2] !== undefined) tokens.push({ kind: 'N', text: m[2] });
+    else if (m[3] !== undefined) tokens.push({ kind: 'W', text: m[3], keep: isAllowlisted(m[3], allow) });
+    else if (tokens.length && tokens[tokens.length - 1].kind === 'O') tokens[tokens.length - 1].text += m[4];
+    else tokens.push({ kind: 'O', text: m[4] });
+  }
+  // Pass 2: a phrase is masked as a whole. If any word of a phrase is not allowlisted, an allowlisted
+  // neighbour is probably part of the same name ("Jordan Gross", "Federal Security Services").
+  for (let i = 0; i < tokens.length; ) {
+    if (tokens[i].kind !== 'W') { i++; continue; }
+    let j = i;
+    while (j + 2 < tokens.length && tokens[j + 1].kind === 'O' && PHRASE_JOINERS.has(tokens[j + 1].text) && tokens[j + 2].kind === 'W') j += 2;
+    let keep = true;
+    for (let k = i; k <= j; k += 2) keep = keep && tokens[k].keep;
+    for (let k = i; k <= j; k += 2) tokens[k].keep = keep;
+    i = j + 1;
+  }
+  // Pass 3: placeholders, numbered in document order.
   const counters = { D: 0, N: 0, W: 0 };
   const map = {};
   let skeleton = '';
-  const placeholder = (kind, value) => {
-    const id = `${kind}${++counters[kind]}`;
-    map[id] = value;
-    return `⟦${id}⟧`;
-  };
-  for (const m of input.matchAll(TOKEN)) {
-    if (m[1] !== undefined) skeleton += placeholder('D', m[1]);
-    else if (m[2] !== undefined) skeleton += placeholder('N', m[2]);
-    else if (m[3] !== undefined) skeleton += isAllowlisted(m[3], allow) ? m[3] : placeholder('W', m[3]);
-    else skeleton += m[4];
+  for (const t of tokens) {
+    if (t.kind === 'O' || (t.kind === 'W' && t.keep)) { skeleton += t.text; continue; }
+    const id = `${t.kind}${++counters[t.kind]}`;
+    map[id] = t.text;
+    skeleton += `⟦${id}⟧`;
   }
   return { skeleton, map };
 }

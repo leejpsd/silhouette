@@ -40,6 +40,30 @@
     {
       "token": "7.",
       "expected": null
+    },
+    {
+      "token": "12\n",
+      "expected": null
+    },
+    {
+      "token": " 12",
+      "expected": null
+    },
+    {
+      "token": "１２",
+      "expected": null
+    },
+    {
+      "token": "1e3",
+      "expected": null
+    },
+    {
+      "token": "-5",
+      "expected": null
+    },
+    {
+      "token": "",
+      "expected": null
     }
   ],
   "cases": [
@@ -80,6 +104,7 @@
         "N18": "18.44",
         "N19": "335.00",
         "W11": "CA",
+        "W12": "SDI",
         "N20": "15.26",
         "N21": "277.24",
         "N22": "1,100.92"
@@ -191,6 +216,7 @@
         "N18": "18.44",
         "N19": "335.00",
         "W11": "CA",
+        "W12": "SDI",
         "N20": "15.26",
         "N21": "277.24",
         "N22": "1,100.92"

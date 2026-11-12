@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import * as s from './silhouette.mjs';
 import * as c from './cases.mjs';
+import { cases as validateCases } from './validate.cases.mjs';
+import { ValidationInputError, validatePaystubs } from './validate.mjs';
+import { cases as modelSchemaCases, errorCases as modelSchemaErrorCases } from './model-schema.cases.mjs';
+import { toModelSchema } from './model-schema.mjs';
 
 export function build() {
   const bands = c.readJson('../bands/zz-test.json');
@@ -47,6 +51,29 @@ export function build() {
           return { id: k.id, expr: k.expr, expectedError: 'RuleError' };
         }
       }),
+    },
+    'validate.json': {
+      spec: 'validation/SPEC.md v1',
+      cases: validateCases.map((k) => {
+        try {
+          const expected = validatePaystubs(k.stubs, k.jurisdiction);
+          if (k.expectError) throw new Error(`${k.id}: expected ValidationInputError`);
+          return { id: k.id, jurisdiction: k.jurisdiction, stubs: k.stubs, expected };
+        } catch (e) {
+          if (!(e instanceof ValidationInputError) || !k.expectError) throw e;
+          return { id: k.id, jurisdiction: k.jurisdiction, stubs: k.stubs, expectedError: 'ValidationInputError' };
+        }
+      }),
+    },
+    'model-schema.json': {
+      spec: 'schemas/MODEL_SCHEMA.md v1',
+      cases: [
+        ...modelSchemaCases.map((k) => ({ id: k.id, schema: k.schema, options: k.options, expected: toModelSchema(k.schema, k.options) })),
+        ...modelSchemaErrorCases.map((k) => {
+          try { toModelSchema(k.schema); } catch { return { id: k.id, schema: k.schema, options: {}, expectedError: true }; }
+          throw new Error(`${k.id}: expected an error`);
+        }),
+      ],
     },
     'verdict.json': {
       spec: 'rulepacks/SPEC.md v1.2 section 5', pack: 'rulepacks/zz-test/pack.json', bands: 'bands/zz-test.json',

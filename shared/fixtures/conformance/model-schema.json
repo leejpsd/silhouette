@@ -1,0 +1,1366 @@
+{
+  "spec": "schemas/MODEL_SCHEMA.md v1",
+  "cases": [
+    {
+      "id": "paystub-default",
+      "schema": {
+        "$id": "pointer.paystub.v2",
+        "description": "Model output for pointer extraction on a paystub skeleton. Values are placeholder references or closed enums, never document text. x-kind tells the Rehydrator how to read each field.",
+        "$comment": "v2: every property is present in the model output, and null means the field is not in the document. The model schema is derived with required + nullable.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "employerName": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "employeeName": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "payFrequency": {
+            "x-kind": "enum",
+            "enum": [
+              "weekly",
+              "biweekly",
+              "semimonthly",
+              "monthly"
+            ]
+          },
+          "payDate": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "periodStart": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "periodEnd": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "grossPay": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "netPay": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "ytdGross": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "hoursWorked": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "hourlyRate": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "deductions": {
+            "x-kind": "list",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "amount": {
+                  "x-kind": "number",
+                  "$ref": "#/$defs/ref"
+                },
+                "kind": {
+                  "x-kind": "enum",
+                  "enum": [
+                    "federal_tax",
+                    "state_tax",
+                    "social_security",
+                    "medicare",
+                    "retirement",
+                    "health",
+                    "other"
+                  ]
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            }
+          }
+        },
+        "required": [
+          "employerName",
+          "employeeName",
+          "payFrequency",
+          "payDate",
+          "periodStart",
+          "periodEnd",
+          "grossPay",
+          "netPay",
+          "ytdGross",
+          "hoursWorked",
+          "hourlyRate",
+          "deductions"
+        ],
+        "$defs": {
+          "ref": {
+            "type": "string",
+            "pattern": "^[NDW][0-9]+$"
+          },
+          "dateRef": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ref"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "$ref": "#/$defs/ref"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "options": {},
+      "expected": {
+        "description": "Model output for pointer extraction on a paystub skeleton. Values are placeholder references or closed enums, never document text. x-kind tells the Rehydrator how to read each field.",
+        "type": "object",
+        "properties": {
+          "employerName": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "employeeName": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "payFrequency": {
+            "enum": [
+              "weekly",
+              "biweekly",
+              "semimonthly",
+              "monthly"
+            ],
+            "type": "string"
+          },
+          "payDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "periodStart": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "grossPay": {
+            "type": "string"
+          },
+          "netPay": {
+            "type": "string"
+          },
+          "ytdGross": {
+            "type": "string"
+          },
+          "hoursWorked": {
+            "type": "string"
+          },
+          "hourlyRate": {
+            "type": "string"
+          },
+          "deductions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "federal_tax",
+                    "state_tax",
+                    "social_security",
+                    "medicare",
+                    "retirement",
+                    "health",
+                    "other"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            }
+          }
+        },
+        "required": [
+          "employerName",
+          "employeeName",
+          "payFrequency",
+          "payDate",
+          "periodStart",
+          "periodEnd",
+          "grossPay",
+          "netPay",
+          "ytdGross",
+          "hoursWorked",
+          "hourlyRate",
+          "deductions"
+        ]
+      }
+    },
+    {
+      "id": "paystub-required-nullable-openapi",
+      "schema": {
+        "$id": "pointer.paystub.v2",
+        "description": "Model output for pointer extraction on a paystub skeleton. Values are placeholder references or closed enums, never document text. x-kind tells the Rehydrator how to read each field.",
+        "$comment": "v2: every property is present in the model output, and null means the field is not in the document. The model schema is derived with required + nullable.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "employerName": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "employeeName": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "payFrequency": {
+            "x-kind": "enum",
+            "enum": [
+              "weekly",
+              "biweekly",
+              "semimonthly",
+              "monthly"
+            ]
+          },
+          "payDate": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "periodStart": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "periodEnd": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "grossPay": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "netPay": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "ytdGross": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "hoursWorked": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "hourlyRate": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "deductions": {
+            "x-kind": "list",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "amount": {
+                  "x-kind": "number",
+                  "$ref": "#/$defs/ref"
+                },
+                "kind": {
+                  "x-kind": "enum",
+                  "enum": [
+                    "federal_tax",
+                    "state_tax",
+                    "social_security",
+                    "medicare",
+                    "retirement",
+                    "health",
+                    "other"
+                  ]
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            }
+          }
+        },
+        "required": [
+          "employerName",
+          "employeeName",
+          "payFrequency",
+          "payDate",
+          "periodStart",
+          "periodEnd",
+          "grossPay",
+          "netPay",
+          "ytdGross",
+          "hoursWorked",
+          "hourlyRate",
+          "deductions"
+        ],
+        "$defs": {
+          "ref": {
+            "type": "string",
+            "pattern": "^[NDW][0-9]+$"
+          },
+          "dateRef": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ref"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "$ref": "#/$defs/ref"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "requiredNullable": true,
+        "dialect": "openapi"
+      },
+      "expected": {
+        "description": "Model output for pointer extraction on a paystub skeleton. Values are placeholder references or closed enums, never document text. x-kind tells the Rehydrator how to read each field.",
+        "type": "object",
+        "properties": {
+          "employerName": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "employeeName": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "payFrequency": {
+            "enum": [
+              "weekly",
+              "biweekly",
+              "semimonthly",
+              "monthly"
+            ],
+            "type": "string",
+            "nullable": true
+          },
+          "payDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "nullable": true
+          },
+          "periodStart": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "nullable": true
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "nullable": true
+          },
+          "grossPay": {
+            "type": "string",
+            "nullable": true
+          },
+          "netPay": {
+            "type": "string",
+            "nullable": true
+          },
+          "ytdGross": {
+            "type": "string",
+            "nullable": true
+          },
+          "hoursWorked": {
+            "type": "string",
+            "nullable": true
+          },
+          "hourlyRate": {
+            "type": "string",
+            "nullable": true
+          },
+          "deductions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "federal_tax",
+                    "state_tax",
+                    "social_security",
+                    "medicare",
+                    "retirement",
+                    "health",
+                    "other"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "employerName",
+          "employeeName",
+          "payFrequency",
+          "payDate",
+          "periodStart",
+          "periodEnd",
+          "grossPay",
+          "netPay",
+          "ytdGross",
+          "hoursWorked",
+          "hourlyRate",
+          "deductions"
+        ]
+      }
+    },
+    {
+      "id": "paystub-required-nullable-jsonschema",
+      "schema": {
+        "$id": "pointer.paystub.v2",
+        "description": "Model output for pointer extraction on a paystub skeleton. Values are placeholder references or closed enums, never document text. x-kind tells the Rehydrator how to read each field.",
+        "$comment": "v2: every property is present in the model output, and null means the field is not in the document. The model schema is derived with required + nullable.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "employerName": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "employeeName": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "payFrequency": {
+            "x-kind": "enum",
+            "enum": [
+              "weekly",
+              "biweekly",
+              "semimonthly",
+              "monthly"
+            ]
+          },
+          "payDate": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "periodStart": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "periodEnd": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "grossPay": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "netPay": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "ytdGross": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "hoursWorked": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "hourlyRate": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "deductions": {
+            "x-kind": "list",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "amount": {
+                  "x-kind": "number",
+                  "$ref": "#/$defs/ref"
+                },
+                "kind": {
+                  "x-kind": "enum",
+                  "enum": [
+                    "federal_tax",
+                    "state_tax",
+                    "social_security",
+                    "medicare",
+                    "retirement",
+                    "health",
+                    "other"
+                  ]
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            }
+          }
+        },
+        "required": [
+          "employerName",
+          "employeeName",
+          "payFrequency",
+          "payDate",
+          "periodStart",
+          "periodEnd",
+          "grossPay",
+          "netPay",
+          "ytdGross",
+          "hoursWorked",
+          "hourlyRate",
+          "deductions"
+        ],
+        "$defs": {
+          "ref": {
+            "type": "string",
+            "pattern": "^[NDW][0-9]+$"
+          },
+          "dateRef": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ref"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "$ref": "#/$defs/ref"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "requiredNullable": true,
+        "dialect": "jsonschema"
+      },
+      "expected": {
+        "description": "Model output for pointer extraction on a paystub skeleton. Values are placeholder references or closed enums, never document text. x-kind tells the Rehydrator how to read each field.",
+        "type": "object",
+        "properties": {
+          "employerName": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "employeeName": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "payFrequency": {
+            "enum": [
+              "weekly",
+              "biweekly",
+              "semimonthly",
+              "monthly",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "payDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "periodStart": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "grossPay": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "netPay": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ytdGross": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hoursWorked": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hourlyRate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deductions": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "federal_tax",
+                    "state_tax",
+                    "social_security",
+                    "medicare",
+                    "retirement",
+                    "health",
+                    "other"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            }
+          }
+        },
+        "required": [
+          "employerName",
+          "employeeName",
+          "payFrequency",
+          "payDate",
+          "periodStart",
+          "periodEnd",
+          "grossPay",
+          "netPay",
+          "ytdGross",
+          "hoursWorked",
+          "hourlyRate",
+          "deductions"
+        ]
+      }
+    },
+    {
+      "id": "lease-default",
+      "schema": {
+        "$id": "pointer.lease.v2",
+        "description": "Model output for pointer extraction on a lease skeleton.",
+        "$comment": "v2: every property is present in the model output, and null means the field is not in the document. The model schema is derived with required + nullable.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenantNames": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "landlordName": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "monthlyRent": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "deposit": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "leaseStart": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "leaseEnd": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "occupantCount": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "tenantNames",
+          "landlordName",
+          "monthlyRent",
+          "deposit",
+          "leaseStart",
+          "leaseEnd",
+          "occupantCount"
+        ],
+        "$defs": {
+          "ref": {
+            "type": "string",
+            "pattern": "^[NDW][0-9]+$"
+          },
+          "dateRef": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ref"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "$ref": "#/$defs/ref"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "options": {},
+      "expected": {
+        "description": "Model output for pointer extraction on a lease skeleton.",
+        "type": "object",
+        "properties": {
+          "tenantNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "landlordName": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "monthlyRent": {
+            "type": "string"
+          },
+          "deposit": {
+            "type": "string"
+          },
+          "leaseStart": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "leaseEnd": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "occupantCount": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenantNames",
+          "landlordName",
+          "monthlyRent",
+          "deposit",
+          "leaseStart",
+          "leaseEnd",
+          "occupantCount"
+        ]
+      }
+    },
+    {
+      "id": "lease-required-nullable-jsonschema",
+      "schema": {
+        "$id": "pointer.lease.v2",
+        "description": "Model output for pointer extraction on a lease skeleton.",
+        "$comment": "v2: every property is present in the model output, and null means the field is not in the document. The model schema is derived with required + nullable.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenantNames": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "landlordName": {
+            "x-kind": "text",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "monthlyRent": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "deposit": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "leaseStart": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "leaseEnd": {
+            "x-kind": "date",
+            "$ref": "#/$defs/dateRef"
+          },
+          "occupantCount": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "tenantNames",
+          "landlordName",
+          "monthlyRent",
+          "deposit",
+          "leaseStart",
+          "leaseEnd",
+          "occupantCount"
+        ],
+        "$defs": {
+          "ref": {
+            "type": "string",
+            "pattern": "^[NDW][0-9]+$"
+          },
+          "dateRef": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ref"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "$ref": "#/$defs/ref"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "requiredNullable": true,
+        "dialect": "jsonschema"
+      },
+      "expected": {
+        "description": "Model output for pointer extraction on a lease skeleton.",
+        "type": "object",
+        "properties": {
+          "tenantNames": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "landlordName": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "monthlyRent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deposit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "leaseStart": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "leaseEnd": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occupantCount": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "tenantNames",
+          "landlordName",
+          "monthlyRent",
+          "deposit",
+          "leaseStart",
+          "leaseEnd",
+          "occupantCount"
+        ]
+      }
+    },
+    {
+      "id": "ref-chain-and-sibling-keys",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "$ref": "#/$defs/outer",
+            "description": "sibling key kept"
+          }
+        },
+        "$defs": {
+          "outer": {
+            "$ref": "#/$defs/inner"
+          },
+          "inner": {
+            "type": "string",
+            "pattern": "^N[0-9]+$"
+          }
+        }
+      },
+      "options": {},
+      "expected": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "string",
+            "description": "sibling key kept"
+          }
+        }
+      }
+    },
+    {
+      "id": "enum-only-gets-string-type",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "x-kind": "enum",
+            "enum": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      },
+      "options": {},
+      "expected": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "enum": [
+              "a",
+              "b"
+            ],
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "one-of-becomes-any-of",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "d": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "requiredNullable": true,
+        "dialect": "jsonschema"
+      },
+      "expected": {
+        "type": "object",
+        "properties": {
+          "d": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "d"
+        ]
+      }
+    },
+    {
+      "id": "enum-nullable-jsonschema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "enum": [
+              "x"
+            ]
+          }
+        }
+      },
+      "options": {
+        "requiredNullable": true,
+        "dialect": "jsonschema"
+      },
+      "expected": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "enum": [
+              "x",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "f"
+        ]
+      }
+    },
+    {
+      "id": "nested-list-items-keep-their-required",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "list": {
+            "x-kind": "list",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "amount": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            }
+          }
+        }
+      },
+      "options": {
+        "requiredNullable": true,
+        "dialect": "openapi"
+      },
+      "expected": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "list"
+        ]
+      }
+    },
+    {
+      "id": "external-ref-rejected",
+      "schema": {
+        "properties": {
+          "a": {
+            "$ref": "other.json#/x"
+          }
+        }
+      },
+      "options": {},
+      "expectedError": true
+    },
+    {
+      "id": "unresolved-ref-rejected",
+      "schema": {
+        "properties": {
+          "a": {
+            "$ref": "#/$defs/missing"
+          }
+        }
+      },
+      "options": {},
+      "expectedError": true
+    }
+  ]
+}

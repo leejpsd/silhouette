@@ -1,4 +1,4 @@
-# Rule pack specification (v1.2)
+# Rule pack specification (v1.3)
 
 A rule pack describes the programs of one jurisdiction. Eligibility is decided by this deterministic engine. No model is involved.
 
@@ -30,7 +30,7 @@ Labels live in `rulepacks/{jurisdiction}/copy/{locale}.json` with these keys. Ev
 | Field | Meaning |
 |---|---|
 | `jurisdiction`, `version`, `verifiedOn` | Identity and sign-off date (`null` until verified) |
-| `constants` | Named numbers and lookup tables used by the rules |
+| `constants` | Named numbers and lookup tables used by the rules. Required; use `{}` when there are none |
 | `questions[]` | Questions the app asks. `type` is `int` (with integer `min` and `max`), `bool`, `enum` (one of `values`) or `multi` (a list drawn from `values`). Every question can be skipped. `sensitive: true` means the answer is `Raw`, is asked with the "never leaves your device" note, and never feeds the Generalizer |
 | `questionOrder` | Optional. Every question id plus the reserved step id `"income"`, in the order the app asks them. Default: `"income"` first, then `questions[]` order |
 | `programs[].criteria[]` | `{ id, requires[], logic, uncertainIf? }`. `logic` is an expression (section 3) that returns true or false. `requires` lists every variable the criterion reads; it is documentation checked by the linter, and the engine does not use it |
@@ -59,6 +59,8 @@ A strict, typed subset of JSON Logic with **three-valued logic**. Each platform 
 
 - **Unknown.** Reading a variable the user has not answered gives the value *unknown* and records the variable's name. For every operator other than `and`, `or` and `if`, the argument count is checked first; then, if any operand is unknown, the result is unknown and no type check runs. Unknown is never a `RuleError`.
 - Numbers are finite IEEE-754 doubles.
+- **Strings compare by code point.** `==`, `!=`, `in` and `var` paths never treat canonically equivalent strings as equal (the Kelvin sign U+212A is not `K`). Use an exact comparison even where the platform's default string equality is looser.
+- Fixtures compare numbers by IEEE value: `0` equals `-0`, and `0.1 + 0.2` is `0.30000000000000004`.
 - A value that is not an object evaluates to itself. A list evaluates element by element. An object must have exactly one key, which is the operator.
 - Any violation (wrong type, wrong argument count, unknown operator) raises `RuleError`. A pack that raises `RuleError` is invalid and must not ship; `reference/lint.mjs` checks this at authoring time.
 - A criterion's `logic` and `uncertainIf` must return a boolean or unknown. `amount` must return a number or unknown.
@@ -127,6 +129,8 @@ The result lists `dependsOn` sorted, without duplicates.
 - `householdSize`: the integer, or `"{cap}+"` when it exceeds `householdSizeCap`.
 - `childAgeBands`: the ids of bands that contain at least one child's age, **in bands-file order**. Ages outside every band are ignored. An answered empty list gives `[]`.
 - `county`: a lowercase slug (`^[a-z0-9]+(?:-[a-z0-9]+)*$`). `housing`: `renter`, `owner` or `other`.
+
+Patterns match the **whole** string. In ICU and Java, `$` also matches before a final line break, which would accept `"testshire\n"`; use `\z` or a full-match call. Band ids are compared exactly, by code point. `householdSizeCap` in the bands file is a positive integer.
 
 **Unanswered fields are `null`.** The user may skip questions, and a partial silhouette is still valid. A task that needs a specific field (for example `nearby.help` needs `county`) is unavailable until that field is answered.
 

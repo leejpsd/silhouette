@@ -9,7 +9,8 @@ Platform apps treat this folder as **read-only**. A change here is a contract ch
 | `routing.json` | Which task uses which inference mode, and why |
 | `skeleton/SPEC.md` | The Skeletonizer: how a document becomes a document silhouette |
 | `skeleton/allowlist/*.json` | Words that survive skeletonization, per language |
-| `schemas/` | JSON Schemas: pointer-extraction output (paystub, lease), generalized profile |
+| `schemas/` | JSON Schemas: pointer-extraction output (paystub, lease), generalized profile, and `MODEL_SCHEMA.md`: how a pointer schema becomes the schema sent to a model |
+| `validation/SPEC.md` | Checks on confirmed paystub values and how they become an exact annual income |
 | `rulepacks/SPEC.md` | Rule pack format and the verdict algorithm |
 | `rulepacks/zz-test/` | Synthetic rule pack used only for conformance tests |
 | `rulepacks/us-ca/`, `rulepacks/kr/` | Real rule packs (human-verified; see their README) |
@@ -17,7 +18,7 @@ Platform apps treat this folder as **read-only**. A change here is a contract ch
 | `prompts/` | Versioned prompts |
 | `copy/` | UI strings. `en.json` is complete; `es.json` and `ko.json` fall back to English for missing keys |
 | `design/tokens.json` | Colors, type scale, spacing (added with the Web reference build) |
-| `fixtures/conformance/` | Input → expected output cases every platform must pass (skeleton, rehydrate, generalize, evaluator, verdict) |
+| `fixtures/conformance/` | Input → expected output cases every platform must pass (skeleton, rehydrate, generalize, evaluator, verdict, validate, model-schema) |
 | `fixtures/canary/` | Documents seeded with canary strings for leak tests |
 | `samples/` | Synthetic documents for the in-app sample mode |
 | `reference/` | Reference implementation (Node, no build step) that generates and checks the fixtures, plus the rule pack linter |
@@ -39,6 +40,4 @@ npm run generate    # rewrites fixtures from the cases in cases.mjs
 
 ## Not yet specified (next contract version)
 
-- Validation and annualization: sum checks, period checks, YTD-based annualization, date parsing per jurisdiction.
 - Real rule packs for `us-ca` and `kr` (awaiting human verification of every number).
-- Design tokens.

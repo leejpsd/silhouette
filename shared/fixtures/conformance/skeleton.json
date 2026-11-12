@@ -6,7 +6,7 @@
       "locale": "en",
       "input": "NORTHWIND STAFFING LLC                         Earnings Statement\nEmployee: Maria Lopez            Employee ID: 004417\nAddress: 1420 Juniper Ave, Los Angeles, CA 90011\nPay Period: 10/01/2026 - 10/15/2026      Pay Date: 10/20/2026\nPay Frequency: Semi-Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           18.50     62.00     1,147.00       21,793.00\nOvertime          27.75     4.50      124.88         1,310.25\nGross Pay                             1,271.88       23,103.25\n\nDeductions                            Current        YTD\nFederal Income Tax                    58.40          1,061.10\nSocial Security                       78.86          1,432.40\nMedicare                              18.44          335.00\nCA SDI                                15.26          277.24\nNet Pay                               1,100.92\n",
       "expected": {
-        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                         Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧            Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧ ⟦W9⟧, ⟦W10⟧ ⟦N3⟧\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\nPay Frequency: Semi-Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           ⟦N4⟧     ⟦N5⟧     ⟦N6⟧       ⟦N7⟧\nOvertime          ⟦N8⟧     ⟦N9⟧      ⟦N10⟧         ⟦N11⟧\nGross Pay                             ⟦N12⟧       ⟦N13⟧\n\nDeductions                            Current        YTD\nFederal Income Tax                    ⟦N14⟧          ⟦N15⟧\nSocial Security                       ⟦N16⟧          ⟦N17⟧\nMedicare                              ⟦N18⟧          ⟦N19⟧\n⟦W11⟧ SDI                                ⟦N20⟧          ⟦N21⟧\nNet Pay                               ⟦N22⟧\n",
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                         Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧            Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧ ⟦W9⟧, ⟦W10⟧ ⟦N3⟧\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\nPay Frequency: Semi-Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           ⟦N4⟧     ⟦N5⟧     ⟦N6⟧       ⟦N7⟧\nOvertime          ⟦N8⟧     ⟦N9⟧      ⟦N10⟧         ⟦N11⟧\nGross Pay                             ⟦N12⟧       ⟦N13⟧\n\nDeductions                            Current        YTD\nFederal Income Tax                    ⟦N14⟧          ⟦N15⟧\nSocial Security                       ⟦N16⟧          ⟦N17⟧\nMedicare                              ⟦N18⟧          ⟦N19⟧\n⟦W11⟧ ⟦W12⟧                                ⟦N20⟧          ⟦N21⟧\nNet Pay                               ⟦N22⟧\n",
         "map": {
           "W1": "NORTHWIND",
           "W2": "STAFFING",
@@ -41,6 +41,7 @@
           "N18": "18.44",
           "N19": "335.00",
           "W11": "CA",
+          "W12": "SDI",
           "N20": "15.26",
           "N21": "277.24",
           "N22": "1,100.92"
@@ -138,9 +139,11 @@
       "locale": "en",
       "input": "Net Pay ⟦N1⟧ 900.10 ⟧⟦",
       "expected": {
-        "skeleton": "Net Pay ⟦W1⟧⟦N1⟧ ⟦N2⟧ ",
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧⟦N1⟧ ⟦N2⟧ ",
         "map": {
-          "W1": "N",
+          "W1": "Net",
+          "W2": "Pay",
+          "W3": "N",
           "N1": "1",
           "N2": "900.10"
         }
@@ -186,6 +189,289 @@
           "N3": "555",
           "N4": "123",
           "N5": "4567"
+        }
+      }
+    },
+    {
+      "id": "deny-non-ascii-digits",
+      "locale": "en",
+      "input": "Gross Pay ١٢٣٤ １２３ ²³ १२३ ① Ⅻ",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧ ⟦W8⟧",
+        "map": {
+          "W1": "Gross",
+          "W2": "Pay",
+          "W3": "١٢٣٤",
+          "W4": "１２３",
+          "W5": "²³",
+          "W6": "१२३",
+          "W7": "①",
+          "W8": "Ⅻ"
+        }
+      }
+    },
+    {
+      "id": "deny-emoji-and-joiners",
+      "locale": "en",
+      "input": "Name: 😀 👨‍👩‍👧 Net Pay 5",
+      "expected": {
+        "skeleton": "Name: ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦N1⟧",
+        "map": {
+          "W1": "😀",
+          "W2": "👨‍👩‍👧",
+          "W3": "Net",
+          "W4": "Pay",
+          "N1": "5"
+        }
+      }
+    },
+    {
+      "id": "deny-private-use-and-unassigned",
+      "locale": "en",
+      "input": "Pay   𮯰 𞗐 􏿿 Date",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧",
+        "map": {
+          "W1": "Pay",
+          "W2": "",
+          "W3": "",
+          "W4": "𮯰",
+          "W5": "𞗐",
+          "W6": "􏿿",
+          "W7": "Date"
+        }
+      }
+    },
+    {
+      "id": "deny-zero-width-inside-word",
+      "locale": "en",
+      "input": "Pay​Date Net­Pay ﻿Gross",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧",
+        "map": {
+          "W1": "Pay​Date",
+          "W2": "Net­Pay",
+          "W3": "﻿Gross"
+        }
+      }
+    },
+    {
+      "id": "deny-control-characters",
+      "locale": "en",
+      "input": "Net\u0000Pay \u0007 Gross\u001fPay ",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧",
+        "map": {
+          "W1": "Net\u0000Pay",
+          "W2": "\u0007",
+          "W3": "Gross\u001fPay",
+          "W4": ""
+        }
+      }
+    },
+    {
+      "id": "safe-punctuation-and-currency",
+      "locale": "en",
+      "input": "Gross – Net — “Pay” … €9 ₩8 £7 ¥6 5×4÷2±1 3° • · № 2",
+      "expected": {
+        "skeleton": "Gross – Net — “Pay” … €⟦N1⟧ ₩⟦N2⟧ £⟦N3⟧ ¥⟦N4⟧ ⟦N5⟧×⟦N6⟧÷⟦N7⟧±⟦N8⟧ ⟦N9⟧° • · № ⟦N10⟧",
+        "map": {
+          "N1": "9",
+          "N2": "8",
+          "N3": "7",
+          "N4": "6",
+          "N5": "5",
+          "N6": "4",
+          "N7": "2",
+          "N8": "1",
+          "N9": "3",
+          "N10": "2"
+        }
+      }
+    },
+    {
+      "id": "safe-unicode-spaces",
+      "locale": "en",
+      "input": "Net Pay Gross　Pay Total YTD",
+      "expected": {
+        "skeleton": "Net Pay Gross　Pay Total YTD",
+        "map": {}
+      }
+    },
+    {
+      "id": "nfc-then-mask",
+      "locale": "en",
+      "input": "José K 가 Café-Gross 1̲",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦N1⟧⟦W5⟧",
+        "map": {
+          "W1": "José",
+          "W2": "K",
+          "W3": "가",
+          "W4": "Café-Gross",
+          "N1": "1",
+          "W5": "̲"
+        }
+      }
+    },
+    {
+      "id": "case-mapping-words",
+      "locale": "en",
+      "input": "ΟΔΟΣ Straße İstanbul GROSS gross Gross PAY",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧",
+        "map": {
+          "W1": "ΟΔΟΣ",
+          "W2": "Straße",
+          "W3": "İstanbul",
+          "W4": "GROSS",
+          "W5": "gross",
+          "W6": "Gross",
+          "W7": "PAY"
+        }
+      }
+    },
+    {
+      "id": "fullwidth-forms",
+      "locale": "ko",
+      "input": "지급합계：２，４８５，０００ （원） Ｇｒｏｓｓ",
+      "expected": {
+        "skeleton": "지급합계：⟦W1⟧，⟦W2⟧，⟦W3⟧ （원） ⟦W4⟧",
+        "map": {
+          "W1": "２",
+          "W2": "４８５",
+          "W3": "０００",
+          "W4": "Ｇｒｏｓｓ"
+        }
+      }
+    },
+    {
+      "id": "bracket-removal-after-nfc",
+      "locale": "en",
+      "input": "Net ⟦N1⟧ ⟦⟦W9⟧ Pay",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧⟦N1⟧ ⟦W3⟧⟦N2⟧ Pay",
+        "map": {
+          "W1": "Net",
+          "W2": "N",
+          "N1": "1",
+          "W3": "W",
+          "N2": "9"
+        }
+      }
+    },
+    {
+      "id": "phrase-name-with-allowlisted-word",
+      "locale": "en",
+      "input": "Employee: Jordan Gross   Employer: Federal Security Services, Medical Group",
+      "expected": {
+        "skeleton": "Employee: ⟦W1⟧ ⟦W2⟧   Employer: ⟦W3⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧ ⟦W7⟧",
+        "map": {
+          "W1": "Jordan",
+          "W2": "Gross",
+          "W3": "Federal",
+          "W4": "Security",
+          "W5": "Services",
+          "W6": "Medical",
+          "W7": "Group"
+        }
+      }
+    },
+    {
+      "id": "phrase-joiners",
+      "locale": "en",
+      "input": "Smith & Gross Pay   Lopez, Net   Gross-Smith Pay   Gross Pay / Jordan   Gross Pay: Jordan",
+      "expected": {
+        "skeleton": "⟦W1⟧ & ⟦W2⟧ ⟦W3⟧   ⟦W4⟧, ⟦W5⟧   ⟦W6⟧ ⟦W7⟧   Gross Pay / ⟦W8⟧   Gross Pay: ⟦W9⟧",
+        "map": {
+          "W1": "Smith",
+          "W2": "Gross",
+          "W3": "Pay",
+          "W4": "Lopez",
+          "W5": "Net",
+          "W6": "Gross-Smith",
+          "W7": "Pay",
+          "W8": "Jordan",
+          "W9": "Jordan"
+        }
+      }
+    },
+    {
+      "id": "phrase-breaks-on-wide-gaps",
+      "locale": "en",
+      "input": "Net Pay  Jordan   Gross Pay\tLopez\nNet Pay\nJordan",
+      "expected": {
+        "skeleton": "Net Pay  ⟦W1⟧   Gross Pay\t⟦W2⟧\nNet Pay\n⟦W3⟧",
+        "map": {
+          "W1": "Jordan",
+          "W2": "Lopez",
+          "W3": "Jordan"
+        }
+      }
+    },
+    {
+      "id": "phrase-all-allowlisted-stays",
+      "locale": "en",
+      "input": "Federal Income Tax   Social Security   Year to Date Gross Pay",
+      "expected": {
+        "skeleton": "Federal Income Tax   Social Security   Year to Date Gross Pay",
+        "map": {}
+      }
+    },
+    {
+      "id": "email-and-usernames",
+      "locale": "en",
+      "input": "Contact payroll@brightharbor.example or @pay or john_gross or net_pay",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧.⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧ ⟦W8⟧ ⟦W9⟧",
+        "map": {
+          "W1": "Contact",
+          "W2": "payroll@brightharbor",
+          "W3": "example",
+          "W4": "or",
+          "W5": "@pay",
+          "W6": "or",
+          "W7": "john_gross",
+          "W8": "or",
+          "W9": "net_pay"
+        }
+      }
+    },
+    {
+      "id": "month-name-dates",
+      "locale": "en",
+      "input": "Pay Date: October 17, 2026   Period: Oct. 1 2026 - 15 October 2026   17 de octubre de 2026   Sept 3rd, 2026   MAY 5, 2026",
+      "expected": {
+        "skeleton": "Pay Date: ⟦D1⟧   Period: ⟦D2⟧ - ⟦D3⟧   ⟦D4⟧   ⟦D5⟧   ⟦D6⟧",
+        "map": {
+          "D1": "October 17, 2026",
+          "D2": "Oct. 1 2026",
+          "D3": "15 October 2026",
+          "D4": "17 de octubre de 2026",
+          "D5": "Sept 3rd, 2026",
+          "D6": "MAY 5, 2026"
+        }
+      }
+    },
+    {
+      "id": "month-name-not-a-date",
+      "locale": "en",
+      "input": "Mayfield 12, 2026   May 2026   3 March 20267   Mar 5   June Carter",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦N1⟧, ⟦N2⟧   ⟦W2⟧ ⟦N3⟧   ⟦N4⟧ ⟦W3⟧ ⟦N5⟧   ⟦W4⟧ ⟦N6⟧   ⟦W5⟧ ⟦W6⟧",
+        "map": {
+          "W1": "Mayfield",
+          "N1": "12",
+          "N2": "2026",
+          "W2": "May",
+          "N3": "2026",
+          "N4": "3",
+          "W3": "March",
+          "N5": "20267",
+          "W4": "Mar",
+          "N6": "5",
+          "W5": "June",
+          "W6": "Carter"
         }
       }
     }

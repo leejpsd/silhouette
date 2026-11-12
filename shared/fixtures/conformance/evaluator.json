@@ -589,6 +589,71 @@
       "expectedError": "RuleError"
     },
     {
+      "id": "eq-kelvin-is-not-k",
+      "expr": {
+        "==": [
+          "K",
+          "K"
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "eq-composed-is-not-decomposed",
+      "expr": {
+        "==": [
+          "é",
+          "é"
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "in-composed-is-not-decomposed",
+      "expr": {
+        "in": [
+          "é",
+          [
+            "é",
+            "x"
+          ]
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "var-path-is-exact",
+      "expr": {
+        "var": "constants.limit.３"
+      },
+      "expected": null
+    },
+    {
+      "id": "float-sum",
+      "expr": {
+        "+": [
+          0.1,
+          0.2
+        ]
+      },
+      "expected": 0.30000000000000004
+    },
+    {
+      "id": "zero-equals-negative-zero",
+      "expr": {
+        "==": [
+          0,
+          {
+            "*": [
+              -1,
+              0
+            ]
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
       "id": "floor",
       "expr": {
         "floor": {

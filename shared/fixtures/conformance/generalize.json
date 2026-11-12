@@ -250,6 +250,40 @@
         "householdSize": 2.5
       },
       "expectedError": "GeneralizeError"
+    },
+    {
+      "id": "error-county-trailing-newline",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "A",
+        "county": "testshire\n"
+      },
+      "expectedError": "GeneralizeError"
+    },
+    {
+      "id": "error-county-uppercase",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "A",
+        "county": "Testshire"
+      },
+      "expectedError": "GeneralizeError"
+    },
+    {
+      "id": "error-jurisdiction-trailing-newline",
+      "exact": {
+        "jurisdiction": "zz-test\n",
+        "incomeBand": "A"
+      },
+      "expectedError": "GeneralizeError"
+    },
+    {
+      "id": "error-band-id-not-exact",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "a"
+      },
+      "expectedError": "GeneralizeError"
     }
   ]
 }
