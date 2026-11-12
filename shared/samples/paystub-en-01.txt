@@ -1,0 +1,17 @@
+NORTHWIND STAFFING LLC                         Earnings Statement
+Employee: Maria Lopez            Employee ID: 004417
+Address: 1420 Juniper Ave, Los Angeles, CA 90011
+Pay Period: 10/01/2026 - 10/15/2026      Pay Date: 10/20/2026
+Pay Frequency: Semi-Monthly
+
+Earnings          Rate      Hours     Current        YTD
+Regular           18.50     62.00     1,147.00       21,793.00
+Overtime          27.75     4.50      124.88         1,310.25
+Gross Pay                             1,271.88       23,103.25
+
+Deductions                            Current        YTD
+Federal Income Tax                    58.40          1,061.10
+Social Security                       78.86          1,432.40
+Medicare                              18.44          335.00
+CA SDI                                15.26          277.24
+Net Pay                               1,100.92

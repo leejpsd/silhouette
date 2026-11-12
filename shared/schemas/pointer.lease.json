@@ -1,0 +1,24 @@
+{
+  "$id": "pointer.lease.v1",
+  "description": "Model output for pointer extraction on a lease skeleton.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "tenantNames":  { "x-kind": "text",   "type": "array", "items": { "$ref": "#/$defs/ref" } },
+    "landlordName": { "x-kind": "text",   "type": "array", "items": { "$ref": "#/$defs/ref" } },
+    "monthlyRent":  { "x-kind": "number", "$ref": "#/$defs/ref" },
+    "deposit":      { "x-kind": "number", "$ref": "#/$defs/ref" },
+    "leaseStart":   { "x-kind": "date",   "$ref": "#/$defs/dateRef" },
+    "leaseEnd":     { "x-kind": "date",   "$ref": "#/$defs/dateRef" },
+    "occupantCount":{ "x-kind": "number", "$ref": "#/$defs/ref" }
+  },
+  "$defs": {
+    "ref": { "type": "string", "pattern": "^[NDW][0-9]+$" },
+    "dateRef": {
+      "oneOf": [
+        { "$ref": "#/$defs/ref" },
+        { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/ref" } }
+      ]
+    }
+  }
+}

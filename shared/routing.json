@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "rule": "Raw input is allowed only where mode is ONLY_ON_DEVICE or NONE. See DATA_TYPES.md.",
+  "tasks": {
+    "document.photo.read":        { "input": ["Raw"],                    "mode": "ONLY_ON_DEVICE",   "fallback": "next-rung-of-input-ladder", "reason": "photo-never-leaves" },
+    "document.pointer.extract":   { "input": ["Skeleton"],               "mode": "PREFER_ON_DEVICE", "reason": "document-silhouette-only" },
+    "validate":                   { "input": ["Raw"],                    "mode": "NONE" },
+    "annualize":                  { "input": ["Raw"],                    "mode": "NONE" },
+    "generalize":                 { "input": ["Raw"],                    "mode": "NONE" },
+    "verdict":                    { "input": ["Raw"],                    "mode": "NONE" },
+    "application.prefill":        { "input": ["Raw"],                    "mode": "NONE" },
+    "explain.short":              { "input": ["Generalized", "Public"],  "mode": "PREFER_ON_DEVICE", "when": "words <= route_short_text_max_words && locale in route_ondevice_locales", "reason": "short-text" },
+    "explain.long":               { "input": ["Generalized", "Public"],  "mode": "PREFER_IN_CLOUD",  "reason": "long-or-unsupported-locale" },
+    "ask.chip":                   { "input": ["Generalized", "Public"],  "mode": "PREFER_ON_DEVICE", "reason": "prepared-question" },
+    "ask.freeText":               { "input": ["Raw"],                    "mode": "ONLY_ON_DEVICE",   "fallback": "chips-only", "reason": "typed-text-may-be-personal" },
+    "program.currentStatus":      { "input": ["Public"],                 "mode": "ONLY_IN_CLOUD",    "tools": ["googleSearch"], "note": "Always queried for every program in the pack", "reason": "needs-current-info" },
+    "discover.leads":             { "input": ["Generalized"],            "mode": "ONLY_IN_CLOUD",    "tools": ["googleSearch"], "reason": "needs-current-info" },
+    "nearby.help":                { "input": ["Generalized"],            "mode": "ONLY_IN_CLOUD",    "tools": ["googleMaps"],   "note": "Location is the county centroid, never device GPS", "reason": "needs-places" },
+    "readAloud":                  { "input": ["Generalized", "Public"],  "mode": "ONLY_IN_CLOUD",    "model": "tts", "reason": "speech" }
+  },
+  "remoteConfigKeys": ["route_short_text_max_words", "route_ondevice_locales_web", "route_ondevice_locales_android", "route_ondevice_locales_ios",
+                       "feature_grounding_search", "feature_grounding_maps", "feature_tts", "prompt_pointer_extract_v", "prompt_explain_v", "skeleton_allowlist_v"]
+}

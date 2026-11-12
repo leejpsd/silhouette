@@ -1,0 +1,368 @@
+{
+  "jurisdiction": "zz-test",
+  "version": 2,
+  "verifiedOn": null,
+  "note": "Synthetic rule pack for conformance tests only. Programs, thresholds and amounts are invented.",
+  "constants": {
+    "workCreditLimitWithChild": 40000,
+    "workCreditLimitNoChild": 18000,
+    "foodLimit": {
+      "1": 20000,
+      "2": 27000,
+      "3": 34000,
+      "4": 41000,
+      "5": 48000,
+      "6": 55000
+    },
+    "utilityLimit": 50000,
+    "phoneLimit": {
+      "1": 24000,
+      "2": 33000,
+      "3": 42000,
+      "4": 50000,
+      "5": 58000,
+      "6": 66000
+    },
+    "stepCredit": {
+      "step": 50,
+      "perStep": 3
+    }
+  },
+  "questions": [
+    {
+      "id": "householdSize",
+      "type": "int",
+      "sensitive": false,
+      "min": 1,
+      "max": 20
+    },
+    {
+      "id": "numChildren",
+      "type": "int",
+      "sensitive": false,
+      "min": 0,
+      "max": 20
+    },
+    {
+      "id": "hasEarnedIncome",
+      "type": "enum",
+      "values": [
+        "yes",
+        "no"
+      ],
+      "sensitive": false
+    },
+    {
+      "id": "housing",
+      "type": "enum",
+      "values": [
+        "renter",
+        "owner",
+        "other"
+      ],
+      "sensitive": false
+    },
+    {
+      "id": "residentStatus",
+      "type": "enum",
+      "values": [
+        "eligible",
+        "not-eligible"
+      ],
+      "sensitive": true
+    },
+    {
+      "id": "benefits",
+      "type": "multi",
+      "values": [
+        "snap",
+        "medicaid",
+        "ssi"
+      ],
+      "sensitive": false
+    },
+    {
+      "id": "hasOlderMember",
+      "type": "enum",
+      "values": [
+        "yes",
+        "no"
+      ],
+      "sensitive": false
+    }
+  ],
+  "programs": [
+    {
+      "id": "work-credit",
+      "name": "Test Work Credit",
+      "criteria": [
+        {
+          "id": "has-earnings",
+          "requires": [
+            "hasEarnedIncome"
+          ],
+          "logic": {
+            "==": [
+              {
+                "var": "hasEarnedIncome"
+              },
+              "yes"
+            ]
+          }
+        },
+        {
+          "id": "income-limit",
+          "requires": [
+            "annualIncome",
+            "numChildren"
+          ],
+          "logic": {
+            "<": [
+              {
+                "var": "annualIncome"
+              },
+              {
+                "if": [
+                  {
+                    ">=": [
+                      {
+                        "var": "numChildren"
+                      },
+                      1
+                    ]
+                  },
+                  {
+                    "var": "constants.workCreditLimitWithChild"
+                  },
+                  {
+                    "var": "constants.workCreditLimitNoChild"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "amount": {
+        "min": [
+          3000,
+          {
+            "*": [
+              {
+                "var": "annualIncome"
+              },
+              0.1
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "food-help",
+      "name": "Test Food Help",
+      "criteria": [
+        {
+          "id": "income-limit",
+          "requires": [
+            "annualIncome",
+            "householdSize"
+          ],
+          "logic": {
+            "<=": [
+              {
+                "var": "annualIncome"
+              },
+              {
+                "var": {
+                  "cat": [
+                    "constants.foodLimit.",
+                    {
+                      "var": "householdSizeCapped"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "residency",
+          "requires": [
+            "residentStatus"
+          ],
+          "logic": {
+            "==": [
+              {
+                "var": "residentStatus"
+              },
+              "eligible"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "utility-discount",
+      "name": "Test Utility Discount",
+      "criteria": [
+        {
+          "id": "income-limit",
+          "requires": [
+            "annualIncome"
+          ],
+          "logic": {
+            "<=": [
+              {
+                "var": "annualIncome"
+              },
+              {
+                "var": "constants.utilityLimit"
+              }
+            ]
+          }
+        },
+        {
+          "id": "housing",
+          "requires": [
+            "housing"
+          ],
+          "logic": {
+            "in": [
+              {
+                "var": "housing"
+              },
+              [
+                "renter",
+                "owner"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "phone-discount",
+      "name": "Test Phone Discount",
+      "criteria": [
+        {
+          "id": "income-or-benefit",
+          "requires": [
+            "annualIncome",
+            "householdSize",
+            "benefits"
+          ],
+          "logic": {
+            "or": [
+              {
+                "in": [
+                  "snap",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "medicaid",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "<=": [
+                  {
+                    "var": "annualIncome"
+                  },
+                  {
+                    "var": {
+                      "cat": [
+                        "constants.phoneLimit.",
+                        {
+                          "min": [
+                            {
+                              "var": "householdSize"
+                            },
+                            6
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "senior-food",
+      "name": "Test Senior Food Path",
+      "criteria": [
+        {
+          "id": "gross-limit",
+          "requires": [
+            "annualIncome",
+            "householdSize",
+            "hasOlderMember"
+          ],
+          "logic": {
+            "<=": [
+              {
+                "var": "annualIncome"
+              },
+              {
+                "var": {
+                  "cat": [
+                    "constants.foodLimit.",
+                    {
+                      "var": "householdSizeCapped"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "uncertainIf": {
+            "==": [
+              {
+                "var": "hasOlderMember"
+              },
+              "yes"
+            ]
+          }
+        }
+      ],
+      "amount": {
+        "*": [
+          {
+            "floor": {
+              "/": [
+                {
+                  "var": "annualIncome"
+                },
+                {
+                  "var": "constants.stepCredit.step"
+                }
+              ]
+            }
+          },
+          {
+            "var": "constants.stepCredit.perStep"
+          }
+        ]
+      }
+    }
+  ],
+  "questionOrder": [
+    "householdSize",
+    "numChildren",
+    "hasEarnedIncome",
+    "income",
+    "housing",
+    "benefits",
+    "hasOlderMember",
+    "residentStatus"
+  ]
+}

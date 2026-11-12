@@ -1,0 +1,71 @@
+{
+  "$id": "generalized-profile.v1.1",
+  "description": "The profile silhouette: the only description of the user that may reach a cloud-capable call. Unanswered fields are null. Canonical serialization: all keys in the order listed under properties, no whitespace.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "jurisdiction",
+    "incomeBand",
+    "householdSize",
+    "childAgeBands",
+    "county",
+    "housing"
+  ],
+  "properties": {
+    "jurisdiction": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "incomeBand": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9+-]+$",
+      "description": "Band id from bands/{jurisdiction}.json"
+    },
+    "householdSize": {
+      "description": "Integer, or \"{cap}+\" when above the cap, or null",
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9]+\\+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "childAgeBands": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9+-]+$"
+      },
+      "description": "Unique band ids in bands-file order; no counts, no ages. [] means no children in any band; null means not answered"
+    },
+    "county": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "County slug. Never street, city block or ZIP+4"
+    },
+    "housing": {
+      "enum": [
+        "renter",
+        "owner",
+        "other",
+        null
+      ]
+    }
+  }
+}

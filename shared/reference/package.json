@@ -1,0 +1,10 @@
+{
+  "name": "silhouette-shared-reference",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "generate": "node generate.mjs",
+    "test": "node --test"
+  }
+}

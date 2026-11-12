@@ -1,0 +1,909 @@
+{
+  "spec": "rulepacks/SPEC.md v1.2 section 3",
+  "data": {
+    "a": 5,
+    "b": 2,
+    "s": "x",
+    "t": true,
+    "f": false,
+    "n": null,
+    "list": [
+      1,
+      2
+    ],
+    "constants": {
+      "limit": {
+        "3": 34000
+      },
+      "k": 10
+    },
+    "hh": "3"
+  },
+  "unavailable": [
+    "u1",
+    "u2"
+  ],
+  "cases": [
+    {
+      "id": "literal-number",
+      "expr": 7,
+      "expected": 7
+    },
+    {
+      "id": "literal-string",
+      "expr": "x",
+      "expected": "x"
+    },
+    {
+      "id": "var-top",
+      "expr": {
+        "var": "a"
+      },
+      "expected": 5
+    },
+    {
+      "id": "var-dotted",
+      "expr": {
+        "var": "constants.limit.3"
+      },
+      "expected": 34000
+    },
+    {
+      "id": "var-computed-path",
+      "expr": {
+        "var": {
+          "cat": [
+            "constants.limit.",
+            {
+              "var": "hh"
+            }
+          ]
+        }
+      },
+      "expected": 34000
+    },
+    {
+      "id": "var-missing-is-null",
+      "expr": {
+        "var": "nope"
+      },
+      "expected": null
+    },
+    {
+      "id": "var-inherited-is-null",
+      "expr": {
+        "var": "constructor"
+      },
+      "expected": null
+    },
+    {
+      "id": "var-through-array-is-null",
+      "expr": {
+        "var": "list.0"
+      },
+      "expected": null
+    },
+    {
+      "id": "eq-number",
+      "expr": {
+        "==": [
+          {
+            "var": "a"
+          },
+          5
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "eq-mixed-types-false",
+      "expr": {
+        "==": [
+          "5",
+          5
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "eq-null",
+      "expr": {
+        "==": [
+          {
+            "var": "nope"
+          },
+          null
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "neq",
+      "expr": {
+        "!=": [
+          {
+            "var": "s"
+          },
+          "y"
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "lt",
+      "expr": {
+        "<": [
+          {
+            "var": "b"
+          },
+          {
+            "var": "a"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "lte-equal",
+      "expr": {
+        "<=": [
+          5,
+          {
+            "var": "a"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "gt",
+      "expr": {
+        ">": [
+          {
+            "var": "a"
+          },
+          {
+            "var": "constants.k"
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "gte",
+      "expr": {
+        ">=": [
+          {
+            "var": "a"
+          },
+          5
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "and-short-circuits",
+      "expr": {
+        "and": [
+          {
+            "var": "f"
+          },
+          {
+            "<": [
+              {
+                "var": "n"
+              },
+              1
+            ]
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "or-short-circuits",
+      "expr": {
+        "or": [
+          {
+            "var": "t"
+          },
+          {
+            "<": [
+              {
+                "var": "n"
+              },
+              1
+            ]
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "and-many",
+      "expr": {
+        "and": [
+          true,
+          {
+            "var": "t"
+          },
+          {
+            ">": [
+              {
+                "var": "a"
+              },
+              1
+            ]
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "not",
+      "expr": {
+        "!": {
+          "var": "f"
+        }
+      },
+      "expected": true
+    },
+    {
+      "id": "if-lazy-else",
+      "expr": {
+        "if": [
+          {
+            "var": "t"
+          },
+          1,
+          {
+            "/": [
+              1,
+              0
+            ]
+          }
+        ]
+      },
+      "expected": 1
+    },
+    {
+      "id": "add-many",
+      "expr": {
+        "+": [
+          1,
+          2,
+          3.5
+        ]
+      },
+      "expected": 6.5
+    },
+    {
+      "id": "mul",
+      "expr": {
+        "*": [
+          {
+            "var": "a"
+          },
+          0.1
+        ]
+      },
+      "expected": 0.5
+    },
+    {
+      "id": "sub",
+      "expr": {
+        "-": [
+          {
+            "var": "a"
+          },
+          {
+            "var": "b"
+          }
+        ]
+      },
+      "expected": 3
+    },
+    {
+      "id": "div",
+      "expr": {
+        "/": [
+          {
+            "var": "a"
+          },
+          {
+            "var": "b"
+          }
+        ]
+      },
+      "expected": 2.5
+    },
+    {
+      "id": "min",
+      "expr": {
+        "min": [
+          3000,
+          {
+            "*": [
+              {
+                "var": "a"
+              },
+              100
+            ]
+          }
+        ]
+      },
+      "expected": 500
+    },
+    {
+      "id": "max-single",
+      "expr": {
+        "max": [
+          4
+        ]
+      },
+      "expected": 4
+    },
+    {
+      "id": "in-true",
+      "expr": {
+        "in": [
+          {
+            "var": "s"
+          },
+          [
+            "x",
+            "y"
+          ]
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "in-false",
+      "expr": {
+        "in": [
+          3,
+          {
+            "var": "list"
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "cat",
+      "expr": {
+        "cat": [
+          "a",
+          {
+            "var": "s"
+          },
+          "b"
+        ]
+      },
+      "expected": "axb"
+    },
+    {
+      "id": "error-null-compare",
+      "expr": {
+        "<": [
+          {
+            "var": "nope"
+          },
+          1
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-string-compare",
+      "expr": {
+        ">=": [
+          "10",
+          9
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-string-add",
+      "expr": {
+        "+": [
+          "1",
+          2
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-add-one-arg",
+      "expr": {
+        "+": [
+          1
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-sub-three-args",
+      "expr": {
+        "-": [
+          5,
+          2,
+          1
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-div-zero",
+      "expr": {
+        "/": [
+          1,
+          0
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-max-empty",
+      "expr": {
+        "max": []
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-if-five-args",
+      "expr": {
+        "if": [
+          true,
+          1,
+          false,
+          2,
+          3
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-if-non-boolean",
+      "expr": {
+        "if": [
+          1,
+          "a",
+          "b"
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-and-non-boolean",
+      "expr": {
+        "and": [
+          1,
+          true
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-not-non-boolean",
+      "expr": {
+        "!": 0
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-in-string-haystack",
+      "expr": {
+        "in": [
+          "x",
+          "xyz"
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "cat-integer",
+      "expr": {
+        "cat": [
+          "a",
+          1,
+          {
+            "min": [
+              {
+                "var": "a"
+              },
+              3
+            ]
+          }
+        ]
+      },
+      "expected": "a13"
+    },
+    {
+      "id": "error-cat-fraction",
+      "expr": {
+        "cat": [
+          "a",
+          1.5
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-cat-boolean",
+      "expr": {
+        "cat": [
+          "a",
+          true
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-two-operators",
+      "expr": {
+        "<": [
+          1,
+          2
+        ],
+        ">": [
+          2,
+          1
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-unknown-operator",
+      "expr": {
+        "between": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-var-default-form",
+      "expr": {
+        "var": [
+          "a",
+          0
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "error-eq-array",
+      "expr": {
+        "==": [
+          {
+            "var": "list"
+          },
+          1
+        ]
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "floor",
+      "expr": {
+        "floor": {
+          "/": [
+            {
+              "var": "a"
+            },
+            {
+              "var": "b"
+            }
+          ]
+        }
+      },
+      "expected": 2
+    },
+    {
+      "id": "floor-negative",
+      "expr": {
+        "floor": -2.5
+      },
+      "expected": -3
+    },
+    {
+      "id": "error-floor-string",
+      "expr": {
+        "floor": "x"
+      },
+      "expectedError": "RuleError"
+    },
+    {
+      "id": "unknown-var",
+      "expr": {
+        "var": "u1"
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "unknown-nested-path",
+      "expr": {
+        "var": "u1.deep"
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "unknown-compare",
+      "expr": {
+        "<": [
+          {
+            "var": "u1"
+          },
+          1
+        ]
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "unknown-arithmetic",
+      "expr": {
+        "+": [
+          {
+            "var": "u1"
+          },
+          1
+        ]
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "unknown-eq",
+      "expr": {
+        "==": [
+          {
+            "var": "u1"
+          },
+          "x"
+        ]
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "unknown-not",
+      "expr": {
+        "!": {
+          "==": [
+            {
+              "var": "u1"
+            },
+            1
+          ]
+        }
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "unknown-in-needle",
+      "expr": {
+        "in": [
+          {
+            "var": "u1"
+          },
+          [
+            "x"
+          ]
+        ]
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "unknown-in-haystack",
+      "expr": {
+        "in": [
+          "x",
+          {
+            "var": "u1"
+          }
+        ]
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "unknown-cat-path",
+      "expr": {
+        "var": {
+          "cat": [
+            "constants.limit.",
+            {
+              "var": "u1"
+            }
+          ]
+        }
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "and-false-beats-unknown",
+      "expr": {
+        "and": [
+          {
+            "==": [
+              {
+                "var": "u1"
+              },
+              1
+            ]
+          },
+          {
+            "var": "f"
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "and-true-and-unknown",
+      "expr": {
+        "and": [
+          {
+            "var": "t"
+          },
+          {
+            "==": [
+              {
+                "var": "u1"
+              },
+              1
+            ]
+          }
+        ]
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "or-true-beats-unknown",
+      "expr": {
+        "or": [
+          {
+            "==": [
+              {
+                "var": "u1"
+              },
+              1
+            ]
+          },
+          {
+            "var": "t"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "or-false-and-unknown",
+      "expr": {
+        "or": [
+          {
+            "var": "f"
+          },
+          {
+            "==": [
+              {
+                "var": "u1"
+              },
+              1
+            ]
+          },
+          {
+            "==": [
+              {
+                "var": "u2"
+              },
+              1
+            ]
+          }
+        ]
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1",
+        "u2"
+      ]
+    },
+    {
+      "id": "if-unknown-condition",
+      "expr": {
+        "if": [
+          {
+            "==": [
+              {
+                "var": "u1"
+              },
+              1
+            ]
+          },
+          1,
+          2
+        ]
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u1"
+      ]
+    },
+    {
+      "id": "if-known-condition-unknown-branch",
+      "expr": {
+        "if": [
+          {
+            "var": "t"
+          },
+          {
+            "var": "u2"
+          },
+          2
+        ]
+      },
+      "expectedUnknown": true,
+      "expectedUnknownReads": [
+        "u2"
+      ]
+    },
+    {
+      "id": "if-known-condition-skips-unknown-branch",
+      "expr": {
+        "if": [
+          {
+            "var": "f"
+          },
+          {
+            "var": "u2"
+          },
+          2
+        ]
+      },
+      "expected": 2
+    },
+    {
+      "id": "error-unknown-does-not-hide-arity",
+      "expr": {
+        "<": [
+          {
+            "var": "u1"
+          }
+        ]
+      },
+      "expectedError": "RuleError"
+    }
+  ]
+}

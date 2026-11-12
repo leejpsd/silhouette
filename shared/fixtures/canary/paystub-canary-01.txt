@@ -1,0 +1,10 @@
+QUILLFEATHER HOLDINGS INC                      Earnings Statement
+Employee: Zyxwanda Quillfeather  Employee ID: 9917734
+Address: 77 Canaryrow Blvd, Vexford, CA 90917
+SSN: XXX-XX-8842
+Pay Period: 09/16/2026 - 09/30/2026      Pay Date: 10/05/2026
+
+Regular           21.25     70.00     1,487.50       26,775.00
+Gross Pay                             1,487.50       26,775.00
+Federal Income Tax                    71.13          1,280.34
+Net Pay                               1,416.37

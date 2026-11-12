@@ -1,0 +1,1986 @@
+{
+  "spec": "rulepacks/SPEC.md v1.2 section 5",
+  "pack": "rulepacks/zz-test/pack.json",
+  "bands": "bands/zz-test.json",
+  "cases": [
+    {
+      "id": "exact-all-likely",
+      "answers": {
+        "hasEarnedIncome": "yes",
+        "annualIncome": 30524,
+        "householdSize": 3,
+        "numChildren": 2,
+        "housing": "renter",
+        "residentStatus": "eligible"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": [],
+          "estimatedAmount": 3000
+        },
+        {
+          "programId": "food-help",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": [],
+          "estimatedAmount": 1830
+        }
+      ]
+    },
+    {
+      "id": "exact-over-limits",
+      "answers": {
+        "hasEarnedIncome": "yes",
+        "annualIncome": 52000,
+        "householdSize": 2,
+        "numChildren": 0,
+        "housing": "owner",
+        "residentStatus": "eligible"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "benefits"
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasOlderMember"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exact-zero-income",
+      "answers": {
+        "hasEarnedIncome": "no",
+        "annualIncome": 0,
+        "householdSize": 1,
+        "numChildren": 0,
+        "housing": "renter",
+        "residentStatus": "eligible"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "fail"
+            },
+            {
+              "id": "income-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "food-help",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": [],
+          "estimatedAmount": 0
+        }
+      ]
+    },
+    {
+      "id": "exact-sensitive-skipped",
+      "answers": {
+        "hasEarnedIncome": "yes",
+        "annualIncome": 19000,
+        "householdSize": 1,
+        "numChildren": 0,
+        "housing": "other"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": [],
+          "estimatedAmount": 1140
+        }
+      ]
+    },
+    {
+      "id": "band-straddles-threshold",
+      "answers": {
+        "hasEarnedIncome": "yes",
+        "incomeBand": "C",
+        "householdSize": 3,
+        "numChildren": 1,
+        "housing": "renter",
+        "residentStatus": "eligible"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "maybe",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "mixed"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "food-help",
+          "verdict": "maybe",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "mixed"
+            },
+            {
+              "id": "residency",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "benefits"
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "maybe",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "mixed"
+            }
+          ],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "band-clear-pass",
+      "answers": {
+        "hasEarnedIncome": "yes",
+        "incomeBand": "A",
+        "householdSize": 4,
+        "numChildren": 2,
+        "housing": "renter",
+        "residentStatus": "eligible"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "food-help",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "band-top-open",
+      "answers": {
+        "hasEarnedIncome": "yes",
+        "incomeBand": "E",
+        "householdSize": 6,
+        "numChildren": 3,
+        "housing": "owner",
+        "residentStatus": "eligible"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "benefits"
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasOlderMember"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "band-with-skips",
+      "answers": {
+        "incomeBand": "B",
+        "housing": "renter"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "householdSize",
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "benefits",
+            "householdSize"
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "householdSize"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nothing-known",
+      "answers": {},
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "householdSize",
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "benefits",
+            "householdSize"
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "householdSize"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "large-household-capped",
+      "answers": {
+        "hasEarnedIncome": "yes",
+        "annualIncome": 54000,
+        "householdSize": 9,
+        "numChildren": 5,
+        "housing": "renter",
+        "residentStatus": "not-eligible"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": [],
+          "estimatedAmount": 3240
+        }
+      ]
+    },
+    {
+      "id": "benefit-qualifies-without-income",
+      "answers": {
+        "householdSize": 2,
+        "benefits": [
+          "snap"
+        ]
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "benefit-qualifies-nothing-else-known",
+      "answers": {
+        "benefits": [
+          "medicaid",
+          "ssi"
+        ]
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "householdSize",
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "householdSize"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "no-benefit-income-unknown",
+      "answers": {
+        "householdSize": 2,
+        "benefits": []
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome",
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome"
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "annualIncome"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "no-benefit-income-passes",
+      "answers": {
+        "hasEarnedIncome": "yes",
+        "annualIncome": 30000,
+        "householdSize": 2,
+        "benefits": [
+          "ssi"
+        ],
+        "hasOlderMember": "no"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "benefits-skipped-income-passes",
+      "answers": {
+        "annualIncome": 30000,
+        "householdSize": 2
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasOlderMember"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "benefits-skipped-income-fails",
+      "answers": {
+        "annualIncome": 90000,
+        "householdSize": 2
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "benefits"
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasOlderMember"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "over-gross-with-older-member",
+      "answers": {
+        "annualIncome": 40000,
+        "householdSize": 2,
+        "benefits": [],
+        "hasOlderMember": "yes"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "maybe",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "mixed"
+            }
+          ],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "over-gross-no-older-member",
+      "answers": {
+        "annualIncome": 40000,
+        "householdSize": 2,
+        "benefits": [],
+        "hasOlderMember": "no"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "over-gross-older-member-skipped",
+      "answers": {
+        "annualIncome": 40000,
+        "householdSize": 2,
+        "benefits": []
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasOlderMember"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "under-gross-step-amount",
+      "answers": {
+        "hasEarnedIncome": "yes",
+        "annualIncome": 12345,
+        "householdSize": 1,
+        "benefits": [],
+        "hasOlderMember": "no"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": [],
+          "estimatedAmount": 738
+        }
+      ]
+    },
+    {
+      "id": "band-with-benefit",
+      "answers": {
+        "incomeBand": "D",
+        "householdSize": 3,
+        "benefits": [
+          "snap"
+        ],
+        "hasOlderMember": "yes"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "maybe",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "mixed"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "maybe",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "mixed"
+            }
+          ],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "negative-income-is-zero",
+      "answers": {
+        "annualIncome": -500,
+        "hasEarnedIncome": "yes",
+        "householdSize": 1,
+        "numChildren": 0,
+        "housing": "renter",
+        "residentStatus": "eligible",
+        "benefits": [],
+        "hasOlderMember": "no"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "pass"
+            },
+            {
+              "id": "income-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": [],
+          "estimatedAmount": 0
+        },
+        {
+          "programId": "food-help",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": [],
+          "estimatedAmount": 0
+        }
+      ]
+    },
+    {
+      "id": "error-income-is-a-string",
+      "answers": {
+        "annualIncome": "12000",
+        "householdSize": 1
+      },
+      "expectedError": "InputError"
+    },
+    {
+      "id": "error-income-and-unknown-band",
+      "answers": {
+        "incomeBand": "Z",
+        "householdSize": 1
+      },
+      "expectedError": "InputError"
+    },
+    {
+      "id": "household-above-table",
+      "answers": {
+        "annualIncome": 60000,
+        "householdSize": 8,
+        "benefits": [],
+        "hasOlderMember": "no"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "hasEarnedIncome",
+            "numChildren"
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "residentStatus"
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ],
+          "dependsOn": [
+            "housing"
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ],
+          "dependsOn": []
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "fail"
+            }
+          ],
+          "dependsOn": []
+        }
+      ]
+    }
+  ]
+}

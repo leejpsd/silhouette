@@ -1,0 +1,113 @@
+{
+  "$id": "pointer.paystub.v1",
+  "description": "Model output for pointer extraction on a paystub skeleton. Values are placeholder references or closed enums, never document text. x-kind tells the Rehydrator how to read each field.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "employerName": {
+      "x-kind": "text",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ref"
+      }
+    },
+    "employeeName": {
+      "x-kind": "text",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ref"
+      }
+    },
+    "payFrequency": {
+      "x-kind": "enum",
+      "enum": [
+        "weekly",
+        "biweekly",
+        "semimonthly",
+        "monthly"
+      ]
+    },
+    "payDate": {
+      "x-kind": "date",
+      "$ref": "#/$defs/dateRef"
+    },
+    "periodStart": {
+      "x-kind": "date",
+      "$ref": "#/$defs/dateRef"
+    },
+    "periodEnd": {
+      "x-kind": "date",
+      "$ref": "#/$defs/dateRef"
+    },
+    "grossPay": {
+      "x-kind": "number",
+      "$ref": "#/$defs/ref"
+    },
+    "netPay": {
+      "x-kind": "number",
+      "$ref": "#/$defs/ref"
+    },
+    "ytdGross": {
+      "x-kind": "number",
+      "$ref": "#/$defs/ref"
+    },
+    "hoursWorked": {
+      "x-kind": "number",
+      "$ref": "#/$defs/ref"
+    },
+    "hourlyRate": {
+      "x-kind": "number",
+      "$ref": "#/$defs/ref"
+    },
+    "deductions": {
+      "x-kind": "list",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "x-kind": "number",
+            "$ref": "#/$defs/ref"
+          },
+          "kind": {
+            "x-kind": "enum",
+            "enum": [
+              "federal_tax",
+              "state_tax",
+              "social_security",
+              "medicare",
+              "retirement",
+              "health",
+              "other"
+            ]
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "string",
+      "pattern": "^[NDW][0-9]+$"
+    },
+    "dateRef": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ref"
+        },
+        {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        }
+      ]
+    }
+  }
+}

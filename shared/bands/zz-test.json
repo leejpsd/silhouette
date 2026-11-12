@@ -1,0 +1,17 @@
+{
+  "jurisdiction": "zz-test",
+  "version": 1,
+  "note": "Synthetic values for conformance tests only. Not real thresholds.",
+  "annualIncome": [
+    { "id": "A", "min": 0,     "max": 14999 },
+    { "id": "B", "min": 15000, "max": 29999 },
+    { "id": "C", "min": 30000, "max": 44999 },
+    { "id": "D", "min": 45000, "max": 59999 },
+    { "id": "E", "min": 60000, "max": null }
+  ],
+  "householdSizeCap": 6,
+  "childAgeBands": [
+    { "id": "0-5",  "min": 0, "max": 5 },
+    { "id": "6-17", "min": 6, "max": 17 }
+  ]
+}

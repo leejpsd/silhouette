@@ -1,0 +1,328 @@
+{
+  "spec": "skeleton/SPEC.md v1 section 5",
+  "numbers": [
+    {
+      "token": "1,284.50",
+      "expected": 1284.5
+    },
+    {
+      "token": "1.284,50",
+      "expected": null
+    },
+    {
+      "token": "004417",
+      "expected": 4417
+    },
+    {
+      "token": "12,34",
+      "expected": null
+    },
+    {
+      "token": "2,485,000",
+      "expected": 2485000
+    },
+    {
+      "token": "18.50",
+      "expected": 18.5
+    },
+    {
+      "token": "1,2345",
+      "expected": null
+    },
+    {
+      "token": "0",
+      "expected": 0
+    },
+    {
+      "token": ".5",
+      "expected": null
+    },
+    {
+      "token": "7.",
+      "expected": null
+    }
+  ],
+  "cases": [
+    {
+      "id": "paystub-en-01-correct",
+      "schema": "pointer.paystub.json",
+      "map": {
+        "W1": "NORTHWIND",
+        "W2": "STAFFING",
+        "W3": "LLC",
+        "W4": "Maria",
+        "W5": "Lopez",
+        "N1": "004417",
+        "N2": "1420",
+        "W6": "Juniper",
+        "W7": "Ave",
+        "W8": "Los",
+        "W9": "Angeles",
+        "W10": "CA",
+        "N3": "90011",
+        "D1": "10/01/2026",
+        "D2": "10/15/2026",
+        "D3": "10/20/2026",
+        "N4": "18.50",
+        "N5": "62.00",
+        "N6": "1,147.00",
+        "N7": "21,793.00",
+        "N8": "27.75",
+        "N9": "4.50",
+        "N10": "124.88",
+        "N11": "1,310.25",
+        "N12": "1,271.88",
+        "N13": "23,103.25",
+        "N14": "58.40",
+        "N15": "1,061.10",
+        "N16": "78.86",
+        "N17": "1,432.40",
+        "N18": "18.44",
+        "N19": "335.00",
+        "W11": "CA",
+        "N20": "15.26",
+        "N21": "277.24",
+        "N22": "1,100.92"
+      },
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "employerName": "NORTHWIND STAFFING LLC",
+        "employeeName": "Maria Lopez",
+        "payFrequency": "semimonthly",
+        "payDate": "10/20/2026",
+        "periodStart": "10/01/2026",
+        "periodEnd": "10/15/2026",
+        "grossPay": 1271.88,
+        "netPay": 1100.92,
+        "ytdGross": 23103.25,
+        "hoursWorked": 62,
+        "hourlyRate": 18.5,
+        "deductions": [
+          {
+            "amount": 58.4,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 78.86,
+            "kind": "social_security"
+          },
+          {
+            "amount": 18.44,
+            "kind": "medicare"
+          },
+          {
+            "amount": 15.26,
+            "kind": "state_tax"
+          }
+        ]
+      }
+    },
+    {
+      "id": "paystub-en-01-bad-refs",
+      "schema": "pointer.paystub.json",
+      "map": {
+        "W1": "NORTHWIND",
+        "W2": "STAFFING",
+        "W3": "LLC",
+        "W4": "Maria",
+        "W5": "Lopez",
+        "N1": "004417",
+        "N2": "1420",
+        "W6": "Juniper",
+        "W7": "Ave",
+        "W8": "Los",
+        "W9": "Angeles",
+        "W10": "CA",
+        "N3": "90011",
+        "D1": "10/01/2026",
+        "D2": "10/15/2026",
+        "D3": "10/20/2026",
+        "N4": "18.50",
+        "N5": "62.00",
+        "N6": "1,147.00",
+        "N7": "21,793.00",
+        "N8": "27.75",
+        "N9": "4.50",
+        "N10": "124.88",
+        "N11": "1,310.25",
+        "N12": "1,271.88",
+        "N13": "23,103.25",
+        "N14": "58.40",
+        "N15": "1,061.10",
+        "N16": "78.86",
+        "N17": "1,432.40",
+        "N18": "18.44",
+        "N19": "335.00",
+        "W11": "CA",
+        "N20": "15.26",
+        "N21": "277.24",
+        "N22": "1,100.92"
+      },
+      "pointers": {
+        "employeeName": [
+          "W4",
+          "W5",
+          "W99"
+        ],
+        "grossPay": "N99",
+        "netPay": "W4",
+        "ytdGross": "N13",
+        "payDate": "N1",
+        "periodStart": null,
+        "hoursWorked": [
+          "N5"
+        ],
+        "payFrequency": "fortnightly",
+        "deductions": [
+          {
+            "kind": "bribe",
+            "amount": "N14"
+          },
+          {
+            "amount": "D1"
+          },
+          {
+            "kind": "other"
+          }
+        ]
+      },
+      "expected": {
+        "employeeName": "Maria Lopez",
+        "ytdGross": 23103.25,
+        "deductions": [
+          {
+            "amount": 58.4
+          }
+        ]
+      }
+    },
+    {
+      "id": "payslip-ko-01-correct",
+      "schema": "pointer.paystub.json",
+      "map": {
+        "W1": "한빛물류",
+        "W2": "주식회사",
+        "N1": "2026",
+        "N2": "10",
+        "W3": "김지원",
+        "N3": "20417",
+        "W4": "운영팀",
+        "N4": "2026",
+        "N5": "10",
+        "N6": "25",
+        "N7": "2,100,000",
+        "N8": "185,000",
+        "N9": "200,000",
+        "N10": "2,485,000",
+        "N11": "32,450",
+        "N12": "3,240",
+        "N13": "102,825",
+        "N14": "81,000",
+        "N15": "10,480",
+        "N16": "20,565",
+        "N17": "250,560",
+        "N18": "2,234,440"
+      },
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2"
+        ],
+        "employeeName": [
+          "W3"
+        ],
+        "payDate": [
+          "N4",
+          "N5",
+          "N6"
+        ],
+        "grossPay": "N10",
+        "netPay": "N18",
+        "deductions": [
+          {
+            "amount": "N11"
+          },
+          {
+            "amount": "N12"
+          },
+          {
+            "amount": "N13"
+          },
+          {
+            "amount": "N14"
+          },
+          {
+            "amount": "N15"
+          },
+          {
+            "amount": "N16"
+          }
+        ]
+      },
+      "expected": {
+        "employerName": "한빛물류 주식회사",
+        "employeeName": "김지원",
+        "payDate": "2026-10-25",
+        "grossPay": 2485000,
+        "netPay": 2234440,
+        "deductions": [
+          {
+            "amount": 32450
+          },
+          {
+            "amount": 3240
+          },
+          {
+            "amount": 102825
+          },
+          {
+            "amount": 81000
+          },
+          {
+            "amount": 10480
+          },
+          {
+            "amount": 20565
+          }
+        ]
+      }
+    }
+  ]
+}

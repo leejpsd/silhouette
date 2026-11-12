@@ -1,0 +1,193 @@
+{
+  "spec": "skeleton/SPEC.md v1",
+  "cases": [
+    {
+      "id": "paystub-en-01",
+      "locale": "en",
+      "input": "NORTHWIND STAFFING LLC                         Earnings Statement\nEmployee: Maria Lopez            Employee ID: 004417\nAddress: 1420 Juniper Ave, Los Angeles, CA 90011\nPay Period: 10/01/2026 - 10/15/2026      Pay Date: 10/20/2026\nPay Frequency: Semi-Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           18.50     62.00     1,147.00       21,793.00\nOvertime          27.75     4.50      124.88         1,310.25\nGross Pay                             1,271.88       23,103.25\n\nDeductions                            Current        YTD\nFederal Income Tax                    58.40          1,061.10\nSocial Security                       78.86          1,432.40\nMedicare                              18.44          335.00\nCA SDI                                15.26          277.24\nNet Pay                               1,100.92\n",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                         Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧            Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧ ⟦W9⟧, ⟦W10⟧ ⟦N3⟧\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\nPay Frequency: Semi-Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           ⟦N4⟧     ⟦N5⟧     ⟦N6⟧       ⟦N7⟧\nOvertime          ⟦N8⟧     ⟦N9⟧      ⟦N10⟧         ⟦N11⟧\nGross Pay                             ⟦N12⟧       ⟦N13⟧\n\nDeductions                            Current        YTD\nFederal Income Tax                    ⟦N14⟧          ⟦N15⟧\nSocial Security                       ⟦N16⟧          ⟦N17⟧\nMedicare                              ⟦N18⟧          ⟦N19⟧\n⟦W11⟧ SDI                                ⟦N20⟧          ⟦N21⟧\nNet Pay                               ⟦N22⟧\n",
+        "map": {
+          "W1": "NORTHWIND",
+          "W2": "STAFFING",
+          "W3": "LLC",
+          "W4": "Maria",
+          "W5": "Lopez",
+          "N1": "004417",
+          "N2": "1420",
+          "W6": "Juniper",
+          "W7": "Ave",
+          "W8": "Los",
+          "W9": "Angeles",
+          "W10": "CA",
+          "N3": "90011",
+          "D1": "10/01/2026",
+          "D2": "10/15/2026",
+          "D3": "10/20/2026",
+          "N4": "18.50",
+          "N5": "62.00",
+          "N6": "1,147.00",
+          "N7": "21,793.00",
+          "N8": "27.75",
+          "N9": "4.50",
+          "N10": "124.88",
+          "N11": "1,310.25",
+          "N12": "1,271.88",
+          "N13": "23,103.25",
+          "N14": "58.40",
+          "N15": "1,061.10",
+          "N16": "78.86",
+          "N17": "1,432.40",
+          "N18": "18.44",
+          "N19": "335.00",
+          "W11": "CA",
+          "N20": "15.26",
+          "N21": "277.24",
+          "N22": "1,100.92"
+        }
+      }
+    },
+    {
+      "id": "payslip-ko-01",
+      "locale": "ko",
+      "input": "급여명세서\n회사명: 한빛물류 주식회사      귀속 연월: 2026년 10월\n성명: 김지원      사번: 20417      부서: 운영팀\n지급일: 2026년 10월 25일\n\n지급 항목              금액\n기본급                 2,100,000\n연장근로수당           185,000\n식대                   200,000\n지급합계               2,485,000\n\n공제 항목              금액\n소득세                 32,450\n지방소득세             3,240\n국민연금               102,825\n건강보험               81,000\n장기요양보험           10,480\n고용보험               20,565\n공제합계               250,560\n\n실수령액               2,234,440\n",
+      "expected": {
+        "skeleton": "급여명세서\n회사명: ⟦W1⟧ ⟦W2⟧      귀속 연월: ⟦N1⟧년 ⟦N2⟧월\n성명: ⟦W3⟧      사번: ⟦N3⟧      부서: ⟦W4⟧\n지급일: ⟦N4⟧년 ⟦N5⟧월 ⟦N6⟧일\n\n지급 항목              금액\n기본급                 ⟦N7⟧\n연장근로수당           ⟦N8⟧\n식대                   ⟦N9⟧\n지급합계               ⟦N10⟧\n\n공제 항목              금액\n소득세                 ⟦N11⟧\n지방소득세             ⟦N12⟧\n국민연금               ⟦N13⟧\n건강보험               ⟦N14⟧\n장기요양보험           ⟦N15⟧\n고용보험               ⟦N16⟧\n공제합계               ⟦N17⟧\n\n실수령액               ⟦N18⟧\n",
+        "map": {
+          "W1": "한빛물류",
+          "W2": "주식회사",
+          "N1": "2026",
+          "N2": "10",
+          "W3": "김지원",
+          "N3": "20417",
+          "W4": "운영팀",
+          "N4": "2026",
+          "N5": "10",
+          "N6": "25",
+          "N7": "2,100,000",
+          "N8": "185,000",
+          "N9": "200,000",
+          "N10": "2,485,000",
+          "N11": "32,450",
+          "N12": "3,240",
+          "N13": "102,825",
+          "N14": "81,000",
+          "N15": "10,480",
+          "N16": "20,565",
+          "N17": "250,560",
+          "N18": "2,234,440"
+        }
+      }
+    },
+    {
+      "id": "paystub-canary-01",
+      "locale": "en",
+      "input": "QUILLFEATHER HOLDINGS INC                      Earnings Statement\nEmployee: Zyxwanda Quillfeather  Employee ID: 9917734\nAddress: 77 Canaryrow Blvd, Vexford, CA 90917\nSSN: XXX-XX-8842\nPay Period: 09/16/2026 - 09/30/2026      Pay Date: 10/05/2026\n\nRegular           21.25     70.00     1,487.50       26,775.00\nGross Pay                             1,487.50       26,775.00\nFederal Income Tax                    71.13          1,280.34\nNet Pay                               1,416.37\n",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                      Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧  Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧, ⟦W9⟧ ⟦N3⟧\nSSN: ⟦W10⟧-⟦N4⟧\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\n\nRegular           ⟦N5⟧     ⟦N6⟧     ⟦N7⟧       ⟦N8⟧\nGross Pay                             ⟦N9⟧       ⟦N10⟧\nFederal Income Tax                    ⟦N11⟧          ⟦N12⟧\nNet Pay                               ⟦N13⟧\n",
+        "map": {
+          "W1": "QUILLFEATHER",
+          "W2": "HOLDINGS",
+          "W3": "INC",
+          "W4": "Zyxwanda",
+          "W5": "Quillfeather",
+          "N1": "9917734",
+          "N2": "77",
+          "W6": "Canaryrow",
+          "W7": "Blvd",
+          "W8": "Vexford",
+          "W9": "CA",
+          "N3": "90917",
+          "W10": "XXX-XX",
+          "N4": "8842",
+          "D1": "09/16/2026",
+          "D2": "09/30/2026",
+          "D3": "10/05/2026",
+          "N5": "21.25",
+          "N6": "70.00",
+          "N7": "1,487.50",
+          "N8": "26,775.00",
+          "N9": "1,487.50",
+          "N10": "26,775.00",
+          "N11": "71.13",
+          "N12": "1,280.34",
+          "N13": "1,416.37"
+        }
+      }
+    },
+    {
+      "id": "edge-hyphen-apostrophe",
+      "locale": "en",
+      "input": "Year-to-Date Gross: $3,400.00 (O'Brien & Smith-Jones) Pre-Tax 401k W-2 12.5%",
+      "expected": {
+        "skeleton": "Year-to-Date Gross: $⟦N1⟧ (⟦W1⟧ & ⟦W2⟧) Pre-Tax ⟦N2⟧⟦W3⟧ ⟦W4⟧-⟦N3⟧ ⟦N4⟧%",
+        "map": {
+          "N1": "3,400.00",
+          "W1": "O'Brien",
+          "W2": "Smith-Jones",
+          "N2": "401",
+          "W3": "k",
+          "W4": "W",
+          "N3": "2",
+          "N4": "12.5"
+        }
+      }
+    },
+    {
+      "id": "edge-injected-brackets",
+      "locale": "en",
+      "input": "Net Pay ⟦N1⟧ 900.10 ⟧⟦",
+      "expected": {
+        "skeleton": "Net Pay ⟦W1⟧⟦N1⟧ ⟦N2⟧ ",
+        "map": {
+          "W1": "N",
+          "N1": "1",
+          "N2": "900.10"
+        }
+      }
+    },
+    {
+      "id": "edge-crlf",
+      "locale": "en",
+      "input": "Gross Pay 10.00\r\nNet Pay 9.00\rTotal 1",
+      "expected": {
+        "skeleton": "Gross Pay ⟦N1⟧\nNet Pay ⟦N2⟧\nTotal ⟦N3⟧",
+        "map": {
+          "N1": "10.00",
+          "N2": "9.00",
+          "N3": "1"
+        }
+      }
+    },
+    {
+      "id": "edge-es",
+      "locale": "es",
+      "input": "Salario bruto: 1,250.00   Empleado: José Ñandú   Fecha de pago: 15/10/2026",
+      "expected": {
+        "skeleton": "Salario bruto: ⟦N1⟧   Empleado: ⟦W1⟧ ⟦W2⟧   Fecha de pago: ⟦D1⟧",
+        "map": {
+          "N1": "1,250.00",
+          "W1": "José",
+          "W2": "Ñandú",
+          "D1": "15/10/2026"
+        }
+      }
+    },
+    {
+      "id": "edge-ids-and-phones",
+      "locale": "en",
+      "input": "SSN: 123-45-6789  Account 000123456  Check No. 5521  555-123-4567",
+      "expected": {
+        "skeleton": "SSN: ⟦D1⟧  Account ⟦N1⟧  Check No. ⟦N2⟧  ⟦N3⟧-⟦N4⟧-⟦N5⟧",
+        "map": {
+          "D1": "123-45-6789",
+          "N1": "000123456",
+          "N2": "5521",
+          "N3": "555",
+          "N4": "123",
+          "N5": "4567"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "spec": "rulepacks/SPEC.md v1.1 section 6",
+  "bands": "bands/zz-test.json",
+  "cases": [
+    {
+      "id": "exact-mid-band",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 30524.9,
+        "householdSize": 3,
+        "childAges": [
+          4,
+          9
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expected": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "C",
+        "householdSize": 3,
+        "childAgeBands": [
+          "0-5",
+          "6-17"
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expectedCanonical": "{\"jurisdiction\":\"zz-test\",\"incomeBand\":\"C\",\"householdSize\":3,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":\"testshire\",\"housing\":\"renter\"}"
+    },
+    {
+      "id": "band-edge-low",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14999.99,
+        "householdSize": 1,
+        "childAges": [],
+        "county": "testshire",
+        "housing": "owner"
+      },
+      "expected": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "A",
+        "householdSize": 1,
+        "childAgeBands": [],
+        "county": "testshire",
+        "housing": "owner"
+      },
+      "expectedCanonical": "{\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":[],\"county\":\"testshire\",\"housing\":\"owner\"}"
+    },
+    {
+      "id": "band-edge-high",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 15000,
+        "householdSize": 2,
+        "childAges": [
+          17,
+          18,
+          30
+        ],
+        "county": "testshire",
+        "housing": "other"
+      },
+      "expected": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "B",
+        "householdSize": 2,
+        "childAgeBands": [
+          "6-17"
+        ],
+        "county": "testshire",
+        "housing": "other"
+      },
+      "expectedCanonical": "{\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":[\"6-17\"],\"county\":\"testshire\",\"housing\":\"other\"}"
+    },
+    {
+      "id": "top-band-large-household",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 250000,
+        "householdSize": 9,
+        "childAges": [
+          1,
+          2,
+          3,
+          12
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expected": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "E",
+        "householdSize": "6+",
+        "childAgeBands": [
+          "0-5",
+          "6-17"
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expectedCanonical": "{\"jurisdiction\":\"zz-test\",\"incomeBand\":\"E\",\"householdSize\":\"6+\",\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":\"testshire\",\"housing\":\"renter\"}"
+    },
+    {
+      "id": "negative-income",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "annualIncome": -500,
+        "householdSize": 6,
+        "childAges": [
+          5,
+          6
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expected": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "A",
+        "householdSize": 6,
+        "childAgeBands": [
+          "0-5",
+          "6-17"
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expectedCanonical": "{\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":6,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":\"testshire\",\"housing\":\"renter\"}"
+    },
+    {
+      "id": "band-chosen-by-user",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "C",
+        "householdSize": 4,
+        "childAges": [
+          10
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expected": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "C",
+        "householdSize": 4,
+        "childAgeBands": [
+          "6-17"
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expectedCanonical": "{\"jurisdiction\":\"zz-test\",\"incomeBand\":\"C\",\"householdSize\":4,\"childAgeBands\":[\"6-17\"],\"county\":\"testshire\",\"housing\":\"renter\"}"
+    },
+    {
+      "id": "everything-skipped",
+      "exact": {
+        "jurisdiction": "zz-test"
+      },
+      "expected": {
+        "jurisdiction": "zz-test",
+        "incomeBand": null,
+        "householdSize": null,
+        "childAgeBands": null,
+        "county": null,
+        "housing": null
+      },
+      "expectedCanonical": "{\"jurisdiction\":\"zz-test\",\"incomeBand\":null,\"householdSize\":null,\"childAgeBands\":null,\"county\":null,\"housing\":null}"
+    },
+    {
+      "id": "partly-skipped",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "B",
+        "householdSize": null,
+        "county": "test-shire-2"
+      },
+      "expected": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "B",
+        "householdSize": null,
+        "childAgeBands": null,
+        "county": "test-shire-2",
+        "housing": null
+      },
+      "expectedCanonical": "{\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":null,\"childAgeBands\":null,\"county\":\"test-shire-2\",\"housing\":null}"
+    },
+    {
+      "id": "no-children-answered",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 20000,
+        "householdSize": 2,
+        "childAges": [],
+        "county": "testshire",
+        "housing": "owner"
+      },
+      "expected": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "B",
+        "householdSize": 2,
+        "childAgeBands": [],
+        "county": "testshire",
+        "housing": "owner"
+      },
+      "expectedCanonical": "{\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":[],\"county\":\"testshire\",\"housing\":\"owner\"}"
+    },
+    {
+      "id": "error-unknown-band",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "Z",
+        "householdSize": 2
+      },
+      "expectedError": "GeneralizeError"
+    },
+    {
+      "id": "error-household-zero",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "annualIncome": null,
+        "incomeBand": null,
+        "householdSize": 0
+      },
+      "expectedError": "GeneralizeError"
+    },
+    {
+      "id": "error-county-not-slug",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "A",
+        "county": "Los Angeles/CA"
+      },
+      "expectedError": "GeneralizeError"
+    },
+    {
+      "id": "error-housing-unknown",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "A",
+        "housing": "tenant"
+      },
+      "expectedError": "GeneralizeError"
+    },
+    {
+      "id": "error-household-fraction",
+      "exact": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "A",
+        "householdSize": 2.5
+      },
+      "expectedError": "GeneralizeError"
+    }
+  ]
+}
