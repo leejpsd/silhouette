@@ -1,0 +1,31 @@
+{
+  "employerName": "State Bank Staffing LLC",
+  "employeeName": "Sam Holiday",
+  "payFrequency": "weekly",
+  "payDate": "June 3, 2026",
+  "periodStart": "May 26, 2026",
+  "periodEnd": "June 1, 2026",
+  "grossPay": 1819.91,
+  "netPay": 1424.08,
+  "ytdGross": 39120.74,
+  "hoursWorked": 30,
+  "hourlyRate": 42.57,
+  "deductions": [
+    {
+      "amount": 169.25,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 112.83,
+      "kind": "social_security"
+    },
+    {
+      "amount": 26.39,
+      "kind": "medicare"
+    },
+    {
+      "amount": 87.36,
+      "kind": "state_tax"
+    }
+  ]
+}

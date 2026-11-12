@@ -1,0 +1,29 @@
+{
+  "employerName": "Direct Deposit Couriers INC",
+  "employeeName": "Dana Medical",
+  "payFrequency": "monthly",
+  "payDate": "August 6, 2026",
+  "periodStart": "July 1, 2026",
+  "periodEnd": "July 31, 2026",
+  "grossPay": 3500,
+  "netPay": 2679.25,
+  "ytdGross": 23555,
+  "deductions": [
+    {
+      "amount": 406,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 217,
+      "kind": "social_security"
+    },
+    {
+      "amount": 50.75,
+      "kind": "medicare"
+    },
+    {
+      "amount": 147,
+      "kind": "state_tax"
+    }
+  ]
+}

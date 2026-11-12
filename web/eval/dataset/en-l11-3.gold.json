@@ -1,0 +1,31 @@
+{
+  "employerName": "Net Health Clinic INC",
+  "employeeName": "Ana Bank",
+  "payFrequency": "semimonthly",
+  "payDate": "Apr. 3, 2026",
+  "periodStart": "Mar. 16, 2026",
+  "periodEnd": "Mar. 31, 2026",
+  "grossPay": 2293.12,
+  "netPay": 1787.49,
+  "ytdGross": 13896.32,
+  "hoursWorked": 86.5,
+  "hourlyRate": 26.51,
+  "deductions": [
+    {
+      "amount": 231.61,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 142.17,
+      "kind": "social_security"
+    },
+    {
+      "amount": 33.25,
+      "kind": "medicare"
+    },
+    {
+      "amount": 98.6,
+      "kind": "state_tax"
+    }
+  ]
+}

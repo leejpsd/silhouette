@@ -18,7 +18,8 @@ This folder is the web app: TypeScript, React and Vite, with Firebase AI Logic f
 | Document silhouette | `src/core/skeleton.ts` | The Skeletonizer replaces every number, date and non-allowlisted word with a placeholder (`shared/skeleton/SPEC.md`). The screen shows exactly this text before anything can be sent |
 | Pointer extraction | `src/ai/tasks.ts` | The model returns placeholder ids (`"N12"`), never values. The Rehydrator maps them back to the document's own values on the device |
 | Review and annualization | `src/core/review.ts`, `src/core/validate.ts` | Every field is shown next to its highlighted source text, to confirm or edit. Deterministic checks and annualization turn confirmed paystubs into a yearly income |
-| Leaving your device | `src/data/net-monitor.ts` | Every request to another host is recorded before it is sent and listed in the persistent bar at the bottom of the app |
+| Leaving your device | `src/data/net-monitor.ts`, `src/data/outbound.ts` | Every request to another host is recorded before it is sent ("attempted"), then marked "sent" with its HTTP status or "failed" with the reason. The record is kept in the encrypted store and listed in the persistent bar at the bottom of the app, with the complete body of every model request. Credentials are never recorded |
+| Delete everything | `src/data/store.ts` | Erases every IndexedDB database of the app's origin (the encrypted store and its key, and the Firebase SDK's App Check, heartbeat and installation databases), and the app's and the SDK's localStorage and sessionStorage entries. Only the time of the deletion is kept, so the bar can say that the record was deleted. The service worker's cache of the app's own files is kept |
 
 ### Data types decide where a value may go
 

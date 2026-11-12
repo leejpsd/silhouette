@@ -3,9 +3,9 @@
 // Confirmed values feed an exact annualIncome into the verdict engine.
 import { useMemo, useState } from 'react';
 import { Raw } from '../../core/types';
-import { parseNumber, type PointerSchema } from '../../core/skeleton';
+import { parseTypedAmount, type PointerSchema } from '../../core/skeleton';
 import type { ReviewField, SourceSegment } from '../../core/review';
-import { validatePaystubs, type PayFrequency, type PaystubValues, type ValidationResult } from '../../core/validate';
+import { validatePaystubs, type Annualization, type PayFrequency, type PaystubValues, type ValidationResult } from '../../core/validate';
 import { POINTER_SCHEMAS } from '../../ai/tasks';
 import { useApp } from '../context';
 import { dynamicKey, formatNumber, type Locale, type Translate } from '../i18n';
@@ -65,7 +65,7 @@ function initialRows(review: readonly ReviewField[] | null): { rows: Row[]; dedu
   return { rows, deductions };
 }
 
-const toNumber = (text: string): number | undefined => parseNumber(text.replace(/\s/g, ''));
+const toNumber = (text: string): number | undefined => parseTypedAmount(text);
 
 function toValues(rows: readonly Row[], deductions: readonly DeductionRow[]): PaystubValues {
   const out: Record<string, unknown> = {};
@@ -99,6 +99,28 @@ function Source({ lines, t }: { lines: readonly (readonly SourceSegment[])[]; t:
 const money = (locale: Locale, cents: number) =>
   new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cents / 100);
 
+/**
+ * The "how this was worked out" line. Its figures reproduce the shown result: elapsed months get
+ * as many decimals as needed (2 to 6), and several paystubs show their actual sum and count.
+ */
+export function basisText(annual: Annualization, stubs: readonly PaystubValues[], locale: Locale, t: Translate): string {
+  const amount = formatNumber(locale, annual.annualIncome);
+  if (annual.method === 'ytd') {
+    const ytd = (annual.basis.ytdCents ?? 0) / 100;
+    const exact = (annual.basis.elapsedMonths?.numerator ?? 0) / (annual.basis.elapsedMonths?.denominator ?? 1);
+    let digits = 2;
+    while (digits < 6 && Math.round((ytd / Number(exact.toFixed(digits))) * 12) !== annual.annualIncome) digits++;
+    const months = new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: digits }).format(Number(exact.toFixed(digits)));
+    return t('review.basis.ytd', { ytd: money(locale, annual.basis.ytdCents ?? 0), date: annual.basis.referenceDate ?? '', months, amount });
+  }
+  const used = annual.basis.stubsUsed.map((i) => Math.round((stubs[i]?.grossPay ?? 0) * 100));
+  const periods = annual.basis.periodsPerYear ?? 0;
+  if (used.length > 1) {
+    return t('review.basis.averageMany', { sum: money(locale, used.reduce((a, b) => a + b, 0)), count: used.length, periods, amount });
+  }
+  return t('review.basis.average', { average: money(locale, used[0] ?? annual.basis.averageGrossCents ?? 0), periods, amount });
+}
+
 export function DocumentReviewScreen() {
   const { t, locale, setAnswer } = useApp();
   const { doc, update, reset } = useDocument();
@@ -109,7 +131,10 @@ export function DocumentReviewScreen() {
   const [draft, setDraft] = useState('');
   const [invalid, setInvalid] = useState(false);
   const [result, setResult] = useState<ValidationResult | null>(null);
+  const [typeAnyway, setTypeAnyway] = useState(false);
   const manual = doc.extraction === null;
+  const nothingFound =
+    doc.extraction !== null && doc.extraction.review.every((f) => f.value === null && f.items.length === 0);
 
   const pending = rows.filter((r) => r.status === 'pending').length + deductions.filter((d) => d.status === 'pending').length;
   const label = (name: string) => t(dynamicKey(`field.paystub.${name}`));
@@ -136,6 +161,24 @@ export function DocumentReviewScreen() {
 
   const currentIndex = doc.confirmedStubs.length;
   const annual = result?.annualization ?? null;
+
+  if (nothingFound && !typeAnyway && doc.extraction) {
+    return (
+      <div className="screen doc-review" data-testid="not-a-document">
+        <ScreenHeading>{t('review.notDocument.title')}</ScreenHeading>
+        <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} />
+        <p className="lead">{t('review.notDocument.body')}</p>
+        <div className="actions">
+          <button type="button" className="button primary" onClick={() => setTypeAnyway(true)}>
+            {t('review.notDocument.typeIn')}
+          </button>
+          <a className="button secondary" href={routeHref({ name: 'doc' })}>
+            {t('review.notDocument.another')}
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen doc-review">
@@ -358,20 +401,7 @@ export function DocumentReviewScreen() {
                 {formatNumber(locale, annual.annualIncome)}
               </p>
               <p className="meta">
-                {annual.method === 'ytd'
-                  ? t('review.basis.ytd', {
-                      ytd: money(locale, annual.basis.ytdCents ?? 0),
-                      date: annual.basis.referenceDate ?? '',
-                      months: new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(
-                        (annual.basis.elapsedMonths?.numerator ?? 0) / (annual.basis.elapsedMonths?.denominator ?? 1),
-                      ),
-                      amount: formatNumber(locale, annual.annualIncome),
-                    })
-                  : t('review.basis.average', {
-                      average: money(locale, annual.basis.averageGrossCents ?? 0),
-                      periods: annual.basis.periodsPerYear ?? 0,
-                      amount: formatNumber(locale, annual.annualIncome),
-                    })}
+                {basisText(annual, [...doc.confirmedStubs, toValues(rows, deductions)], locale, t)}
               </p>
               <p className="meta">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>
               <div className="actions">

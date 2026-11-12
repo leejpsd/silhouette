@@ -1,0 +1,17 @@
+Total Care Medical LLC
+Payroll questions: payroll@total-care-medical-llc.example or (555) 469-7310
+
+Employee: Lee Union        Employee ID: 016665
+Pay Date: November 4, 2026
+Pay Period: October 16, 2026 to October 31, 2026
+Pay Frequency: Twice a month
+
+Earnings          Hours    Rate     Current      YTD
+Regular           84.50    19.24    1,625.78     32,113.94
+Gross Pay                           1,625.78     32,113.94
+
+Federal Income Tax                  136.57       2,697.58
+Social Security                     100.80       1,991.11
+Medicare                            23.57        465.51
+State Income Tax                    78.04        1,541.61
+Net Pay                             1,286.80

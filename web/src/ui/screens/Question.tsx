@@ -2,8 +2,9 @@
 // that the answer never leaves the device.
 import { useId, useRef, useState, type FormEvent } from 'react';
 import { useApp } from '../context';
-import { dynamicKey, formatNumber, lookup, type Translate, type Locale } from '../i18n';
+import { dynamicKey, formatAmount, formatNumber, lookup, type Translate, type Locale } from '../i18n';
 import { isIncomeAnswer, validateAnswer, type AnswerValue, type IncomeAnswer, type Step } from '../quickcheck';
+import { parseTypedAmount } from '../../core/skeleton';
 import { navigate, type Route } from '../router';
 import { ScreenHeading } from '../Heading';
 import type { IncomeBand } from '../../core/generalize';
@@ -49,8 +50,7 @@ function draftToValue(step: Step, draft: Draft): AnswerValue | undefined {
     case 'income': {
       if (draft.choice === '') return undefined;
       if (draft.choice !== 'exact') return { kind: 'band', bandId: draft.choice } satisfies IncomeAnswer;
-      const digits = draft.text.replace(/[\s,._']/g, '');
-      return { kind: 'exact', amount: /^\d+$/.test(digits) ? Number(digits) : Number.NaN } satisfies IncomeAnswer;
+      return { kind: 'exact', amount: parseTypedAmount(draft.text) ?? Number.NaN } satisfies IncomeAnswer;
     }
   }
 }
@@ -87,7 +87,9 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
     const problem = value === undefined ? 'q.error.choose' : validateAnswer(step, value);
     if (problem !== null || value === undefined) {
       const key = step.kind === 'int' && value === undefined ? 'q.error.integer' : (problem ?? 'q.error.choose');
-      setError(step.kind === 'int' ? t(key, { min: step.min, max: step.max }) : t(key));
+      setError(
+        step.kind === 'int' ? t(key, { min: step.min, max: step.max }) : t(key),
+      );
       inputRef.current?.focus();
       return;
     }
@@ -232,7 +234,7 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
             className="input"
             inputMode="numeric"
             autoComplete="off"
-            aria-describedby={[privateId, error ? errorId : ''].filter(Boolean).join(' ')}
+            aria-describedby={[`${step.id}-understood`, privateId, error ? errorId : ''].filter(Boolean).join(' ')}
             aria-invalid={error ? true : undefined}
             value={draft.text}
             onChange={(e) => {
@@ -240,6 +242,14 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
               setError(null);
             }}
           />
+          <p id={`${step.id}-understood`} className="understood" aria-live="polite" data-testid="amount-understood">
+            {(() => {
+              const amount = parseTypedAmount(draft.text);
+              return draft.text.trim() === '' || amount === undefined
+                ? ''
+                : t('q.amountUnderstood', { amount: formatAmount(locale, amount) });
+            })()}
+          </p>
           <p id={privateId} className="private">
             <LockIcon />
             <span>{t('q.private')}</span>

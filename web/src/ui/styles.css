@@ -962,3 +962,105 @@ main:focus {
   overflow-wrap: anywhere;
   overflow-x: visible;
 }
+
+/* Compact demo notice on every screen after the start screen. */
+.demo.compact {
+  padding-block: var(--space-xs);
+}
+
+.demo.compact summary {
+  cursor: pointer;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.demo.compact details[open] summary {
+  margin-bottom: var(--space-xs);
+}
+
+.outbound-list li {
+  display: grid;
+  gap: 2px;
+}
+
+.outbound-status {
+  font-weight: var(--type-body-strong-weight);
+}
+
+.outbound-status.status-failed {
+  color: var(--color-danger);
+}
+
+.outbound-status.status-sent {
+  color: var(--color-verdict-likely);
+}
+
+/* Visible words in the skeleton preview are buttons: select one to hide it. */
+.skeleton .word {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-bottom: 1px dashed var(--color-border-strong);
+  cursor: pointer;
+}
+
+.skeleton .word:hover {
+  background: var(--color-notice);
+  color: var(--color-on-notice);
+}
+
+.hidden-words ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+/* Narrow phones (320–390 px): nothing may be wider than the screen. */
+.header {
+  flex-wrap: wrap;
+  row-gap: var(--space-xs);
+}
+
+.option,
+.model-status,
+.validation,
+.field-row,
+.screen {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.screen > *,
+.option > *,
+.field-row > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.file {
+  width: 100%;
+  max-width: 100%;
+}
+
+h1,
+h2,
+.help,
+.lead {
+  overflow-wrap: anywhere;
+}
+
+/* Keep focused controls and the last controls of a page clear of the sticky bar. */
+html {
+  scroll-padding-bottom: 7rem;
+}
+
+main {
+  padding-bottom: calc(var(--space-xl) + 4rem);
+}

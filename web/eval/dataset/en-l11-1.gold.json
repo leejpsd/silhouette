@@ -1,0 +1,31 @@
+{
+  "employerName": "Federal Security Services LLC",
+  "employeeName": "Jordan Gross",
+  "payFrequency": "weekly",
+  "payDate": "September 5, 2026",
+  "periodStart": "August 24, 2026",
+  "periodEnd": "August 30, 2026",
+  "grossPay": 705.91,
+  "netPay": 555.89,
+  "ytdGross": 23650.81,
+  "hoursWorked": 33.5,
+  "hourlyRate": 18.95,
+  "deductions": [
+    {
+      "amount": 66.36,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 43.77,
+      "kind": "social_security"
+    },
+    {
+      "amount": 10.24,
+      "kind": "medicare"
+    },
+    {
+      "amount": 29.65,
+      "kind": "state_tax"
+    }
+  ]
+}

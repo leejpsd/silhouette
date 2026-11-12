@@ -1,0 +1,17 @@
+Net Health Clinic INC
+Payroll questions: payroll@net-health-clinic-inc.example or (555) 511-1811
+
+Employee: Ana Bank        Employee ID: 014087
+Pay Date: Apr. 3, 2026
+Pay Period: Mar. 16, 2026 to Mar. 31, 2026
+Pay Frequency: Twice a month
+
+Earnings          Hours    Rate     Current      YTD
+Regular           86.50    26.51    2,293.12     13,896.32
+Gross Pay                           2,293.12     13,896.32
+
+Federal Income Tax                  231.61       1,403.56
+Social Security                     142.17       861.57
+Medicare                            33.25        201.50
+State Income Tax                    98.60        597.50
+Net Pay                             1,787.49

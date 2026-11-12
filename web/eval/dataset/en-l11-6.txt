@@ -1,0 +1,17 @@
+Regular Rate Freight INC
+Payroll questions: payroll@regular-rate-freight-inc.example or (555) 340-1165
+
+Employee: Pat Sick        Employee ID: 037344
+Pay Date: Nov. 5, 2026
+Pay Period: Oct. 19, 2026 to Nov. 1, 2026
+Pay Frequency: Every two weeks
+
+Earnings                            Current      YTD
+Salary                              2,307.69     50,526.84
+Gross Pay                           2,307.69     50,526.84
+
+Federal Income Tax                  274.62       6,012.87
+Social Security                     143.08       3,132.64
+Medicare                            33.46        732.55
+State Income Tax                    83.08        1,818.94
+Net Pay                             1,773.45

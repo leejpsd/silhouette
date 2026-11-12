@@ -15,6 +15,9 @@ const result = JSON.parse(readFileSync(new URL(`results/${variant}.json`, import
 const allow = (lang) =>
   new Set(['en', lang].flatMap((l) => JSON.parse(readFileSync(new URL(`../../shared/skeleton/allowlist/${l}.json`, import.meta.url), 'utf8')).words));
 
+const introducers = (lang) =>
+  new Set(['en', lang].flatMap((l) => JSON.parse(readFileSync(new URL(`../../shared/skeleton/allowlist/${l}.json`, import.meta.url), 'utf8')).introducers ?? []));
+
 const table = {};
 const examples = [];
 for (const doc of result.documents) {
@@ -31,7 +34,7 @@ for (const doc of result.documents) {
     table[key][doc.layout][outcome]++;
     if (outcome === 'missing') continue;
     const text = readFileSync(new URL(`dataset/${doc.id}.txt`, import.meta.url), 'utf8');
-    const { skeleton } = skeletonize(text, allow(doc.language));
+    const { skeleton } = skeletonize(text, allow(doc.language), introducers(doc.language));
     const ref = doc.pointers?.[field];
     const refs = (Array.isArray(ref) ? ref : [ref]).filter((r) => typeof r === 'string');
     const line = skeleton.split('\n').find((l) => refs.some((r) => l.includes(`⟦${r}⟧`))) ?? '';

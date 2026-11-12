@@ -61,7 +61,10 @@ export function placeholderFor(caseId: string, text: string): string {
  * AI Logic can run in Playwright's Chromium, which has no Gemini Nano. `availability` is what
  * availability() reports; prompts get `reply(promptText)`.
  */
-export async function fakeOnDeviceModel(context: BrowserContext, options: { availability: string; replies: Record<string, string> }) {
+export async function fakeOnDeviceModel(
+  context: BrowserContext,
+  options: { availability: string; replies: Record<string, string>; throwMessage?: string },
+) {
   await context.addInitScript((opts) => {
     let state = opts.availability;
     const prompts: string[] = [];
@@ -70,6 +73,7 @@ export async function fakeOnDeviceModel(context: BrowserContext, options: { avai
       async prompt(input: unknown) {
         const text = JSON.stringify(input);
         prompts.push(text);
+        if (opts.throwMessage) throw new DOMException(opts.throwMessage, 'QuotaExceededError');
         for (const [needle, reply] of Object.entries(opts.replies)) if (text.includes(needle)) return reply;
         return '{}';
       }

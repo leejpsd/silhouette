@@ -48,7 +48,7 @@ export function ResultsScreen() {
           </ul>
         </section>
       ))}
-      <p className="hint">{hasMaybe ? t('results.docHint') : ''}</p>
+      <p className="hint">{hasMaybe ? t('results.maybeHint') : ''}</p>
       <div className="actions">
         <a className="button primary" href={routeHref({ name: 'doc' })}>
           {t('results.addDocument')}

@@ -1,0 +1,29 @@
+{
+  "employerName": "Regular Rate Freight INC",
+  "employeeName": "Pat Sick",
+  "payFrequency": "biweekly",
+  "payDate": "Nov. 5, 2026",
+  "periodStart": "Oct. 19, 2026",
+  "periodEnd": "Nov. 1, 2026",
+  "grossPay": 2307.69,
+  "netPay": 1773.45,
+  "ytdGross": 50526.84,
+  "deductions": [
+    {
+      "amount": 274.62,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 143.08,
+      "kind": "social_security"
+    },
+    {
+      "amount": 33.46,
+      "kind": "medicare"
+    },
+    {
+      "amount": 83.08,
+      "kind": "state_tax"
+    }
+  ]
+}

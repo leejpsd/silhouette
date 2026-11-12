@@ -1,0 +1,18 @@
+Federal Security Services LLC
+Payroll questions: payroll@federal-security-services-llc.example or (555) 409-9624
+
+Employee: Jordan Gross        Employee ID: 082973
+Pay Date: September 5, 2026
+Pay Period: August 24, 2026 to August 30, 2026
+Pay Frequency: Every week
+
+Earnings          Hours    Rate     Current      YTD
+Regular           33.50    18.95    634.83       21,269.43
+Overtime          2.50     28.43    71.08        2,381.38
+Gross Pay                           705.91       23,650.81
+
+Federal Income Tax                  66.36        2,223.32
+Social Security                     43.77        1,466.33
+Medicare                            10.24        343.10
+State Income Tax                    29.65        993.55
+Net Pay                             555.89

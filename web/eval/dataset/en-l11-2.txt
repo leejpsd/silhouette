@@ -1,0 +1,17 @@
+Gross & Daughters Bakery
+Payroll questions: payroll@gross-daughters-bakery.example or (555) 679-5598
+
+Employee: Bill Rate        Employee ID: 015008
+Pay Date: October 14, 2026
+Pay Period: September 25, 2026 to October 8, 2026
+Pay Frequency: Every two weeks
+
+Earnings                            Current      YTD
+Salary                              3,461.54     76,015.34
+Gross Pay                           3,461.54     76,015.34
+
+Federal Income Tax                  356.54       7,829.54
+Social Security                     214.62       4,713.02
+Medicare                            50.19        1,102.19
+State Income Tax                    200.77       4,408.97
+Net Pay                             2,639.42

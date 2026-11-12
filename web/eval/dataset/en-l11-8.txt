@@ -1,0 +1,17 @@
+Direct Deposit Couriers INC
+Payroll questions: payroll@direct-deposit-couriers-inc.example or (555) 753-6206
+
+Employee: Dana Medical        Employee ID: 006098
+Pay Date: August 6, 2026
+Pay Period: July 1, 2026 to July 31, 2026
+Pay Frequency: Once a month
+
+Earnings                            Current      YTD
+Salary                              3,500.00     23,555.00
+Gross Pay                           3,500.00     23,555.00
+
+Federal Income Tax                  406.00       2,732.38
+Social Security                     217.00       1,460.44
+Medicare                            50.75        341.57
+State Income Tax                    147.00       989.34
+Net Pay                             2,679.25

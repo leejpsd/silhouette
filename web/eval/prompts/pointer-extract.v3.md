@@ -1,6 +1,6 @@
-# pointer-extract (null variant)
+# pointer-extract v3
 
-Task id: `document.pointer.extract` · Input type: `Skeleton` · Mode: `PREFER_ON_DEVICE` · Output: JSON matching `schemas/pointer.{docType}.json`
+Task id: `document.pointer.extract` · Input type: `Skeleton` · Mode: `PREFER_ON_DEVICE` · Output: JSON matching `schemas/pointer.{docType}.json` (v2: every field present, null when absent)
 
 ## System instruction
 
@@ -13,6 +13,7 @@ For each field in the schema, answer with the placeholder id that holds that fie
 - A name that spans several hidden words is a list of ids in reading order, for example ["W4","W5"].
 - For fields with a fixed list of options, choose one option from the list.
 - When a table has "Current" and "YTD" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.
+- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.
 - Answer every field. Use null when the field is not in the document.
 Return JSON only.
 
@@ -27,5 +28,5 @@ Document:
 ## Notes for implementers
 
 - Send one page per request. Keep the skeleton under the on-device input limit of the platform.
-- Use structured output with the pointer schema. The response is validated and rehydrated by deterministic code (`skeleton/SPEC.md` section 5).
+- Use structured output with the model schema derived from the pointer schema (every property required, `null` allowed). The response is validated and rehydrated by deterministic code (`skeleton/SPEC.md` section 5); `null` means "not in the document".
 - The same prompt is used on device and in the cloud.

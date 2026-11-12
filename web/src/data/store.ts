@@ -103,8 +103,71 @@ export async function loadRecord(id: string): Promise<unknown> {
   }
 }
 
-/** Deletes the database (records and key) and the app's localStorage/sessionStorage entries. */
-export async function deleteEverything(): Promise<void> {
+/** IndexedDB databases the Firebase SDK may create on this origin (deleted even if not listed). */
+export const FIREBASE_DATABASES: readonly string[] = [
+  'firebase-heartbeat-database',
+  'firebase-app-check-database',
+  'firebase-installations-database',
+  'firebaseLocalStorageDb',
+];
+
+// Every IndexedDB connection opened on this origin (ours and the Firebase SDK's). The SDK keeps
+// some connections in module-level caches that deleteApp() does not close; an open connection
+// blocks deletion, so "Delete everything" closes them all first.
+const openConnections = new Set<IDBDatabase>();
+let tracking = false;
+
+/** Call once at start-up, before Firebase loads. */
+export function trackDatabaseConnections(factory: IDBFactory = indexedDB): void {
+  if (tracking) return;
+  tracking = true;
+  const original = factory.open.bind(factory);
+  factory.open = (name: string, version?: number) => {
+    const request = version === undefined ? original(name) : original(name, version);
+    request.addEventListener('success', () => {
+      const db = request.result;
+      openConnections.add(db);
+      db.addEventListener('close', () => openConnections.delete(db));
+    });
+    return request;
+  };
+}
+
+function closeTrackedConnections(): void {
+  for (const db of openConnections) {
+    try {
+      db.close();
+    } catch {
+      // Already closed.
+    }
+  }
+  openConnections.clear();
+}
+
+function deleteDatabase(name: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const req = indexedDB.deleteDatabase(name);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error ?? new Error('Could not delete a database'));
+    req.onblocked = () => resolve(); // Completes once other tabs close their connection.
+  });
+}
+
+export interface DeleteReport {
+  /** Names of the IndexedDB databases that existed on this origin and were deleted. */
+  readonly databases: readonly string[];
+  /** Number of localStorage and sessionStorage entries removed. */
+  readonly storageEntries: number;
+}
+
+/**
+ * Deletes everything this app (and the Firebase SDK it uses) stored on this origin:
+ * every IndexedDB database (the encrypted store with its key, and the SDK's App Check, heartbeat
+ * and installation databases), and the app's and the SDK's localStorage and sessionStorage
+ * entries. The service worker's cache of the app's own files is kept; it holds no user data.
+ * Close the Firebase app first (shutdownFirebase), or its open connections delay the deletion.
+ */
+export async function deleteEverything(): Promise<DeleteReport> {
   if (dbPromise) {
     try {
       (await dbPromise).close();
@@ -113,16 +176,26 @@ export async function deleteEverything(): Promise<void> {
     }
     dbPromise = null;
   }
-  await new Promise<void>((resolve, reject) => {
-    const req = indexedDB.deleteDatabase(DB_NAME);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error ?? new Error('Could not delete the database'));
-    req.onblocked = () => resolve(); // Deletion completes once other tabs close their connection.
-  });
+  closeTrackedConnections();
+  let existing: string[] | null = null;
+  try {
+    existing = (await indexedDB.databases()).map((d) => d.name).filter((n): n is string => typeof n === 'string');
+  } catch {
+    existing = null; // databases() is not available everywhere; fall back to the known names.
+  }
+  const names = new Set([DB_NAME, ...FIREBASE_DATABASES, ...(existing ?? [])]);
+  for (const name of names) await deleteDatabase(name);
+  let storageEntries = 0;
   for (const storage of [globalThis.localStorage, globalThis.sessionStorage]) {
     if (!storage) continue;
-    for (const key of Object.keys(storage)) if (key.startsWith(PREF_PREFIX)) storage.removeItem(key);
+    for (const key of Object.keys(storage)) {
+      if (key.startsWith(PREF_PREFIX) || key.toLowerCase().startsWith('firebase')) {
+        storage.removeItem(key);
+        storageEntries++;
+      }
+    }
   }
+  return { databases: existing ?? [...names], storageEntries };
 }
 
 export const STORE_NAMES = { database: DB_NAME, keys: KEYS, records: RECORDS } as const;

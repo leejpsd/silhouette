@@ -85,12 +85,40 @@ export function dayNumber({ year, month, day }: CivilDate): number {
 
 const DATE_TEXT = /^([0-9]{1,4})[/.\-]([0-9]{1,2})[/.\-]([0-9]{1,4})$/;
 
+/** Month names, as in the Skeletonizer (shared/skeleton/SPEC.md section 2). */
+const MONTH_NAMES: readonly (readonly string[])[] = [
+  ['january', 'jan', 'enero'], ['february', 'feb', 'febrero'], ['march', 'mar', 'marzo'], ['april', 'apr', 'abril'],
+  ['may', 'mayo'], ['june', 'jun', 'junio'], ['july', 'jul', 'julio'], ['august', 'aug', 'agosto'],
+  ['september', 'sept', 'sep', 'septiembre', 'setiembre'], ['october', 'oct', 'octubre'],
+  ['november', 'nov', 'noviembre'], ['december', 'dec', 'diciembre'],
+];
+const MONTH_WORD = MONTH_NAMES.flat().sort((a, b) => b.length - a.length || (a < b ? -1 : 1)).join('|');
+const MONTH_FIRST = new RegExp(`^(${MONTH_WORD})\\.? ([0-9]{1,2})(?:st|nd|rd|th)?,? ([0-9]{4})$`, 'i');
+const DAY_FIRST = new RegExp(`^([0-9]{1,2})(?:st|nd|rd|th)? (?:de )?(${MONTH_WORD})\\.?,? (?:del? )?([0-9]{4})$`, 'i');
+const monthNumber = (word: string): number => MONTH_NAMES.findIndex((names) => names.includes(word.toLowerCase())) + 1;
+
+/** A date, null (a month-name date that is invalid), or undefined (not a month-name date). */
+function parseMonthNameDate(text: string): CivilDate | null | undefined {
+  let m = MONTH_FIRST.exec(text);
+  let parts: CivilDate | null = m ? { month: monthNumber(m[1] as string), day: Number(m[2]), year: Number(m[3]) } : null;
+  if (!parts) {
+    m = DAY_FIRST.exec(text);
+    if (m) parts = { day: Number(m[1]), month: monthNumber(m[2] as string), year: Number(m[3]) };
+  }
+  if (!parts) return undefined;
+  const { year, month, day } = parts;
+  if (year < 1900 || year > 2099 || day < 1 || day > daysInMonth(year, month)) return null;
+  return { year, month, day };
+}
+
 /**
  * Section 3: parses date text. A 4-digit first component means year-month-day in every jurisdiction
  * (this covers rehydrated N-triples such as "2026-10-25"). Otherwise the jurisdiction's order
  * applies. Two-digit years are 2000–2099; four-digit years must be 1900–2099.
  */
 export function parseDate(text: string, jurisdiction: string): CivilDate | null {
+  const named = parseMonthNameDate(text.trim());
+  if (named !== undefined) return named;
   const m = DATE_TEXT.exec(text.trim());
   if (!m) return null;
   const [a = '', b = '', c = ''] = [m[1], m[2], m[3]];

@@ -1,34 +1,56 @@
 // Ledger of everything that has left the device, shown in the "Leaving your device" bar.
-// Entries are recorded by the network monitor (./net-monitor.ts) from the requests the app
-// actually makes, so the "Leaving your device" bar cannot drift from reality.
+// Entries are created by the network monitor (./net-monitor.ts) from the requests the app actually
+// makes: "attempted" before a request goes out, then "sent" when a response arrives or "failed".
+// The ledger is persisted in the encrypted store (./outbound-store.ts) so it survives reloads.
 
 export type OutboundChannel = 'ai-cloud' | 'app-check' | 'firestore' | 'remote-config' | 'analytics' | 'other';
+export type OutboundStatus = 'attempted' | 'sent' | 'failed';
 
 export interface OutboundEntry {
+  readonly id: string;
   readonly channel: OutboundChannel;
   readonly at: number;
-  /** Host the request went to. */
+  /** Host and path the request went to. Query strings are never stored. */
   readonly destination: string;
+  readonly path: string;
+  /** Model named in the request path, for model calls. */
+  readonly model?: string | undefined;
   /** What kind of content left, for the summary line (never values). */
   readonly fields: readonly string[];
-  /** For AI Logic requests: the exact text that was sent (always CloudSafe content). */
-  readonly payload?: string | undefined;
+  /** For model calls: the complete request body, formatted. Never stored for App Check requests. */
+  readonly body?: string | undefined;
   readonly bytes: number;
+  readonly status: OutboundStatus;
+  readonly httpStatus?: number | undefined;
+  /** Why a request failed (HTTP status text or network error message). */
+  readonly error?: string | undefined;
+}
+
+export interface OutboundState {
+  readonly entries: readonly OutboundEntry[];
+  /** When the user last deleted the ledger with "Delete everything" (ms since epoch), if ever. */
+  readonly clearedAt: number | null;
 }
 
 type Listener = () => void;
 
 // Replaced (never mutated) on change, so it is a stable snapshot for useSyncExternalStore.
-let entries: readonly OutboundEntry[] = [];
+let state: OutboundState = { entries: [], clearedAt: null };
 const listeners = new Set<Listener>();
+let counter = 0;
 
-export function recordOutbound(entry: OutboundEntry): void {
-  entries = [...entries, entry];
+function set(next: OutboundState): void {
+  state = next;
   for (const l of listeners) l();
 }
 
+export function outboundState(): OutboundState {
+  return state;
+}
+
+/** Kept for callers that only need the entries. */
 export function outboundEntries(): readonly OutboundEntry[] {
-  return entries;
+  return state.entries;
 }
 
 export function subscribeOutbound(listener: Listener): () => void {
@@ -36,7 +58,32 @@ export function subscribeOutbound(listener: Listener): () => void {
   return () => listeners.delete(listener);
 }
 
-export function clearOutbound(): void {
-  entries = [];
-  for (const l of listeners) l();
+/** Records a request that is about to be sent; returns its id. */
+export function recordAttempt(entry: Omit<OutboundEntry, 'id' | 'status'>): string {
+  const id = `${entry.at}-${++counter}`;
+  set({ ...state, entries: [...state.entries, { ...entry, id, status: 'attempted' }] });
+  return id;
+}
+
+function update(id: string, patch: Partial<OutboundEntry>): void {
+  set({ ...state, entries: state.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)) });
+}
+
+export function markSent(id: string, httpStatus: number): void {
+  update(id, { status: 'sent', httpStatus });
+}
+
+export function markFailed(id: string, error: string, httpStatus?: number): void {
+  update(id, { status: 'failed', error, httpStatus });
+}
+
+/** Restores a persisted ledger (entries first, then anything recorded since start-up). */
+export function restoreOutbound(saved: OutboundState): void {
+  const known = new Set(saved.entries.map((e) => e.id));
+  set({ entries: [...saved.entries, ...state.entries.filter((e) => !known.has(e.id))], clearedAt: saved.clearedAt ?? state.clearedAt });
+}
+
+/** Deletes the ledger. `clearedAt` lets the bar say the record was deleted rather than "nothing ever left". */
+export function clearOutbound(clearedAt: number | null = null): void {
+  set({ entries: [], clearedAt });
 }

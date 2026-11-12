@@ -1,0 +1,31 @@
+{
+  "employerName": "Total Care Medical LLC",
+  "employeeName": "Lee Union",
+  "payFrequency": "semimonthly",
+  "payDate": "November 4, 2026",
+  "periodStart": "October 16, 2026",
+  "periodEnd": "October 31, 2026",
+  "grossPay": 1625.78,
+  "netPay": 1286.8,
+  "ytdGross": 32113.94,
+  "hoursWorked": 84.5,
+  "hourlyRate": 19.24,
+  "deductions": [
+    {
+      "amount": 136.57,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 100.8,
+      "kind": "social_security"
+    },
+    {
+      "amount": 23.57,
+      "kind": "medicare"
+    },
+    {
+      "amount": 78.04,
+      "kind": "state_tax"
+    }
+  ]
+}

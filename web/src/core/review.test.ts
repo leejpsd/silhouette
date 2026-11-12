@@ -2,18 +2,20 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { Raw } from './types';
-import { buildAllowlist, skeletonize, type AllowlistFile, type PointerSchema } from './skeleton';
+import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile, type PointerSchema } from './skeleton';
 import { buildReview, placeholderCounts } from './review';
 
 const shared = (rel: string) => readFileSync(new URL(`../../../shared/${rel}`, import.meta.url), 'utf8');
 const schema = JSON.parse(shared('schemas/pointer.paystub.json')) as PointerSchema;
-const allow = buildAllowlist(['en'].map((l) => JSON.parse(shared(`skeleton/allowlist/${l}.json`)) as AllowlistFile));
+const enFile = JSON.parse(shared('skeleton/allowlist/en.json')) as AllowlistFile;
+const allow = buildAllowlist([enFile]);
+const intro = buildIntroducers([enFile]);
 const rehydrateFixture = JSON.parse(shared('fixtures/conformance/rehydrate.json')) as {
   cases: { id: string; pointers: unknown; expected: Record<string, unknown> }[];
 };
 
 describe('review model', () => {
-  const doc = skeletonize(Raw.of(shared('samples/paystub-en-01.txt')), allow);
+  const doc = skeletonize(Raw.of(shared('samples/paystub-en-01.txt')), allow, intro);
   const fixtureCase = rehydrateFixture.cases.find((c) => c.id === 'paystub-en-01-correct')!;
   const review = buildReview(schema, fixtureCase.pointers, doc.skeleton, doc.map);
   const field = (name: string) => review.find((f) => f.name === name)!;

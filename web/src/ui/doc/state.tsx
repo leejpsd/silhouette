@@ -26,6 +26,8 @@ export interface DocumentState {
   readonly extraction: Extraction | null;
   readonly photoSource: { readonly inferenceSource: InferenceSource; readonly reason: RoutingReason } | null;
   readonly error: TaskError | null;
+  /** Words the user hid in the preview (lowercase); they and their phrases are masked. */
+  readonly hiddenWords: readonly string[];
   /** Paystubs already confirmed in this session (for multi-paystub annualization). */
   readonly confirmedStubs: readonly PaystubValues[];
 }
@@ -40,6 +42,7 @@ export const emptyDocument = (language: Locale, confirmedStubs: readonly Paystub
   extraction: null,
   photoSource: null,
   error: null,
+  hiddenWords: [],
   confirmedStubs,
 });
 

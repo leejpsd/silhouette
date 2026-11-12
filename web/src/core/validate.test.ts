@@ -45,7 +45,10 @@ describe('dates', () => {
     expect(parseDate('10/20/202', 'us-ca')).toBeNull();
     expect(parseDate('2026-1-5', 'kr')).toEqual({ year: 2026, month: 1, day: 5 });
     expect(parseDate('1899-12-31', 'kr')).toBeNull();
-    expect(parseDate('Oct 20 2026', 'us-ca')).toBeNull();
+    expect(parseDate('Oct 20 2026', 'us-ca')).toEqual({ year: 2026, month: 10, day: 20 }); // month-name date
+    expect(parseDate('17 de octubre de 2026', 'kr')).toEqual({ year: 2026, month: 10, day: 17 });
+    expect(parseDate('February 30, 2026', 'us-ca')).toBeNull();
+    expect(parseDate('Oct 20', 'us-ca')).toBeNull();
   });
   it('counts days without time zones', () => {
     expect(dayNumber({ year: 1970, month: 1, day: 1 })).toBe(0);

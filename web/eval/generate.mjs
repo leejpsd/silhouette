@@ -10,10 +10,12 @@
 //
 // Checks enforced here (the run fails otherwise):
 // - gross = Σ earnings lines and net = gross − Σ deductions, in integer cents (paystubs and payslips);
-// - no word of a name is on the skeleton allowlist (so every gold value is reachable by pointers);
+// - every word of a name is masked by the shared reference Skeletonizer (so it is reachable by
+//   pointers), and every gold date and amount appears in the document;
 // - every gold number and date appears verbatim in the document.
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { skeletonize } from '../../shared/reference/silhouette.mjs';
 
 const HERE = new URL('./', import.meta.url);
 const OUT = new URL('dataset/', HERE);
@@ -22,6 +24,8 @@ const allowlist = (locale) =>
     ...JSON.parse(readFileSync(new URL('../../shared/skeleton/allowlist/en.json', HERE), 'utf8')).words,
     ...JSON.parse(readFileSync(new URL(`../../shared/skeleton/allowlist/${locale}.json`, HERE), 'utf8')).words,
   ]);
+const introducers = (locale) =>
+  new Set(['en', locale].flatMap((l) => JSON.parse(readFileSync(new URL(`../../shared/skeleton/allowlist/${l}.json`, HERE), 'utf8')).introducers ?? []));
 const WORD = /[\p{L}\p{M}]+(?:['’-][\p{L}\p{M}]+)*/gu;
 
 // ---------- deterministic helpers ----------
@@ -630,5 +634,78 @@ for (const layout of Object.keys(KO_LAYOUTS)) {
 for (const layout of Object.keys(LEASE_LAYOUTS)) {
   for (let i = 0; i < 2; i++) write(`lease-${layout.toLowerCase()}-${i + 1}`, { docType: 'lease', language: 'en', layout }, lease(layout, allowEn));
 }
+// ---------- L11: names with label words, e-mail and phone, month-name dates, frequency in words ----------
+
+const L11_EMPLOYERS = ['Federal Security Services LLC', 'Gross & Daughters Bakery', 'Net Health Clinic INC', 'Union Pay Systems CORP',
+  'State Bank Staffing LLC', 'Regular Rate Freight INC', 'Total Care Medical LLC', 'Direct Deposit Couriers INC'];
+const L11_EMPLOYEES = ['Jordan Gross', 'Bill Rate', 'Ana Bank', 'Robin Federal', 'Sam Holiday', 'Pat Sick', 'Lee Union', 'Dana Medical'];
+const L11_FREQUENCY_TEXT = { weekly: 'Every week', biweekly: 'Every two weeks', semimonthly: 'Twice a month', monthly: 'Once a month' };
+const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_ABBR = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
+const monthDate = (abbr) => (t) => `${(abbr ? MONTH_ABBR : MONTH_FULL)[t.m - 1]} ${t.d}, ${t.y}`;
+
+function l11Paystub(i) {
+  const freq = FREQ_CYCLE[i % 4];
+  const d = paystubData({ freq, hourly: i % 2 === 0, overtime: i % 4 === 0, ytd: true, dedKinds: ['federal_tax', 'social_security', 'medicare', 'state_tax'] });
+  const employerName = L11_EMPLOYERS[i];
+  const employee = L11_EMPLOYEES[i];
+  const fmt = monthDate(i % 3 === 2);
+  const slug = employerName.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
+  const earnings = d.lines.map((l) =>
+    d.hourly
+      ? `${pad(l.label, 18)}${pad(HRS(l.hours), 9)}${pad(RATE(l.rate), 9)}${pad(money(l.amount), 13)}${money(l.ytd)}`
+      : `${pad(l.label, 36)}${pad(money(l.amount), 13)}${money(l.ytd)}`,
+  );
+  const text = [
+    `${employerName}`,
+    `Payroll questions: payroll@${slug}.example or (555) ${int(100, 999)}-${int(1000, 9999)}`,
+    '',
+    `Employee: ${employee}        Employee ID: ${String(int(1000, 99999)).padStart(6, '0')}`,
+    `Pay Date: ${fmt(d.period.payDate)}`,
+    `Pay Period: ${fmt(d.period.start)} to ${fmt(d.period.end)}`,
+    `Pay Frequency: ${L11_FREQUENCY_TEXT[freq]}`,
+    '',
+    d.hourly ? `${pad('Earnings', 18)}${pad('Hours', 9)}${pad('Rate', 9)}${pad('Current', 13)}YTD` : `${pad('Earnings', 36)}${pad('Current', 13)}YTD`,
+    ...earnings,
+    `${pad('Gross Pay', 36)}${pad(money(d.gross), 13)}${money(d.ytdGross)}`,
+    '',
+    ...d.deductions.map((x) => `${pad(x.label, 36)}${pad(money(x.amount), 13)}${money(x.ytd)}`),
+    `${pad('Net Pay', 36)}${money(d.net)}`,
+  ].join('\n') + '\n';
+  const gold = {
+    employerName: nameText(employerName),
+    employeeName: nameText(employee),
+    payFrequency: freq,
+    payDate: fmt(d.period.payDate),
+    periodStart: fmt(d.period.start),
+    periodEnd: fmt(d.period.end),
+    grossPay: d.gross / 100,
+    netPay: d.net / 100,
+    ytdGross: d.ytdGross / 100,
+    ...(d.hourly ? { hoursWorked: d.hours / 100, hourlyRate: d.rate / 100 } : {}),
+    deductions: d.deductions.map((x) => ({ amount: x.amount / 100, kind: x.kind })),
+  };
+  return { text, gold, freq };
+}
+
+for (let i = 0; i < 8; i++) {
+  const doc = l11Paystub(i);
+  write(`en-l11-${i + 1}`, { docType: 'paystub', language: 'en', layout: 'L11', frequency: doc.freq }, doc);
+}
+
+// Every word of every gold name must be masked by the shared reference Skeletonizer.
+for (const entry of manifest) {
+  const text = readFileSync(new URL(`${entry.id}.txt`, OUT), 'utf8');
+  const gold = JSON.parse(readFileSync(new URL(`${entry.id}.gold.json`, OUT), 'utf8'));
+  const { map } = skeletonize(text, allowlist(entry.language), introducers(entry.language));
+  const masked = new Set(Object.values(map));
+  for (const field of ['employerName', 'employeeName', 'tenantNames', 'landlordName']) {
+    if (typeof gold[field] !== 'string') continue;
+    for (const word of gold[field].split(' ')) {
+      if (!masked.has(word)) throw new Error(`${entry.id}: "${word}" of ${field} is not masked, so it could not be pointed at`);
+    }
+  }
+}
+
 writeFileSync(new URL('manifest.json', OUT), JSON.stringify(manifest, null, 2) + '\n');
 console.log(`wrote ${manifest.length} documents to eval/dataset/`);

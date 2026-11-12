@@ -1,47 +1,38 @@
-// Builds pointer-extraction configurations from a small spec, so the runner can compare variants.
-import type { PointerSchema } from '../src/core/skeleton';
-import { POINTER_V1, SHARED_POINTER_SCHEMAS, type PointerConfig } from '../src/ai/pointer-config';
-import { POINTER_EXTRACT, parsePrompt } from '../src/ai/prompts';
-import nullPromptText from './variants/prompts/pointer-extract.null.md?raw';
-import paystubDescribed from './variants/schemas/pointer.paystub.described.json';
-import leaseDescribed from './variants/schemas/pointer.lease.described.json';
-import paystubExample from './variants/examples/paystub.md?raw';
-import leaseExample from './variants/examples/lease.md?raw';
+// Builds pointer-extraction configurations for the evaluation runner: the shared v2
+// configuration (POINTER_V2) with optional changes, so variants can be compared on the same data.
+import { POINTER_V2, type PointerConfig } from '../src/ai/pointer-config';
+import { parsePrompt } from '../src/ai/prompts';
+import pointerExtractV3 from './prompts/pointer-extract.v3.md?raw';
+
+/** Candidate prompts evaluated against shared/prompts/pointer-extract.v2.md. */
+const PROMPTS = { v3: parsePrompt('pointer-extract.v3', pointerExtractV3) } as const;
 
 export interface VariantSpec {
   readonly id: string;
-  /** shared: shared/schemas as they are; described: one-line description on every property. */
-  readonly schemas: 'shared' | 'described';
-  /** Every property required and nullable, with the "use null" prompt. */
-  readonly nullable: boolean;
+  /** How the nullable schema is written for the cloud model. */
   readonly dialect?: 'openapi' | 'jsonschema';
-  readonly example: boolean;
-  readonly lineNumbers: boolean;
-  readonly model: string;
+  readonly model?: string;
   readonly thinkingLevel?: 'minimal' | 'low' | 'medium' | 'high';
   readonly temperature?: number;
   /** Extra words added to the skeleton allowlist for this run (tests an allowlist extension). */
   readonly extraAllowlist?: readonly string[];
+  /** Apply the app's on-device name clean-up (src/core/tidy.ts) before rehydration. */
+  readonly tidy?: boolean;
+  /** Label for the summary table: which contract's Skeletonizer produced the skeletons. */
+  readonly skeletons?: string;
+  /** A candidate prompt from eval/prompts/ instead of the shared one. */
+  readonly prompt?: keyof typeof PROMPTS;
 }
-
-const DESCRIBED = {
-  paystub: paystubDescribed as unknown as PointerSchema,
-  lease: leaseDescribed as unknown as PointerSchema,
-};
-const NULL_PROMPT = parsePrompt('pointer-extract.null', nullPromptText);
 
 export function buildConfig(spec: VariantSpec): PointerConfig {
   const dialect = spec.dialect ?? 'openapi';
   return {
-    ...POINTER_V1,
+    ...POINTER_V2,
     id: spec.id,
-    prompt: spec.nullable ? NULL_PROMPT : POINTER_EXTRACT,
-    schemas: spec.schemas === 'described' ? DESCRIBED : SHARED_POINTER_SCHEMAS,
-    schemaOptions: spec.nullable ? { requiredNullable: true, dialect } : {},
+    prompt: spec.prompt ? PROMPTS[spec.prompt] : POINTER_V2.prompt,
+    schemaOptions: { requiredNullable: true, dialect },
     schemaField: dialect === 'jsonschema' ? 'responseJsonSchema' : 'responseSchema',
-    lineNumbers: spec.lineNumbers,
-    example: spec.example ? { paystub: paystubExample.trim(), lease: leaseExample.trim() } : undefined,
-    cloudModel: spec.model,
+    cloudModel: spec.model ?? POINTER_V2.cloudModel,
     thinkingLevel: spec.thinkingLevel,
     temperature: spec.temperature,
   };

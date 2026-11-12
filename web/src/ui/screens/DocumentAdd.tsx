@@ -15,7 +15,7 @@ import { LOCALES, LOCALE_NAMES, isLocale, type Locale } from '../i18n';
 import { navigate } from '../router';
 import { ScreenHeading } from '../Heading';
 import { ModelStatus } from '../doc/ModelStatus';
-import { allowlistFor } from '../doc/allowlists';
+import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { useDocument, type SourceKind } from '../doc/state';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 
@@ -46,8 +46,8 @@ export function DocumentAddScreen() {
   /** Every source ends here: Raw text → Skeleton + Raw map, then the preview. */
   const acceptText = useCallback(
     (text: Raw<string>, sourceKind: SourceKind, language: Locale = doc.language) => {
-      const { skeleton, map } = skeletonize(text, allowlistFor(language));
-      update({ text, skeleton, map, sourceKind, language, extraction: null, error: null });
+      const { skeleton, map } = skeletonize(text, allowlistFor(language), introducersFor(language));
+      update({ text, skeleton, map, sourceKind, language, extraction: null, error: null, hiddenWords: [] });
       navigate({ name: 'doc-preview' });
     },
     [doc.language, update],

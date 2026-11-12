@@ -1,0 +1,29 @@
+{
+  "employerName": "Gross Daughters Bakery",
+  "employeeName": "Bill Rate",
+  "payFrequency": "biweekly",
+  "payDate": "October 14, 2026",
+  "periodStart": "September 25, 2026",
+  "periodEnd": "October 8, 2026",
+  "grossPay": 3461.54,
+  "netPay": 2639.42,
+  "ytdGross": 76015.34,
+  "deductions": [
+    {
+      "amount": 356.54,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 214.62,
+      "kind": "social_security"
+    },
+    {
+      "amount": 50.19,
+      "kind": "medicare"
+    },
+    {
+      "amount": 200.77,
+      "kind": "state_tax"
+    }
+  ]
+}

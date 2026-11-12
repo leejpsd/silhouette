@@ -35,7 +35,7 @@ export function StartScreen({ notice }: { notice: string | null }) {
       <p className="meta">{t('start.rules', { name: t(dynamicKey(`pack.${PACK.jurisdiction}.name`)) })}</p>
       <div className="actions">
         <button type="button" className="button primary" onClick={begin}>
-          {started ? t('start.continue') : t('start.begin')}
+          {!started ? t('start.begin') : open < steps.length ? t('start.resume') : t('start.continue')}
         </button>
         <a className="button secondary" href="#/doc">
           {t('start.sample')}

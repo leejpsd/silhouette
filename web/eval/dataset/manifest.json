@@ -268,5 +268,61 @@
     "docType": "lease",
     "language": "en",
     "layout": "E2"
+  },
+  {
+    "id": "en-l11-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L11",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l11-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L11",
+    "frequency": "biweekly"
+  },
+  {
+    "id": "en-l11-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L11",
+    "frequency": "semimonthly"
+  },
+  {
+    "id": "en-l11-4",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L11",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l11-5",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L11",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l11-6",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L11",
+    "frequency": "biweekly"
+  },
+  {
+    "id": "en-l11-7",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L11",
+    "frequency": "semimonthly"
+  },
+  {
+    "id": "en-l11-8",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L11",
+    "frequency": "monthly"
   }
 ]

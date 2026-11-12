@@ -1,5 +1,5 @@
 {
-  "total": 460,
+  "total": 806,
   "runs": [
     {
       "date": "2026-11-12T04:33:56.749Z",
@@ -103,6 +103,114 @@
       "documents": 10,
       "calls": 5,
       "note": "stopped: gemini-3.8-flash answered HTTP 500 and 503 (deadline expired) to every request"
+    },
+    {
+      "date": "2026-11-12T08:09:56.868Z",
+      "variants": [
+        "v13"
+      ],
+      "set": "en",
+      "documents": 1,
+      "calls": 1
+    },
+    {
+      "date": "2026-11-12T08:10:13.767Z",
+      "variants": [
+        "v13"
+      ],
+      "set": "en",
+      "documents": 1,
+      "calls": 1
+    },
+    {
+      "date": "2026-11-12T08:14:04.537Z",
+      "variants": [
+        "v13"
+      ],
+      "set": "all",
+      "documents": 48,
+      "calls": 49
+    },
+    {
+      "date": "2026-11-12T08:16:37.219Z",
+      "variants": [
+        "v13r"
+      ],
+      "set": "en",
+      "documents": 38,
+      "calls": 38
+    },
+    {
+      "date": "2026-11-12T08:18:05.891Z",
+      "variants": [
+        "v13t"
+      ],
+      "set": "all",
+      "documents": 48,
+      "calls": 1
+    },
+    {
+      "date": "2026-11-12T08:18:09.152Z",
+      "variants": [
+        "v13tr"
+      ],
+      "set": "en",
+      "documents": 38,
+      "calls": 1
+    },
+    {
+      "date": "2026-11-12T08:21:53.931Z",
+      "variants": [
+        "v13t"
+      ],
+      "set": "all",
+      "documents": 48,
+      "calls": 47
+    },
+    {
+      "date": "2026-11-12T08:24:23.642Z",
+      "variants": [
+        "v13tr"
+      ],
+      "set": "en",
+      "documents": 38,
+      "calls": 37
+    },
+    {
+      "date": "2026-11-12T08:39:45.001Z",
+      "variants": [
+        "v14"
+      ],
+      "set": "en+lease",
+      "documents": 42,
+      "calls": 43
+    },
+    {
+      "date": "2026-11-12T08:43:18.263Z",
+      "variants": [
+        "v14r"
+      ],
+      "set": "en+lease",
+      "documents": 42,
+      "calls": 43
+    },
+    {
+      "date": "2026-11-12T08:46:31.496Z",
+      "variants": [
+        "v14p3"
+      ],
+      "set": "en+lease",
+      "documents": 42,
+      "calls": 42
+    },
+    {
+      "date": "2026-11-12T08:49:40.709Z",
+      "variants": [
+        "v14p3r"
+      ],
+      "set": "en+lease",
+      "documents": 42,
+      "calls": 43
     }
   ]
 }

@@ -10,8 +10,10 @@ import { describe, expect, it } from 'vitest';
 
 import { Raw, reveal } from './types';
 import {
-  TOKEN_PATTERN,
+  TOKEN_FLAGS,
+  TOKEN_SOURCE,
   buildAllowlist,
+  buildIntroducers,
   normalize,
   parseNumber,
   rehydrate,
@@ -22,6 +24,8 @@ import {
 } from './skeleton';
 import { GeneralizeError, canonical, generalize, type Bands, type ExactProfile } from './generalize';
 import { InputError, RuleError, UNKNOWN, evaluate, verdicts, type Answers, type RulePack } from './rules';
+import { ValidationInputError, validatePaystubs, type PaystubValues } from './validate';
+import { toModelSchema, type ModelSchemaOptions } from '../ai/model-schema';
 
 const SHARED = fileURLToPath(new URL('../../../shared/', import.meta.url));
 const CONFORMANCE_DIR = join(SHARED, 'fixtures', 'conformance');
@@ -30,6 +34,11 @@ const CANARY_DIR = join(SHARED, 'fixtures', 'canary');
 const readText = (rel: string): string => readFileSync(join(SHARED, rel), 'utf8');
 const readJson = <T>(rel: string): T => JSON.parse(readText(rel)) as T;
 
+const allowlistFiles = (locale: string): AllowlistFile[] => [
+  readJson<AllowlistFile>('skeleton/allowlist/en.json'),
+  readJson<AllowlistFile>(`skeleton/allowlist/${locale}.json`),
+];
+const introducers = (locale: string): ReadonlySet<string> => buildIntroducers(allowlistFiles(locale));
 const allowlist = (locale: string): ReadonlySet<string> =>
   buildAllowlist([
     readJson<AllowlistFile>('skeleton/allowlist/en.json'),
@@ -69,7 +78,7 @@ interface EvaluatorFixture {
 }
 
 /** Maps a fixture's `expectedError` name to the web port's error class. */
-const ERRORS = { GeneralizeError, RuleError, InputError } as const;
+const ERRORS = { GeneralizeError, RuleError, InputError, ValidationInputError } as const;
 function expectError(fn: () => unknown, name: string): void {
   const errorClass = ERRORS[name as keyof typeof ERRORS] as (new (...args: never[]) => Error) | undefined;
   expect(errorClass, `unknown expectedError ${name}`).toBeDefined();
@@ -96,7 +105,7 @@ const runners: Record<string, (fixture: unknown) => void> = {
     for (const k of fixture.cases) {
       describe(k.id, () => {
         const allow = allowlist(k.locale);
-        const result = skeletonize(Raw.of(k.input), allow);
+        const result = skeletonize(Raw.of(k.input), allow, introducers(k.locale));
         const map = reveal(result.map);
 
         it('produces the expected skeleton and map', () => {
@@ -186,13 +195,46 @@ const runners: Record<string, (fixture: unknown) => void> = {
   },
 };
 
+const extraRunners: Record<string, (fixture: unknown) => void> = {
+  'validate.json': (raw) => {
+    const fixture = raw as { cases: ({ id: string; jurisdiction: string; stubs: PaystubValues[] } & ({ expected: unknown } | { expectedError: string }))[] };
+    it('has at least 40 cases', () => expect(fixture.cases.length).toBeGreaterThanOrEqual(40));
+    for (const c of fixture.cases) {
+      it(c.id, () => {
+        const run = () => validatePaystubs(Raw.of(c.stubs), c.jurisdiction);
+        if ('expectedError' in c) expectError(run, c.expectedError);
+        else expectExact(run(), c.expected);
+      });
+    }
+  },
+  'model-schema.json': (raw) => {
+    const fixture = raw as { cases: { id: string; schema: Record<string, unknown>; options: ModelSchemaOptions; expected?: unknown; expectedError?: boolean }[] };
+    it('has cases', () => expect(fixture.cases.length).toBeGreaterThan(0));
+    for (const c of fixture.cases) {
+      it(c.id, () => {
+        if (c.expectedError) expect(() => toModelSchema(c.schema, c.options)).toThrow();
+        else expectExact(toModelSchema(c.schema, c.options), c.expected);
+      });
+    }
+  },
+};
+Object.assign(runners, extraRunners);
+
 // ---------- Every file in the conformance folder ----------
 
 const conformanceFiles = readdirSync(CONFORMANCE_DIR).sort();
 
 describe('shared/fixtures/conformance', () => {
-  it('contains the five known files (contract v1.2) and every file has a runner', () => {
-    expect(conformanceFiles).toEqual(['evaluator.json', 'generalize.json', 'rehydrate.json', 'skeleton.json', 'verdict.json']);
+  it('contains the seven known files (contract v1.3) and every file has a runner', () => {
+    expect(conformanceFiles).toEqual([
+      'evaluator.json',
+      'generalize.json',
+      'model-schema.json',
+      'rehydrate.json',
+      'skeleton.json',
+      'validate.json',
+      'verdict.json',
+    ]);
     for (const file of conformanceFiles) expect(Object.hasOwn(runners, file), `no runner for ${file}`).toBe(true);
   });
 
@@ -226,7 +268,7 @@ describe('shared/fixtures/canary', () => {
       const canary = JSON.parse(readFileSync(join(CANARY_DIR, file), 'utf8')) as CanaryFixture;
       expect(canary.canaries.length).toBeGreaterThan(0);
       const text = readFileSync(join(CANARY_DIR, canary.document), 'utf8');
-      const { skeleton } = skeletonize(Raw.of(text), allowlist(canary.locale));
+      const { skeleton } = skeletonize(Raw.of(text), allowlist(canary.locale), introducers(canary.locale));
       // Sanity: the document really contains canaries, so the check is meaningful. (Some canaries
       // are derived forms such as "1487.5" that do not appear literally.)
       expect(canary.canaries.some((value) => normalize(text).includes(value))).toBe(true);
@@ -239,12 +281,11 @@ describe('shared/fixtures/canary', () => {
 
 // ---------- Spec text ----------
 
-describe('shared/skeleton/SPEC.md', () => {
-  it('the tokenizer regex is the combined reference regex, byte for byte, with gu flags', () => {
-    const spec = readText('skeleton/SPEC.md');
-    const block = /Combined reference regex[^\n]*\n+```\n([^\n]+)\n```/.exec(spec);
-    expect(block?.[1]).toBeDefined();
-    expect(TOKEN_PATTERN.source).toBe(block?.[1]);
-    expect(TOKEN_PATTERN.flags).toBe('gu');
+describe('shared/reference/silhouette.mjs', () => {
+  it('the tokenizer is the reference TOKEN_SOURCE, byte for byte, with flags gu', async () => {
+    const referenceUrl = new URL('../../../shared/reference/silhouette.mjs', import.meta.url).href;
+    const ref = (await import(/* @vite-ignore */ referenceUrl)) as { TOKEN_SOURCE: string };
+    expect(TOKEN_SOURCE).toBe(ref.TOKEN_SOURCE);
+    expect(TOKEN_FLAGS).toBe('gu');
   });
 });

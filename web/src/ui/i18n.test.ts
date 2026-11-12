@@ -1,27 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import sharedEn from '../../../shared/copy/en.json';
-import local from './copy.local.json';
 import { LOCALES, format, lookup, programName, translator } from './i18n';
 import { BANDS, PACK, PACK_COPY } from './pack';
 import { buildSteps } from './quickcheck';
 
 describe('copy', () => {
-  it('local keys never shadow shared or pack keys', () => {
-    for (const locale of LOCALES) {
-      for (const key of Object.keys(local[locale])) {
-        expect(Object.hasOwn(sharedEn, key), `${locale}:${key} is in shared/copy`).toBe(false);
-        expect(Object.hasOwn(PACK_COPY.en, key), `${locale}:${key} is in the pack copy`).toBe(false);
-      }
-    }
-  });
-
-  it('every local es/ko key also exists in en', () => {
-    for (const locale of ['es', 'ko'] as const) {
-      for (const key of Object.keys(local[locale])) expect(Object.hasOwn(local.en, key), `${locale}:${key}`).toBe(true);
-    }
-  });
-
   it('has a label for every question, option, variable, criterion, caveat and verdict in the pack', () => {
     const keys = [
       ...buildSteps(PACK, BANDS).map((s) => `question.${s.id}.label`),
@@ -38,11 +22,8 @@ describe('copy', () => {
   });
 
   it('uses program.{id}.name from the pack copy and falls back to programs[].name', () => {
-    const phone = PACK.programs.find((p) => p.id === 'phone-discount')!;
-    const work = PACK.programs.find((p) => p.id === 'work-credit')!;
-    expect(programName('en', phone)).toBe(PACK_COPY.en['program.phone-discount.name']);
-    expect(Object.hasOwn(PACK_COPY.en, 'program.work-credit.name')).toBe(false);
-    expect(programName('ko', work)).toBe(work.name);
+    for (const p of PACK.programs) expect(programName('en', p)).toBe(PACK_COPY.en[`program.${p.id}.name`]);
+    expect(programName('ko', { id: 'not-in-copy', name: 'Fallback Name' })).toBe('Fallback Name');
   });
 
   it('prefers the active locale and falls back to English per key', () => {

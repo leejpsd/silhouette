@@ -15,6 +15,7 @@ import { DocumentPreviewScreen } from './screens/DocumentPreview';
 import { DocumentReviewScreen } from './screens/DocumentReview';
 import { DocumentContext, emptyDocument, type DocumentContextValue, type DocumentState } from './doc/state';
 import { clearOutbound } from '../data/outbound';
+import { LEDGER_CLEARED_KEY, startOutboundPersistence } from '../data/outbound-store';
 
 const ANSWERS_RECORD = 'quickcheck.answers';
 const LOCALE_PREF = `${PREF_PREFIX}locale`;
@@ -48,6 +49,10 @@ export function App() {
       live = false;
     };
   }, [steps]);
+
+  useEffect(() => {
+    void startOutboundPersistence();
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -96,12 +101,22 @@ export function App() {
   const state: AppState = { locale, t, steps, answers, results, setAnswer, resetAnswers };
 
   const onDelete = async () => {
-    await deleteEverything();
+    const { shutdownFirebase } = await import('../ai/firebase');
+    const { resetModelInstances } = await import('../ai/model-port');
+    await shutdownFirebase();
+    resetModelInstances();
+    const report = await deleteEverything();
     answersRef.current = {};
     setAnswers({});
     setDoc(emptyDocument(locale));
-    clearOutbound();
-    setNotice(t('delete.done'));
+    const now = Date.now();
+    clearOutbound(now);
+    try {
+      localStorage.setItem(LEDGER_CLEARED_KEY, String(now));
+    } catch {
+      // Without storage the bar still says so for this session.
+    }
+    setNotice(`${t('delete.done')} ${t('delete.erased', { count: report.databases.length })}`);
     navigate({ name: 'start' });
   };
 
@@ -126,7 +141,7 @@ export function App() {
         {t('app.skipToContent')}
       </a>
       <Header onLocale={changeLocale} />
-      {isDemoPack(PACK) && <DemoBanner />}
+      {isDemoPack(PACK) && <DemoBanner compact={route.name !== 'start'} />}
       <main id="main" tabIndex={-1} aria-busy={!loaded}>
         {screen}
       </main>

@@ -1,0 +1,17 @@
+Union Pay Systems CORP
+Payroll questions: payroll@union-pay-systems-corp.example or (555) 694-2293
+
+Employee: Robin Federal        Employee ID: 078972
+Pay Date: December 1, 2026
+Pay Period: November 1, 2026 to November 30, 2026
+Pay Frequency: Once a month
+
+Earnings                            Current      YTD
+Salary                              3,333.33     37,666.63
+Gross Pay                           3,333.33     37,666.63
+
+Federal Income Tax                  326.67       3,691.37
+Social Security                     206.67       2,335.37
+Medicare                            48.33        546.13
+State Income Tax                    180.00       2,034.00
+Net Pay                             2,571.66

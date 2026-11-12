@@ -3,13 +3,10 @@
 // The app uses ACTIVE_POINTER_CONFIG (src/ai/tasks.ts); eval/ compares variants on a test set.
 // Every variant keeps the pointer principle: output is placeholder ids and closed enums only.
 
-import paystubV1 from '../../../shared/schemas/pointer.paystub.json';
-import leaseV1 from '../../../shared/schemas/pointer.lease.json';
+import paystubV2 from '../../../shared/schemas/pointer.paystub.json';
+import leaseV2 from '../../../shared/schemas/pointer.lease.json';
 import type { PointerSchema } from '../core/skeleton';
-import { POINTER_EXTRACT, parsePrompt, type PromptTemplate } from './prompts';
-import pointerExtractV2 from './pointer-v2/pointer-extract.v2.md?raw';
-import paystubV2 from './pointer-v2/pointer.paystub.json';
-import leaseV2 from './pointer-v2/pointer.lease.json';
+import { POINTER_EXTRACT, type PromptTemplate } from './prompts';
 import type { ModelSchemaOptions } from './model-schema';
 
 export type DocType = 'paystub' | 'lease';
@@ -39,30 +36,19 @@ export interface PointerConfig {
 }
 
 export const SHARED_POINTER_SCHEMAS: Readonly<Record<DocType, PointerSchema>> = {
-  paystub: paystubV1 as unknown as PointerSchema,
-  lease: leaseV1 as unknown as PointerSchema,
-};
-
-/** Contract v1.2 as shipped in /shared (prompt pointer-extract.v1, shared schemas). */
-export const POINTER_V1: PointerConfig = {
-  id: 'v1-shared',
-  prompt: POINTER_EXTRACT,
-  schemas: SHARED_POINTER_SCHEMAS,
-  schemaOptions: {},
-  schemaField: 'responseSchema',
-  lineNumbers: false,
-  cloudModel: 'gemini-3.5-flash-lite',
-  maxOutputTokens: 1024,
+  paystub: paystubV2 as unknown as PointerSchema,
+  lease: leaseV2 as unknown as PointerSchema,
 };
 
 /**
- * Every field required and nullable, prompt pointer-extract.v2 ("use null when the field is not
- * in the document"). Measured on eval/dataset/: see eval/results/summary.md.
+ * shared/prompts/pointer-extract.v2.md with shared/schemas/pointer.*.json (v2): every field
+ * required and nullable, "use null when the field is not in the document".
+ * Measured on eval/dataset/: see eval/results/summary.md.
  */
 export const POINTER_V2: PointerConfig = {
   id: 'v2',
-  prompt: parsePrompt('pointer-extract.v2', pointerExtractV2),
-  schemas: { paystub: paystubV2 as unknown as PointerSchema, lease: leaseV2 as unknown as PointerSchema },
+  prompt: POINTER_EXTRACT,
+  schemas: SHARED_POINTER_SCHEMAS,
   schemaOptions: { requiredNullable: true, dialect: 'openapi' },
   schemaField: 'responseSchema',
   lineNumbers: false,

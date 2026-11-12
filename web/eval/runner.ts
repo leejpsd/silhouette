@@ -2,7 +2,8 @@
 // skeletonize (document language ∪ en) → document.pointer.extract (forced to the cloud) → rehydrate.
 import { Raw, reveal } from '../src/core/types';
 import { rehydrate, skeletonize } from '../src/core/skeleton';
-import { allowlistFor } from '../src/ui/doc/allowlists';
+import { allowlistFor, introducersFor } from '../src/ui/doc/allowlists';
+import { tidyNamePointers } from '../src/core/tidy';
 import { extractPointers, presentSkeleton, TaskError, type DocType } from '../src/ai/tasks';
 import { buildConfig, type VariantSpec } from './variants';
 
@@ -18,6 +19,8 @@ export type EvalOutput =
       ok: true;
       pointers: unknown;
       rehydrated: unknown;
+      rehydratedRaw: unknown;
+      rehydratedTidy: unknown;
       usage: unknown;
       latencyMs: number;
       inferenceSource: string;
@@ -29,15 +32,24 @@ export type EvalOutput =
 async function evalExtract(input: EvalInput): Promise<EvalOutput> {
   const config = buildConfig(input.spec);
   const allow = new Set([...allowlistFor(input.language), ...(input.spec.extraAllowlist ?? [])]);
-  const { skeleton, map } = skeletonize(Raw.of(input.text), allow);
+  const introducers = introducersFor(input.language);
+  const { skeleton, map } = skeletonize(Raw.of(input.text), allow, introducers);
   const started = performance.now();
   try {
     const result = await extractPointers(skeleton, input.docType, input.language, { config, forceCloud: true });
-    const rehydrated = reveal(rehydrate(config.schemas[input.docType], result.value, map));
+    const schema = config.schemas[input.docType];
+    // Both readings of the same answer: as the model returned it, and after the on-device clean-up.
+    const tidied = tidyNamePointers(schema, result.value, map, introducers);
+    const pointers = input.spec.tidy ? tidied : result.value;
+    const rehydrated = reveal(rehydrate(schema, pointers, map));
+    const rehydratedRaw = reveal(rehydrate(schema, result.value, map));
+    const rehydratedTidy = reveal(rehydrate(schema, tidied, map));
     return {
       ok: true,
-      pointers: result.value,
+      pointers,
       rehydrated,
+      rehydratedRaw,
+      rehydratedTidy,
       usage: result.usage ?? null,
       latencyMs: Math.round(performance.now() - started),
       inferenceSource: result.inferenceSource,

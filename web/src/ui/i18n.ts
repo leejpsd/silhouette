@@ -1,12 +1,10 @@
 // UI copy: shared/copy/*.json (app-wide) and shared/rulepacks/{jurisdiction}/copy/*.json (pack
-// labels, key conventions in shared/rulepacks/SPEC.md section 1). copy.local.json holds app keys
-// that are not in shared/copy yet; a test keeps them from shadowing shared keys.
-// Per-key lookup: shared/{locale} → pack/{locale} → local/{locale} → shared/en → pack/en → local/en.
+// labels, key conventions in shared/rulepacks/SPEC.md section 1).
+// Per-key lookup: shared/{locale} → pack/{locale} → shared/en → pack/en.
 
 import sharedEn from '../../../shared/copy/en.json';
 import sharedEs from '../../../shared/copy/es.json';
 import sharedKo from '../../../shared/copy/ko.json';
-import local from './copy.local.json';
 import { PACK_COPY } from './pack';
 
 export const LOCALES = ['en', 'es', 'ko'] as const;
@@ -15,18 +13,17 @@ export type Locale = (typeof LOCALES)[number];
 /** Language names in their own language (not translated). */
 export const LOCALE_NAMES: Record<Locale, string> = { en: 'English', es: 'Español', ko: '한국어' };
 
-export type CopyKey = keyof typeof sharedEn | keyof typeof local.en;
+export type CopyKey = keyof typeof sharedEn;
 
 type Table = Readonly<Record<string, string>>;
 const SHARED: Record<Locale, Table> = { en: sharedEn, es: sharedEs, ko: sharedKo };
-const LOCAL: Record<Locale, Table> = { en: local.en, es: local.es, ko: local.ko };
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 }
 
 function inLocale(locale: Locale, key: string): string | undefined {
-  return SHARED[locale][key] ?? PACK_COPY[locale][key] ?? LOCAL[locale][key];
+  return SHARED[locale][key] ?? PACK_COPY[locale][key];
 }
 
 /** Looks up a key with per-key fallback to English. Returns undefined when no table has it. */
@@ -62,6 +59,12 @@ export function dynamicKey(key: string): CopyKey {
 /** `program.{id}.name` from the pack copy, falling back to `programs[].name` (SPEC section 1). */
 export function programName(locale: Locale, program: { readonly id: string; readonly name: string }): string {
   return lookup(locale, `program.${program.id}.name`) ?? program.name;
+}
+
+/** An amount with cents only when it has them: 28,000 or 28,000.50. */
+export function formatAmount(locale: Locale, value: number): string {
+  const whole = Number.isInteger(value);
+  return new Intl.NumberFormat(locale, { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 }).format(value);
 }
 
 export function formatNumber(locale: Locale, value: number): string {

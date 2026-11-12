@@ -121,7 +121,8 @@ test.describe('Quick Check to first result', () => {
     await expect(page.getByRole('button', { name: 'Start Quick Check' })).toBeVisible();
 
     expect(await readStore(page)).toMatchObject({ exists: false, records: 0, keys: 0 });
-    expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('silhouette.')))).toEqual([]);
+    // Only the time of the deletion is kept, so the bar can say the record was deleted.
+    expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('silhouette.')))).toEqual(['silhouette.ledger-cleared-at']);
 
     await page.reload();
     await expect(page.getByRole('button', { name: 'Start Quick Check' })).toBeVisible();

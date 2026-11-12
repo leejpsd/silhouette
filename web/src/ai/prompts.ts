@@ -1,6 +1,6 @@
 // Prompts are loaded from ../shared/prompts at build time (never pasted here).
-import pointerExtractV1 from '../../../shared/prompts/pointer-extract.v1.md?raw';
-import photoReadLocal from './prompts/photo-read.local.md?raw';
+import pointerExtractV2 from '../../../shared/prompts/pointer-extract.v2.md?raw';
+import photoReadV1 from '../../../shared/prompts/photo-read.v1.md?raw';
 
 export interface PromptTemplate {
   readonly id: string;
@@ -26,5 +26,5 @@ export function fill(template: string, values: Readonly<Record<string, string>>)
   return template.replace(/\{(\w+)\}/g, (match, name: string) => values[name] ?? match);
 }
 
-export const POINTER_EXTRACT = parsePrompt('pointer-extract.v1', pointerExtractV1);
-export const PHOTO_READ = parsePrompt('photo-read.local', photoReadLocal);
+export const POINTER_EXTRACT = parsePrompt('pointer-extract.v2', pointerExtractV2);
+export const PHOTO_READ = parsePrompt('photo-read.v1', photoReadV1);

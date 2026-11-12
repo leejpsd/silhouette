@@ -8,7 +8,7 @@ import type { Generalized, Public, Skeleton } from '../core/types';
 import type { GeneralizedProfile } from '../core/generalize';
 import type { PointerSchema } from '../core/skeleton';
 import routing from '../../../shared/routing.json';
-import { classifyError, TaskError } from './errors';
+import { classifyError, TaskError, type TaskErrorKind } from './errors';
 import { modelFor, sourceOf, type InferenceSource, type UsageMetadata } from './model-port';
 import { POINTER_V2, type DocType, type PointerConfig } from './pointer-config';
 import { toModelSchema } from './model-schema';
@@ -29,7 +29,9 @@ export type RoutingReason =
   | 'typed-text-may-be-personal'
   | 'needs-current-info'
   | 'needs-places'
-  | 'speech';
+  | 'speech'
+  /** A PREFER_ON_DEVICE call failed on the device and was repeated in the cloud with the same cloud-safe input. */
+  | 'on-device-failed';
 
 /** Every model response carries its provenance: where it ran, and why. */
 export interface TaskResult<T> {
@@ -49,6 +51,8 @@ export const POINTER_SCHEMAS: Readonly<Record<DocType, PointerSchema>> = ACTIVE_
 export const CLOUD_MODEL = ACTIVE_POINTER_CONFIG.cloudModel;
 
 const POINTER_TASK = routing.tasks['document.pointer.extract'];
+/** What happens when a PREFER_ON_DEVICE call fails on the device. */
+const ON_DEVICE_FAILURE = routing.onDeviceFailure;
 
 export interface PointerCallOptions {
   readonly config?: PointerConfig;
@@ -112,12 +116,55 @@ export function presentSkeleton(skeleton: Skeleton, config: PointerConfig): stri
 
 export interface PointerResult extends TaskResult<unknown> {
   readonly usage?: UsageMetadata | undefined;
+  /** When the on-device attempt failed and the cloud answered: what the device reported. */
+  readonly deviceError?: string | undefined;
+}
+
+/** Errors that come from the cloud side; repeating the call in the cloud would not help. */
+const CLOUD_FAILURES: ReadonlySet<TaskErrorKind> = new Set(['app-check', 'permission', 'api-not-enabled', 'quota', 'network']);
+
+async function callPointerModel(
+  skeleton: Skeleton,
+  docType: DocType,
+  language: string,
+  options: PointerCallOptions,
+): Promise<{ value: Record<string, unknown>; source: InferenceSource; usage: UsageMetadata | undefined }> {
+  const config = options.config ?? ACTIVE_POINTER_CONFIG;
+  const model = await pointerModel(docType, language, options);
+  const prompt = fill(config.prompt.user, { docType, skeleton: presentSkeleton(skeleton, config) });
+  const { response } = await model.generateContent(prompt);
+  const source = sourceOf(response, 'IN_CLOUD');
+  const text = response.text();
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    // The output holds placeholder ids only (never document values), so a snippet is safe to keep.
+    throw Object.assign(new TaskError('bad-output', `model output is not JSON (${text.length} chars): ${text.slice(0, 160)}`), { source });
+  }
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw Object.assign(new TaskError('bad-output', 'model output is not a JSON object'), { source });
+  }
+  const cleaned = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null));
+  return { value: cleaned, source, usage: response.usageMetadata };
+}
+
+/** True when a failed PREFER_ON_DEVICE call failed on the device, not in the cloud. */
+function failedOnDevice(error: unknown): boolean {
+  if ((error as { source?: unknown }).source === 'ON_DEVICE') return true;
+  if ((error as { source?: unknown }).source === 'IN_CLOUD') return false;
+  const e = classifyError(error);
+  return e.status === undefined && !CLOUD_FAILURES.has(e.kind);
 }
 
 /**
  * Task `document.pointer.extract`: PREFER_ON_DEVICE, input Skeleton, reason
  * `document-silhouette-only`. Returns the model's pointer JSON (untrusted) for rehydrate().
  * Null values ("not in the document") are removed before returning.
+ *
+ * When the call fails on the device (for example "The input is too large"), it is repeated as
+ * routing.json `onDeviceFailure` says (once, ONLY_IN_CLOUD) and the result carries its reason. This is safe only because
+ * the input is a Skeleton; tasks with Raw input never fall back to the cloud.
  */
 export async function extractPointers(
   skeleton: Skeleton,
@@ -126,31 +173,26 @@ export async function extractPointers(
   options: PointerCallOptions = {},
 ): Promise<PointerResult> {
   if (POINTER_TASK.mode !== 'PREFER_ON_DEVICE') throw new Error('routing.json changed: document.pointer.extract mode');
-  const config = options.config ?? ACTIVE_POINTER_CONFIG;
+  if (
+    ON_DEVICE_FAILURE.appliesTo !== POINTER_TASK.mode ||
+    ON_DEVICE_FAILURE.retry !== 'ONLY_IN_CLOUD' ||
+    ON_DEVICE_FAILURE.times !== 1
+  ) {
+    throw new Error('routing.json changed: onDeviceFailure');
+  }
+  const reason = POINTER_TASK.reason as RoutingReason;
   try {
-    const model = await pointerModel(docType, language, options);
-    const prompt = fill(config.prompt.user, { docType, skeleton: presentSkeleton(skeleton, config) });
-    const { response } = await model.generateContent(prompt);
-    let value: unknown;
-    const text = response.text();
-    try {
-      value = JSON.parse(text);
-    } catch {
-      // The output holds placeholder ids only (never document values), so a snippet is safe to keep.
-      throw new TaskError('bad-output', `model output is not JSON (${text.length} chars): ${text.slice(0, 160)}`);
-    }
-    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-      throw new TaskError('bad-output', 'model output is not a JSON object');
-    }
-    const cleaned = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null));
-    return {
-      value: cleaned,
-      inferenceSource: sourceOf(response, 'IN_CLOUD'),
-      reason: POINTER_TASK.reason as RoutingReason,
-      usage: response.usageMetadata,
-    };
+    const r = await callPointerModel(skeleton, docType, language, options);
+    return { value: r.value, inferenceSource: r.source, reason, usage: r.usage };
   } catch (error) {
-    throw classifyError(error);
+    if (options.forceCloud || !failedOnDevice(error)) throw classifyError(error);
+    const deviceError = classifyError(error).detail;
+    try {
+      const r = await callPointerModel(skeleton, docType, language, { ...options, forceCloud: true });
+      return { value: r.value, inferenceSource: r.source, reason: ON_DEVICE_FAILURE.reason as RoutingReason, usage: r.usage, deviceError };
+    } catch (cloudError) {
+      throw classifyError(cloudError);
+    }
   }
 }
 

@@ -3,7 +3,7 @@
 // App Check: reCAPTCHA Enterprise in production (VITE_RECAPTCHA_SITE_KEY), debug provider on
 // the dev server (VITE_APPCHECK_DEBUG_TOKEN from .env.local). Limited-use tokens for AI Logic.
 
-import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { deleteApp, initializeApp, type FirebaseApp } from 'firebase/app';
 import { CustomProvider, ReCaptchaEnterpriseProvider, initializeAppCheck } from 'firebase/app-check';
 import { GoogleAIBackend, getAI, getGenerativeModel, type AI, type GenerativeModel, type HybridParams } from 'firebase/ai';
 import { FIREBASE_CONFIG } from '../data/firebase-config';
@@ -51,4 +51,19 @@ export function firebaseServices(): Promise<Services> {
 export async function createModel(params: HybridParams): Promise<GenerativeModel> {
   const { ai } = await firebaseServices();
   return getGenerativeModel(ai, params);
+}
+
+/**
+ * Closes the Firebase app (and with it the SDK's IndexedDB connections) so "Delete everything" can
+ * remove the SDK's storage. The next model call initializes Firebase again.
+ */
+export async function shutdownFirebase(): Promise<void> {
+  if (!services) return;
+  const current = services;
+  services = null;
+  try {
+    await deleteApp((await current).app);
+  } catch {
+    // Initialization had failed; nothing is open.
+  }
 }

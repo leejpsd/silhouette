@@ -5,12 +5,12 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { Raw, reveal } from './types';
-import { buildAllowlist, parseNumber, rehydrate, skeletonize, type AllowlistFile, type PointerSchema } from './skeleton';
+import { buildAllowlist, buildIntroducers, parseNumber, rehydrate, skeletonize, type AllowlistFile, type PointerSchema } from './skeleton';
 import { GeneralizeError, canonical, generalize, type Bands, type ExactProfile } from './generalize';
 import { InputError, RuleError, UNKNOWN, evaluate, verdicts, type Answers, type RulePack } from './rules';
 
 interface ReferenceModule {
-  skeletonize(text: string, allow: Set<string>): { skeleton: string; map: Record<string, string> };
+  skeletonize(text: string, allow: Set<string>, introducers?: Set<string>): { skeleton: string; map: Record<string, string> };
   parseNumber(token: string): number | undefined;
   rehydrate(schema: unknown, pointers: unknown, map: Record<string, string>): unknown;
   generalize(exact: unknown, bands: unknown): unknown;
@@ -43,6 +43,8 @@ function prng(seed: number): () => number {
 const PIECES = [
   'Gross', 'Pay', 'net', 'Year-to-Date', 'Smith-Jones', "O'Brien", 'O’Neil', 'José', 'Ñandú', '급여', '지급액',
   'é', 'Å', 'ﬁ', '😀', '⟦', '⟧', '⟦N1⟧', '-', '/', '.', ',', "'", '’', '$', '%', ' ', '  ', '\t', '\n', '\r\n', '\r',
+  'Jordan', 'Gross', 'Federal', 'Security', ', ', ' & ', 'payroll@example.com', 'user_name', 'October 17, 2026', '17 de octubre de 2026',
+  'Sept 3rd, 2026', 'May', '2026', '\u200b', '\u0007', '\ue000', '１２', '²', '₩', '€', '·',
   '0', '7', '12', '004417', '1,284.50', '1.284,50', '10/01/2026', '2026-10-15', '123-45-6789', '12.5', '3,400', '١٢',
 ];
 
@@ -69,14 +71,16 @@ describe('differential: web port vs shared/reference/silhouette.mjs', () => {
   const allowFiles = ['en', 'es', 'ko'].map((l) => readJson<AllowlistFile>(`skeleton/allowlist/${l}.json`));
   const allow = buildAllowlist(allowFiles);
   const refAllow = new Set(allow);
+  const intro = buildIntroducers(allowFiles);
+  const refIntro = new Set(intro);
 
   it('skeletonize and rehydrate agree on 3000 random documents', () => {
     const next = prng(20261112);
     const schema = readJson<PointerSchema>('schemas/pointer.paystub.json');
     for (let i = 0; i < 3000; i++) {
       const text = randomText(next);
-      const ours = skeletonize(Raw.of(text), allow);
-      const theirs = ref.skeletonize(text, refAllow);
+      const ours = skeletonize(Raw.of(text), allow, intro);
+      const theirs = ref.skeletonize(text, refAllow, refIntro);
       expect(ours.skeleton, JSON.stringify(text)).toBe(theirs.skeleton);
       expect(JSON.stringify(reveal(ours.map))).toBe(JSON.stringify(theirs.map));
 
@@ -184,5 +188,51 @@ describe('differential: web port vs shared/reference/silhouette.mjs', () => {
     }
     expect(errors).toBeGreaterThan(1000);
     expect(errors).toBeLessThan(20000);
+  });
+});
+
+describe('differential: validation against shared/reference/validate.mjs', () => {
+  it('agrees on 3000 random paystub sets', async () => {
+    const refUrl = new URL('../../../shared/reference/validate.mjs', import.meta.url).href;
+    const vref = (await import(/* @vite-ignore */ refUrl)) as {
+      validatePaystubs: (v: unknown, j: string) => unknown;
+      ValidationInputError: new (...a: never[]) => Error;
+    };
+    const { validatePaystubs, ValidationInputError } = await import('./validate');
+    const next = prng(31);
+    const pickOf = <T>(xs: readonly T[]): T => xs[Math.floor(next() * xs.length)] as T;
+    const maybe = <T>(v: T): T | undefined => (next() < 0.7 ? v : undefined);
+    const money = () => pickOf([0, 0.25, 1.005, 99.99, 1271.88, 2000, 23103.25, 2485000, -1]);
+    const date = () =>
+      pickOf(['10/20/2026', '10/15/2026', '2026-10-25', '26.10.25', '02/29/2026', '01/31/2026', '15/10/2026', 'October 17, 2026', '17 de octubre de 2026', 'Feb 30, 2026', 'x']);
+    const outcome = (fn: () => unknown, err: new (...a: never[]) => Error) => {
+      try {
+        return JSON.stringify(fn());
+      } catch (e) {
+        if (e instanceof err) return 'ValidationInputError';
+        throw e;
+      }
+    };
+    for (let i = 0; i < 3000; i++) {
+      const stubs = Array.from({ length: 1 + Math.floor(next() * 3) }, () => {
+        const s: Record<string, unknown> = {
+          grossPay: maybe(money()),
+          netPay: maybe(money()),
+          ytdGross: maybe(money()),
+          hourlyRate: maybe(money()),
+          hoursWorked: maybe(pickOf([40, 62, 80.5, 0])),
+          payFrequency: maybe(pickOf(['weekly', 'biweekly', 'semimonthly', 'monthly'])),
+          payDate: maybe(date()),
+          periodStart: maybe(date()),
+          periodEnd: maybe(date()),
+          deductions: maybe([{ amount: pickOf([10, 58.4, 250560]) }]),
+        };
+        for (const k of Object.keys(s)) if (s[k] === undefined) delete s[k];
+        return s;
+      });
+      const jurisdiction = pickOf(['us-ca', 'kr', 'zz-test', 'xx']);
+      const ours = outcome(() => validatePaystubs(Raw.of(stubs as never), jurisdiction), ValidationInputError);
+      expect(ours, JSON.stringify(stubs)).toBe(outcome(() => vref.validatePaystubs(stubs, jurisdiction), vref.ValidationInputError));
+    }
   });
 });

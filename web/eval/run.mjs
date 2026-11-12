@@ -13,6 +13,7 @@ import { createServer } from 'vite';
 import { chromium } from '@playwright/test';
 import { aggregate, scoreDocument, targetMet, TARGET_FIELDS } from './score.mjs';
 import { VARIANTS } from './variant-list.mjs';
+import { appears, goldStrings } from './leaks.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DATASET = new URL('dataset/', import.meta.url);
@@ -33,6 +34,7 @@ const manifest = JSON.parse(readFileSync(new URL('manifest.json', DATASET), 'utf
   if (set === 'all') return true;
   if (set === 'en') return d.docType === 'paystub' && d.language === 'en';
   if (set === 'ko') return d.docType === 'paystub' && d.language === 'ko';
+  if (set === 'en+lease') return d.language === 'en';
   return d.docType === set;
 });
 const docs = limit ? manifest.slice(0, limit) : manifest;
@@ -69,6 +71,12 @@ async function openRunner() {
 }
 await openRunner();
 const resume = process.argv.includes('--resume');
+
+// Leak check: every request body that goes to AI Logic while a document is processed.
+let currentBodies = [];
+page.on('request', (r) => {
+  if (r.url().includes('firebasevertexai.googleapis.com')) currentBodies.push(r.postData() ?? '');
+});
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let lastStart = 0;
@@ -119,22 +127,37 @@ try {
       }
       const text = readFileSync(new URL(`${doc.id}.txt`, DATASET), 'utf8');
       const gold = JSON.parse(readFileSync(new URL(`${doc.id}.gold.json`, DATASET), 'utf8'));
+      currentBodies = [];
       const out = await call({ text, docType: doc.docType, language: doc.language, spec });
+      const sent = currentBodies.join('\n');
+      const leaks = goldStrings(gold, text, doc.language).filter((v) => appears(sent, v));
       const score = out.ok ? scoreDocument(schemaFields[doc.docType], gold, out.rehydrated, out.pointers) : null;
-      const row = { ...doc, ...out, gold, score, spec };
+      const scoreRaw = out.ok && out.rehydratedRaw ? scoreDocument(schemaFields[doc.docType], gold, out.rehydratedRaw, out.pointers) : null;
+      const scoreTidy = out.ok && out.rehydratedTidy ? scoreDocument(schemaFields[doc.docType], gold, out.rehydratedTidy, out.pointers) : null;
+      const row = { ...doc, ...out, gold, score, scoreRaw, scoreTidy, spec, requests: currentBodies.length, requestBodies: currentBodies, leaks };
       scored.push(row);
       appendFileSync(partialFile, JSON.stringify(row) + '\n');
       const fails = score ? Object.entries(score.outcomes).filter(([, o]) => o !== 'correct' && o !== 'absent').map(([f, o]) => `${f}:${o}`) : [out.kind];
       if (score?.deductions && !score.deductions.exact) fails.push(`deductions:${score.deductions.matched}/${score.deductions.gold}+${score.deductions.extra}`);
+      if (leaks.length) fails.push(`LEAK:${leaks.join('|')}`);
       console.log(`  ${doc.id.padEnd(16)} ${out.ok ? `${String(out.latencyMs).padStart(5)}ms` : 'ERROR  '} ${fails.join(' ') || 'all correct'}`);
     }
     const groups = {
-      enPaystub: scored.filter((d) => d.docType === 'paystub' && d.language === 'en'),
+      enPaystub: scored.filter((d) => d.docType === 'paystub' && d.language === 'en' && d.layout !== 'L11'),
+      enRules: scored.filter((d) => d.layout === 'L11'),
       koPaystub: scored.filter((d) => d.docType === 'paystub' && d.language === 'ko'),
       lease: scored.filter((d) => d.docType === 'lease'),
     };
     const metrics = Object.fromEntries(Object.entries(groups).filter(([, g]) => g.length).map(([k, g]) => [k, aggregate(g)]));
-    const result = { variant: variantId, spec, date: new Date().toISOString(), set, metrics, targetMet: metrics.enPaystub ? targetMet(metrics.enPaystub) : null, documents: scored };
+    // The same answers scored without and with the on-device name clean-up (src/core/tidy.ts).
+    const allCorrectOf = (rows, key) => rows.filter((d) => d[key]?.allCorrect).length / Math.max(1, rows.length);
+    const cleanUp = Object.fromEntries(
+      Object.entries(groups).filter(([, g]) => g.length).map(([k, g]) => [k, { without: allCorrectOf(g, 'scoreRaw'), with: allCorrectOf(g, 'scoreTidy') }]),
+    );
+    console.log(`  all fields correct without / with clean-up: ${Object.entries(cleanUp).map(([k, v]) => `${k} ${(v.without * 100).toFixed(1)}% / ${(v.with * 100).toFixed(1)}%`).join(', ')}`);
+    const leakCheck = { documents: scored.length, requestBodies: scored.reduce((a, d) => a + (d.requests ?? 0), 0), leaks: scored.flatMap((d) => (d.leaks ?? []).map((v) => `${d.id}: ${v}`)) };
+    console.log(`  leak check: ${leakCheck.requestBodies} request bodies, ${leakCheck.leaks.length} gold values found`);
+    const result = { variant: variantId, spec, date: new Date().toISOString(), set, metrics, cleanUp, leakCheck, targetMet: metrics.enPaystub ? targetMet(metrics.enPaystub) : null, documents: scored };
     writeFileSync(new URL(`${variantId}.json`, RESULTS), JSON.stringify(result, null, 2) + '\n');
     const en = metrics.enPaystub;
     if (en && TARGET_FIELDS.every((f) => en.fields[f])) {
@@ -160,31 +183,37 @@ const pctOf = (x) => (x === null || x === undefined ? '–' : `${(x * 100).toFix
 const lines = [
   '# Extraction evaluation results',
   '',
-  'Generated by `npm run eval`. English paystubs (30 documents), `document.pointer.extract` in the cloud.',
+  'Generated by `npm run eval`. English paystubs (the 30 documents of layouts L01–L10), `document.pointer.extract` in the cloud.',
+  'Leak check: no gold name, date or amount (as printed in the document) may appear in any request body sent for it.',
   'R = recall, W = wrong-pointer rate (wrong or spurious value per document). Target: R ≥ 95 % and W ≤ 2 % on',
   'grossPay, netPay, ytdGross and payFrequency, and all fields correct on ≥ 80 % of documents.',
   '',
-  '| Variant | Model | All fields correct | grossPay R / W | netPay R / W | ytdGross R / W | payFrequency R / W | Deduction items R | Prompt / output / thought tokens | Median latency | Target |',
-  '|---|---|---|---|---|---|---|---|---|---|---|',
+  '| Variant | Model | Skeletons | All fields correct | grossPay R / W | netPay R / W | ytdGross R / W | payFrequency R / W | Deduction items R | Prompt / output / thought tokens | Median latency | Target |',
+  '|---|---|---|---|---|---|---|---|---|---|---|---|',
   ...rows
     .filter((r) => r.metrics.enPaystub)
     .map((r) => {
       const m = r.metrics.enPaystub;
       const f = (k) => `${pctOf(m.fields[k]?.recall)} / ${pctOf(m.fields[k]?.wrongRate)}`;
-      return `| ${r.variant} | ${r.spec.model}${r.spec.thinkingLevel ? ` (${r.spec.thinkingLevel})` : ''} | ${pctOf(m.allFieldsCorrect)} | ${f('grossPay')} | ${f('netPay')} | ${f('ytdGross')} | ${f('payFrequency')} | ${pctOf(m.deductions?.itemRecall)} | ${m.tokens.prompt} / ${m.tokens.output} / ${m.tokens.thoughts} | ${m.latencyMs?.median ?? '–'} ms | ${r.targetMet ? 'met' : 'not met'} |`;
+      const skeletons = r.spec.skeletons ?? (r.leakCheck ? 'v1.3' : 'v1.2');
+      return `| ${r.variant} | ${r.spec.model ?? 'gemini-3.5-flash-lite'}${r.spec.thinkingLevel ? ` (${r.spec.thinkingLevel})` : ''} | ${skeletons} | ${pctOf(m.allFieldsCorrect)} | ${f('grossPay')} | ${f('netPay')} | ${f('ytdGross')} | ${f('payFrequency')} | ${pctOf(m.deductions?.itemRecall)} | ${m.tokens.prompt} / ${m.tokens.output} / ${m.tokens.thoughts} | ${m.latencyMs?.median ?? '–'} ms | ${r.targetMet ? 'met' : 'not met'} |`;
     }),
   '',
-  '## Korean payslips and leases',
+  '## Other sets',
+  '',
+  'English layout L11 (added for contract v1.3): names containing label words, an e-mail address and phone number in the',
+  'header, month-name dates, pay frequency written in words.',
   '',
   '| Variant | Set | Documents | All fields correct | Field recall (all fields) | Wrong values |',
   '|---|---|---|---|---|---|',
   ...rows.flatMap((r) =>
-    ['koPaystub', 'lease']
+    ['enRules', 'koPaystub', 'lease']
       .filter((k) => r.metrics[k])
       .map((k) => {
         const m = r.metrics[k];
         const totals = Object.values(m.fields).reduce((a, x) => ({ c: a.c + x.correct, g: a.g + x.correct + x.missing + x.wrong, w: a.w + x.wrong + x.spurious }), { c: 0, g: 0, w: 0 });
-        return `| ${r.variant} | ${k === 'lease' ? 'leases' : 'Korean payslips'} | ${m.documents} | ${pctOf(m.allFieldsCorrect)} | ${pctOf(totals.c / totals.g)} | ${totals.w} |`;
+        const name = k === 'lease' ? 'leases' : k === 'enRules' ? 'English, layout L11' : 'Korean payslips';
+        return `| ${r.variant} | ${name} | ${m.documents} | ${pctOf(m.allFieldsCorrect)} | ${pctOf(totals.c / totals.g)} | ${totals.w} |`;
       }),
   ),
   '',

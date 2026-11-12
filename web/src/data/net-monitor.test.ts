@@ -1,43 +1,71 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { clearOutbound, outboundEntries } from './outbound';
-import { AI_LOGIC_HOST, aiPayloadText, classify, installNetMonitor } from './net-monitor';
+import { clearOutbound, outboundState, restoreOutbound } from './outbound';
+import { AI_LOGIC_HOST, aiPayloadText, classify, displayBody, installNetMonitor, modelOf } from './net-monitor';
 
-afterEach(() => clearOutbound());
+afterEach(() => clearOutbound(null));
+
+const generateBody = JSON.stringify({
+  systemInstruction: { parts: [{ text: 'SYSTEM' }] },
+  contents: [{ role: 'user', parts: [{ text: 'Document type: paystub\nGross Pay ⟦N1⟧' }] }],
+  generationConfig: { responseMimeType: 'application/json', responseSchema: { type: 'object' } },
+});
 
 describe('network monitor', () => {
-  it('extracts the text parts of a generateContent body', () => {
-    const body = JSON.stringify({
-      systemInstruction: { parts: [{ text: 'SYSTEM' }] },
-      contents: [{ role: 'user', parts: [{ text: 'Document type: paystub' }, { inlineData: { data: 'x', mimeType: 'image/png' } }] }],
-    });
-    expect(aiPayloadText(body)).toEqual({ text: 'SYSTEM\n\nDocument type: paystub', hasInlineData: true });
-    expect(classify(new URL(`https://${AI_LOGIC_HOST}/v1beta/x:generateContent`), body)).toMatchObject({
-      channel: 'ai-cloud',
-      fields: ['document-silhouette', 'inline-file'],
-    });
+  it('extracts text parts and classifies AI Logic requests with model and full body', () => {
+    expect(aiPayloadText(generateBody).text).toBe('SYSTEM\n\nDocument type: paystub\nGross Pay ⟦N1⟧');
+    const url = new URL(`https://${AI_LOGIC_HOST}/v1beta/projects/p/models/gemini-3.5-flash-lite:generateContent`);
+    const info = classify(url, generateBody);
+    expect(info).toMatchObject({ channel: 'ai-cloud', fields: ['document-silhouette'], model: 'gemini-3.5-flash-lite' });
+    expect(JSON.parse(info.body as string)).toEqual(JSON.parse(generateBody));
+    expect(modelOf('/v1beta/projects/p/models/x:generateContent')).toBe('x');
   });
 
-  it('records cross-origin requests before sending and ignores same-origin ones', async () => {
-    const sent: string[] = [];
+  it('removes credential-like fields from a displayed body', () => {
+    const shown = displayBody(JSON.stringify({ contents: [], appCheckToken: 'T', nested: { api_key: 'K', apiKey: 'K2', keep: 1 } }));
+    expect(shown).not.toMatch(/"T"|"K"|"K2"/);
+    expect(JSON.parse(shown)).toEqual({ contents: [], nested: { keep: 1 } });
+  });
+
+  it('records attempted, then sent or failed, with the reason; drops queries and App Check bodies', async () => {
     const target = {
       fetch: (async (input: RequestInfo | URL) => {
-        sent.push(String(input));
-        return new Response('{}');
+        const url = String(input);
+        if (url.includes('fail')) throw new TypeError('Failed to fetch');
+        if (url.includes('denied')) return new Response('{}', { status: 401, statusText: 'Unauthorized' });
+        return new Response('{}', { status: 200 });
       }) as typeof fetch,
       location: new URL('https://app.example/') as unknown as Location,
     };
     installNetMonitor(target);
     await target.fetch('/assets/app.js');
     await target.fetch('data:image/png;base64,AAAA');
-    await target.fetch(`https://${AI_LOGIC_HOST}/v1beta/models/m:generateContent`, {
-      method: 'POST',
-      body: JSON.stringify({ contents: [{ parts: [{ text: 'Gross Pay ⟦N1⟧' }] }] }),
-    });
+    const pending = target.fetch(`https://${AI_LOGIC_HOST}/v1beta/projects/p/models/m:generateContent?key=SECRETKEY`, { method: 'POST', body: generateBody });
+    expect(outboundState().entries.at(-1)?.status).toBe('attempted');
+    await pending;
     await target.fetch('https://content-firebaseappcheck.googleapis.com/v1/x:exchangeDebugToken', { method: 'POST', body: '{"debug_token":"SECRET"}' });
-    expect(sent).toHaveLength(4);
-    const entries = outboundEntries();
-    expect(entries.map((e) => e.channel)).toEqual(['ai-cloud', 'app-check']);
-    expect(entries[0]!.payload).toBe('Gross Pay ⟦N1⟧');
-    expect(JSON.stringify(entries[1])).not.toContain('SECRET');
+    await target.fetch(`https://${AI_LOGIC_HOST}/v1beta/models/m:generateContent/denied`, { method: 'POST', body: generateBody });
+    await expect(target.fetch('https://fail.example/x', { method: 'POST', body: '{}' })).rejects.toThrow();
+
+    const entries = outboundState().entries;
+    expect(entries.map((e) => [e.channel, e.status])).toEqual([
+      ['ai-cloud', 'sent'],
+      ['app-check', 'sent'],
+      ['ai-cloud', 'failed'],
+      ['other', 'failed'],
+    ]);
+    expect(entries[0]).toMatchObject({ httpStatus: 200, path: '/v1beta/projects/p/models/m:generateContent', model: 'm' });
+    expect(entries[2]).toMatchObject({ httpStatus: 401, error: 'HTTP 401 Unauthorized' });
+    expect(entries[3]?.error).toBe('Failed to fetch');
+    const stored = JSON.stringify(entries);
+    expect(stored).not.toContain('SECRET');
+    expect(stored).not.toContain('key=');
+    expect(entries[1]?.body).toBeUndefined();
+  });
+
+  it('restores a saved ledger and keeps the deletion date when cleared', () => {
+    restoreOutbound({ entries: [{ id: 'a', channel: 'ai-cloud', at: 1, destination: 'h', path: '/p', fields: [], bytes: 0, status: 'sent' }], clearedAt: null });
+    expect(outboundState().entries).toHaveLength(1);
+    clearOutbound(1234);
+    expect(outboundState()).toEqual({ entries: [], clearedAt: 1234 });
   });
 });

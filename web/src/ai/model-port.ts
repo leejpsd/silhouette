@@ -59,3 +59,8 @@ export function sourceOf(response: ModelResponse, fallback: InferenceSource): In
   if (s === 'in_cloud' || s === 'IN_CLOUD') return 'IN_CLOUD';
   return fallback;
 }
+
+/** Drops cached model instances (after the Firebase app was closed). */
+export function resetModelInstances(): void {
+  instances.clear();
+}

@@ -5,18 +5,19 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { HybridParams } from 'firebase/ai';
 
 import { Raw, reveal } from '../core/types';
-import { buildAllowlist, skeletonize, type AllowlistFile } from '../core/skeleton';
+import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile } from '../core/skeleton';
 import { buildReview } from '../core/review';
 import { classifyError, TaskError } from './errors';
 import { setModelProviderForTests, type ModelPort } from './model-port';
 import { ACTIVE_POINTER_CONFIG, CLOUD_MODEL, POINTER_SCHEMAS, extractPointers, pointerModelParams } from './tasks';
-import { POINTER_V1 } from './pointer-config';
 import { readPhoto } from './on-device';
 import { POINTER_EXTRACT, parsePrompt } from './prompts';
 import { toModelSchema } from './model-schema';
 
 const shared = (rel: string) => readFileSync(new URL(`../../../shared/${rel}`, import.meta.url), 'utf8');
-const allow = buildAllowlist([JSON.parse(shared('skeleton/allowlist/en.json')) as AllowlistFile]);
+const enFile = JSON.parse(shared('skeleton/allowlist/en.json')) as AllowlistFile;
+const allow = buildAllowlist([enFile]);
+const intro = buildIntroducers([enFile]);
 const rehydrateFixture = JSON.parse(shared('fixtures/conformance/rehydrate.json')) as {
   cases: { id: string; pointers: Record<string, unknown>; expected: Record<string, unknown> }[];
 };
@@ -48,7 +49,7 @@ function fakeModels(reply: string | Error | ((call: number) => string | Error), 
 
 afterEach(() => setModelProviderForTests(null));
 
-const doc = skeletonize(Raw.of(shared('samples/paystub-en-01.txt')), allow);
+const doc = skeletonize(Raw.of(shared('samples/paystub-en-01.txt')), allow, intro);
 
 describe('document.pointer.extract', () => {
   it('returns the pointers with provenance; rehydration gives the fixture values', async () => {
@@ -139,15 +140,9 @@ describe('document.pointer.extract', () => {
     expect(result.value).toEqual({ grossPay: 'N12' });
   });
 
-  it('the shared v1 configuration is still available', () => {
-    const params = pointerModelParams('paystub', 'en', { config: POINTER_V1 });
-    expect(params.inCloudParams?.systemInstruction).toBe(POINTER_EXTRACT.system);
-    expect((params.inCloudParams?.generationConfig?.responseSchema as Record<string, unknown>)['required']).toBeUndefined();
-  });
-
   it('sends only the skeleton: no canary string reaches the model prompt (unit-level canary)', async () => {
     const canary = JSON.parse(shared('fixtures/canary/paystub-canary-01.json')) as { document: string; canaries: string[] };
-    const canaryDoc = skeletonize(Raw.of(shared(`fixtures/canary/${canary.document}`)), allow);
+    const canaryDoc = skeletonize(Raw.of(shared(`fixtures/canary/${canary.document}`)), allow, intro);
     const calls = fakeModels('{}');
     await extractPointers(canaryDoc.skeleton, 'paystub', 'en');
     const sent = JSON.stringify(calls[0]!.prompts) + JSON.stringify(calls[0]!.params);
@@ -203,22 +198,70 @@ describe('schema and prompt from /shared', () => {
     expect(toModelSchema(JSON.parse(shared('schemas/pointer.paystub.json')) as Record<string, unknown>)).toEqual(schema);
   });
 
-  it('reads the system instruction and user template from shared/prompts/pointer-extract.v1.md', () => {
-    const prompt = parsePrompt('pointer-extract.v1', shared('prompts/pointer-extract.v1.md'));
+  it('reads the system instruction and user template from shared/prompts/pointer-extract.v2.md', () => {
+    const prompt = parsePrompt('pointer-extract.v2', shared('prompts/pointer-extract.v2.md'));
     expect(prompt).toEqual(POINTER_EXTRACT);
     expect(prompt.system.startsWith('You label fields in a document')).toBe(true);
     expect(prompt.system.endsWith('Return JSON only.')).toBe(true);
+    expect(prompt.system).toContain('Use null when the field is not in the document.');
     expect(prompt.user).toBe('Document type: {docType}\nDocument:\n{skeleton}');
   });
 });
 
-describe('pointer v2 schemas', () => {
-  it('give the model exactly the schema that was evaluated (shared v1 schema + required + nullable)', async () => {
-    const { POINTER_V2, SHARED_POINTER_SCHEMAS } = await import('./pointer-config');
-    for (const doc of ['paystub', 'lease'] as const) {
-      const v2 = toModelSchema(POINTER_V2.schemas[doc] as unknown as Record<string, unknown>, POINTER_V2.schemaOptions);
-      const evaluated = toModelSchema(SHARED_POINTER_SCHEMAS[doc] as unknown as Record<string, unknown>, { requiredNullable: true, dialect: 'openapi' });
-      expect(JSON.stringify(v2)).toBe(JSON.stringify(evaluated));
-    }
+describe('on-device failure falls back to the cloud once (cloud-safe input only)', () => {
+  /** On device (prefer_on_device) the model throws; in the cloud (only_in_cloud) it answers. */
+  function deviceFails(deviceError: Error, cloudReply = '{"grossPay":"N12"}') {
+    const modes: string[] = [];
+    setModelProviderForTests(async (params) => ({
+      async generateContent() {
+        modes.push(params.mode);
+        if (params.mode === 'prefer_on_device') throw deviceError;
+        return { response: { text: () => cloudReply, inferenceSource: 'in_cloud' } };
+      },
+    }));
+    return modes;
+  }
+
+  it('repeats a failed on-device call in the cloud and says why', async () => {
+    const modes = deviceFails(Object.assign(new Error('The input is too large.'), { name: 'QuotaExceededError' }));
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en');
+    expect(modes).toEqual(['prefer_on_device', 'only_in_cloud']);
+    expect(result).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'on-device-failed', value: { grossPay: 'N12' } });
+    expect(result.deviceError).toContain('The input is too large');
+  });
+
+  it('also falls back when the device answered something that is not JSON', async () => {
+    const modes: string[] = [];
+    setModelProviderForTests(async (params) => ({
+      async generateContent() {
+        modes.push(params.mode);
+        return params.mode === 'prefer_on_device'
+          ? { response: { text: () => 'not json', inferenceSource: 'on_device' } }
+          : { response: { text: () => '{}', inferenceSource: 'in_cloud' } };
+      },
+    }));
+    expect((await extractPointers(doc.skeleton, 'paystub', 'en')).reason).toBe('on-device-failed');
+    expect(modes).toEqual(['prefer_on_device', 'only_in_cloud']);
+  });
+
+  it('does not repeat cloud failures (App Check, network)', async () => {
+    const modes = deviceFails(Object.assign(new Error('[401 ] App Check token is invalid.'), { customErrorData: { status: 401 } }));
+    await expect(extractPointers(doc.skeleton, 'paystub', 'en')).rejects.toMatchObject({ kind: 'app-check' });
+    expect(modes).toEqual(['prefer_on_device']);
+    const modes2 = deviceFails(new TypeError('Failed to fetch'));
+    await expect(extractPointers(doc.skeleton, 'paystub', 'en')).rejects.toMatchObject({ kind: 'network' });
+    expect(modes2).toEqual(['prefer_on_device']);
+  });
+
+  it('never sends Raw input to the cloud: a failed photo read is not repeated anywhere', async () => {
+    const modes: string[] = [];
+    setModelProviderForTests(async (params) => ({
+      async generateContent() {
+        modes.push(params.mode);
+        throw new Error('The input is too large.');
+      },
+    }));
+    await expect(readPhoto(Raw.of<Blob>(new Blob([new Uint8Array([1])], { type: 'image/png' })), 'paystub', 'en')).rejects.toBeInstanceOf(TaskError);
+    expect(modes).toEqual(['only_on_device']);
   });
 });

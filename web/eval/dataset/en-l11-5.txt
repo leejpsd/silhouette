@@ -1,0 +1,18 @@
+State Bank Staffing LLC
+Payroll questions: payroll@state-bank-staffing-llc.example or (555) 431-2251
+
+Employee: Sam Holiday        Employee ID: 058303
+Pay Date: June 3, 2026
+Pay Period: May 26, 2026 to June 1, 2026
+Pay Frequency: Every week
+
+Earnings          Hours    Rate     Current      YTD
+Regular           30.00    42.57    1,277.10     27,452.55
+Overtime          8.50     63.86    542.81       11,668.19
+Gross Pay                           1,819.91     39,120.74
+
+Federal Income Tax                  169.25       3,638.24
+Social Security                     112.83       2,425.35
+Medicare                            26.39        567.35
+State Income Tax                    87.36        1,877.82
+Net Pay                             1,424.08

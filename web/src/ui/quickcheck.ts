@@ -72,7 +72,7 @@ export function validateAnswer(step: Step, value: AnswerValue): 'q.error.integer
     case 'income': {
       if (!isIncomeAnswer(value)) return 'q.error.choose';
       if (value.kind === 'band') return step.bands.some((b) => b.id === value.bandId) ? null : 'q.error.choose';
-      return Number.isInteger(value.amount) && value.amount >= 0 && value.amount <= MAX_EXACT_INCOME ? null : 'q.error.amount';
+      return Number.isFinite(value.amount) && value.amount >= 0 && value.amount <= MAX_EXACT_INCOME ? null : 'q.error.amount';
     }
   }
 }

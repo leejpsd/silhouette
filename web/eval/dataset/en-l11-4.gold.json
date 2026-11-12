@@ -1,0 +1,29 @@
+{
+  "employerName": "Union Pay Systems CORP",
+  "employeeName": "Robin Federal",
+  "payFrequency": "monthly",
+  "payDate": "December 1, 2026",
+  "periodStart": "November 1, 2026",
+  "periodEnd": "November 30, 2026",
+  "grossPay": 3333.33,
+  "netPay": 2571.66,
+  "ytdGross": 37666.63,
+  "deductions": [
+    {
+      "amount": 326.67,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 206.67,
+      "kind": "social_security"
+    },
+    {
+      "amount": 48.33,
+      "kind": "medicare"
+    },
+    {
+      "amount": 180,
+      "kind": "state_tax"
+    }
+  ]
+}
