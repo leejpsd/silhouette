@@ -454,6 +454,25 @@
       }
     },
     {
+      "id": "month-name-ascii-case-only",
+      "locale": "en",
+      "input": "Auguſt 17, 2026   AUGUST 17, 2026   17 DE AGOSTO DE 2026   Oct. 3RD, 2026   Kay 5, 2026",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦N1⟧, ⟦N2⟧   ⟦D1⟧   ⟦D2⟧   ⟦D3⟧   ⟦W2⟧ ⟦N3⟧, ⟦N4⟧",
+        "map": {
+          "W1": "Auguſt",
+          "N1": "17",
+          "N2": "2026",
+          "D1": "AUGUST 17, 2026",
+          "D2": "17 DE AGOSTO DE 2026",
+          "D3": "Oct. 3RD, 2026",
+          "W2": "Kay",
+          "N3": "5",
+          "N4": "2026"
+        }
+      }
+    },
+    {
       "id": "month-name-not-a-date",
       "locale": "en",
       "input": "Mayfield 12, 2026   May 2026   3 March 20267   Mar 5   June Carter",

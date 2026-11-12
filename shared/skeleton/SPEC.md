@@ -44,7 +44,7 @@ The reference builds the regex from the safe list (`TOKEN_SOURCE` in `reference/
 
 ### Month-name dates
 
-`MONTH` is one of these names, matched **ASCII case-insensitively**, longest alternative first:
+`MONTH` is one of these names, matched **ASCII case-insensitively** (only `A–Z`/`a–z` fold; do not use a regex-wide ignore-case flag, which also folds letters such as U+017F LONG S), longest alternative first. The ordinal suffixes and `de`/`del` are matched the same way:
 
 `january jan enero · february feb febrero · march mar marzo · april apr abril · may mayo · june jun junio · july jul julio · august aug agosto · september sept sep septiembre setiembre · october oct octubre · november nov noviembre · december dec diciembre`
 

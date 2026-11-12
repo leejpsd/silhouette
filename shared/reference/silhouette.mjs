@@ -24,13 +24,19 @@ export const MONTHS = [
   ['september', 'sept', 'sep', 'septiembre', 'setiembre'], ['october', 'oct', 'octubre'],
   ['november', 'nov', 'noviembre'], ['december', 'dec', 'diciembre'],
 ];
-const MONTH = `(?:${MONTHS.flat().sort((a, b) => b.length - a.length || (a < b ? -1 : 1)).join('|')})`;
+// ASCII case-insensitive, written out as [aA] classes: a regex-wide ignore-case flag would also fold
+// non-ASCII letters (U+017F LONG S matches "s" under Unicode case folding).
+const eitherCase = (word) => [...word].map((ch) => `[${ch}${ch.toUpperCase()}]`).join('');
+const MONTH = `(?:${MONTHS.flat().sort((a, b) => b.length - a.length || (a < b ? -1 : 1)).map(eitherCase).join('|')})`;
+const ORD = ['st', 'nd', 'rd', 'th'].map(eitherCase).join('|');
+const DE = eitherCase('de');
+const EL = eitherCase('l');
 // "October 17, 2026", "Oct. 17 2026", "17 October 2026", "17 de octubre de 2026"
 export const MONTH_DATE_SOURCE =
-  `${MONTH}\\.? [0-9]{1,2}(?:st|nd|rd|th)?,? [0-9]{4}(?![0-9])|[0-9]{1,2}(?:st|nd|rd|th)? (?:de )?${MONTH}\\.?,? (?:del? )?[0-9]{4}(?![0-9])`;
+  `${MONTH}\\.? [0-9]{1,2}(?:${ORD})?,? [0-9]{4}(?![0-9])|[0-9]{1,2}(?:${ORD})? (?:${DE} )?${MONTH}\\.?,? (?:${DE}${EL}? )?[0-9]{4}(?![0-9])`;
 export const TOKEN_SOURCE =
   `(${MONTH_DATE_SOURCE}|[0-9]{1,4}[/.\\-][0-9]{1,2}[/.\\-][0-9]{1,4})|([0-9]+(?:[.,][0-9]+)*)|(${X}+(?:['\\u2019\\-]${X}+)*)|([\\s\\S])`;
-const TOKEN = new RegExp(TOKEN_SOURCE, 'giu');
+const TOKEN = new RegExp(TOKEN_SOURCE, 'gu');
 
 export function normalize(text) {
   return text.normalize('NFC').replace(/\r\n?/g, '\n').replace(/[⟦⟧]/g, '');

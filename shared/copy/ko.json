@@ -131,7 +131,7 @@
   "q.answered": "내 답: {value}",
   "q.back": "이전",
   "q.decrease": "하나 줄이기",
-  "q.error.amount": "연간 금액을 정수로 입력하세요. 예: 32000",
+  "q.error.amount": "연 소득을 숫자로 입력하세요. 예: 32000 또는 32,000.50",
   "q.error.choose": "답을 고르거나 이 질문을 건너뛰세요.",
   "q.error.integer": "{min}에서 {max} 사이의 정수를 입력하세요.",
   "q.finish": "결과 보기",

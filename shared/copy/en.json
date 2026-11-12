@@ -131,7 +131,7 @@
   "q.answered": "Your answer: {value}",
   "q.back": "Back",
   "q.decrease": "One less",
-  "q.error.amount": "Enter a yearly amount in whole numbers, like 32000.",
+  "q.error.amount": "Enter a yearly amount in digits, like 32000 or 32,000.50.",
   "q.error.choose": "Choose an answer, or skip this question.",
   "q.error.integer": "Enter a whole number from {min} to {max}.",
   "q.finish": "See results",

@@ -38,6 +38,7 @@ export const skeletonCases = [
   { id: 'phrase-all-allowlisted-stays', locale: 'en', text: 'Federal Income Tax   Social Security   Year to Date Gross Pay' },
   { id: 'email-and-usernames', locale: 'en', text: 'Contact payroll@brightharbor.example or @pay or john_gross or net_pay' },
   { id: 'month-name-dates', locale: 'en', text: 'Pay Date: October 17, 2026   Period: Oct. 1 2026 - 15 October 2026   17 de octubre de 2026   Sept 3rd, 2026   MAY 5, 2026' },
+  { id: 'month-name-ascii-case-only', locale: 'en', text: 'Augu\u017Ft 17, 2026   AUGUST 17, 2026   17 DE AGOSTO DE 2026   Oct. 3RD, 2026   \u212Aay 5, 2026' },
   { id: 'month-name-not-a-date', locale: 'en', text: 'Mayfield 12, 2026   May 2026   3 March 20267   Mar 5   June Carter' },
 ];
 

@@ -131,7 +131,7 @@
   "q.answered": "Tu respuesta: {value}",
   "q.back": "Atrás",
   "q.decrease": "Uno menos",
-  "q.error.amount": "Escribe un monto anual en números enteros, por ejemplo 32000.",
+  "q.error.amount": "Escribe un importe anual en cifras, como 32000 o 32,000.50.",
   "q.error.choose": "Elige una respuesta u omite esta pregunta.",
   "q.error.integer": "Escribe un número entero de {min} a {max}.",
   "q.finish": "Ver resultados",
