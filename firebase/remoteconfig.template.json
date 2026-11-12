@@ -51,7 +51,7 @@
     },
     "prompt_pointer_extract_v": {
       "defaultValue": {
-        "value": "2"
+        "value": ""3"
       },
       "valueType": "NUMBER",
       "description": "shared/prompts/pointer-extract.v{n}.md"

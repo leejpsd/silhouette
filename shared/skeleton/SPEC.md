@@ -1,4 +1,4 @@
-# Skeletonizer specification (v1.4)
+# Skeletonizer specification (v1.5)
 
 The Skeletonizer turns `Raw` document text into a `Skeleton`: the labels and layout stay, every value goes.
 It is deterministic and must produce byte-identical output on Web, Android and iOS.
@@ -122,6 +122,18 @@ Before the phrase rule is applied, the words at the **start** of a phrase are ch
 - Without this rule a model sees `⟦W1⟧ ⟦W2⟧ ⟦W3⟧` for `Employee Lucia Lindqvist` and cannot tell the label from the name; in the extraction evaluation it then returned the label as part of the name.
 
 What it costs: when a name itself begins with an introducer (`The Lindqvist Group`), that one word stays visible. The list therefore holds only words that say nothing about who the person or company is. Titles such as `Mr` and `Ms` are not on it.
+
+### 4.3 Words the user hides
+
+The preview shows the skeleton before anything is sent, and the user can hide any word that is still visible. The Skeletonizer takes these as `hide`, a set of lowercase words for this document.
+
+- A `WORD` token is hidden when its lowercase form is in `hide`, or when it contains `-` and **any** hyphen-separated part's lowercase form is in `hide` (hiding `gross` also hides `Gross-Pay`). A hidden token is not allowlisted, wherever it occurs in the document.
+- A phrase that contains a hidden word is masked as a whole, and section 4.2 does not apply to it: `Employee Lucia Lindqvist` with `employee` hidden gives `⟦W1⟧ ⟦W2⟧ ⟦W3⟧`, and `Pay Date` with `date` hidden gives `⟦W1⟧ ⟦W2⟧`.
+- With an empty `hide` the output is exactly that of sections 3 to 4.2.
+
+`hide` is `Raw`: it is stored with the document on the device and never sent. Hiding a word that is also a label (`gross`) removes that label everywhere, so fewer fields can be found automatically; the review screen lets the user type them.
+
+Fixture cases in `fixtures/conformance/skeleton.json` may carry a `hide` array.
 
 ## 5. Pointer rehydration
 

@@ -13,7 +13,7 @@ test('fixtures on disk match the reference implementation', () => {
 test('a skeleton never contains a digit or a non-allowlisted word', () => {
   for (const k of skeletonCases) {
     const allow = allowlist(k.locale);
-    const { skeleton } = s.skeletonize(k.text, allow, introducers(k.locale));
+    const { skeleton } = s.skeletonize(k.text, allow, introducers(k.locale), new Set(k.hide ?? []));
     const stripped = skeleton.replace(/⟦[DNW][0-9]+⟧/g, '');
     assert.doesNotMatch(stripped, /[0-9]/, `${k.id}: digit survived`);
     // Whatever survives is either an explicitly safe character or part of an allowlisted word.
@@ -27,7 +27,7 @@ test('a skeleton never contains a digit or a non-allowlisted word', () => {
 
 test('skeleton + map reconstruct the normalized input exactly', () => {
   for (const k of skeletonCases) {
-    const { skeleton, map } = s.skeletonize(k.text, allowlist(k.locale), introducers(k.locale));
+    const { skeleton, map } = s.skeletonize(k.text, allowlist(k.locale), introducers(k.locale), new Set(k.hide ?? []));
     assert.equal(skeleton.replace(/⟦([DNW][0-9]+)⟧/g, (_, id) => map[id]), s.normalize(k.text), k.id);
   }
 });

@@ -10,12 +10,12 @@ export function build() {
   const bands = c.readJson('../bands/zz-test.json');
   const pack = c.readJson('../rulepacks/zz-test/pack.json');
   const skeletons = Object.fromEntries(
-    c.skeletonCases.map((k) => [k.id, s.skeletonize(k.text, c.allowlist(k.locale), c.introducers(k.locale))]),
+    c.skeletonCases.map((k) => [k.id, s.skeletonize(k.text, c.allowlist(k.locale), c.introducers(k.locale), new Set(k.hide ?? []))]),
   );
   return {
     'skeleton.json': {
       spec: 'skeleton/SPEC.md v1',
-      cases: c.skeletonCases.map((k) => ({ id: k.id, locale: k.locale, input: k.text, expected: skeletons[k.id] })),
+      cases: c.skeletonCases.map((k) => ({ id: k.id, locale: k.locale, ...(k.hide ? { hide: k.hide } : {}), input: k.text, expected: skeletons[k.id] })),
     },
     'rehydrate.json': {
       spec: 'skeleton/SPEC.md v1 section 5',

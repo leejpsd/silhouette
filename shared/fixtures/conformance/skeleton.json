@@ -534,6 +534,80 @@
       }
     },
     {
+      "id": "hide-word-everywhere",
+      "locale": "en",
+      "hide": [
+        "gross"
+      ],
+      "input": "Gross Pay   Net Pay\nYTD Gross   GROSS\nYear-to-Date Gross-Pay",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧   Net Pay\n⟦W3⟧ ⟦W4⟧   ⟦W5⟧\n⟦W6⟧ ⟦W7⟧",
+        "map": {
+          "W1": "Gross",
+          "W2": "Pay",
+          "W3": "YTD",
+          "W4": "Gross",
+          "W5": "GROSS",
+          "W6": "Year-to-Date",
+          "W7": "Gross-Pay"
+        }
+      }
+    },
+    {
+      "id": "hide-introducer-masks-phrase",
+      "locale": "en",
+      "hide": [
+        "employee"
+      ],
+      "input": "Employee Lucia Lindqvist\nEmployee: Lucia Lindqvist\nEmployer Northwind",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦W4⟧: ⟦W5⟧ ⟦W6⟧\nEmployer ⟦W7⟧",
+        "map": {
+          "W1": "Employee",
+          "W2": "Lucia",
+          "W3": "Lindqvist",
+          "W4": "Employee",
+          "W5": "Lucia",
+          "W6": "Lindqvist",
+          "W7": "Northwind"
+        }
+      }
+    },
+    {
+      "id": "hide-last-word-masks-introducer",
+      "locale": "en",
+      "hide": [
+        "date"
+      ],
+      "input": "Pay Date   Pay Period\nFor Jordan Gross",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧   Pay Period\nFor ⟦W3⟧ ⟦W4⟧",
+        "map": {
+          "W1": "Pay",
+          "W2": "Date",
+          "W3": "Jordan",
+          "W4": "Gross"
+        }
+      }
+    },
+    {
+      "id": "hide-unknown-word-no-effect",
+      "locale": "en",
+      "hide": [
+        "lindqvist",
+        "absent"
+      ],
+      "input": "Employee Lucia Lindqvist   Net Pay",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧   Net Pay",
+        "map": {
+          "W1": "Employee",
+          "W2": "Lucia",
+          "W3": "Lindqvist"
+        }
+      }
+    },
+    {
       "id": "email-and-usernames",
       "locale": "en",
       "input": "Contact payroll@brightharbor.example or @pay or john_gross or net_pay",

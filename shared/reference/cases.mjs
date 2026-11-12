@@ -47,6 +47,11 @@ export const skeletonCases = [
   { id: 'introducer-document-language', locale: 'es', text: 'Empleado Lucía Hernández\nDe la Cruz María\nEmployee Lucía Hernández' },
   { id: 'introducer-other-language-not-used', locale: 'en', text: 'Empleado Lucía Hernández' },
   { id: 'introducer-in-korean-document', locale: 'ko', text: 'Employee Kim Minji\n성명 김민지' },
+  // Words the user hides are masked wherever they occur, and their whole phrase with them.
+  { id: 'hide-word-everywhere', locale: 'en', hide: ['gross'], text: 'Gross Pay   Net Pay\nYTD Gross   GROSS\nYear-to-Date Gross-Pay' },
+  { id: 'hide-introducer-masks-phrase', locale: 'en', hide: ['employee'], text: 'Employee Lucia Lindqvist\nEmployee: Lucia Lindqvist\nEmployer Northwind' },
+  { id: 'hide-last-word-masks-introducer', locale: 'en', hide: ['date'], text: 'Pay Date   Pay Period\nFor Jordan Gross' },
+  { id: 'hide-unknown-word-no-effect', locale: 'en', hide: ['lindqvist', 'absent'], text: 'Employee Lucia Lindqvist   Net Pay' },
   { id: 'email-and-usernames', locale: 'en', text: 'Contact payroll@brightharbor.example or @pay or john_gross or net_pay' },
   { id: 'month-name-dates', locale: 'en', text: 'Pay Date: October 17, 2026   Period: Oct. 1 2026 - 15 October 2026   17 de octubre de 2026   Sept 3rd, 2026   MAY 5, 2026' },
   { id: 'month-name-ascii-case-only', locale: 'en', text: 'Augu\u017Ft 17, 2026   AUGUST 17, 2026   17 DE AGOSTO DE 2026   Oct. 3RD, 2026   \u212Aay 5, 2026' },

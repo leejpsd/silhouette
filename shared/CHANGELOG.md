@@ -1,5 +1,14 @@
 # Contract changelog
 
+## v1.5 — 2026-11-12
+
+| Change | Why |
+|---|---|
+| `prompts/pointer-extract.v3.md`: one added line, "Gross pay is the total of all earnings for the period … never a single earnings line such as Regular or Overtime." | On v1.4 skeletons with prompt v2, one paystub layout (earnings table followed by `Gross Pay ⟦N⟧`) had `grossPay` pointed at the Regular line in 4 of 6 documents. With v3: 0 wrong `grossPay` pointers in two runs, nothing else changed (`web/eval/results/summary.md`) |
+| **Words the user hides** (`skeleton/SPEC.md` section 4.3): `skeletonize()` takes a fourth argument `hide`; a hidden word is masked wherever it occurs and its phrase is masked whole, introducers included | The preview lets the user hide words that are still visible. The rule has to be the same on every platform |
+| Fixtures: 4 skeleton cases with a `hide` array | |
+| Remote Config default `prompt_pointer_extract_v` = 3 | |
+
 ## v1.4 — 2026-11-12
 
 From re-running the extraction evaluation on v1.3 skeletons, and from an independent test of the Web app.

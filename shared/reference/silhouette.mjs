@@ -56,16 +56,21 @@ const PHRASE_JOINERS = new Set([' ', ', ', ' & ']);
  * @param {string} text Raw document text
  * @param {Set<string>} allow Lowercase allowlist (document language ∪ en)
  * @param {Set<string>} [introducers] Lowercase introducer list (document language ∪ en), a subset of `allow`
+ * @param {Set<string>} [hide] Lowercase words the user chose to hide in this document (Raw; never sent)
  * @returns {{skeleton: string, map: Record<string, string>}}
  */
-export function skeletonize(text, allow, introducers = new Set()) {
+export function skeletonize(text, allow, introducers = new Set(), hide = new Set()) {
   const input = normalize(text);
   // Pass 1: tokens. Consecutive safe characters form one separator token.
   const tokens = [];
   for (const m of input.matchAll(TOKEN)) {
     if (m[1] !== undefined) tokens.push({ kind: 'D', text: m[1] });
     else if (m[2] !== undefined) tokens.push({ kind: 'N', text: m[2] });
-    else if (m[3] !== undefined) tokens.push({ kind: 'W', text: m[3], keep: isAllowlisted(m[3], allow) });
+    else if (m[3] !== undefined) {
+      const lower = m[3].toLowerCase();
+      const hidden = hide.has(lower) || lower.split('-').some((part) => hide.has(part));
+      tokens.push({ kind: 'W', text: m[3], keep: !hidden && isAllowlisted(m[3], allow), hidden });
+    }
     else if (tokens.length && tokens[tokens.length - 1].kind === 'O') tokens[tokens.length - 1].text += m[4];
     else tokens.push({ kind: 'O', text: m[4] });
   }
@@ -77,8 +82,11 @@ export function skeletonize(text, allow, introducers = new Set()) {
     while (j + 2 < tokens.length && tokens[j + 1].kind === 'O' && PHRASE_JOINERS.has(tokens[j + 1].text) && tokens[j + 2].kind === 'W') j += 2;
     // Leading introducers ("Employee", "This Lease is made between") are labels in front of a name,
     // never part of it. They keep their own decision; the rest of the phrase is decided as before.
+    // A phrase in which the user hid a word is masked whole, introducers included.
+    let userHidden = false;
+    for (let k = i; k <= j; k += 2) userHidden = userHidden || tokens[k].hidden;
     let start = i;
-    while (start < j && tokens[start].keep && introducers.has(tokens[start].text.toLowerCase())) start += 2;
+    while (!userHidden && start < j && tokens[start].keep && introducers.has(tokens[start].text.toLowerCase())) start += 2;
     let keep = true;
     for (let k = start; k <= j; k += 2) keep = keep && tokens[k].keep;
     for (let k = start; k <= j; k += 2) tokens[k].keep = keep;
