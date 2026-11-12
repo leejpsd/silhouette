@@ -26,7 +26,10 @@ import app.silhouette.benefits.core.jsonNumber
 import app.silhouette.benefits.core.jsonQuote
 import app.silhouette.benefits.core.normalizeDocument
 import app.silhouette.benefits.core.parseNumber
+import app.silhouette.benefits.core.parseTypedAmount
 import app.silhouette.benefits.core.rehydrate
+import app.silhouette.benefits.core.generalizedProfileFromJson
+import app.silhouette.benefits.core.silhouetteVerdicts
 import app.silhouette.benefits.core.skeletonize
 import app.silhouette.benefits.core.toValue
 import app.silhouette.benefits.core.valueToJson
@@ -77,6 +80,7 @@ public object ConformanceSuite {
         "verdict.json" to { c -> verdictCases(c) },
         "validate.json" to { c -> validateCases(c) },
         "model-schema.json" to { c -> modelSchemaCases(c) },
+        "silhouette-verdict.json" to { c -> silhouetteVerdictCases(c) },
     )
 
     /** The conformance files this suite knows how to run. */
@@ -127,7 +131,9 @@ public object ConformanceSuite {
         val id = k.str("id")
         val input = k.str("input")
         val expected = k.obj("expected")
-        val result by lazy { skeletonize(Raw.of(input), allowlist(c.source, k.str("locale"))) }
+        // Section 4.3: some cases carry the words the user hid.
+        val hide = (k["hide"] as? JsonArray)?.map { (it as JsonPrimitive).content }?.toSet() ?: emptySet()
+        val result by lazy { skeletonize(Raw.of(input), allowlist(c.source, k.str("locale")), hide) }
         listOf(
             ConformanceCase(c.file, "$id: skeleton and map") {
                 equal(expected.str("skeleton"), result.skeleton.text, "skeleton")
@@ -165,11 +171,17 @@ public object ConformanceSuite {
                 exact(k["expected"]!!, rehydrate(schema, k["pointers"]!!, Raw.of(map)).reveal())
             }
         }
+        val typed = (c.fixture["typedAmounts"] as JsonArray).map { it as JsonObject }.map { n ->
+            val text = n.str("text")
+            ConformanceCase(c.file, "parseTypedAmount ${jsonQuote(text)}") {
+                exact(n["expected"]!!, parseTypedAmount(text)?.let(::jsonNumber) ?: JsonNull)
+            }
+        }
         return listOf(
-            ConformanceCase(c.file, "has number and pointer cases") {
-                check(numbers.isNotEmpty() && cases.isNotEmpty()) { "no cases" }
+            ConformanceCase(c.file, "has number, typed amount and pointer cases") {
+                check(numbers.isNotEmpty() && typed.isNotEmpty() && cases.isNotEmpty()) { "no cases" }
             },
-        ) + numbers + cases
+        ) + numbers + typed + cases
     }
 
     // ---------- generalize.json ----------
@@ -228,6 +240,19 @@ public object ConformanceSuite {
                     k.containsKey("expected") -> exact(k["expected"]!!, JsonArray(verdicts(pack, bands, answers).map { it.toJson() }))
                     else -> fail("case has neither expected nor expectedError")
                 }
+            }
+        })
+    }
+
+    // ---------- silhouette-verdict.json ----------
+
+    private fun silhouetteVerdictCases(c: Context): List<ConformanceCase> {
+        val pack by lazy { RulePack.parse(json(c.source, c.fixture.str("pack"))) }
+        val bands by lazy { Bands.parse(json(c.source, c.fixture.str("bands"))) }
+        return nonEmpty(c, c.fixture.cases().map { k ->
+            ConformanceCase(c.file, k.str("id")) {
+                val result = silhouetteVerdicts(pack, bands, generalizedProfileFromJson(k.obj("profile")))
+                exact(k["expected"]!!, JsonArray(result.value.map { it.toJson() }))
             }
         })
     }

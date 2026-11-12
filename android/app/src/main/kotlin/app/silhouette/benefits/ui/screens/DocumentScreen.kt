@@ -26,7 +26,12 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import app.silhouette.benefits.core.Raw
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.compose.runtime.collectAsState
+import androidx.core.content.FileProvider
+import app.silhouette.benefits.ai.DeviceModelState
 import app.silhouette.benefits.data.PdfText
+import app.silhouette.benefits.data.PhotoDecoder
 import app.silhouette.benefits.document.SourceKind
 import app.silhouette.benefits.i18n.AppLanguage
 import app.silhouette.benefits.ui.AppController
@@ -66,6 +71,18 @@ fun DocumentContent(app: AppController) {
             app.sharedTextShown()
         }
     }
+    var cameraUri by rememberSaveable { mutableStateOf<String?>(null) }
+    fun readPhoto(uri: Uri) {
+        scope.launch {
+            val bitmap = withContext(Dispatchers.IO) { runCatching { PhotoDecoder.decode(context, uri) }.getOrNull() }
+            if (bitmap != null) app.readPhoto(bitmap)
+        }
+    }
+    val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
+        val uri = cameraUri?.let(Uri::parse)
+        if (taken && uri != null) readPhoto(uri)
+    }
+    val gallery = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> if (uri != null) readPhoto(uri) }
     val pdfPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
         reading = true
@@ -129,12 +146,42 @@ fun DocumentContent(app: AppController) {
         }
     }
 
-    // Photos can be read only by an on-device model, which this build does not have.
+    // Photos are read only by an on-device model (ONLY_ON_DEVICE). Without one, the option says why.
     Panel(Modifier.testTag("photo-option")) {
         SectionHeading(t("doc.photo"))
-        PrivateNote(t("doc.photo.unavailable"))
-        OutlinedButton(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth().heightIn(min = d.comfortableTapTarget)) {
-            Text(t("doc.photo"), style = MaterialTheme.typography.labelLarge)
+        val modelState by (app.deviceModel?.state ?: kotlinx.coroutines.flow.MutableStateFlow(DeviceModelState.Unavailable)).collectAsState()
+        when (val state = modelState) {
+            DeviceModelState.Available -> {
+                PrivateNote(t("doc.photo.help"))
+                SecondaryButton(t("doc.photo.camera"), onClick = {
+                    val file = PhotoDecoder.newCameraFile(context)
+                    val uri = FileProvider.getUriForFile(context, context.packageName + ".photos", file)
+                    cameraUri = uri.toString()
+                    camera.launch(uri)
+                }, modifier = Modifier.testTag("photo-camera"))
+                SecondaryButton(t("doc.photo.gallery"), onClick = {
+                    gallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }, modifier = Modifier.testTag("photo-gallery"))
+                if (doc.readingPhoto) Meta(t("doc.photo.reading"), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+                doc.error?.let {
+                    Text(t(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive })
+                }
+            }
+            DeviceModelState.Downloadable, DeviceModelState.DownloadFailed -> {
+                Meta(t("model.device.downloadable"))
+                if (state == DeviceModelState.DownloadFailed) Meta(t("model.downloadFailed"))
+                SecondaryButton(t("model.download"), onClick = app::downloadDeviceModel, modifier = Modifier.testTag("model-download"))
+            }
+            is DeviceModelState.Downloading -> Meta(
+                t("model.device.downloading", "size" to android.text.format.Formatter.formatShortFileSize(context, state.bytes)),
+                Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+            DeviceModelState.Checking, DeviceModelState.Unavailable -> {
+                PrivateNote(t("doc.photo.unavailable"), Modifier.testTag("photo-unavailable"))
+                OutlinedButton(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth().heightIn(min = d.comfortableTapTarget)) {
+                    Text(t("doc.photo"), style = MaterialTheme.typography.labelLarge)
+                }
+            }
         }
     }
 

@@ -1,7 +1,6 @@
 package app.silhouette.benefits.ai
 
 import app.silhouette.benefits.core.Skeleton
-import app.silhouette.benefits.data.OutboundLog
 import kotlinx.serialization.json.JsonObject
 
 // Task `document.pointer.extract` (shared/routing.json): input Skeleton only, PREFER_ON_DEVICE,
@@ -18,7 +17,7 @@ enum class InferenceSource {
     SAMPLE_ANSWER_KEY,
 }
 
-enum class DocType(val schemaFile: String) { PAYSTUB("pointer.paystub.json") }
+enum class DocType(val wire: String, val schemaFile: String) { PAYSTUB("paystub", "pointer.paystub.json") }
 
 class PointerRequest(val skeleton: Skeleton, val docType: DocType, val language: String)
 
@@ -43,24 +42,16 @@ interface PointerExtractor {
 class ExtractorUnavailable : Exception("no pointer extractor for this document")
 
 /**
- * The single path from a document silhouette to an extractor. Every call is recorded in the
- * outbound ledger before it starts, with the exact silhouette as payload, and updated with what
- * happened: sent to the cloud, kept on this device, or failed.
+ * The single path from a document silhouette to an extractor: the first extractor that can read
+ * it is used. Model extractors record every request they make in the outbound log themselves
+ * ([LoggedModelPort]), before the request is made; the sample answer key makes no request.
  */
-class PointerExtraction(private val extractors: List<PointerExtractor>, private val log: OutboundLog) {
+class PointerExtraction(private val extractors: List<PointerExtractor>) {
 
     fun extractorFor(skeleton: Skeleton, language: String): PointerExtractor? = extractors.firstOrNull { it.canRead(skeleton, language) }
 
     suspend fun extract(request: PointerRequest): PointerResult {
         val extractor = extractorFor(request.skeleton, request.language) ?: throw ExtractorUnavailable()
-        val id = log.begin(OutboundLog.Channel.AI_CLOUD, extractor.destination, listOf("document-silhouette"), request.skeleton)
-        return try {
-            val result = extractor.extract(request)
-            log.finish(id, if (result.inferenceSource == InferenceSource.IN_CLOUD) OutboundLog.Status.SENT else OutboundLog.Status.KEPT_ON_DEVICE)
-            result
-        } catch (e: Exception) {
-            log.finish(id, OutboundLog.Status.FAILED)
-            throw e
-        }
+        return extractor.extract(request)
     }
 }

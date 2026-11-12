@@ -1,5 +1,7 @@
 package app.silhouette.benefits.content
 
+import app.silhouette.benefits.ai.PointerPrompts
+import app.silhouette.benefits.ai.PromptTemplate
 import app.silhouette.benefits.core.Allowlist
 import app.silhouette.benefits.core.Bands
 import app.silhouette.benefits.core.Raw
@@ -46,6 +48,10 @@ class AppContent(
     val pointerSchemas: Map<String, JsonObject>,
     /** Built-in sample documents (shared/samples/), Raw text by id. */
     val samples: List<SampleDocument>,
+    /** Bundled versions of shared/prompts/pointer-extract.v{n}.md. */
+    val pointerPrompts: PointerPrompts,
+    /** shared/prompts/photo-read.v1.md. */
+    val photoPrompt: PromptTemplate,
 ) {
     /** The allowlist for a document: its language ∪ `en` (shared/skeleton/SPEC.md section 4). */
     fun allowlist(language: String): Allowlist =
@@ -74,6 +80,10 @@ class AppContent(
                 }.toMap().also { require("en" in it) { "missing skeleton/allowlist/en.json" } },
                 pointerSchemas = schemaNames.associateWith { Json.parseToJsonElement(required("schemas/$it")) as JsonObject },
                 samples = SampleDocument.ALL.map { s -> s.copy(text = Raw.of(required("samples/${s.id}.txt"))) },
+                pointerPrompts = PointerPrompts(
+                    PointerPrompts.BUNDLED.associateWith { v -> PromptTemplate.parse("pointer-extract.v$v", required("prompts/pointer-extract.v$v.md")) },
+                ),
+                photoPrompt = PromptTemplate.parse("photo-read.v1", required("prompts/photo-read.v1.md")),
                 pack = pack,
                 bands = bands,
                 steps = buildSteps(pack, bands),

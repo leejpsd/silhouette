@@ -42,7 +42,11 @@ class OutboundLog(private val onChange: (List<Entry>) -> Unit = {}) {
         KEPT_ON_DEVICE,
     }
 
-    /** One outbound request. [fields] names kinds of content (copy keys `outbound.field.*`), never values. */
+    /**
+     * One outbound request. [fields] names kinds of content (copy keys `outbound.field.*`), never
+     * values. [path] is the request path without project ids; [responseStatus] is set when the
+     * request was answered, [failureReason] when it failed (a short code, never a user value).
+     */
     data class Entry(
         val id: Long,
         val channel: Channel,
@@ -50,6 +54,10 @@ class OutboundLog(private val onChange: (List<Entry>) -> Unit = {}) {
         val fields: List<String>,
         val payload: String?,
         val status: Status,
+        val path: String? = null,
+        val model: String? = null,
+        val responseStatus: String? = null,
+        val failureReason: String? = null,
     )
 
     private val state = MutableStateFlow<List<Entry>>(emptyList())
@@ -59,18 +67,27 @@ class OutboundLog(private val onChange: (List<Entry>) -> Unit = {}) {
     /** Entries whose content may have left the device. */
     val leftDevice: List<Entry> get() = state.value.filter { it.status == Status.SENT || it.status == Status.FAILED || it.status == Status.ATTEMPTED }
 
-    fun begin(channel: Channel, destination: String, fields: List<String>, payload: CloudSafe?): Long {
+    fun begin(
+        channel: Channel,
+        destination: String,
+        fields: List<String>,
+        payload: CloudSafe?,
+        path: String? = null,
+        model: String? = null,
+    ): Long {
         var id = 0L
         state.update { list ->
             id = (list.maxOfOrNull { it.id } ?: 0) + 1
-            list + Entry(id, channel, destination, fields, payload?.toString(), Status.ATTEMPTED)
+            list + Entry(id, channel, destination, fields, payload?.toString(), Status.ATTEMPTED, path, model)
         }
         onChange(state.value)
         return id
     }
 
-    fun finish(id: Long, status: Status) {
-        state.update { list -> list.map { if (it.id == id) it.copy(status = status) else it } }
+    fun finish(id: Long, status: Status, responseStatus: String? = null, failureReason: String? = null) {
+        state.update { list ->
+            list.map { if (it.id == id) it.copy(status = status, responseStatus = responseStatus, failureReason = failureReason) else it }
+        }
         onChange(state.value)
     }
 
@@ -94,6 +111,10 @@ class OutboundLog(private val onChange: (List<Entry>) -> Unit = {}) {
                         "fields" to JsonArray(e.fields.map { JsonPrimitive(it) }),
                         "payload" to (e.payload?.let { JsonPrimitive(it) } ?: JsonNull),
                         "status" to JsonPrimitive(e.status.name),
+                        "path" to (e.path?.let { JsonPrimitive(it) } ?: JsonNull),
+                        "model" to (e.model?.let { JsonPrimitive(it) } ?: JsonNull),
+                        "responseStatus" to (e.responseStatus?.let { JsonPrimitive(it) } ?: JsonNull),
+                        "failureReason" to (e.failureReason?.let { JsonPrimitive(it) } ?: JsonNull),
                     ),
                 )
             },
@@ -103,6 +124,8 @@ class OutboundLog(private val onChange: (List<Entry>) -> Unit = {}) {
         fun decode(text: String?): List<Entry> = runCatching {
             Json.parseToJsonElement(text ?: return emptyList()).jsonArray.map { element ->
                 val o = element.jsonObject
+                fun opt(key: String) = (o[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
+                val stored = Status.valueOf(o["status"]!!.jsonPrimitive.content)
                 Entry(
                     id = o["id"]!!.jsonPrimitive.long,
                     channel = Channel.valueOf(o["channel"]!!.jsonPrimitive.content),
@@ -110,7 +133,11 @@ class OutboundLog(private val onChange: (List<Entry>) -> Unit = {}) {
                     fields = o["fields"]!!.jsonArray.map { it.jsonPrimitive.content },
                     payload = (o["payload"] as? JsonPrimitive)?.takeIf { it.isString }?.content,
                     // An entry still "attempted" when the app stopped may have been sent.
-                    status = Status.valueOf(o["status"]!!.jsonPrimitive.content).let { if (it == Status.ATTEMPTED) Status.FAILED else it },
+                    status = if (stored == Status.ATTEMPTED) Status.FAILED else stored,
+                    path = opt("path"),
+                    model = opt("model"),
+                    responseStatus = opt("responseStatus"),
+                    failureReason = opt("failureReason") ?: if (stored == Status.ATTEMPTED) "interrupted" else null,
                 )
             }
         }.getOrDefault(emptyList())

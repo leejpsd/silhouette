@@ -7,8 +7,9 @@ import kotlinx.serialization.json.JsonObject
 /**
  * A test double, not a model: fixed pointer answers for the built-in sample documents
  * (shared/samples/). It answers only when the silhouette is exactly the silhouette of a sample, so
- * it can never pretend to read a real document. Its results carry
- * [InferenceSource.SAMPLE_ANSWER_KEY], and the app labels them as sample answers.
+ * it can never pretend to read a real document, and only when no model can be reached (no network
+ * and no on-device model). Its results carry [InferenceSource.SAMPLE_ANSWER_KEY], and the app
+ * labels them as sample answers.
  *
  * The answers are the pointers of the `*-correct` cases in shared/fixtures/conformance/rehydrate.json
  * (a unit test keeps them identical).
@@ -21,6 +22,8 @@ class SampleAnswerKeyExtractor(private val samples: List<Sample>) : PointerExtra
     override val destination: String = "this device (sample answers)"
 
     override fun canRead(skeleton: Skeleton, language: String): Boolean = samples.any { it.skeleton == skeleton && it.language == language }
+
+    /** The sample documents' fixed answers make no request. */
 
     override suspend fun extract(request: PointerRequest): PointerResult {
         val sample = samples.firstOrNull { it.skeleton == request.skeleton && it.language == request.language } ?: throw ExtractorUnavailable()

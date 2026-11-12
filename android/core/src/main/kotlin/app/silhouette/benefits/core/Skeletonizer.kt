@@ -121,8 +121,11 @@ public sealed interface SkeletonPiece {
     /** Safe characters between tokens. */
     public data class Separator(override val text: String) : SkeletonPiece
 
-    /** An allowlisted word that survived. [ordinal] is its position among all words of the document. */
-    public data class KeptWord(override val text: String, val ordinal: Int) : SkeletonPiece
+    /** An allowlisted word that survived. The user can hide it ([skeletonize] `hide`). */
+    public data class KeptWord(override val text: String) : SkeletonPiece {
+        /** The form to put into `hide`. */
+        public val hideKey: String get() = text.lowercase(Locale.ROOT)
+    }
 
     /** A placeholder such as `⟦N3⟧`; [id] is `N3`. */
     public data class Placeholder(val id: String) : SkeletonPiece {
@@ -146,7 +149,7 @@ public class SkeletonResult internal constructor(
     public val counts: Map<Char, Int> get() = pieces.filterIsInstance<SkeletonPiece.Placeholder>().groupingBy { it.id[0] }.eachCount()
 }
 
-private class Token(val kind: Char, var text: String, var keep: Boolean = false, val ordinal: Int = -1)
+private class Token(val kind: Char, var text: String, var keep: Boolean = false, val hidden: Boolean = false)
 
 /** Separators that keep two words in one phrase (SPEC.md section 4.1). */
 private val PHRASE_JOINERS = setOf(" ", ", ", " & ")
@@ -155,17 +158,16 @@ private val PHRASE_JOINERS = setOf(" ", ", ", " & ")
  * Turns Raw document text into a Skeleton. One of the two functions allowed to produce a
  * cloud-safe value from Raw (shared/DATA_TYPES.md).
  *
- * [hide] lists word ordinals (see [SkeletonPiece.KeptWord.ordinal]) that the user chose to hide.
- * A hidden word is treated as not allowlisted, so the phrase rule masks its whole phrase; a hidden
- * introducer is no longer set aside. With no
- * hidden words the output is exactly the contract's.
+ * [hide] holds lowercase words the user chose to hide (SPEC.md section 4.3). A word is hidden when
+ * its lowercase form, or any hyphen-separated part of it, is in [hide], wherever it occurs; its
+ * phrase is masked whole, introducers included. With an empty [hide] the output is that of
+ * sections 3 to 4.2.
  */
-public fun skeletonize(text: Raw<String>, allow: Allowlist, hide: Set<Int> = emptySet()): SkeletonResult {
+public fun skeletonize(text: Raw<String>, allow: Allowlist, hide: Set<String> = emptySet()): SkeletonResult {
     val input = normalizeDocument(text.reveal())
 
     // Pass 1: tokens. Consecutive safe characters form one separator token ('O').
     val tokens = ArrayList<Token>()
-    var words = 0
     val m = TOKEN.matcher(input)
     while (m.find()) {
         val date = m.group(1)
@@ -175,8 +177,9 @@ public fun skeletonize(text: Raw<String>, allow: Allowlist, hide: Set<Int> = emp
             date != null -> tokens += Token('D', date)
             num != null -> tokens += Token('N', num)
             word != null -> {
-                val ordinal = words++
-                tokens += Token('W', word, keep = ordinal !in hide && allow.allows(word), ordinal = ordinal)
+                val lower = word.lowercase(Locale.ROOT)
+                val hidden = lower in hide || lower.split('-').any { it in hide }
+                tokens += Token('W', word, keep = !hidden && allow.allows(word), hidden = hidden)
             }
             tokens.isNotEmpty() && tokens.last().kind == 'O' -> tokens.last().text += m.group(4)
             else -> tokens += Token('O', m.group(4))
@@ -195,8 +198,10 @@ public fun skeletonize(text: Raw<String>, allow: Allowlist, hide: Set<Int> = emp
         }
         var j = i
         while (j + 2 < tokens.size && tokens[j + 1].kind == 'O' && tokens[j + 1].text in PHRASE_JOINERS && tokens[j + 2].kind == 'W') j += 2
+        // A phrase in which the user hid a word is masked whole, introducers included (section 4.3).
+        val userHidden = (i..j step 2).any { tokens[it].hidden }
         var start = i
-        while (start < j && tokens[start].keep && allow.introduces(tokens[start].text)) start += 2
+        while (!userHidden && start < j && tokens[start].keep && allow.introduces(tokens[start].text)) start += 2
         val keep = (start..j step 2).all { tokens[it].keep }
         for (k in start..j step 2) tokens[k].keep = keep
         i = j + 1
@@ -209,7 +214,7 @@ public fun skeletonize(text: Raw<String>, allow: Allowlist, hide: Set<Int> = emp
     for (t in tokens) {
         when {
             t.kind == 'O' -> pieces += SkeletonPiece.Separator(t.text)
-            t.kind == 'W' && t.keep -> pieces += SkeletonPiece.KeptWord(t.text, t.ordinal)
+            t.kind == 'W' && t.keep -> pieces += SkeletonPiece.KeptWord(t.text)
             else -> {
                 val n = (counters[t.kind] ?: 0) + 1
                 counters[t.kind] = n

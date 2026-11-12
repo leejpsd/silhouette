@@ -52,18 +52,27 @@ public data class PaystubValues(
     val periodStart: String? = null,
     val periodEnd: String? = null,
     val deductions: List<Deduction> = emptyList(),
+    /**
+     * Date fields that were present in the input as `null`. They are absent for every rule except
+     * the `dates-parsed` check, where the conformance fixtures count them as given and unreadable.
+     */
+    val nullDates: Set<String> = emptySet(),
 ) {
     override fun toString(): String = "PaystubValues(values redacted)"
 
     public companion object {
-        /** Reads one paystub from JSON. A field of the wrong type raises [ValidationInputError]. */
+        /**
+         * Reads one paystub from JSON. A field that is missing or `null` is absent (SPEC.md section 1);
+         * a field of the wrong type raises [ValidationInputError].
+         */
         public fun fromJson(json: JsonElement): PaystubValues {
             val obj = json as? JsonObject ?: throw ValidationInputError("a paystub is an object")
-            fun number(key: String): Double? = obj[key]?.let { v ->
-                (v as? JsonPrimitive)?.takeIf { !it.isString && v !is JsonNull }?.content?.toDoubleOrNull()
+            fun present(key: String): JsonElement? = obj[key]?.takeIf { it !is JsonNull }
+            fun number(key: String): Double? = present(key)?.let { v ->
+                (v as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toDoubleOrNull()
                     ?: throw ValidationInputError("$key must be a number")
             }
-            fun text(key: String): String? = obj[key]?.let { v ->
+            fun text(key: String): String? = present(key)?.let { v ->
                 (v as? JsonPrimitive)?.takeIf { it.isString }?.content ?: throw ValidationInputError("$key must be text")
             }
             val deductions = when (val d = obj["deductions"]) {
@@ -77,6 +86,7 @@ public data class PaystubValues(
                 else -> throw ValidationInputError("deductions must be a list")
             }
             return PaystubValues(
+                nullDates = listOf("payDate", "periodStart", "periodEnd").filter { obj[it] is JsonNull }.toSet(),
                 grossPay = number("grossPay"),
                 netPay = number("netPay"),
                 ytdGross = number("ytdGross"),
@@ -230,6 +240,8 @@ public object Validation {
     /** `round(x × 100)`, half up for the non-negative inputs allowed here (SPEC.md section 2). */
     public fun toCents(value: Double): Long {
         if (!value.isFinite() || value < 0) throw ValidationInputError("money values must be finite and non-negative")
+        // Allowed by SPEC.md section 1; keeps every product within exact arithmetic.
+        if (value >= 1e15) throw ValidationInputError("money values must be below 10^15")
         return Math.round(value * 100)
     }
 
@@ -346,7 +358,11 @@ public object Validation {
             add("ytd-periods", CheckStatus.SKIPPED)
         }
 
-        val dates = listOf(raw.payDate to s.payDate, raw.periodStart to s.periodStart, raw.periodEnd to s.periodEnd).filter { it.first != null }
+        val dates = listOf(
+            (raw.payDate != null || "payDate" in raw.nullDates) to s.payDate,
+            (raw.periodStart != null || "periodStart" in raw.nullDates) to s.periodStart,
+            (raw.periodEnd != null || "periodEnd" in raw.nullDates) to s.periodEnd,
+        ).filter { it.first }
         add(
             "dates-parsed",
             when {

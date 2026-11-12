@@ -186,13 +186,19 @@ fun LeavingBar(strings: Strings, log: OutboundLog) {
                 for (e in entries) {
                     var showPayload by rememberSaveable(e.id) { mutableStateOf(false) }
                     Column(Modifier.testTag("outbound-entry"), verticalArrangement = Arrangement.spacedBy(d.xxs)) {
-                        Text(
-                            e.fields.joinToString(", ") { fieldName(it) } + " · " + strings("outbound.status.${e.status.name}"),
-                            style = MaterialTheme.typography.titleSmall,
-                        )
                         val keptHere = e.status == OutboundLog.Status.KEPT_ON_DEVICE
+                        val status = when (e.status) {
+                            OutboundLog.Status.ATTEMPTED -> strings("outbound.status.attempted")
+                            OutboundLog.Status.SENT -> strings("outbound.status.sent", "status" to (e.responseStatus ?: "—"))
+                            OutboundLog.Status.FAILED -> strings("outbound.status.failed", "reason" to (e.failureReason ?: "—"))
+                            OutboundLog.Status.KEPT_ON_DEVICE -> strings("outbound.status.answeredOnDevice")
+                        }
+                        Text(e.fields.joinToString(", ") { fieldName(it) } + " · " + status, style = MaterialTheme.typography.titleSmall)
                         // A request answered on this device went nowhere, so it has no destination line.
-                        if (!keptHere) Text(strings("outbound.sentTo", "destination" to e.destination), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
+                        if (!keptHere) {
+                            Text(strings("outbound.requestTo", "destination" to e.destination, "path" to (e.path ?: "")), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
+                        }
+                        e.model?.let { Text(strings("outbound.model", "model" to it), style = MaterialTheme.typography.bodyMedium, color = c.textMuted) }
                         if (e.payload != null) {
                             TextButton(onClick = { showPayload = !showPayload }, modifier = Modifier.heightIn(min = d.minTapTarget)) {
                                 Text(strings(if (keptHere) "outbound.showSilhouette" else "outbound.showPayload"), style = MaterialTheme.typography.labelLarge)

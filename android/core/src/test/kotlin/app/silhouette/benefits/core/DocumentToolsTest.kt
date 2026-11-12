@@ -29,7 +29,8 @@ class DocumentToolsTest {
     fun `hiding a kept word masks it and its phrase, and nothing else changes`() {
         val before = skeletonize(Raw.of("Employer: Northwind   Gross Pay 10.00   Net Pay 9.00"), allowlist("en"))
         val gross = before.pieces.filterIsInstance<SkeletonPiece.KeptWord>().first { it.text == "Gross" }
-        val after = skeletonize(Raw.of("Employer: Northwind   Gross Pay 10.00   Net Pay 9.00"), allowlist("en"), hide = setOf(gross.ordinal))
+        assertEquals("gross", gross.hideKey)
+        val after = skeletonize(Raw.of("Employer: Northwind   Gross Pay 10.00   Net Pay 9.00"), allowlist("en"), hide = setOf(gross.hideKey))
         assertEquals("Employer: ⟦W1⟧   ⟦W2⟧ ⟦W3⟧ ⟦N1⟧   Net Pay ⟦N2⟧", after.skeleton.text)
         assertEquals(mapOf("W1" to "Northwind", "W2" to "Gross", "W3" to "Pay", "N1" to "10.00", "N2" to "9.00"), after.map.reveal())
         // No hidden words: exactly the contract's output.
@@ -44,7 +45,7 @@ class DocumentToolsTest {
         val label = result.pieces.first() as SkeletonPiece.KeptWord
         assertEquals("Employee", label.text)
         // Hiding the label masks the whole phrase: a hidden introducer is not set aside.
-        val hidden = skeletonize(Raw.of("Employee Lucia Lindqvist"), allow, hide = setOf(label.ordinal))
+        val hidden = skeletonize(Raw.of("Employee Lucia Lindqvist"), allow, hide = setOf(label.hideKey))
         assertEquals("⟦W1⟧ ⟦W2⟧ ⟦W3⟧", hidden.skeleton.text)
         // Introducers come from the document language's file plus English only.
         assertEquals("Empleado ⟦W1⟧ ⟦W2⟧", skeletonize(Raw.of("Empleado Lucía Hernández"), allowlist("es")).skeleton.text)
@@ -68,7 +69,8 @@ class DocumentToolsTest {
         assertEquals(28000.5, parseTypedAmount("$28,000.50"))
         assertEquals(28000.0, parseTypedAmount("€ 28000"))
         assertEquals(2485000.0, parseTypedAmount("₩2,485,000"))
-        for (bad in listOf("28.000,50", "28 000", "1e3", "-5", "", "$", "28,00", "12.", ".5", "$$5", "5$", "28000.50\n1")) {
+        // Only tab, LF, CR, space and no-break space are trimmed; Kotlin's trim() would also take these.
+        for (bad in listOf("28.000,50", "28 000", "1e3", "-5", "", "$", "28,00", "12.", ".5", "$$5", "5$", "28000.50\n1", "\u30005", "\u20025", "5\u200B", "\u000B5")) {
             assertNull(parseTypedAmount(bad), bad)
         }
     }

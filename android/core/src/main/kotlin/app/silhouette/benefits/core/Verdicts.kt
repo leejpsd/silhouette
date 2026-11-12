@@ -283,3 +283,52 @@ public fun verdicts(pack: RulePack, bands: Bands, answers: Raw<JsonObject>): Lis
         ProgramVerdict(program.id, verdict, criteria, dependsOn.sorted(), estimatedAmount)
     }
 }
+
+/** A program verdict computed from the profile silhouette alone (shared/rulepacks/SPEC.md section 7). */
+public data class SilhouetteVerdict(val programId: String, val verdict: Verdict, val criteria: List<CriterionResult>) {
+    public fun toJson(): JsonObject = JsonObject(
+        linkedMapOf(
+            "programId" to JsonPrimitive(programId),
+            "verdict" to JsonPrimitive(verdict.wire),
+            "criteria" to JsonArray(criteria.map { JsonObject(linkedMapOf("id" to JsonPrimitive(it.id), "state" to JsonPrimitive(it.state.wire))) }),
+        ),
+    )
+}
+
+/**
+ * The verdicts the engine reaches from the `Generalized` profile alone (SPEC.md section 7). The
+ * verdict on screen comes from exact and sensitive answers and is Raw; this one may be given to a
+ * cloud-capable task. Only the income band and the non-sensitive answers `householdSize` (an
+ * integer, not the capped form), `housing` and `county` are used; no amount, no `dependsOn`.
+ */
+public fun silhouetteVerdicts(pack: RulePack, bands: Bands, profile: Generalized<GeneralizedProfile>): Generalized<List<SilhouetteVerdict>> {
+    val p = profile.value
+    val open = pack.questions.filter { !it.sensitive }.map { it.id }.toSet()
+    val answers = LinkedHashMap<String, JsonElement>()
+    p.incomeBand?.let { answers["incomeBand"] = JsonPrimitive(it) }
+    (p.householdSize as? HouseholdSize.Count)?.let { if ("householdSize" in open) answers["householdSize"] = JsonPrimitive(it.value) }
+    p.housing?.let { if ("housing" in open) answers["housing"] = JsonPrimitive(it.wire) }
+    p.county?.let { if ("county" in open) answers["county"] = JsonPrimitive(it) }
+    val result = verdicts(pack, bands, Raw.of(JsonObject(answers))).map { SilhouetteVerdict(it.programId, it.verdict, it.criteria) }
+    return Generalized(result)
+}
+
+/** Reads a profile silhouette in its JSON form (shared/schemas/generalized-profile.json). For fixtures. */
+internal fun generalizedProfileFromJson(json: JsonObject): Generalized<GeneralizedProfile> {
+    fun text(key: String) = (json[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
+    val size = json["householdSize"] as? JsonPrimitive
+    return Generalized(
+        GeneralizedProfile(
+            jurisdiction = text("jurisdiction") ?: throw IllegalArgumentException("jurisdiction"),
+            incomeBand = text("incomeBand"),
+            householdSize = when {
+                size == null || size is kotlinx.serialization.json.JsonNull -> null
+                size.isString -> HouseholdSize.AboveCap(size.content.removeSuffix("+").toInt())
+                else -> HouseholdSize.Count(size.content.toDouble().toInt())
+            },
+            childAgeBands = (json["childAgeBands"] as? JsonArray)?.map { (it as JsonPrimitive).content },
+            county = text("county"),
+            housing = text("housing")?.let { h -> Housing.entries.first { it.wire == h } },
+        ),
+    )
+}

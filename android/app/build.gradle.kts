@@ -1,10 +1,13 @@
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.file.FileSystemOperations
 import javax.inject.Inject
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    // Reads app/google-services.json, which each developer adds locally (it is not in the repository).
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -50,6 +53,14 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.activity.compose)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.ai.ondevice)
+    implementation(libs.firebase.config)
+    // App Check: Play Integrity in release builds, the debug provider in debug builds only.
+    releaseImplementation(libs.firebase.appcheck.playintegrity)
+    debugImplementation(libs.firebase.appcheck.debug)
 
     testImplementation(libs.junit4)
     testImplementation(libs.kotlinx.coroutines.test)
@@ -108,6 +119,8 @@ abstract class SyncSharedContract : DefaultTask() {
             "skeleton/allowlist/*.json",
             "schemas/pointer.*.json",
             "samples/*.txt",
+            "prompts/pointer-extract.v*.md",
+            "prompts/photo-read.v*.md",
         )
         val REQUIRED = listOf(
             "copy/en.json",
@@ -117,8 +130,41 @@ abstract class SyncSharedContract : DefaultTask() {
             "skeleton/allowlist/en.json",
             "schemas/pointer.paystub.json",
             "samples/paystub-en-01.txt",
+            "prompts/pointer-extract.v3.md",
+            "prompts/photo-read.v1.md",
         )
     }
+}
+
+/**
+ * Copies firebase/remoteconfig.template.json into generated assets, so the app's Remote Config
+ * defaults are the template's values by construction.
+ */
+abstract class SyncRemoteConfigDefaults : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val template: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @get:Inject
+    abstract val fileSystem: FileSystemOperations
+
+    @TaskAction
+    fun sync() {
+        fileSystem.sync {
+            from(template) { into("firebase") }
+            into(outputDir)
+        }
+    }
+}
+
+val syncRemoteConfigDefaults = tasks.register<SyncRemoteConfigDefaults>("syncRemoteConfigDefaults") {
+    group = "build"
+    description = "Copies firebase/remoteconfig.template.json into generated assets for the in-app Remote Config defaults."
+    template.set(layout.settingsDirectory.file("../firebase/remoteconfig.template.json"))
+    outputDir.set(layout.buildDirectory.dir("generated/remoteConfigDefaults/assets"))
 }
 
 /**
@@ -165,7 +211,7 @@ val syncConformanceFixtures = tasks.register<SyncConformanceFixtures>("syncConfo
 
 val syncSharedContract = tasks.register<SyncSharedContract>("syncSharedContract") {
     group = "build"
-    description = "Copies shared/copy, shared/rulepacks/zz-test, shared/bands, shared/design/tokens.json, shared/skeleton/allowlist, the pointer schemas and the sample documents into generated assets."
+    description = "Copies shared/copy, shared/rulepacks/zz-test, shared/bands, shared/design/tokens.json, shared/skeleton/allowlist, the pointer schemas, the sample documents and the prompts into generated assets."
     sharedDir.set(layout.settingsDirectory.dir("../shared"))
     outputDir.set(layout.buildDirectory.dir("generated/sharedContract/assets"))
 }
@@ -173,6 +219,7 @@ val syncSharedContract = tasks.register<SyncSharedContract>("syncSharedContract"
 androidComponents {
     onVariants { variant ->
         variant.sources.assets?.addGeneratedSourceDirectory(syncSharedContract, SyncSharedContract::outputDir)
+        variant.sources.assets?.addGeneratedSourceDirectory(syncRemoteConfigDefaults, SyncRemoteConfigDefaults::outputDir)
         variant.androidTest?.sources?.assets?.addGeneratedSourceDirectory(syncConformanceFixtures, SyncConformanceFixtures::outputDir)
     }
 }

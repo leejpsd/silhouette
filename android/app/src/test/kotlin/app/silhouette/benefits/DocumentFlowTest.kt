@@ -88,7 +88,7 @@ class DocumentFlowTest {
     )
 
     private fun controller(extractors: List<PointerExtractor> = listOf(sampleKey())): AppController =
-        AppController(content, repository, English, log, scope, dispatcher, PointerExtraction(extractors, log)).also {
+        AppController(content, repository, English, log, scope, dispatcher, PointerExtraction(extractors)).also {
             it.load()
             scope.advanceUntilIdle()
         }
@@ -129,12 +129,8 @@ class DocumentFlowTest {
         assertEquals(RowStatus.PENDING, gross.status)
         assertTrue(gross.source.flatten().any { it.highlight && it.text == "1,271.88" })
 
-        // Nothing left the device: the call is recorded with its exact payload, as answered here.
-        val entry = log.entries.value.single()
-        assertEquals(OutboundLog.Status.KEPT_ON_DEVICE, entry.status)
-        assertEquals(skeleton.skeleton.text, entry.payload)
-        assertTrue(log.leftDevice.isEmpty())
-        assertEquals(1, OutboundLog.decode(repository.ledger).size)
+        // The sample answers make no request, so nothing is recorded as leaving the device.
+        assertTrue(log.entries.value.isEmpty())
 
         app.confirmAll()
         assertEquals(0, app.review.pending)
@@ -174,11 +170,11 @@ class DocumentFlowTest {
         app.acceptSample(content.samples.first { it.id == "paystub-en-01" })
         val before = app.document.skeleton!!
         val gross = before.pieces.filterIsInstance<SkeletonPiece.KeptWord>().first { it.text == "Gross" }
-        app.hideWord(gross.ordinal)
+        app.hideWord(gross.hideKey)
         val hidden = app.document.skeleton!!
         assertFalse(hidden.skeleton.text.contains("Gross Pay"))
         assertEquals((before.counts['W'] ?: 0) + 2, hidden.counts['W']) // "Gross" and its phrase partner "Pay"
-        assertEquals("Gross", app.lastHiddenWord())
+        assertEquals("gross", app.lastHiddenWord())
         // A changed silhouette is no longer the sample's, so the answer key does not read it.
         assertFalse(app.canExtract)
         app.undoHide()
@@ -203,7 +199,7 @@ class DocumentFlowTest {
             app.send()
             scope.advanceUntilIdle()
             // Also after the user hides a word.
-            app.document.skeleton!!.pieces.filterIsInstance<SkeletonPiece.KeptWord>().firstOrNull()?.let { app.hideWord(it.ordinal) }
+            app.document.skeleton!!.pieces.filterIsInstance<SkeletonPiece.KeptWord>().firstOrNull()?.let { app.hideWord(it.hideKey) }
             app.send()
             scope.advanceUntilIdle()
             assertEquals(2, recorder.seen.size)
@@ -230,7 +226,7 @@ class DocumentFlowTest {
     fun `delete everything also forgets the document and the ledger`() {
         val app = controller()
         app.acceptSample(content.samples.first())
-        app.send()
+        log.finish(log.begin(OutboundLog.Channel.AI_CLOUD, "example.test", listOf("document-silhouette"), app.document.skeleton!!.skeleton), OutboundLog.Status.SENT, "OK")
         scope.advanceUntilIdle()
         assertNotNull(repository.ledger)
         app.deleteEverything()

@@ -11,14 +11,21 @@ What works today:
 
 - the **Quick Check**: a few questions, one per screen, then verdicts for every program in the
   rule pack, decided on the device by the deterministic rules engine;
-- the **document flow**: add a paystub (shared or pasted text, a text PDF, typing the numbers, or a
-  built-in sample), see its silhouette exactly as it would be sent and hide any remaining word,
-  review each value next to its source line, run the consistency checks and use the worked-out
-  yearly income.
+- the **document flow**: add a paystub (shared or pasted text, a text PDF, a photo read on the
+  device, typing the numbers, or a built-in sample), see its silhouette exactly as it would be sent
+  and hide any word that is still visible, review each value next to its source line, run the
+  consistency checks and use the worked-out yearly income.
 
-There are no AI calls, no Firebase and no network permission yet. Pointer extraction goes through a
-`PointerExtractor` interface; the only implementation in this build is the fixed answer key of the
-built-in sample documents, labelled as such. Any other document is typed in, and the app says why.
+Models run through **Firebase AI Logic** with hybrid inference:
+
+| Task (shared/routing.json) | Mode | Input |
+|---|---|---|
+| `document.pointer.extract` | `PREFER_ON_DEVICE`; an on-device failure is retried once with `ONLY_IN_CLOUD` (reason `on-device-failed`) | `Skeleton` only |
+| `document.photo.read` | `ONLY_ON_DEVICE`, one Bitmap per request; a result reported from the cloud is discarded | the photo (Raw), never sent |
+
+Every model result on screen carries the `ON_DEVICE` / `IN_CLOUD` badge and the routing reason. The
+built-in samples also have a fixed answer key, labelled "Sample answers, no AI", used only when no
+model can be reached (no network and no on-device model).
 
 ## Modules
 
@@ -61,9 +68,11 @@ How the routing rule is enforced:
 |---|---|
 | `quickcheck` | Pure flow logic: steps in the pack's `questionOrder`, validation, drafts, the conversion to engine answers, grouping by verdict, and the storage format. A typed income accepts only the document number format (`28,000.50`, `28000.5`) after removing spaces and a leading currency symbol, and the screen shows the amount as understood |
 | `document` | The document session, review rows and the conversion of confirmed values into validation input |
-| `ai` | `PointerExtractor` (input: `Skeleton`; output: pointers, inference source and routing reason), `PointerExtraction` (records every call in the outbound ledger before it starts) and `SampleAnswerKeyExtractor`, a fixed answer key that answers only for the exact silhouettes of the built-in samples |
+| `ai` | `PointerExtractor` (input: `Skeleton`; output: pointers, inference source and routing reason). `ModelPointerExtractor` applies the routing rules over a `ModelPort`; `PointerRequestBuilder` builds the request (prompt version from Remote Config, model schema derived from the pointer schema); `LoggedModelPort` records every request in the outbound log before it is made; `SampleAnswerKeyExtractor` answers only for the exact silhouettes of the built-in samples |
+| `ai/firebase` | The only code that calls Firebase AI Logic: `FirebaseModelPort` (hybrid model, `responseSchema`, `inferenceSource`), `FirebaseDeviceModel` (check status, download, warm up) and `FirebasePhotoReader` (`ONLY_ON_DEVICE`) |
+| `config` | Remote Config: every key in `shared/routing.json`, with in-app defaults read from `firebase/remoteconfig.template.json` (copied in by the build); fetched only right before the first model request |
 | `i18n` | Copy with per-key fallback: `shared/copy/{lang}` → `shared/rulepacks/{pack}/copy/{lang}` → app keys, then the same in English. English, Spanish and Korean |
-| `data` | `EncryptedStore` (AES-256-GCM, key in the Android Keystore), the answer and ledger repository, the language setting, `OutboundLog` and `PdfText` (the platform `PdfRenderer` text layer, Android 15 and later) |
+| `data` | `EncryptedStore` (AES-256-GCM, key in the Android Keystore), the answer and ledger repository, the language setting, `OutboundLog`, `PdfText` (the platform `PdfRenderer` text layer, Android 15 and later) and `PhotoDecoder` |
 | `content` | Loads the rule pack, bands, copy and design tokens from the synced assets |
 | `ui` | `AppController` (state, navigation, persistence), the Compose screens and the app chrome |
 | `ui/theme` | Material 3 theme built from `shared/design/tokens.json`: light and dark colors, type scale, spacing, radii |
@@ -79,9 +88,10 @@ App chrome:
 
 - **Demo banner** whenever a synthetic rule pack (`zz-test`) is active.
 - **"Leaving your device" bar** on every screen. It reads only `OutboundLog`, which records every
-  outbound call before it starts (status attempted, then sent, failed, or answered on this device),
-  with the exact cloud-safe payload, and is stored encrypted. Only entries that left or may have
-  left the device count as sent.
+  request before it is made (attempted), then sent with its response, failed with a reason, or
+  answered on this device, with the request path, the model and the exact cloud-safe payload. It
+  is stored encrypted. App Check token requests are recorded when the SDK reports a new token;
+  Remote Config fetches are recorded like model requests. Nothing is requested at start-up.
 - **"Delete everything"**, behind a confirmation. It deletes the stored answers, the Keystore key,
   the language choice and the outbound log.
 
@@ -107,9 +117,21 @@ Accessibility:
 
 The build task `syncSharedContract` copies `shared/copy`, `shared/rulepacks/zz-test`,
 `shared/bands`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, the pointer schemas and
-`shared/samples` into generated assets
+`shared/samples` and the prompts into generated assets
 (`assets/shared/…`). `syncConformanceFixtures` does the same for the instrumented-test APK. Nothing
 is copied by hand.
+
+## Firebase setup
+
+- Add `app/google-services.json` for the Firebase project (it is git-ignored and never committed).
+- App Check: debug builds use the debug provider, release builds Play Integrity. On the first run
+  of a debug build, logcat prints `Firebase App Check debug token: …`
+  (`adb logcat | grep "App Check debug token"`). Register that token in the Firebase console under
+  App Check → Apps → Manage debug tokens. Never put the token in the repository.
+- Dependencies: Firebase BoM 35.2.0 (`firebase-ai` 18.2.0, `firebase-config` 24.0.1,
+  `firebase-appcheck-playintegrity` / `firebase-appcheck-debug` 20.1.0),
+  `firebase-ai-ondevice` 16.0.0-beta08 (not in the BoM yet; it brings the platform's on-device
+  model runtime), Google services Gradle plugin 4.6.0.
 
 ## Requirements
 
@@ -123,7 +145,7 @@ is copied by hand.
 
 ```bash
 ./gradlew :core:test                 # conformance, canary, number format, data types, routing proof (JVM)
-./gradlew :app:testDebugUnitTest     # Quick Check logic, copy, design tokens, app controller (JVM)
+./gradlew :app:testDebugUnitTest     # Quick Check, documents, model routing with fakes, Remote Config, routing rule (JVM)
 ./gradlew :app:assembleDebug         # app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :app:connectedDebugAndroidTest   # on a device or emulator, see below
 ```
@@ -161,4 +183,5 @@ is copied by hand.
 - The document text is kept in memory only; leaving the app discards a document in progress.
 - Reading a PDF needs Android 15 or later (the platform text API); older versions offer paste and
   typing instead. A scanned PDF has no text layer.
-- Photos are offered only with an on-device model, which this build does not have.
+- Photos are read only by an on-device model; on a phone without one the photo option says why
+  and the other inputs stay available.

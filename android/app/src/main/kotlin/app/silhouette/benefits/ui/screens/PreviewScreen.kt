@@ -30,7 +30,8 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import app.silhouette.benefits.core.SkeletonPiece
-import app.silhouette.benefits.document.SourceKind
+import app.silhouette.benefits.document.ReadingPlace
+import app.silhouette.benefits.ui.InferenceBadge
 import app.silhouette.benefits.ui.AppController
 import app.silhouette.benefits.ui.Lead
 import app.silhouette.benefits.ui.Meta
@@ -77,7 +78,7 @@ fun PreviewContent(app: AppController) {
                 is SkeletonPiece.Placeholder -> withStyle(placeholderStyle) { append(piece.id) }
                 is SkeletonPiece.KeptWord -> withLink(
                     // The tag doubles as the link's spoken label ("Hide “Gross”").
-                    LinkAnnotation.Clickable(tag = t("preview.hideWord", "word" to piece.text), styles = linkStyle) { app.hideWord(piece.ordinal) },
+                    LinkAnnotation.Clickable(tag = t("preview.hideWord", "word" to piece.text), styles = linkStyle) { app.hideWord(piece.hideKey) },
                 ) { append(piece.text) }
             }
         }
@@ -101,7 +102,7 @@ fun PreviewContent(app: AppController) {
     if (doc.hidden.isNotEmpty()) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(d.xs)) {
             Text(
-                t("preview.hidden") + ": " + app.document.hiddenWords.joinToString(", "),
+                t("preview.hidden") + ": " + app.document.hidden.joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .weight(1f)
@@ -112,20 +113,24 @@ fun PreviewContent(app: AppController) {
         }
     }
 
+    doc.photoSource?.let { InferenceBadge(t, it.source, it.reason) }
+
     // An honest sentence about where the silhouette will be read.
-    val canExtract = app.canExtract
-    when {
-        canExtract && doc.source == SourceKind.SAMPLE -> PrivateNote(t("preview.sample"), Modifier.testTag("preview-where"))
-        canExtract -> PrivateNote(t("preview.cloud"), Modifier.testTag("preview-where"))
-        else -> PrivateNote(t("preview.noExtractor"), Modifier.testTag("preview-where"))
+    val place = app.readingPlace
+    when (place) {
+        ReadingPlace.DEVICE_FIRST -> PrivateNote(t("preview.onDevice"), Modifier.testTag("preview-where"))
+        ReadingPlace.CLOUD -> PrivateNote(t("preview.cloud"), Modifier.testTag("preview-where"))
+        ReadingPlace.SAMPLE_ANSWERS -> PrivateNote(t("preview.sample"), Modifier.testTag("preview-where"))
+        ReadingPlace.NOWHERE -> PrivateNote(t("preview.noExtractor"), Modifier.testTag("preview-where"))
     }
+    if (place == ReadingPlace.DEVICE_FIRST || place == ReadingPlace.CLOUD) Meta(t("leaving.network"))
     doc.error?.takeIf { it != "preview.noExtractor" }?.let {
-        Text(t(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive })
+        Text(t(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("preview-error").semantics { liveRegion = LiveRegionMode.Assertive })
     }
     if (doc.sending) Meta(t("preview.sending"), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-    if (canExtract) {
+    if (place != ReadingPlace.NOWHERE) {
         PrimaryButton(
-            if (doc.source == SourceKind.SAMPLE) t("preview.sampleButton") else t("leaving.send"),
+            if (place == ReadingPlace.SAMPLE_ANSWERS) t("preview.sampleButton") else t("leaving.send"),
             onClick = { if (!doc.sending) app.send() },
             modifier = Modifier.testTag("preview-send"),
         )

@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- No network permission: nothing in this build talks to a server. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Network: Firebase AI Logic (document silhouettes only), App Check and Remote Config. Every
+      request the app makes is recorded in the outbound log shown in "Leaving your device".
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- To know when no model can be reached (offline and no on-device model). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".SilhouetteApplication"
@@ -27,6 +34,17 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+
+        <!-- The camera writes a full-size photo here; it stays in the app's cache and is never uploaded. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.photos"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/photo_paths" />
+        </provider>
     </application>
 
 </manifest>

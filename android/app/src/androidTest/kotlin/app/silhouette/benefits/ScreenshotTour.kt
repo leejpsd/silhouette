@@ -99,7 +99,7 @@ class ScreenshotTour {
         shot("preview")
         compose.runOnIdle {
             val app = controller()
-            app.hideWord(app.document.skeleton!!.pieces.filterIsInstance<SkeletonPiece.KeptWord>().first { it.text == "Statement" }.ordinal)
+            app.hideWord(app.document.skeleton!!.pieces.filterIsInstance<SkeletonPiece.KeptWord>().first { it.text == "Statement" }.hideKey)
         }
         scrollTo("hidden-notice")
         shot("preview-hidden")

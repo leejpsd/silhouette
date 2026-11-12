@@ -18,7 +18,37 @@ import kotlinx.serialization.json.JsonPrimitive
 // annualization → "use this as my yearly income". Pure logic; the screens and AppController use it.
 
 /** Where the document text came from. */
-enum class SourceKind { SAMPLE, PASTE, SHARE, PDF, MANUAL }
+enum class SourceKind { SAMPLE, PASTE, SHARE, PDF, PHOTO, MANUAL }
+
+/** Where a silhouette will be read when the user sends it. */
+enum class ReadingPlace {
+    /** The on-device model first; the cloud only if it fails. */
+    DEVICE_FIRST,
+    CLOUD,
+
+    /** No model can be reached: the fixed answers of a built-in sample. */
+    SAMPLE_ANSWERS,
+
+    /** Nothing can read it; the user types the numbers. */
+    NOWHERE,
+}
+
+/** How a photo was read (always on this device), for the badge. */
+class PhotoSource(val source: InferenceSource, val reason: String)
+
+/** The copy key for a failed model call. Reasons are SDK error names or short codes, never user values. */
+fun errorKey(failure: app.silhouette.benefits.ai.ModelFailure): String {
+    val reason = failure.reason
+    return when {
+        reason.contains("Quota", ignoreCase = true) -> "error.quota"
+        reason == "bad-output" || reason == "empty-response" || reason.contains("Serialization") -> "error.bad-output"
+        reason.contains("ServiceDisabled") || reason.contains("APINotConfigured") -> "error.api-not-enabled"
+        reason.contains("Permission") || reason.contains("InvalidAPIKey") -> "error.permission"
+        reason.contains("Timeout") || reason.contains("Server") || reason.contains("IOException") || reason.contains("UnknownHost") -> "error.network"
+        reason.startsWith("device") -> "error.on-device-unavailable"
+        else -> "error.unknown"
+    }
+}
 
 /** What the extractor answered, ready for review. */
 class Extraction(val fields: List<ReviewField>, val source: InferenceSource, val reason: String)
@@ -31,14 +61,15 @@ data class DocumentSession(
     val language: String,
     val text: Raw<String>? = null,
     val source: SourceKind? = null,
-    val hidden: List<Int> = emptyList(),
-    /** The words hidden so far, as they appeared in the silhouette (for the "hid …" notice). */
-    val hiddenWords: List<String> = emptyList(),
+    val hidden: List<String> = emptyList(),
     val skeleton: SkeletonResult? = null,
     val extraction: Extraction? = null,
     /** Copy key of the last error, or null. */
     val error: String? = null,
     val sending: Boolean = false,
+    val readingPhoto: Boolean = false,
+    /** Set when the text was read from a photo on this device. */
+    val photoSource: PhotoSource? = null,
     /**
      * Text shared into the app from another app, waiting to be shown in the paste box. Like pasted
      * text it is a plain string only until the user continues, when it is wrapped in Raw.

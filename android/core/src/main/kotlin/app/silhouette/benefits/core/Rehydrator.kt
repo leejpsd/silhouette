@@ -17,17 +17,20 @@ internal fun parseNumber(token: String): Double? {
     return token.replace(",", "").toDouble()
 }
 
+/** The characters trimmed around a typed amount (SPEC.md section 5.1): tab, LF, CR, space, no-break space. */
+private fun isTypedSpace(c: Char): Boolean = c == '\t' || c == '\n' || c == '\r' || c == ' ' || c == '\u00A0'
+
+private const val TYPED_CURRENCIES = "$\u20AC\u00A3\u00A5\u20A9" // $ € £ ¥ ₩
+
 /**
- * An amount typed by the user: surrounding spaces and one leading currency symbol are removed,
- * then the text must have the number format of SPEC.md section 5 (`28,000.50`, `28000.5`).
- * Anything else (`28.000,50`, `1e3`, `-5`, two amounts) returns null, so it can be rejected with
- * a message instead of being misread.
+ * An amount typed by the user (SPEC.md section 5.1): only tab, LF, CR, space and no-break space
+ * are trimmed (Kotlin's `trim()` would remove more), then one optional leading `$ € £ ¥ ₩` and the
+ * same spaces after it; the rest must be the number format of section 5 as a whole. Returns null
+ * for anything else, so it is refused instead of being misread (`28000.50` never becomes 2,800,050).
  */
 public fun parseTypedAmount(text: String): Double? {
-    var t = text.trim()
-    if (t.isNotEmpty() && Character.getType(t.codePointAt(0)) == Character.CURRENCY_SYMBOL.toInt()) {
-        t = t.substring(Character.charCount(t.codePointAt(0))).trim()
-    }
+    var t = text.trim(::isTypedSpace)
+    if (t.isNotEmpty() && t[0] in TYPED_CURRENCIES) t = t.substring(1).trimStart(::isTypedSpace)
     return parseNumber(t)
 }
 

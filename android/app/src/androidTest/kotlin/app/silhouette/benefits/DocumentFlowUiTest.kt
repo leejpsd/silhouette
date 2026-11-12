@@ -99,7 +99,7 @@ class DocumentFlowUiTest {
         compose.onNodeWithText(t("preview.noExtractor")).assertExists()
         tag("hidden-notice").assertDoesNotExist()
         // Hide "Gross" through its link in the preview.
-        compose.runOnIdle { appController().hideWord(appController().document.skeleton!!.pieces.filterIsInstance<SkeletonPiece.KeptWord>().first { it.text == "Gross" }.ordinal) }
+        compose.runOnIdle { appController().hideWord(appController().document.skeleton!!.pieces.filterIsInstance<SkeletonPiece.KeptWord>().first { it.text == "Gross" }.hideKey) }
         tag("hidden-notice").assertExists()
         compose.onNodeWithText(t("preview.counts", "numbers" to 1, "dates" to 0, "words" to 3)).assertExists()
         click("undo-hide")

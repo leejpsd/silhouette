@@ -4,7 +4,16 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import app.silhouette.benefits.ai.DeviceModel
+import app.silhouette.benefits.ai.DeviceModelState
 import app.silhouette.benefits.ai.DocType
+import app.silhouette.benefits.ai.ModelFailure
+import app.silhouette.benefits.ai.ModelPointerExtractor
+import app.silhouette.benefits.ai.PhotoReader
+import app.silhouette.benefits.ai.SampleAnswerKeyExtractor
+import app.silhouette.benefits.document.PhotoSource
+import app.silhouette.benefits.document.ReadingPlace
+import app.silhouette.benefits.document.errorKey
 import app.silhouette.benefits.ai.ExtractorUnavailable
 import app.silhouette.benefits.ai.PointerExtraction
 import app.silhouette.benefits.ai.PointerRequest
@@ -84,7 +93,10 @@ class AppController(
     val outbound: OutboundLog,
     private val scope: CoroutineScope,
     private val io: CoroutineDispatcher,
-    private val extraction: PointerExtraction = PointerExtraction(emptyList(), outbound),
+    private val extraction: PointerExtraction = PointerExtraction(emptyList()),
+    /** The on-device model, or null where none is configured (tests). */
+    val deviceModel: DeviceModel? = null,
+    private val photoReader: PhotoReader? = null,
 ) {
     val steps: List<Step> get() = content.steps
 
@@ -216,26 +228,29 @@ class AppController(
     /** Every source ends here: Raw text → silhouette, then the preview. */
     fun acceptText(text: Raw<String>, source: SourceKind, language: String = document.language) {
         val skeleton = skeletonize(text, content.allowlist(language))
-        document = document.copy(language = language, text = text, source = source, hidden = emptyList(), hiddenWords = emptyList(), skeleton = skeleton, extraction = null, error = null, sharedText = null, sharedReceived = false)
+        document = document.copy(
+            language = language, text = text, source = source, hidden = emptyList(), skeleton = skeleton, extraction = null, error = null,
+            sharedText = null, sharedReceived = false, photoSource = if (source == SourceKind.PHOTO) document.photoSource else null,
+        )
         navigate(Route.Preview)
     }
 
     fun acceptSample(sample: SampleDocument) = acceptText(sample.text, SourceKind.SAMPLE, sample.language)
 
-    /** Hides one more word of the silhouette before anything is sent. */
-    fun hideWord(ordinal: Int) {
-        val word = document.skeleton?.pieces?.filterIsInstance<SkeletonPiece.KeptWord>()?.find { it.ordinal == ordinal }?.text ?: return
-        document = document.copy(hiddenWords = document.hiddenWords + word)
-        reskeletonize(document.hidden + ordinal)
+    /**
+     * Hides a word that is still visible, everywhere in this document (its lowercase form, see
+     * [SkeletonPiece.KeptWord.hideKey]), before anything is sent.
+     */
+    fun hideWord(word: String) {
+        val key = word.lowercase(java.util.Locale.ROOT)
+        if (key in document.hidden) return
+        reskeletonize(document.hidden + key)
     }
 
-    fun undoHide() {
-        document = document.copy(hiddenWords = document.hiddenWords.dropLast(1))
-        reskeletonize(document.hidden.dropLast(1))
-    }
+    fun undoHide() = reskeletonize(document.hidden.dropLast(1))
 
-    /** The word hidden last; it was part of the visible silhouette, so it is not a hidden value. */
-    fun lastHiddenWord(): String? = document.hiddenWords.lastOrNull()
+    /** The word hidden last. */
+    fun lastHiddenWord(): String? = document.hidden.lastOrNull()
 
     /** Deduction kinds of the paystub pointer schema. */
     val deductionKinds: List<String> by lazy {
@@ -245,7 +260,7 @@ class AppController(
         (kind["enum"] as JsonArray).map { (it as JsonPrimitive).content }
     }
 
-    private fun reskeletonize(hidden: List<Int>) {
+    private fun reskeletonize(hidden: List<String>) {
         val text = document.text ?: return
         document = document.copy(hidden = hidden, skeleton = skeletonize(text, content.allowlist(document.language), hidden.toSet()))
     }
@@ -268,6 +283,8 @@ class AppController(
                 navigate(Route.Review)
             } catch (_: ExtractorUnavailable) {
                 document = document.copy(sending = false, error = "preview.noExtractor")
+            } catch (e: ModelFailure) {
+                document = document.copy(sending = false, error = errorKey(e))
             } catch (_: Exception) {
                 document = document.copy(sending = false, error = "error.unknown")
             }
@@ -275,6 +292,43 @@ class AppController(
     }
 
     private fun PointerResult.source() = inferenceSource
+
+    /** Where the silhouette will be read if the user sends it, for the honest sentence in the preview. */
+    val readingPlace: ReadingPlace
+        get() {
+            val skeleton = document.skeleton ?: return ReadingPlace.NOWHERE
+            return when (val extractor = extraction.extractorFor(skeleton.skeleton, document.language)) {
+                null -> ReadingPlace.NOWHERE
+                is SampleAnswerKeyExtractor -> ReadingPlace.SAMPLE_ANSWERS
+                is ModelPointerExtractor ->
+                    if (extractor.prefersDevice(document.language) && deviceModel?.state?.value == DeviceModelState.Available) {
+                        ReadingPlace.DEVICE_FIRST
+                    } else {
+                        ReadingPlace.CLOUD
+                    }
+                else -> ReadingPlace.CLOUD
+            }
+        }
+
+    /** Reads a photo on this device only, then treats the text like pasted text. */
+    fun readPhoto(photo: android.graphics.Bitmap) {
+        val reader = photoReader ?: return
+        document = document.copy(readingPhoto = true, error = null)
+        scope.launch {
+            try {
+                val result = reader.read(photo, DocType.PAYSTUB)
+                document = document.copy(readingPhoto = false, photoSource = PhotoSource(result.source, result.reason))
+                acceptText(result.text, SourceKind.PHOTO)
+            } catch (_: Exception) {
+                document = document.copy(readingPhoto = false, error = "error.on-device-unavailable")
+            }
+        }
+    }
+
+    fun downloadDeviceModel() {
+        val model = deviceModel ?: return
+        scope.launch { model.download() }
+    }
 
     /** "Type the numbers yourself": an empty review, nothing sent. */
     fun typeInstead() {

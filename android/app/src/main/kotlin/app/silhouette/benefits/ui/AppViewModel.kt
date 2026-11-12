@@ -17,6 +17,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             scope = viewModelScope,
             io = app.storeDispatcher,
             extraction = app.extraction,
+            deviceModel = app.deviceModel,
+            photoReader = app.photoReader,
         )
     }
 

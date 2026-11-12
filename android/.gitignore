@@ -17,3 +17,6 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
+
+# Firebase app configuration (per developer, never committed)
+google-services.json
