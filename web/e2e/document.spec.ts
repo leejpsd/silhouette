@@ -40,8 +40,8 @@ test.describe('Document silhouette and pointer extraction', () => {
     expect(cloud.bodies).toHaveLength(1);
     expect(cloud.bodies[0]).toContain('Document type: paystub');
     expect(cloud.bodies[0]).not.toContain('1,271.88');
-    await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '1');
     await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
+    await expectOnlyModelAndSettings(page, 1);
     await page.getByText('Show exactly what was sent').click();
     await expect(page.getByTestId('outbound-payload')).toContainText('Gross Pay');
     await expect(page.getByTestId('outbound-payload')).not.toContainText('1,271.88');
@@ -194,3 +194,14 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(page.getByTestId('annual-income')).toHaveAttribute('data-amount', '65000');
   });
 });
+
+/**
+ * The record lists `models` model requests. After the first one, the app fetches its settings
+ * (Remote Config, with an installation id); those are the only other entries allowed.
+ */
+async function expectOnlyModelAndSettings(page: import('@playwright/test').Page, models: number) {
+  const list = page.getByTestId('outbound-list');
+  await expect(list.locator('li[data-channel="ai-cloud"]')).toHaveCount(models);
+  const channels = await list.locator('li').evaluateAll((items) => items.map((li) => li.getAttribute('data-channel')));
+  expect(channels.filter((c) => c !== 'ai-cloud' && c !== 'remote-config')).toEqual([]);
+}

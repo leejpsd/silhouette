@@ -98,6 +98,10 @@ async function call(input) {
       if (attempt >= 2) return { ok: false, kind: 'runner', detail: String(error).split('\n')[0], latencyMs: 0, attempts: attempt + 1 };
       continue;
     }
+    // A daily quota does not recover with back-off: stop rather than keep calling.
+    if (out.kind === 'quota' && (/per.?day|daily/i.test(out.detail ?? '') || attempt >= 3)) {
+      throw new Error(`quota looks daily, stopping: ${(out.detail ?? '').slice(0, 200)}`);
+    }
     const retryable = out.kind === 'quota' || (typeof out.status === 'number' && out.status >= 500) || /\b50[0-9]\b/.test(out.detail ?? '');
     if (out.ok || !retryable || attempt >= 5) return { ...out, attempts: attempt + 1 };
     const backoff = 15000 * 2 ** attempt;

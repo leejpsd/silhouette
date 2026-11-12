@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { completeQuickCheck } from './helpers';
-import { fakeCloudModel, fixturePointers, noOnDeviceModel } from './model-fakes';
+import { fakeAnswerModels, fakeCloudModel, fixturePointers, noOnDeviceModel, seedRemoteConfig } from './model-fakes';
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -68,5 +68,43 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
     await page.getByText('Show exactly what was sent').click();
     await scan('leaving panel with payload');
+  });
+}
+
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`axe finds no WCAG A/AA violations on explanations and more help (${colorScheme})`, async ({ page, context }) => {
+    const flags = { feature_grounding_search: 'true', feature_grounding_maps: 'true', feature_tts: 'true' };
+    await noOnDeviceModel(context);
+    await seedRemoteConfig(context, flags);
+    await fakeAnswerModels(page, {}, flags);
+    await page.emulateMedia({ colorScheme });
+    const scan = async (label: string) => {
+      const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+      expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help}`)).toEqual([]);
+    };
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await page.goto('/#/program/utility-discount');
+    await page.getByRole('button', { name: 'Explain this result' }).click();
+    await page.getByText('Show the exact request').click();
+    await scan('leaving your device, before Send');
+    await page.getByRole('button', { name: 'Send' }).click();
+    await page.getByTestId('explain-short').getByTestId('answer').waitFor();
+    await page.getByRole('button', { name: 'How do I apply?' }).click();
+    await page.getByTestId('chip-apply').getByTestId('answer').waitFor();
+    await page.getByRole('button', { name: /Check current information/ }).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    await page.getByTestId('search-suggestions').waitFor();
+    await scan('program with answers and current information');
+    await page.goto('/#/discover');
+    await page.getByRole('button', { name: 'Look for other help' }).click();
+    await page.getByTestId('leads').waitFor();
+    await scan('leads');
+    await page.goto('/#/nearby');
+    await page.getByLabel('Your county').selectOption('testshire');
+    await page.getByRole('button', { name: 'Find help near the county center' }).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    await page.getByTestId('places').waitFor();
+    await scan('places');
   });
 }

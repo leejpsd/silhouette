@@ -10,7 +10,7 @@ import { GeneralizeError, canonical, generalize, type Bands, type ExactProfile }
 import { InputError, RuleError, UNKNOWN, evaluate, verdicts, type Answers, type RulePack } from './rules';
 
 interface ReferenceModule {
-  skeletonize(text: string, allow: Set<string>, introducers?: Set<string>): { skeleton: string; map: Record<string, string> };
+  skeletonize(text: string, allow: Set<string>, introducers?: Set<string>, hide?: Set<string>): { skeleton: string; map: Record<string, string> };
   parseNumber(token: string): number | undefined;
   rehydrate(schema: unknown, pointers: unknown, map: Record<string, string>): unknown;
   generalize(exact: unknown, bands: unknown): unknown;
@@ -79,8 +79,18 @@ describe('differential: web port vs shared/reference/silhouette.mjs', () => {
     const schema = readJson<PointerSchema>('schemas/pointer.paystub.json');
     for (let i = 0; i < 3000; i++) {
       const text = randomText(next);
-      const ours = skeletonize(Raw.of(text), allow, intro);
-      const theirs = ref.skeletonize(text, refAllow, refIntro);
+      // Every third document hides a few of its own words (section 4.3), sometimes one hyphen part.
+      const words = text.split(/[^A-Za-z@_-]+/).filter((w) => w !== '');
+      const hide = new Set<string>();
+      if (i % 3 === 0) {
+        for (let h = 0; h < 2 && words.length > 0; h++) {
+          const w = (words[Math.floor(next() * words.length)] as string).toLowerCase();
+          const parts = w.split('-');
+          hide.add(next() < 0.5 ? w : (parts[Math.floor(next() * parts.length)] as string));
+        }
+      }
+      const ours = skeletonize(Raw.of(text), allow, intro, hide);
+      const theirs = ref.skeletonize(text, refAllow, refIntro, new Set(hide));
       expect(ours.skeleton, JSON.stringify(text)).toBe(theirs.skeleton);
       expect(JSON.stringify(reveal(ours.map))).toBe(JSON.stringify(theirs.map));
 

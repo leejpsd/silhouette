@@ -10,7 +10,9 @@ export type Route =
   | { readonly name: 'program'; readonly id: string }
   | { readonly name: 'doc' }
   | { readonly name: 'doc-preview' }
-  | { readonly name: 'doc-review' };
+  | { readonly name: 'doc-review' }
+  | { readonly name: 'discover' }
+  | { readonly name: 'nearby' };
 
 const SEGMENT = /^[A-Za-z0-9-]+$/;
 
@@ -30,6 +32,8 @@ export function parseRoute(hash: string): Route {
   if (parts[0] === 'doc' && parts.length === 1) return { name: 'doc' };
   if (parts[0] === 'doc' && parts[1] === 'preview' && parts.length === 2) return { name: 'doc-preview' };
   if (parts[0] === 'doc' && parts[1] === 'review' && parts.length === 2) return { name: 'doc-review' };
+  if (parts[0] === 'discover' && parts.length === 1) return { name: 'discover' };
+  if (parts[0] === 'nearby' && parts.length === 1) return { name: 'nearby' };
   if (parts[0] === 'program' && parts[1] && SEGMENT.test(parts[1])) return { name: 'program', id: parts[1] };
   return { name: 'start' };
 }
@@ -42,6 +46,8 @@ export function routeHref(route: Route): string {
     case 'doc': return '#/doc';
     case 'doc-preview': return '#/doc/preview';
     case 'doc-review': return '#/doc/review';
+    case 'discover': return '#/discover';
+    case 'nearby': return '#/nearby';
     case 'question': {
       const then = route.then === null ? '' : `?then=${route.then.name === 'results' ? 'results' : `program/${route.then.id}`}`;
       return `#/q/${route.id}${then}`;

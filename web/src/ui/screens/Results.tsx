@@ -6,6 +6,7 @@ import { groupByVerdict } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { SilhouetteMark } from '../SilhouetteMark';
+import { MoreHelpLinks } from '../answers/MoreHelp';
 
 export function ResultsScreen() {
   const { t, locale, steps, results } = useApp();
@@ -49,6 +50,7 @@ export function ResultsScreen() {
         </section>
       ))}
       <p className="hint">{hasMaybe ? t('results.maybeHint') : ''}</p>
+      <MoreHelpLinks />
       <div className="actions">
         <a className="button primary" href={routeHref({ name: 'doc' })}>
           {t('results.addDocument')}

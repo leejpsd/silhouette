@@ -1,4 +1,4 @@
-# pointer-extract v3
+# pointer-extract v4
 
 Task id: `document.pointer.extract` · Input type: `Skeleton` · Mode: `PREFER_ON_DEVICE` · Output: JSON matching `schemas/pointer.{docType}.json` (v2: every field present, null when absent)
 
@@ -14,6 +14,7 @@ For each field in the schema, answer with the placeholder id that holds that fie
 - For fields with a fixed list of options, choose one option from the list.
 - When a table has "Current" and "YTD" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.
 - Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.
+- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.
 - Answer every field. Use null when the field is not in the document.
 Return JSON only.
 

@@ -45,6 +45,23 @@ export const PHOTO_CREATE_OPTIONS = (language: string) => ({
   expectedOutputs: [{ type: 'text', languages: [language] }],
 });
 
+/** createOptions of the typed-question model (ask.freeText). */
+export const ASK_CREATE_OPTIONS = (locale: string) => ({
+  expectedInputs: [{ type: 'text', languages: ['en', locale] }],
+  expectedOutputs: [{ type: 'text', languages: [locale] }],
+});
+
+/** Whether a typed question can be answered on this device in this language. */
+export async function askDeviceStatus(locale: string): Promise<DeviceStatus> {
+  const lm = languageModel();
+  if (!lm) return 'unavailable';
+  try {
+    return asStatus(await lm.availability(ASK_CREATE_OPTIONS(locale)));
+  } catch {
+    return 'unavailable';
+  }
+}
+
 /** Starts (or joins) the on-device model download. Call only from a user gesture. */
 export async function downloadDeviceModel(docType: DocType, language: string, onProgress: (fraction: number) => void): Promise<void> {
   const model = await pointerModel(docType, language);

@@ -7,6 +7,9 @@ import { stepForVariable } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { SilhouetteMark } from '../SilhouetteMark';
+import { ProgramAnswers } from '../answers/ProgramAnswers';
+import { OfficialInfo } from '../answers/parts';
+import { MoreHelpLinks } from '../answers/MoreHelp';
 
 export function ProgramScreen({ id }: { id: string }) {
   const { t, locale, results } = useApp();
@@ -81,6 +84,10 @@ export function ProgramScreen({ id }: { id: string }) {
       <p className="meta">
         {PACK.verifiedOn ? t('rules.verifiedOn', { date: PACK.verifiedOn }) : t('detail.unverified')}
       </p>
+
+      <ProgramAnswers program={program} verdict={result.verdict} />
+      <OfficialInfo programs={[program]} />
+      <MoreHelpLinks />
       <a className="button quiet back" href={routeHref({ name: 'results' })}>
         {t('detail.back')}
       </a>

@@ -4,7 +4,7 @@
 
 import { Raw } from '../core/types';
 import { verdicts, type Answers, type ProgramVerdict, type RulePack, type Verdict } from '../core/rules';
-import type { Bands, IncomeBand } from '../core/generalize';
+import type { Bands, ExactProfile, IncomeBand } from '../core/generalize';
 
 export type IncomeAnswer = { readonly kind: 'band'; readonly bandId: string } | { readonly kind: 'exact'; readonly amount: number };
 export type AnswerValue = number | string | boolean | readonly string[] | IncomeAnswer;
@@ -126,4 +126,26 @@ export function sanitizeAnswers(steps: readonly Step[], input: unknown): QuickCh
     else if (validateAnswer(step, value as AnswerValue) === null) out[step.id] = value as AnswerValue;
   }
   return out;
+}
+
+/**
+ * The exact profile for the Generalizer: income, household size and housing from Quick Check, and
+ * the county the person chose. Answers to sensitive questions and every other answer are left out:
+ * only the six silhouette fields can ever be generalized (rulepacks/SPEC.md section 6).
+ */
+export function exactProfile(
+  jurisdiction: string,
+  steps: readonly Step[],
+  answers: QuickCheckAnswers,
+  county: string | null,
+): Raw<ExactProfile> {
+  const engine = toEngineAnswers(steps, answers);
+  const open = (id: string) => steps.some((s) => s.id === id && !s.sensitive);
+  const out: Record<string, unknown> = { jurisdiction };
+  if (typeof engine.annualIncome === 'number') out['annualIncome'] = engine.annualIncome;
+  else if (typeof engine.incomeBand === 'string') out['incomeBand'] = engine.incomeBand;
+  if (open('householdSize') && typeof engine['householdSize'] === 'number') out['householdSize'] = engine['householdSize'];
+  if (open('housing') && typeof engine['housing'] === 'string') out['housing'] = engine['housing'];
+  if (county !== null) out['county'] = county;
+  return Raw.of(out as unknown as ExactProfile);
 }

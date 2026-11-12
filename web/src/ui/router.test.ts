@@ -12,6 +12,8 @@ describe('router', () => {
     { name: 'doc' },
     { name: 'doc-preview' },
     { name: 'doc-review' },
+    { name: 'discover' },
+    { name: 'nearby' },
   ];
   for (const route of routes) it(`round-trips ${routeHref(route)}`, () => expect(parseRoute(routeHref(route))).toEqual(route));
   it('falls back to start for unknown or malformed hashes', () => {

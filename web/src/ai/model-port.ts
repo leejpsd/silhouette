@@ -9,8 +9,25 @@ export interface UsageMetadata {
   readonly totalTokenCount?: number;
 }
 
+/** The parts of a grounded or audio response the app reads (shapes from the Firebase AI Logic SDK). */
+export interface ResponseCandidate {
+  readonly content?: { readonly parts?: readonly { readonly text?: string; readonly inlineData?: { readonly mimeType?: string; readonly data?: string } }[] } | undefined;
+  readonly groundingMetadata?:
+    | {
+        readonly searchEntryPoint?: { readonly renderedContent?: string } | undefined;
+        readonly groundingChunks?: readonly {
+          readonly web?: { readonly uri?: string; readonly title?: string } | undefined;
+          readonly maps?: { readonly uri?: string; readonly title?: string; readonly text?: string; readonly placeId?: string } | undefined;
+        }[];
+        readonly webSearchQueries?: readonly string[];
+        readonly googleMapsWidgetContextToken?: string;
+      }
+    | undefined;
+}
+
 export interface ModelResponse {
   text(): string;
+  readonly candidates?: readonly ResponseCandidate[] | undefined;
   readonly usageMetadata?: UsageMetadata | undefined;
   /** Firebase AI Logic reports "on_device" or "in_cloud". */
   readonly inferenceSource?: string | undefined;

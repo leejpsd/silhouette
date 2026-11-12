@@ -1,7 +1,8 @@
 // Generalizer. Contract: shared/rulepacks/SPEC.md v1.1 section 6 and
 // shared/schemas/generalized-profile.json (v1.1). Ported from shared/reference/silhouette.mjs.
 
-import { brandGeneralized, reveal, type Generalized, type Raw } from './types';
+import { Raw, brandGeneralized, reveal, type Generalized } from './types';
+import { verdicts, type Answers, type CriterionState, type RulePack, type Verdict } from './rules';
 
 export interface IncomeBand {
   readonly id: string;
@@ -138,4 +139,40 @@ export function canonical(profile: Generalized<GeneralizedProfile>): Generalized
     housing: profile.housing,
   };
   return brandGeneralized(JSON.stringify(ordered));
+}
+
+/** A program verdict as far as the profile silhouette alone can tell (no exact values, no sensitive answers). */
+export type SilhouetteVerdict = {
+  readonly programId: string;
+  readonly verdict: Verdict;
+  readonly criteria: readonly { readonly id: string; readonly state: CriterionState }[];
+};
+
+/**
+ * The verdict engine run on the profile silhouette only. This is what explanations and prepared
+ * questions are given (they may reach the cloud): the verdict on screen also uses exact values and
+ * answers to sensitive questions, which must never leave the device, so it is not sent.
+ *
+ * A silhouette field is passed to the engine when the pack has a question with the same id that is
+ * not sensitive (householdSize, housing, county) and, for income, as the income band. Everything else
+ * is unanswered, so criteria that need it are `unknown`.
+ */
+export function silhouetteVerdicts(
+  pack: RulePack,
+  bands: Bands,
+  profile: Generalized<GeneralizedProfile>,
+): readonly Generalized<SilhouetteVerdict>[] {
+  const open = new Set(pack.questions.filter((q) => !q.sensitive).map((q) => q.id));
+  const answers: Record<string, unknown> = {};
+  if (profile.incomeBand !== null) answers['incomeBand'] = profile.incomeBand;
+  if (open.has('householdSize') && typeof profile.householdSize === 'number') answers['householdSize'] = profile.householdSize;
+  if (open.has('housing') && profile.housing !== null) answers['housing'] = profile.housing;
+  if (open.has('county') && profile.county !== null) answers['county'] = profile.county;
+  return verdicts(pack, bands, Raw.of(answers as Answers)).map((v) =>
+    brandGeneralized<SilhouetteVerdict>({
+      programId: v.programId,
+      verdict: v.verdict,
+      criteria: v.criteria.map((c) => ({ id: c.id, state: c.state })),
+    }),
+  );
 }

@@ -25,6 +25,8 @@ grossPay, netPay, ytdGross and payFrequency, and all fields correct on ≥ 80 % 
 | v14p3 | gemini-3.5-flash-lite | v1.4 | 93.3% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% | 475 / 188 / 0 | 2549 ms | met |
 | v14p3r | gemini-3.5-flash-lite | v1.4 | 93.3% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% | 475 / 177 / 0 | 2381 ms | met |
 | v14r | gemini-3.5-flash-lite | v1.4 | 86.7% | 93.3% / 6.7% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% | 434 / 198 / 0 | 2660 ms | not met |
+| v15p4 | gemini-3.5-flash-lite | v1.5 | 100.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% | 520 / 182 / 0 | 2596 ms | met |
+| v15p4r | gemini-3.5-flash-lite | v1.5 | 100.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% / 0.0% | 100.0% | 520 / 188 / 0 | 7352 ms | met |
 
 ## Other sets
 
@@ -69,3 +71,5 @@ header, month-name dates, pay frequency written in words.
 | v14p3r | leases | 4 | 100.0% | 100.0% | 0 |
 | v14r | English, layout L11 | 8 | 100.0% | 100.0% | 0 |
 | v14r | leases | 4 | 100.0% | 100.0% | 0 |
+| v15p4 | English, layout L11 | 8 | 100.0% | 100.0% | 0 |
+| v15p4r | English, layout L11 | 8 | 100.0% | 100.0% | 0 |

@@ -18,6 +18,8 @@ This folder is the web app: TypeScript, React and Vite, with Firebase AI Logic f
 | Document silhouette | `src/core/skeleton.ts` | The Skeletonizer replaces every number, date and non-allowlisted word with a placeholder (`shared/skeleton/SPEC.md`). The screen shows exactly this text before anything can be sent |
 | Pointer extraction | `src/ai/tasks.ts` | The model returns placeholder ids (`"N12"`), never values. The Rehydrator maps them back to the document's own values on the device |
 | Review and annualization | `src/core/review.ts`, `src/core/validate.ts` | Every field is shown next to its highlighted source text, to confirm or edit. Deterministic checks and annualization turn confirmed paystubs into a yearly income |
+| Explanations and questions | `src/ui/answers/`, `src/ai/tasks.ts` | Only on a tap. Before the first request that carries the profile silhouette, a panel lists what would be sent and shows the exact request; nothing goes until Send. Explanations and prepared questions get the silhouette, the program's facts and the verdict the engine reaches **from the silhouette alone**, never exact values or answers to sensitive questions. A typed question is answered only by the on-device model. Answers are cached for the session |
+| Current information, other help, places, read aloud | `src/ui/answers/`, `src/ai/tasks.ts` | Behind Remote Config flags, off by default. Current information searches for every program of the rule pack in one request, so it says nothing about the person. Other help is listed separately as "Leads — not verified". Places are found near the county's center point, never the device's position. With a flag off, each page still shows the rule pack's official information |
 | Leaving your device | `src/data/net-monitor.ts`, `src/data/outbound.ts` | Every request to another host is recorded before it is sent ("attempted"), then marked "sent" with its HTTP status or "failed" with the reason. The record is kept in the encrypted store and listed in the persistent bar at the bottom of the app, with the complete body of every model request. Credentials are never recorded |
 | Delete everything | `src/data/store.ts` | Erases every IndexedDB database of the app's origin (the encrypted store and its key, and the Firebase SDK's App Check, heartbeat and installation databases), and the app's and the SDK's localStorage and sessionStorage entries. Only the time of the deletion is kept, so the bar can say that the record was deleted. The service worker's cache of the app's own files is kept |
 
@@ -45,14 +47,18 @@ Every model call is under `src/ai/`:
 | File | Purpose |
 |---|---|
 | `firebase.ts` | Firebase app, App Check and AI Logic (`GoogleAIBackend`, limited-use App Check tokens). Loaded lazily, so the Quick Check never loads the SDK |
-| `tasks.ts` | `extractPointers` for `document.pointer.extract`: `PREFER_ON_DEVICE`, skeleton input, structured JSON output |
-| `pointer-config.ts` | Prompt, schema, model and output settings of the pointer task. `ACTIVE_POINTER_CONFIG` in `tasks.ts` selects the one in use |
-| `on-device.ts` | `readPhoto` for `document.photo.read`: `ONLY_ON_DEVICE`. The only place a `Raw` value may reach a model, and only an on-device one |
+| `tasks.ts` | One function per task in `shared/routing.json`: `extractPointers` (`PREFER_ON_DEVICE`, skeleton input, structured JSON); `explainProgram` (`explain.short` `PREFER_ON_DEVICE` or `explain.long` `PREFER_IN_CLOUD`, chosen by length and language against Remote Config values); `askChip` (`PREFER_ON_DEVICE`); `programCurrentStatus` and `discoverLeads` (`ONLY_IN_CLOUD`, Google Search); `nearbyHelp` (`ONLY_IN_CLOUD`, Google Maps at the county centroid); `readAloud` (speech model). A `PREFER_ON_DEVICE` call that fails on the device is repeated once in the cloud, as `routing.json` says |
+| `pointer-config.ts` | Prompt, schema, model and output settings of the pointer task. Remote Config `prompt_pointer_extract_v` selects one of the bundled prompt versions (the newest for an unknown value) |
+| `on-device.ts` | `ONLY_ON_DEVICE` tasks: `readPhoto` (`document.photo.read`) and `askFreeText` (`ask.freeText`). The only place a `Raw` value may reach a model, and only an on-device one |
 | `device-model.ts` | On-device model status (`LanguageModel.availability()`, status only) and the user-started download (`initializeDeviceModel`) |
 | `model-schema.ts` | Converts the shared JSON pointer schemas into the schema form the models accept |
-| `prompts.ts` | Loads prompts from `shared/prompts/` at build time |
+| `prompts.ts` | Loads prompts from `shared/prompts/` at build time, and from `prompts/` for tasks without a shared prompt yet |
 
-Task ids, modes and reasons come from `shared/routing.json`. Every model result in the UI shows its source badge (on this device or cloud) and its routing reason.
+Task ids, modes and reasons come from `shared/routing.json`. Every model result in the UI shows its source badge (on this device or cloud) and its routing reason; for explanations the reason also says what decided the route (the length against the limit, or the language).
+
+### Remote Config
+
+`src/data/remote-config.ts` holds the values the app reads, with bundled defaults: grounding and read aloud off, pointer prompt v3. Settings are never fetched on start. The first fetch follows the first request the person chose to send to the cloud, so nothing leaves the device while everything runs on it. The settings request appears under "Leaving your device" like any other.
 
 ## Run it
 
@@ -75,7 +81,7 @@ The token is used only by the dev server; production builds never contain it.
 
 **Production.** Production builds use reCAPTCHA Enterprise through `VITE_RECAPTCHA_SITE_KEY`.
 
-**Without a token.** Everything except cloud extraction works: Quick Check, verdicts, sample documents, on-device reading and manual entry.
+**Without a token.** Everything except cloud requests works: Quick Check, verdicts, sample documents, on-device reading, manual entry and the rule pack's official information.
 
 ## Test and build
 
@@ -92,7 +98,8 @@ The end-to-end tests cover:
 - **Flows:** the Quick Check, offline use, keyboard-only use, "Delete everything", and the document flow from a sample PDF to a confirmed yearly income.
 - **Leak check:** a canary leak test asserts that no value from `shared/fixtures/canary/` appears in any outgoing request URL, header or body.
 - **Accessibility:** WCAG 2.2 A/AA scans with axe, in light and dark themes.
-- **Model replies:** the model is replaced at the network edge, and Chrome's `LanguageModel` with a stand-in, so the real Firebase SDK request path runs.
+- **Model replies:** the model is replaced at the network edge, and Chrome's `LanguageModel` with a stand-in, so the real Firebase SDK request path runs. Grounded and speech replies are faked in the shapes the API documents (`groundingMetadata.searchEntryPoint.renderedContent`, `groundingChunks`, inline audio).
+- **Answers:** nothing is requested before a tap; the panel shows the exact request; skipping sends nothing; typed questions stay on the device; Search Suggestions, sources and the Google Maps attribution are shown; with the flags off every page is complete.
 
 ## Extraction evaluation
 
@@ -106,6 +113,8 @@ The end-to-end tests cover:
 npm run eval:generate                          # regenerate eval/dataset/ (seeded, deterministic)
 npm run eval -- --variants v0 --set en         # real cloud calls through the app's own code path
 ```
+
+`node eval/answers.mjs` makes a small number of real explanation and prepared-question calls on synthetic profiles and checks length, wording, numbers and language.
 
 `npm run eval` starts the dev server (it needs the App Check debug token above) and drives `eval/runner.html` in headless Chromium. It writes per-document results and `eval/results/summary.md`. Calls are sequential and back off on rate limits; `eval/results/calls.json` counts every call made.
 

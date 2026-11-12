@@ -5,9 +5,10 @@
 
 import { asPublic, mapRaw, reveal, type CloudSafe, type Generalized, type Public, type Raw, type Skeleton } from '../core/types';
 import { rehydrate, skeletonize, type PlaceholderMap, type PointerSchema } from '../core/skeleton';
-import { canonical, generalize, type Bands, type ExactProfile, type GeneralizedProfile } from '../core/generalize';
-import { explainShort, extractPointers, type ProgramText } from './tasks';
-import { readPhoto } from './on-device';
+import { canonical, generalize, silhouetteVerdicts, type Bands, type ExactProfile, type GeneralizedProfile, type SilhouetteVerdict } from '../core/generalize';
+import type { RulePack } from '../core/rules';
+import { askChip, discoverLeads, explainProgram, extractPointers, nearbyHelp, planAskChip, planExplain, readAloud, type ProgramFacts, type QuestionChip } from './tasks';
+import { askFreeText, readPhoto } from './on-device';
 
 declare const rawText: Raw<string>;
 declare const rawSkeletonLike: Raw<Skeleton>;
@@ -18,7 +19,10 @@ declare const bands: Bands;
 declare const schema: PointerSchema;
 declare const plainString: string;
 declare const plainProfile: GeneralizedProfile;
-declare const programText: Public<ProgramText>;
+declare const programText: Public<ProgramFacts>;
+declare const chip: Public<QuestionChip>;
+declare const pack: RulePack;
+declare const plainVerdict: SilhouetteVerdict;
 declare const rawPhoto: Raw<Blob>;
 declare const plainPhoto: Blob;
 
@@ -28,8 +32,12 @@ export function routingTypeTests(): void {
   void extractPointers(skeleton, 'paystub', 'en');
 
   const profile = generalize(rawProfile, bands);
-  void explainShort(profile, programText);
-  void explainShort(profile, asPublic({ programId: 'food-help', name: 'Test Food Help', ruleText: 'Income limit.' }));
+  const verdict = silhouetteVerdicts(pack, bands, profile)[0]!;
+  const input = { profile, verdict, program: programText, locale: 'en' };
+  void explainProgram(planExplain(input, 'short')).then((answer) => readAloud(answer.value, 'en'));
+  void askChip(planAskChip(input, chip)).then((answer) => readAloud(answer.value, 'en'));
+  void discoverLeads({ profile, known: asPublic(['Test Food Help']), locale: 'en' });
+  void nearbyHelp({ profile, centroid: asPublic({ latitude: 1, longitude: 2 }), countyName: asPublic('Testshire'), locale: 'en' });
 
   const safe: CloudSafe[] = [skeleton, profile, canonical(profile), programText];
   void safe;
@@ -42,9 +50,19 @@ export function routingTypeTests(): void {
   // @ts-expect-error The placeholder map is Raw.
   void extractPointers(map, 'paystub', 'en');
   // @ts-expect-error Raw profile cannot reach a cloud-capable task.
-  void explainShort(rawProfile, programText);
+  void planExplain({ ...input, profile: rawProfile }, 'short');
   // @ts-expect-error Rehydrated fields are Raw.
-  void explainShort(rehydrate(schema, {}, rawMap), programText);
+  void planExplain({ ...input, profile: rehydrate(schema, {}, rawMap) }, 'short');
+  // @ts-expect-error Raw profile cannot reach the search for leads.
+  void discoverLeads({ profile: rawProfile, known: asPublic([]), locale: 'en' });
+  // A typed question is Raw: it only goes to the ONLY_ON_DEVICE task, and its answer is a plain
+  // string that cannot be read aloud in the cloud.
+  void askFreeText(rawText, input).then((answer) => {
+    // @ts-expect-error An answer to a typed question cannot reach the speech model.
+    void readAloud(answer.value, 'en');
+  });
+  // @ts-expect-error A typed question cannot be a prepared chip.
+  void planAskChip(input, { id: 'x', question: rawText });
   // @ts-expect-error mapRaw keeps the result Raw.
   void extractPointers(mapRaw(rawText, (t) => t.toUpperCase()), 'paystub', 'en');
   // @ts-expect-error Raw is not CloudSafe.
@@ -57,13 +75,19 @@ export function routingTypeTests(): void {
   // @ts-expect-error A plain string is not a Skeleton.
   void extractPointers(plainString, 'paystub', 'en');
   // @ts-expect-error A hand-built profile is not Generalized; only generalize() makes one.
-  void explainShort(plainProfile, programText);
+  void planExplain({ ...input, profile: plainProfile }, 'short');
   // @ts-expect-error A revealed exact profile is not Generalized.
-  void explainShort(reveal(rawProfile), programText);
+  void planExplain({ ...input, profile: reveal(rawProfile) }, 'short');
   // @ts-expect-error Public is not Generalized.
-  void explainShort(programText, programText);
+  void planExplain({ ...input, profile: programText }, 'short');
   // @ts-expect-error Generalized is not Public.
-  void explainShort(profile, profile);
+  void planExplain({ ...input, program: profile }, 'short');
+  // @ts-expect-error A verdict computed from exact values is not Generalized; only silhouetteVerdicts() makes one.
+  void planExplain({ ...input, verdict: plainVerdict }, 'short');
+  // @ts-expect-error A plain string is not a model answer.
+  void readAloud({ text: plainString }, 'en');
+  // @ts-expect-error The centroid is static app data (Public), never a plain position.
+  void nearbyHelp({ profile, centroid: { latitude: 1, longitude: 2 }, countyName: asPublic('Testshire'), locale: 'en' });
 
   // ---- ONLY_ON_DEVICE: the photo task takes Raw, and its output stays Raw ----
   void readPhoto(rawPhoto, 'paystub', 'en');

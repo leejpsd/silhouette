@@ -1,12 +1,13 @@
 // Configurations of the document.pointer.extract task. A configuration fixes everything that
 // shapes the model call: prompt, pointer schemas, schema options, skeleton presentation, model.
-// The app uses ACTIVE_POINTER_CONFIG (src/ai/tasks.ts); eval/ compares variants on a test set.
+// The app picks one by the Remote Config value prompt_pointer_extract_v (activePointerConfig() in
+// src/ai/tasks.ts); eval/ compares variants on a test set.
 // Every variant keeps the pointer principle: output is placeholder ids and closed enums only.
 
 import paystubV2 from '../../../shared/schemas/pointer.paystub.json';
 import leaseV2 from '../../../shared/schemas/pointer.lease.json';
 import type { PointerSchema } from '../core/skeleton';
-import { POINTER_EXTRACT, type PromptTemplate } from './prompts';
+import { POINTER_EXTRACT, POINTER_EXTRACT_V3, type PromptTemplate } from './prompts';
 import type { ModelSchemaOptions } from './model-schema';
 
 export type DocType = 'paystub' | 'lease';
@@ -55,3 +56,23 @@ export const POINTER_V2: PointerConfig = {
   cloudModel: 'gemini-3.5-flash-lite',
   maxOutputTokens: 1024,
 };
+
+/**
+ * shared/prompts/pointer-extract.v3.md: v2 plus "gross pay is the total of all earnings for the
+ * period, never a single earnings line". Same schemas and settings.
+ */
+export const POINTER_V3: PointerConfig = { ...POINTER_V2, id: 'v3', prompt: POINTER_EXTRACT_V3 };
+
+/** Bundled prompt versions, by the number in shared/prompts/pointer-extract.v{n}.md. */
+export const POINTER_CONFIGS: ReadonlyMap<number, PointerConfig> = new Map([
+  [2, POINTER_V2],
+  [3, POINTER_V3],
+]);
+
+/** The bundled configuration for a prompt version; an unknown version gets the newest bundled one. */
+export function pointerConfigFor(version: number): PointerConfig {
+  const exact = POINTER_CONFIGS.get(version);
+  if (exact) return exact;
+  const newest = Math.max(...POINTER_CONFIGS.keys());
+  return POINTER_CONFIGS.get(newest) as PointerConfig;
+}

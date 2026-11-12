@@ -105,20 +105,12 @@ interface Token {
   readonly kind: PlaceholderKind | 'O';
   text: string;
   keep: boolean;
-  /** The user chose to hide this word (SkeletonOptions.hide). */
+  /** The user chose to hide this word (section 4.3). */
   hidden?: boolean;
 }
 
 /** Separators that keep two words in one phrase (section 4.1): "Jordan Gross", "Smith, John", "Smith & Jones". */
 const PHRASE_JOINERS: ReadonlySet<string> = new Set([' ', ', ', ' & ']);
-
-export interface SkeletonOptions {
-  /**
-   * Words the user chose to hide in this document (lowercase). They are masked even when they are
-   * on the allowlist, and their whole phrase with them, leading introducers included.
-   */
-  readonly hide?: ReadonlySet<string> | undefined;
-}
 
 /**
  * Turns Raw document text into a Skeleton. One of the two functions allowed to produce a
@@ -128,10 +120,14 @@ export function skeletonize(
   text: Raw<string>,
   allow: ReadonlySet<string>,
   introducers: ReadonlySet<string> = new Set(),
-  options: SkeletonOptions = {},
+  /**
+   * Section 4.3: lowercase words the user chose to hide in this document. They are masked even when
+   * allowlisted (also as a hyphen-separated part: `gross` hides `Gross-Pay`), and their whole phrase
+   * with them, introducers included. Stored with the document on the device; never sent.
+   */
+  hide: ReadonlySet<string> = new Set(),
 ): SkeletonResult {
   const input = normalize(reveal(text));
-  const hide = options.hide;
   // Pass 1: tokens. Consecutive safe characters form one separator token.
   const tokens: Token[] = [];
   for (const m of input.matchAll(TOKEN_PATTERN)) {
@@ -140,7 +136,8 @@ export function skeletonize(
     if (date !== undefined) tokens.push({ kind: 'D', text: date, keep: false });
     else if (num !== undefined) tokens.push({ kind: 'N', text: num, keep: false });
     else if (word !== undefined) {
-      const hidden = hide?.has(word.toLowerCase()) ?? false;
+      const lower = word.toLowerCase();
+      const hidden = hide.has(lower) || (lower.includes('-') && lower.split('-').some((part) => hide.has(part)));
       tokens.push({ kind: 'W', text: word, keep: isAllowlisted(word, allow) && !hidden, hidden });
     } else if (last && last.kind === 'O') last.text += other ?? '';
     else tokens.push({ kind: 'O', text: other ?? '', keep: true });
@@ -208,7 +205,9 @@ const NUMBER_FORMAT = /^(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.[0-9]+)?$/;
  * "28000.5"). Anything else, such as "28.000,50" or "1,2345", is rejected (undefined).
  */
 export function parseTypedAmount(text: string): number | undefined {
-  const trimmed = text.trim().replace(/^[$€£¥₩]\s*/u, '').trim();
+  // Section 5.1: trim tab, LF, CR, space and no-break space only (not every Unicode space), then
+  // one leading currency sign and the same characters after it.
+  const trimmed = text.replace(/^[\t\n\r \u00A0]+|[\t\n\r \u00A0]+$/g, '').replace(/^[$€£¥₩][\t\n\r \u00A0]*/u, '');
   return parseNumber(trimmed);
 }
 

@@ -41,15 +41,19 @@ test.describe('regressions', () => {
     await sendSample(page);
     await page.reload();
     const bar = page.getByTestId('leaving-bar');
-    await expect(bar).toHaveAttribute('data-outbound-count', '1');
     await bar.getByRole('button', { name: 'Details' }).click();
     await expect(bar).not.toContainText('No answers, results or documents have been sent anywhere');
     await expect(bar).toContainText('Only the requests listed below have left it');
-    await expect(bar.getByTestId('outbound-status')).toHaveText('Sent, response 200');
+    // The model request, then possibly the settings fetch that follows it (Remote Config).
+    const model = bar.locator('li[data-channel="ai-cloud"]');
+    await expect(model).toHaveCount(1);
+    const others = await bar.locator('li:not([data-channel="ai-cloud"])').evaluateAll((items) => items.map((li) => li.getAttribute('data-channel')));
+    expect(others.filter((c) => c !== 'remote-config')).toEqual([]);
+    await expect(model.getByTestId('outbound-status')).toHaveText('Sent, response 200');
     await expect(bar).toContainText(`Request to ${AI_HOST}/v1beta/projects/silhouette-hybrid/models/gemini-3.5-flash-lite:generateContent`);
     await expect(bar).toContainText('Model: gemini-3.5-flash-lite');
-    await bar.getByText('Show exactly what was sent').click();
-    const body = (await bar.getByTestId('outbound-payload').textContent()) ?? '';
+    await model.getByText('Show exactly what was sent').click();
+    const body = (await model.getByTestId('outbound-payload').textContent()) ?? '';
     for (const part of ['"systemInstruction"', '"generationConfig"', '"responseSchema"', '"required"', 'Document type: paystub']) expect(body).toContain(part);
     expect(body).not.toMatch(/AIza[0-9A-Za-z_-]{20,}/); // API key
     expect(body).not.toMatch(/token/i);

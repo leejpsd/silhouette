@@ -1,0 +1,345 @@
+{
+  "date": "2026-11-12T15:51:26.584Z",
+  "rows": [
+    {
+      "id": "p1-utility-short",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 21000,
+        "householdSize": 3,
+        "housing": "renter"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "short",
+      "ok": true,
+      "taskId": "explain.short",
+      "reason": "short-text",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "likely",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":3,\"childAgeBands\":null,\"county\":null,\"housing\":\"renter\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nVerdict: You may qualify\nCriteria met: Your income is under the limit; You rent or own your home\nCriteria not met or unknown: -\nWrite 60 words or fewer.",
+      "text": "You may qualify for the Test Utility Discount. \n\nTo get this help, you must meet the program rules. Based on your info, you meet these rules: your income is under the limit, and you rent or own your home. \n\nThis is not legal or tax advice.",
+      "latencyMs": 8908,
+      "checks": {
+        "words": "46/60",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p1-utility-long",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 21000,
+        "householdSize": 3,
+        "housing": "renter"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "long",
+      "ok": true,
+      "taskId": "explain.long",
+      "reason": "long-or-unsupported-locale",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "likely",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":3,\"childAgeBands\":null,\"county\":null,\"housing\":\"renter\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nVerdict: You may qualify\nCriteria met: Your income is under the limit; You rent or own your home\nCriteria not met or unknown: -\nWrite 180 words or fewer.",
+      "text": "Based on your profile, you may qualify for the Test Utility Discount. \n\nHere are the program facts:\n• Your income is under the limit.\n• You rent or own your home.\n\nThis program helps people with these needs. You met all the required rules to be considered. \n\nPlease note this is only a guide. We do not give legal or tax advice.",
+      "latencyMs": 13967,
+      "checks": {
+        "words": "62/180",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p1-food-short",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 21000,
+        "householdSize": 3,
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "short",
+      "ok": true,
+      "taskId": "explain.short",
+      "reason": "short-text",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "depends",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":3,\"childAgeBands\":null,\"county\":null,\"housing\":\"renter\"}\nProgram: Test Food Help\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\nVerdict: Depends on an answer you skipped\nCriteria met: Your income is under the limit for your household size\nCriteria not met or unknown: You meet the residency rule\nWrite 60 words or fewer.",
+      "text": "For the Test Food Help program, your income is under the limit for your household size. However, whether you meet the residency rule is unknown because you skipped that question. Because of this missing information, you may qualify, but we need that answer to be sure. This is not legal or tax advice.",
+      "latencyMs": 3074,
+      "checks": {
+        "words": "53/60",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p1-utility-apply",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 21000,
+        "householdSize": 3,
+        "housing": "renter"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "chip",
+      "question": "How do I apply?",
+      "ok": true,
+      "taskId": "ask.chip",
+      "reason": "prepared-question",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "likely",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":3,\"childAgeBands\":null,\"county\":null,\"housing\":\"renter\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nVerdict: You may qualify\nCriteria met: Your income is under the limit; You rent or own your home\nCriteria not met or unknown: -\nQuestion: How do I apply?\nWrite 80 words or fewer.",
+      "text": "Based on your answers, you may qualify for the Test Utility Discount. \n\nThe facts do not explain how to apply. To learn how to apply, please check the program's official website or office. \n\nThis information is for help only and is not legal or tax advice.",
+      "latencyMs": 7166,
+      "checks": {
+        "words": "46/80",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p1-utility-documents",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 21000,
+        "householdSize": 3,
+        "housing": "renter"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What papers might I need?",
+      "ok": true,
+      "taskId": "ask.chip",
+      "reason": "prepared-question",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "likely",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":3,\"childAgeBands\":null,\"county\":null,\"housing\":\"renter\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nVerdict: You may qualify\nCriteria met: Your income is under the limit; You rent or own your home\nCriteria not met or unknown: -\nQuestion: What papers might I need?\nWrite 80 words or fewer.",
+      "text": "The facts do not say what papers you might need. Please check the program's official website or office to find out what papers to bring.",
+      "latencyMs": 11934,
+      "checks": {
+        "words": "25/80",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p2-work-short",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "D",
+        "householdSize": 1,
+        "housing": "owner"
+      },
+      "programId": "work-credit",
+      "locale": "en",
+      "kind": "short",
+      "ok": true,
+      "taskId": "explain.short",
+      "reason": "short-text",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "depends",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"D\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Test Work Credit\nProgram facts: This program checks: You had earned income; Your income is under the limit for your family.\nVerdict: Depends on an answer you skipped\nCriteria met: -\nCriteria not met or unknown: You had earned income; Your income is under the limit for your family\nWrite 60 words or fewer.",
+      "text": "You may qualify for the Test Work Credit. We need more information to be sure. You skipped questions about whether you had earned income and if your income is under the limit for your family. Please answer these questions to find out if you can get this benefit. \n\n*This is not legal or tax advice.*",
+      "latencyMs": 8582,
+      "checks": {
+        "words": "55/60",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p2-phone-long",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "D",
+        "householdSize": 1,
+        "housing": "owner"
+      },
+      "programId": "phone-discount",
+      "locale": "en",
+      "kind": "long",
+      "ok": true,
+      "taskId": "explain.long",
+      "reason": "long-or-unsupported-locale",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "depends",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"D\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Test Phone Discount\nProgram facts: This program checks: Your income is under the limit, or you receive a qualifying benefit.\nVerdict: Depends on an answer you skipped\nCriteria met: -\nCriteria not met or unknown: Your income is under the limit, or you receive a qualifying benefit\nWrite 180 words or fewer.",
+      "text": "Based on your answers, we are not sure if you can get the Test Phone Discount. \n\nTo find out if you may qualify, we need to know more about your income or if you get a qualifying benefit. You skipped this question, so we cannot give you a final answer right now. \n\nYou can check your answers again and finish the questions to see if you may qualify for this program. \n\nPlease note that this information is for help only and is not legal or tax advice.",
+      "latencyMs": 2036,
+      "checks": {
+        "words": "87/180",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p3-senior-short",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 8000,
+        "householdSize": 7,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "en",
+      "kind": "short",
+      "ok": true,
+      "taskId": "explain.short",
+      "reason": "short-text",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "depends",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":\"6+\",\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Test Senior Food Path\nProgram facts: This program checks: Your income is under the limit for your household size.\nVerdict: Depends on an answer you skipped\nCriteria met: -\nCriteria not met or unknown: Your income is under the limit for your household size\nWrite 60 words or fewer.",
+      "text": "You may qualify for the Test Senior Food Path program. We still need to check if your income is under the limit for your household size. Since you skipped that question, your result depends on that answer. Please update your information to find out for sure. This is not legal or tax advice.",
+      "latencyMs": 1998,
+      "checks": {
+        "words": "53/60",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p3-senior-change",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 8000,
+        "householdSize": 7,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What could change this result?",
+      "ok": true,
+      "taskId": "ask.chip",
+      "reason": "prepared-question",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "depends",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":\"6+\",\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Test Senior Food Path\nProgram facts: This program checks: Your income is under the limit for your household size.\nVerdict: Depends on an answer you skipped\nCriteria met: -\nCriteria not met or unknown: Your income is under the limit for your household size\nQuestion: What could change this result?\nWrite 80 words or fewer.",
+      "text": "To change this result, you need to answer the question about whether your income is under the limit for your household size. \n\nBased on your answers, you may qualify for the Test Senior Food Path program once you provide this missing information. \n\nIf you need more help, please check the program's official website or office.",
+      "latencyMs": 7914,
+      "checks": {
+        "words": "55/80",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p1-utility-short-es",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 21000,
+        "householdSize": 3,
+        "housing": "renter"
+      },
+      "programId": "utility-discount",
+      "locale": "es",
+      "kind": "short",
+      "ok": true,
+      "taskId": "explain.short",
+      "reason": "short-text",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "likely",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":3,\"childAgeBands\":null,\"county\":null,\"housing\":\"renter\"}\nProgram: Descuento de servicios públicos (prueba)\nProgram facts: This program checks: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\nVerdict: Es posible que califiques\nCriteria met: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\nCriteria not met or unknown: -\nWrite 60 words or fewer.",
+      "text": "Para el Descuento de servicios públicos (prueba), es posible que califiques. \n\nEste programa revisa que:\n- Tu ingreso esté por debajo del límite.\n- Rentas o eres dueño de tu vivienda. \n\nCumples con estos puntos. Esta información es solo una guía y no es consejo legal ni fiscal.",
+      "latencyMs": 11642,
+      "checks": {
+        "words": "48/60",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p1-utility-short-ko",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 21000,
+        "householdSize": 3,
+        "housing": "renter"
+      },
+      "programId": "utility-discount",
+      "locale": "ko",
+      "kind": "short",
+      "ok": true,
+      "taskId": "explain.long",
+      "reason": "long-or-unsupported-locale",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "likely",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":3,\"childAgeBands\":null,\"county\":null,\"housing\":\"renter\"}\nProgram: 테스트 공과금 할인\nProgram facts: This program checks: 소득이 한도보다 낮다; 집을 빌리거나 소유하고 있다.\nVerdict: 받을 가능성이 높습니다\nCriteria met: 소득이 한도보다 낮다; 집을 빌리거나 소유하고 있다\nCriteria not met or unknown: -\nWrite 60 words or fewer.",
+      "text": "테스트 공과금 할인 프로그램에 대해 알려드립니다. 이 프로그램은 소득이 기준보다 낮고, 집을 빌리거나 소유하고 있는지 확인합니다. \n\n확인 결과, 조건에 맞으므로 지원을 받을 가능성이 높습니다. 자세한 내용은 공식 기관을 통해 확인해 보시기 바랍니다. 이는 법적이나 세금에 관한 조언이 아닙니다.",
+      "latencyMs": 3914,
+      "checks": {
+        "words": "38/60",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    },
+    {
+      "id": "p2-work-offer-es",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "D",
+        "householdSize": 1,
+        "housing": "owner"
+      },
+      "programId": "work-credit",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué ofrece este programa?",
+      "ok": true,
+      "taskId": "ask.chip",
+      "reason": "prepared-question",
+      "inferenceSource": "IN_CLOUD",
+      "verdict": "depends",
+      "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"D\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Crédito por trabajo (prueba)\nProgram facts: This program checks: Tuviste ingresos del trabajo; Tu ingreso está por debajo del límite para tu familia.\nVerdict: Depende de una respuesta que omitiste\nCriteria met: -\nCriteria not met or unknown: Tuviste ingresos del trabajo; Tu ingreso está por debajo del límite para tu familia\nQuestion: ¿Qué ofrece este programa?\nWrite 80 words or fewer.",
+      "text": "Los hechos del programa no dicen qué ofrece este programa. \n\nPara saber qué ofrece, visita el sitio web oficial del programa o comunícate con su oficina.",
+      "latencyMs": 1923,
+      "checks": {
+        "words": "26/80",
+        "withinLength": true,
+        "saysQualifies": false,
+        "numbersNotInInput": [],
+        "language": true,
+        "exactIncomeSent": false
+      }
+    }
+  ]
+}

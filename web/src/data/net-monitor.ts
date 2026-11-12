@@ -52,20 +52,69 @@ export function displayBody(body: string): string {
   }
 }
 
+/**
+ * What each model task sends, keyed by its system instruction (the tasks register it when they build
+ * a model). A request is described by the task whose system instruction it carries, so concurrent
+ * requests of different tasks are never mixed up.
+ */
+const AI_REQUEST_FIELDS = new Map<string, readonly string[]>();
+
+export function describeAiRequests(systemInstruction: string, fields: readonly string[]): void {
+  AI_REQUEST_FIELDS.set(systemInstruction, fields);
+}
+
+/** Requests to a model that carries no system instruction (speech), described by the model name. */
+const AI_MODEL_FIELDS = new Map<string, readonly string[]>();
+
+export function describeAiModel(model: string, fields: readonly string[]): void {
+  AI_MODEL_FIELDS.set(model, fields);
+}
+
+function systemInstructionOf(body: string): string | undefined {
+  try {
+    const json = JSON.parse(body) as GeminiBody;
+    const texts = (json.systemInstruction?.parts ?? []).map((p) => p.text).filter((t): t is string => typeof t === 'string');
+    return texts.length > 0 ? texts.join('\n') : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The model named in a request path such as /v1beta/projects/p/models/gemini-3.5-flash-lite:generateContent. */
 export const modelOf = (path: string): string | undefined => /\/models\/([^/:]+)/.exec(path)?.[1];
 
 export function classify(url: URL, body: string | null): { channel: OutboundChannel; fields: string[]; body?: string | undefined; model?: string | undefined } {
   if (url.hostname === AI_LOGIC_HOST) {
     const { hasInlineData } = aiPayloadText(body ?? '');
-    const fields = ['document-silhouette'];
+    const system = body === null ? undefined : systemInstructionOf(body);
+    const model = modelOf(url.pathname);
+    const fields = [
+      ...((system !== undefined ? AI_REQUEST_FIELDS.get(system) : undefined) ??
+        (model !== undefined ? AI_MODEL_FIELDS.get(model) : undefined) ?? ['model-request']),
+    ];
     if (hasInlineData) fields.push('inline-file');
-    return { channel: 'ai-cloud', fields, body: body === null ? undefined : displayBody(body), model: modelOf(url.pathname) };
+    return { channel: 'ai-cloud', fields, body: body === null ? undefined : displayBody(body), model };
   }
   if (url.hostname === APP_CHECK_HOST) return { channel: 'app-check', fields: ['app-check-token-request'] };
   if (url.hostname.endsWith('firestore.googleapis.com')) return { channel: 'firestore', fields: ['firestore'] };
   if (url.hostname.endsWith('firebaseremoteconfig.googleapis.com')) return { channel: 'remote-config', fields: ['remote-config'] };
+  if (url.hostname.endsWith('firebaseinstallations.googleapis.com')) return { channel: 'remote-config', fields: ['installation'] };
   return { channel: 'other', fields: [url.hostname] };
+}
+
+/** Called once, when the first request to Firebase AI Logic in the cloud is about to leave. */
+const firstCloudRequest = new Set<() => void>();
+let cloudRequestSeen = false;
+
+export function onFirstCloudRequest(listener: () => void): void {
+  if (cloudRequestSeen) listener();
+  else firstCloudRequest.add(listener);
+}
+
+/** After "Delete everything": the next session starts as if nothing had been sent. */
+export function resetCloudRequests(): void {
+  cloudRequestSeen = false;
+  firstCloudRequest.clear();
 }
 
 let installed = false;
@@ -83,6 +132,11 @@ export function installNetMonitor(target: { fetch: typeof fetch; location: Locat
       if ((url.protocol === 'https:' || url.protocol === 'http:') && url.origin !== target.location.origin) {
         const body = typeof init?.body === 'string' ? init.body : null;
         const info = classify(url, body);
+        if (info.channel === 'ai-cloud' && !cloudRequestSeen) {
+          cloudRequestSeen = true;
+          for (const l of firstCloudRequest) queueMicrotask(l);
+          firstCloudRequest.clear();
+        }
         id = recordAttempt({
           channel: info.channel,
           fields: info.fields,

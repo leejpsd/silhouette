@@ -7,6 +7,7 @@ import { deleteApp, initializeApp, type FirebaseApp } from 'firebase/app';
 import { CustomProvider, ReCaptchaEnterpriseProvider, initializeAppCheck } from 'firebase/app-check';
 import { GoogleAIBackend, getAI, getGenerativeModel, type AI, type GenerativeModel, type HybridParams } from 'firebase/ai';
 import { FIREBASE_CONFIG } from '../data/firebase-config';
+import { onFirstCloudRequest } from '../data/net-monitor';
 
 export type AppCheckSetup = 'recaptcha-enterprise' | 'debug' | 'none';
 
@@ -39,6 +40,9 @@ async function init(): Promise<Services> {
     appCheck = 'recaptcha-enterprise';
   }
   const ai = getAI(app, { backend: new GoogleAIBackend(), useLimitedUseAppCheckTokens: true });
+  // Settings are fetched only after a request the person chose to send has gone to the cloud: never
+  // on start, and never when everything ran on this device.
+  onFirstCloudRequest(() => void import('../data/remote-config-fetch').then(({ refreshRemoteConfig }) => refreshRemoteConfig(app)));
   return { app, ai, appCheck };
 }
 

@@ -37,7 +37,9 @@ The runner:
 
 Each document is scored twice, without and with the clean-up, and the log prints "all fields correct without / with clean-up" per group.
 
-Requests are sequential, at least 4 seconds apart, with exponential backoff on HTTP 429 and 5xx. `results/calls.json` counts every call made.
+Requests are sequential, at least 4 seconds apart, with exponential backoff on HTTP 429 and 5xx. A 429 that says it is a daily limit, or one that persists through three back-offs, stops the run. `results/calls.json` counts every call made.
+
+`answers.mjs` runs the explanation and prepared-question tasks on a few synthetic profiles with real cloud calls, and checks each answer's length, wording ("may qualify"), numbers that were not in the input, and language. Results go to `results/answers.json`.
 
 **Leak check.** For every document, every request body sent to Firebase AI Logic is checked for the document's gold names (and each of their words), dates and amounts, in the form they are printed. Values of five or more characters count wherever they occur. Shorter ones count only as whole words or whole numbers, so "Inc" does not match "Income". Each result file reports the number of bodies checked and every value found.
 
@@ -60,4 +62,4 @@ Pointers cannot invent values. So every error is either a missing value or a poi
 
 Per variant, `results/{variant}.json` holds every document's pointers, values, outcomes, latency and token usage. `results/summary.md` compares the variants.
 
-Variants are defined in `variant-list.mjs`. Each one is the app's configuration (`POINTER_V2`: `shared/prompts/pointer-extract.v2.md` with the v2 schemas in `shared/schemas/`) plus optional changes: model, thinking level, schema dialect, temperature, extra allowlist words, the clean-up, and a candidate prompt from `prompts/` instead of the shared one. Results of earlier variants stay in `results/`, and each result file records the exact spec it ran with. In `summary.md`, the "Skeletons" column says which contract version of the Skeletonizer produced a result (v1.2, v1.3 or v1.4; v1.4 adds introducers).
+Variants are defined in `variant-list.mjs`. Each one is the base configuration (`POINTER_V2`: `shared/prompts/pointer-extract.v2.md` with the v2 schemas in `shared/schemas/`) plus optional changes: model, thinking level, schema dialect, temperature, extra allowlist words, the clean-up, and another prompt: the shared `pointer-extract.v3.md`, or a candidate from `prompts/`. Results of earlier variants stay in `results/`, and each result file records the exact spec it ran with. In `summary.md`, the "Skeletons" column says which contract version of the Skeletonizer produced a result (v1.2 to v1.5; v1.4 adds introducers).

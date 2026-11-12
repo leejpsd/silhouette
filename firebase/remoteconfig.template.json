@@ -30,28 +30,28 @@
     },
     "feature_grounding_search": {
       "defaultValue": {
-        "value": "true"
+        "value": "false"
       },
       "valueType": "BOOLEAN",
       "description": "Kill switch for Search grounding (paid tier)"
     },
     "feature_grounding_maps": {
       "defaultValue": {
-        "value": "true"
+        "value": "false"
       },
       "valueType": "BOOLEAN",
       "description": "Kill switch for Maps grounding (paid tier)"
     },
     "feature_tts": {
       "defaultValue": {
-        "value": "true"
+        "value": "false"
       },
       "valueType": "BOOLEAN",
       "description": "Read aloud"
     },
     "prompt_pointer_extract_v": {
       "defaultValue": {
-        "value": ""3"
+        "value": "3"
       },
       "valueType": "NUMBER",
       "description": "shared/prompts/pointer-extract.v{n}.md"

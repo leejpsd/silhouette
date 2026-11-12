@@ -51,7 +51,7 @@ export function DocumentPreviewScreen() {
   /** Re-skeletonizes the document with the user's hidden words (they and their phrases masked). */
   const setHidden = (hiddenWords: readonly string[]) => {
     if (!rawText) return;
-    const next = skeletonize(rawText, allowlistFor(doc.language), introducersFor(doc.language), { hide: new Set(hiddenWords) });
+    const next = skeletonize(rawText, allowlistFor(doc.language), introducersFor(doc.language), new Set(hiddenWords));
     update({ skeleton: next.skeleton, map: next.map, hiddenWords, extraction: null, error: null });
   };
   const hide = (word: string) => setHidden([...new Set([...doc.hiddenWords, word.toLowerCase()])]);

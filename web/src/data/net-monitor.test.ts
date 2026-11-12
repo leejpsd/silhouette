@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { clearOutbound, outboundState, restoreOutbound } from './outbound';
-import { AI_LOGIC_HOST, aiPayloadText, classify, displayBody, installNetMonitor, modelOf } from './net-monitor';
+import { AI_LOGIC_HOST, aiPayloadText, classify, describeAiRequests, displayBody, installNetMonitor, modelOf } from './net-monitor';
 
 afterEach(() => clearOutbound(null));
 
@@ -14,8 +14,13 @@ describe('network monitor', () => {
   it('extracts text parts and classifies AI Logic requests with model and full body', () => {
     expect(aiPayloadText(generateBody).text).toBe('SYSTEM\n\nDocument type: paystub\nGross Pay ⟦N1⟧');
     const url = new URL(`https://${AI_LOGIC_HOST}/v1beta/projects/p/models/gemini-3.5-flash-lite:generateContent`);
+    expect(classify(url, generateBody).fields).toEqual(['model-request']);
+    describeAiRequests('SYSTEM', ['document-silhouette']);
     const info = classify(url, generateBody);
     expect(info).toMatchObject({ channel: 'ai-cloud', fields: ['document-silhouette'], model: 'gemini-3.5-flash-lite' });
+    describeAiRequests('OTHER', ['profile-silhouette', 'program-facts']);
+    const other = generateBody.replace('SYSTEM', 'OTHER');
+    expect(classify(url, other).fields).toEqual(['profile-silhouette', 'program-facts']);
     expect(JSON.parse(info.body as string)).toEqual(JSON.parse(generateBody));
     expect(modelOf('/v1beta/projects/p/models/x:generateContent')).toBe('x');
   });

@@ -14,4 +14,7 @@ export const VARIANTS = {
   // Candidate prompt: gross pay is the total line, never a single earnings line.
   v14p3: { tidy: true, skeletons: 'v1.4', prompt: 'v3' },
   v14p3r: { tidy: true, skeletons: 'v1.4', prompt: 'v3' },
+  // Candidate prompt: v3 plus "hours and rate are those of the Regular (base pay) line".
+  v15p4: { tidy: true, skeletons: 'v1.5', prompt: 'v4' },
+  v15p4r: { tidy: true, skeletons: 'v1.5', prompt: 'v4' },
 };

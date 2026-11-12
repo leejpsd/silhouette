@@ -1,5 +1,5 @@
 {
-  "total": 806,
+  "total": 952,
   "runs": [
     {
       "date": "2026-11-12T04:33:56.749Z",
@@ -211,6 +211,54 @@
       "set": "en+lease",
       "documents": 42,
       "calls": 43
+    },
+    {
+      "date": "2026-11-12T09:28:23.256Z",
+      "variants": [
+        "v15p4"
+      ],
+      "set": "en",
+      "documents": 38,
+      "calls": 39
+    },
+    {
+      "date": "2026-11-12T10:25:59.872Z",
+      "variants": [
+        "v15p4r"
+      ],
+      "set": "en",
+      "documents": 38,
+      "calls": 38
+    },
+    {
+      "date": "2026-11-12T15:30:06.444Z",
+      "variants": [
+        "v15p4"
+      ],
+      "set": "en",
+      "documents": 38,
+      "calls": 15
+    },
+    {
+      "date": "2026-11-12T15:48:58.330Z",
+      "variants": [
+        "v15p4r"
+      ],
+      "set": "en",
+      "documents": 38,
+      "calls": 39
+    },
+    {
+      "date": "2026-11-12T15:51:26.579Z",
+      "task": "explain/ask.chip",
+      "documents": 12,
+      "calls": 12
+    },
+    {
+      "date": "2026-11-12T15:52:27.598Z",
+      "task": "explain/ask.chip",
+      "documents": 3,
+      "calls": 3
     }
   ]
 }

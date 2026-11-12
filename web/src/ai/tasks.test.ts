@@ -9,9 +9,11 @@ import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile } fro
 import { buildReview } from '../core/review';
 import { classifyError, TaskError } from './errors';
 import { setModelProviderForTests, type ModelPort } from './model-port';
-import { ACTIVE_POINTER_CONFIG, CLOUD_MODEL, POINTER_SCHEMAS, extractPointers, pointerModelParams } from './tasks';
+import { CLOUD_MODEL, POINTER_SCHEMAS, activePointerConfig, extractPointers, pointerModelParams } from './tasks';
+import { setConfigForTests } from '../data/remote-config';
+import { POINTER_V2, POINTER_V3, pointerConfigFor } from './pointer-config';
 import { readPhoto } from './on-device';
-import { POINTER_EXTRACT, parsePrompt } from './prompts';
+import { POINTER_EXTRACT, POINTER_EXTRACT_V3, parsePrompt } from './prompts';
 import { toModelSchema } from './model-schema';
 
 const shared = (rel: string) => readFileSync(new URL(`../../../shared/${rel}`, import.meta.url), 'utf8');
@@ -119,8 +121,8 @@ describe('document.pointer.extract', () => {
     expect(params.mode).toBe('prefer_on_device');
     const cloud = params.inCloudParams!;
     expect(cloud.model).toBe(CLOUD_MODEL);
-    expect(cloud.systemInstruction).toBe(ACTIVE_POINTER_CONFIG.prompt.system);
-    expect(ACTIVE_POINTER_CONFIG.prompt.system).toContain('Use null when the field is not in the document.');
+    expect(cloud.systemInstruction).toBe(activePointerConfig().prompt.system);
+    expect(activePointerConfig().prompt.system).toContain('Use null when the field is not in the document.');
     expect(cloud.generationConfig?.responseMimeType).toBe('application/json');
     const cloudSchema = cloud.generationConfig?.responseSchema as Record<string, unknown>;
     const deviceSchema = params.onDeviceParams?.promptOptions?.responseConstraint as Record<string, unknown>;
@@ -196,6 +198,29 @@ describe('schema and prompt from /shared', () => {
     expect(props['payFrequency']).toEqual({ enum: ['weekly', 'biweekly', 'semimonthly', 'monthly'], type: 'string' });
     expect(props['payDate']).toEqual({ anyOf: [{ type: 'string' }, { type: 'array', minItems: 3, maxItems: 3, items: { type: 'string' } }] });
     expect(toModelSchema(JSON.parse(shared('schemas/pointer.paystub.json')) as Record<string, unknown>)).toEqual(schema);
+  });
+
+  it('selects the bundled prompt version named by Remote Config, the newest for an unknown value', () => {
+    try {
+      expect(activePointerConfig()).toBe(POINTER_V3);
+      expect(pointerModelParams('paystub', 'en').inCloudParams?.systemInstruction).toBe(POINTER_EXTRACT_V3.system);
+      setConfigForTests({ promptPointerExtractV: 2 });
+      expect(activePointerConfig()).toBe(POINTER_V2);
+      expect(pointerModelParams('paystub', 'en').inCloudParams?.systemInstruction).toBe(POINTER_EXTRACT.system);
+      setConfigForTests({ promptPointerExtractV: 99 });
+      expect(activePointerConfig()).toBe(POINTER_V3);
+      expect(pointerConfigFor(1)).toBe(POINTER_V3);
+    } finally {
+      setConfigForTests(null);
+    }
+  });
+
+  it('v3 is v2 plus the gross pay line, read from shared/prompts/pointer-extract.v3.md', () => {
+    const v3 = parsePrompt('pointer-extract.v3', shared('prompts/pointer-extract.v3.md'));
+    expect(v3).toEqual(POINTER_EXTRACT_V3);
+    expect(v3.user).toBe(POINTER_EXTRACT.user);
+    expect(v3.system).toContain('It is never a single earnings line such as Regular or Overtime.');
+    expect(v3.system.replace(/\n- Gross pay is the total[^\n]*/, '')).toBe(POINTER_EXTRACT.system);
   });
 
   it('reads the system instruction and user template from shared/prompts/pointer-extract.v2.md', () => {

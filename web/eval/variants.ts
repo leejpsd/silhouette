@@ -1,11 +1,11 @@
 // Builds pointer-extraction configurations for the evaluation runner: the shared v2
 // configuration (POINTER_V2) with optional changes, so variants can be compared on the same data.
 import { POINTER_V2, type PointerConfig } from '../src/ai/pointer-config';
-import { parsePrompt } from '../src/ai/prompts';
-import pointerExtractV3 from './prompts/pointer-extract.v3.md?raw';
+import { POINTER_EXTRACT_V3, parsePrompt } from '../src/ai/prompts';
+import pointerExtractV4 from './prompts/pointer-extract.v4.md?raw';
 
-/** Candidate prompts evaluated against shared/prompts/pointer-extract.v2.md. */
-const PROMPTS = { v3: parsePrompt('pointer-extract.v3', pointerExtractV3) } as const;
+/** Prompts other than the base configuration's v2: the shared v3, and candidates from eval/prompts/. */
+const PROMPTS = { v3: POINTER_EXTRACT_V3, v4: parsePrompt('pointer-extract.v4', pointerExtractV4) } as const;
 
 export interface VariantSpec {
   readonly id: string;

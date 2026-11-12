@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import sharedEn from '../../../shared/copy/en.json';
+import sharedEs from '../../../shared/copy/es.json';
+import sharedKo from '../../../shared/copy/ko.json';
+import localEn from './copy.local.json';
+import packEn from '../../../shared/rulepacks/zz-test/copy/en.json';
 import { LOCALES, format, lookup, programName, translator } from './i18n';
 import { BANDS, PACK, PACK_COPY } from './pack';
 import { buildSteps } from './quickcheck';
@@ -29,6 +33,11 @@ describe('copy', () => {
   it('prefers the active locale and falls back to English per key', () => {
     expect(translator('ko')('verdict.likely')).not.toBe(sharedEn['verdict.likely']);
     expect(lookup('es', 'no.such.key')).toBeUndefined();
+  });
+
+  it('local keys never shadow shared or pack keys', () => {
+    const taken = new Set([...Object.keys(sharedEn), ...Object.keys(sharedEs), ...Object.keys(sharedKo), ...Object.keys(packEn)]);
+    for (const key of Object.keys(localEn)) expect(taken.has(key), key).toBe(false);
   });
 
   it('formats placeholders', () => {

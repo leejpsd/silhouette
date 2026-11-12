@@ -16,6 +16,7 @@ import {
   buildIntroducers,
   normalize,
   parseNumber,
+  parseTypedAmount,
   rehydrate,
   skeletonize,
   type AllowlistFile,
@@ -54,10 +55,11 @@ function expectExact(actual: unknown, expected: unknown): void {
 // ---------- Fixture shapes ----------
 
 interface SkeletonFixture {
-  cases: { id: string; locale: string; input: string; expected: { skeleton: string; map: PlaceholderMap } }[];
+  cases: { id: string; locale: string; input: string; hide?: string[]; expected: { skeleton: string; map: PlaceholderMap } }[];
 }
 interface RehydrateFixture {
   numbers: { token: string; expected: number | null }[];
+  typedAmounts: { text: string; expected: number | null }[];
   cases: { id: string; schema: string; map: PlaceholderMap; pointers: unknown; expected: unknown }[];
 }
 interface GeneralizeFixture {
@@ -105,7 +107,7 @@ const runners: Record<string, (fixture: unknown) => void> = {
     for (const k of fixture.cases) {
       describe(k.id, () => {
         const allow = allowlist(k.locale);
-        const result = skeletonize(Raw.of(k.input), allow, introducers(k.locale));
+        const result = skeletonize(Raw.of(k.input), allow, introducers(k.locale), new Set(k.hide ?? []));
         const map = reveal(result.map);
 
         it('produces the expected skeleton and map', () => {
@@ -138,6 +140,12 @@ const runners: Record<string, (fixture: unknown) => void> = {
     describe('parseNumber', () => {
       for (const n of fixture.numbers) {
         it(JSON.stringify(n.token), () => expectExact(parseNumber(n.token) ?? null, n.expected));
+      }
+    });
+    describe('parseTypedAmount (section 5.1)', () => {
+      it('has cases', () => expect(fixture.typedAmounts.length).toBeGreaterThan(0));
+      for (const n of fixture.typedAmounts) {
+        it(JSON.stringify(n.text), () => expectExact(parseTypedAmount(n.text) ?? null, n.expected));
       }
     });
     for (const k of fixture.cases) {

@@ -30,14 +30,14 @@ describe('hiding words in the preview', () => {
     const before = skeletonize(text, allow, intro);
     expect(before.skeleton).toContain('Gross Pay');
     expect(visibleWords(before.skeleton)).toContain('Gross');
-    const after = skeletonize(text, allow, intro, { hide: new Set(['gross']) });
+    const after = skeletonize(text, allow, intro, new Set(['gross']));
     expect(after.skeleton).not.toContain('Gross');
     expect(after.skeleton).not.toContain('Gross Pay'); // "Pay" is in the same phrase
     expect(after.skeleton).toContain('Net Pay'); // other phrases are untouched
     expect(Object.values(reveal(after.map))).toEqual(expect.arrayContaining(['Gross', 'Pay']));
   });
   it('with nothing hidden gives exactly the normal skeleton', () => {
-    expect(skeletonize(text, allow, intro, { hide: new Set() }).skeleton).toBe(skeletonize(text, allow, intro).skeleton);
+    expect(skeletonize(text, allow, intro, new Set()).skeleton).toBe(skeletonize(text, allow, intro).skeleton);
   });
 
   it('a visible introducer in front of a masked name can be hidden too, and then masks with the name', () => {
@@ -45,13 +45,13 @@ describe('hiding words in the preview', () => {
     const shown = skeletonize(doc, allow, intro);
     expect(shown.skeleton).toBe('Employee ⟦W1⟧ ⟦W2⟧   ID ⟦N1⟧');
     expect(visibleWords(shown.skeleton)).toEqual(['Employee', 'ID']);
-    const hidden = skeletonize(doc, allow, intro, { hide: new Set(['employee']) });
+    const hidden = skeletonize(doc, allow, intro, new Set(['employee']));
     expect(hidden.skeleton).toBe('⟦W1⟧ ⟦W2⟧ ⟦W3⟧   ID ⟦N1⟧');
     expect(reveal(hidden.map)['W1']).toBe('Employee');
   });
 
   it('hiding a word of a fully visible phrase masks the whole phrase', () => {
-    const hidden = skeletonize(Raw.of('Pay Date: 10/20/2026'), allow, intro, { hide: new Set(['date']) });
+    const hidden = skeletonize(Raw.of('Pay Date: 10/20/2026'), allow, intro, new Set(['date']));
     expect(hidden.skeleton).toBe('⟦W1⟧ ⟦W2⟧: ⟦D1⟧'); // "Pay" is an introducer, but the user hid its phrase
   });
 });

@@ -5,6 +5,12 @@ import { rehydrate, skeletonize } from '../src/core/skeleton';
 import { allowlistFor, introducersFor } from '../src/ui/doc/allowlists';
 import { tidyNamePointers } from '../src/core/tidy';
 import { extractPointers, presentSkeleton, TaskError, type DocType } from '../src/ai/tasks';
+import { asPublic } from '../src/core/types';
+import { generalize, silhouetteVerdicts, type ExactProfile } from '../src/core/generalize';
+import { askChip, explainProgram, planAskChip, planExplain } from '../src/ai/tasks';
+import { translator, type Locale } from '../src/ui/i18n';
+import { BANDS, PACK } from '../src/ui/pack';
+import { programFacts } from '../src/ui/answers/facts';
 import { buildConfig, type VariantSpec } from './variants';
 
 export interface EvalInput {
@@ -64,3 +70,42 @@ async function evalExtract(input: EvalInput): Promise<EvalOutput> {
 
 (window as unknown as { evalExtract: typeof evalExtract }).evalExtract = evalExtract;
 document.body.dataset['ready'] = 'true';
+
+// ---------- Explanations and prepared questions (eval/answers.mjs) ----------
+
+
+export interface AnswerInput {
+  readonly profile: ExactProfile;
+  readonly programId: string;
+  readonly locale: Locale;
+  readonly kind: 'short' | 'long' | 'chip';
+  readonly question?: string;
+}
+
+async function evalAnswer(input: AnswerInput) {
+  const profile = generalize(Raw.of(input.profile), BANDS);
+  const verdict = silhouetteVerdicts(PACK, BANDS, profile).find((v) => v.programId === input.programId);
+  const program = PACK.programs.find((p) => p.id === input.programId);
+  if (!verdict || !program) throw new Error('unknown program');
+  const explain = { profile, verdict, program: programFacts(translator(input.locale), input.locale, program), locale: input.locale };
+  const plan = input.kind === 'chip' ? planAskChip(explain, asPublic({ id: 'q', question: input.question ?? '' })) : planExplain(explain, input.kind);
+  const started = performance.now();
+  try {
+    const result = input.kind === 'chip' ? await askChip(plan) : await explainProgram(plan);
+    return {
+      ok: true as const,
+      taskId: plan.taskId,
+      reason: result.reason,
+      inferenceSource: result.inferenceSource,
+      verdict: verdict.verdict,
+      prompt: plan.prompt,
+      text: result.value.text,
+      latencyMs: Math.round(performance.now() - started),
+    };
+  } catch (error) {
+    const e = error instanceof TaskError ? error : new TaskError('unknown', String(error));
+    return { ok: false as const, taskId: plan.taskId, kind: e.kind, detail: e.detail, latencyMs: Math.round(performance.now() - started) };
+  }
+}
+
+(window as unknown as { evalAnswer: typeof evalAnswer }).evalAnswer = evalAnswer;

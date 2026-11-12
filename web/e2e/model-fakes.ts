@@ -25,6 +25,7 @@ export async function fakeCloudModel(
   reply: { pointers: unknown } | { status: number; body: unknown },
 ): Promise<{ bodies: string[] }> {
   const bodies: string[] = [];
+  await fakeFirebaseBackends(page);
   await page.route(`https://${AI_HOST}/**`, async (route) => {
     bodies.push(route.request().postData() ?? '');
     if ('pointers' in reply) await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(geminiResponse(reply.pointers)) });
@@ -95,4 +96,96 @@ export async function fakeOnDeviceModel(
       },
     };
   }, options);
+}
+
+/** Remote Config values for a test, seeded as the app's last fetched values (no fetch needed). */
+export async function seedRemoteConfig(context: BrowserContext, values: Record<string, string>) {
+  await context.addInitScript((v) => {
+    if (!sessionStorage.getItem('seeded-rc')) {
+      localStorage.setItem('silhouette.remote-config', JSON.stringify(v));
+      sessionStorage.setItem('seeded-rc', '1');
+    }
+  }, values);
+}
+
+/**
+ * Firebase Installations and Remote Config, faked so tests never reach Google. Remote Config answers
+ * with `entries` (the template's parameter values as strings).
+ */
+export async function fakeFirebaseBackends(page: Page, entries: Record<string, string> = {}) {
+  await page.route('https://firebaseinstallations.googleapis.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ name: 'projects/p/installations/fake', fid: 'fakeFid0000000000000000', refreshToken: 'r', authToken: { token: 't', expiresIn: '604800s' } }),
+    }),
+  );
+  await page.route('https://firebaseremoteconfig.googleapis.com/**', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ entries, state: 'UPDATE', templateVersion: '1' }) }),
+  );
+}
+
+export const SEARCH_SUGGESTIONS_HTML =
+  '<style>.container{display:flex;gap:8px}.chip{border:1px solid #ccc;border-radius:16px;padding:4px 10px}</style>' +
+  '<div class="container"><a class="chip" href="https://www.google.com/search?q=test+food+help">test food help</a></div>';
+
+interface AnswerFakes {
+  /** Text for explanations and chip answers; the prompt is passed in. */
+  text?: (prompt: string) => string;
+  status?: string;
+  leads?: string;
+  places?: string;
+}
+
+/**
+ * Answers each AI Logic request in the shape the real API uses for its task: plain text for
+ * explanations and chips, text with groundingMetadata for Search and Maps, inline audio for speech.
+ * Records every request body.
+ */
+export async function fakeAnswerModels(
+  page: Page,
+  fakes: AnswerFakes = {},
+  remoteConfig: Record<string, string> = {},
+): Promise<{ bodies: string[]; paths: string[] }> {
+  const bodies: string[] = [];
+  const paths: string[] = [];
+  await fakeFirebaseBackends(page, remoteConfig);
+  await page.route(`https://${AI_HOST}/**`, async (route) => {
+    const body = route.request().postData() ?? '';
+    bodies.push(body);
+    paths.push(new URL(route.request().url()).pathname);
+    const json = JSON.parse(body) as { contents?: { parts?: { text?: string }[] }[]; tools?: Record<string, unknown>[] };
+    const prompt = (json.contents ?? []).flatMap((c) => c.parts ?? []).map((p) => p.text ?? '').join('\n');
+    const tool = Object.keys(json.tools?.[0] ?? {})[0];
+    let candidate: Record<string, unknown>;
+    if (route.request().url().includes('-tts')) {
+      const silence = Buffer.alloc(4800).toString('base64');
+      candidate = { content: { role: 'model', parts: [{ inlineData: { mimeType: 'audio/L16;codec=pcm;rate=24000', data: silence } }] } };
+    } else if (tool === 'googleSearch') {
+      const text = prompt.includes('Already listed') ? (fakes.leads ?? '- City Fan Program: free fans in summer.') : (fakes.status ?? '[utility-discount] Applications are open all year.\n[food-help] No current information found.');
+      candidate = {
+        content: { role: 'model', parts: [{ text }] },
+        groundingMetadata: {
+          searchEntryPoint: { renderedContent: SEARCH_SUGGESTIONS_HTML },
+          groundingChunks: [{ web: { uri: 'https://vertexaisearch.cloud.google.com/grounding-api-redirect/abc', title: 'example.gov' } }],
+          webSearchQueries: ['test food help'],
+        },
+      };
+    } else if (tool === 'googleMaps') {
+      candidate = {
+        content: { role: 'model', parts: [{ text: fakes.places ?? '- Testshire Help Center: help with benefit applications.' }] },
+        groundingMetadata: {
+          groundingChunks: [{ maps: { uri: 'https://maps.google.com/?cid=123', title: 'Testshire Help Center', text: 'Open weekdays', placeId: 'places/abc' } }],
+        },
+      };
+    } else {
+      candidate = { content: { role: 'model', parts: [{ text: fakes.text ? fakes.text(prompt) : 'You may qualify because your income range is under the limit and you rent your home.' }] } };
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ candidates: [{ ...candidate, finishReason: 'STOP', index: 0 }], usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 1, totalTokenCount: 2 } }),
+    });
+  });
+  return { bodies, paths };
 }

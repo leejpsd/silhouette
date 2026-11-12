@@ -15,6 +15,12 @@ import { DocumentPreviewScreen } from './screens/DocumentPreview';
 import { DocumentReviewScreen } from './screens/DocumentReview';
 import { DocumentContext, emptyDocument, type DocumentContextValue, type DocumentState } from './doc/state';
 import { clearOutbound } from '../data/outbound';
+import { resetModelInstances } from '../ai/model-port';
+import { resetConfig } from '../data/remote-config';
+import { resetCloudRequests } from '../data/net-monitor';
+import { clearSession } from './answers/session';
+import { forgetCounty } from './answers/county-choice';
+import { DiscoverScreen, NearbyScreen } from './answers/MoreHelp';
 import { LEDGER_CLEARED_KEY, startOutboundPersistence } from '../data/outbound-store';
 
 const ANSWERS_RECORD = 'quickcheck.answers';
@@ -102,10 +108,13 @@ export function App() {
 
   const onDelete = async () => {
     const { shutdownFirebase } = await import('../ai/firebase');
-    const { resetModelInstances } = await import('../ai/model-port');
     await shutdownFirebase();
     resetModelInstances();
+    resetCloudRequests();
+    clearSession();
+    forgetCounty();
     const report = await deleteEverything();
+    resetConfig();
     answersRef.current = {};
     setAnswers({});
     setDoc(emptyDocument(locale));
@@ -126,6 +135,8 @@ export function App() {
     else if (route.name === 'results') screen = <ResultsScreen />;
     else if (route.name === 'program') screen = <ProgramScreen key={route.id} id={route.id} />;
     else if (route.name === 'doc') screen = <DocumentAddScreen />;
+    else if (route.name === 'discover') screen = <DiscoverScreen />;
+    else if (route.name === 'nearby') screen = <NearbyScreen />;
     else if (route.name === 'doc-preview') screen = <DocumentPreviewScreen />;
     else if (route.name === 'doc-review') screen = <DocumentReviewScreen key={doc.extraction ? 'extracted' : 'manual'} />;
     else screen = <StartScreen notice={notice} />;
