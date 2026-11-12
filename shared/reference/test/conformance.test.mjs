@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { build } from '../generate.mjs';
 import * as s from '../silhouette.mjs';
-import { read, readJson, allowlist, skeletonCases } from '../cases.mjs';
+import { read, readJson, allowlist, introducers, skeletonCases } from '../cases.mjs';
 
 test('fixtures on disk match the reference implementation', () => {
   for (const [name, content] of Object.entries(build())) {
@@ -13,7 +13,7 @@ test('fixtures on disk match the reference implementation', () => {
 test('a skeleton never contains a digit or a non-allowlisted word', () => {
   for (const k of skeletonCases) {
     const allow = allowlist(k.locale);
-    const { skeleton } = s.skeletonize(k.text, allow);
+    const { skeleton } = s.skeletonize(k.text, allow, introducers(k.locale));
     const stripped = skeleton.replace(/⟦[DNW][0-9]+⟧/g, '');
     assert.doesNotMatch(stripped, /[0-9]/, `${k.id}: digit survived`);
     // Whatever survives is either an explicitly safe character or part of an allowlisted word.
@@ -27,14 +27,14 @@ test('a skeleton never contains a digit or a non-allowlisted word', () => {
 
 test('skeleton + map reconstruct the normalized input exactly', () => {
   for (const k of skeletonCases) {
-    const { skeleton, map } = s.skeletonize(k.text, allowlist(k.locale));
+    const { skeleton, map } = s.skeletonize(k.text, allowlist(k.locale), introducers(k.locale));
     assert.equal(skeleton.replace(/⟦([DNW][0-9]+)⟧/g, (_, id) => map[id]), s.normalize(k.text), k.id);
   }
 });
 
 test('canary strings never appear in the skeleton', () => {
   const canary = readJson('../fixtures/canary/paystub-canary-01.json');
-  const { skeleton } = s.skeletonize(read(`../fixtures/canary/${canary.document}`), allowlist(canary.locale));
+  const { skeleton } = s.skeletonize(read(`../fixtures/canary/${canary.document}`), allowlist(canary.locale), introducers(canary.locale));
   for (const value of canary.canaries) assert.ok(!skeleton.includes(value), `leaked: ${value}`);
 });
 

@@ -1,6 +1,6 @@
 {
  "locale": "es",
- "version": 1,
+ "version": 2,
  "words": [
   "a",
   "acumulado",
@@ -53,5 +53,14 @@
   "total",
   "vencimiento",
   "y"
+ ],
+ "introducers": [
+  "arrendador",
+  "empleado",
+  "empleador",
+  "inquilino",
+  "nombre",
+  "para",
+  "por"
  ]
 }

@@ -9,6 +9,9 @@ export const readJson = (rel) => JSON.parse(read(rel));
 export const allowlist = (locale) =>
   new Set([...readJson('../skeleton/allowlist/en.json').words, ...readJson(`../skeleton/allowlist/${locale}.json`).words]);
 
+export const introducers = (locale) =>
+  new Set([...readJson('../skeleton/allowlist/en.json').introducers, ...readJson(`../skeleton/allowlist/${locale}.json`).introducers]);
+
 export const skeletonCases = [
   { id: 'paystub-en-01', locale: 'en', text: read('../samples/paystub-en-01.txt') },
   { id: 'payslip-ko-01', locale: 'ko', text: read('../samples/payslip-ko-01.txt') },
@@ -36,6 +39,14 @@ export const skeletonCases = [
   { id: 'phrase-joiners', locale: 'en', text: 'Smith & Gross Pay   Lopez, Net   Gross-Smith Pay   Gross Pay / Jordan   Gross Pay: Jordan' },
   { id: 'phrase-breaks-on-wide-gaps', locale: 'en', text: 'Net Pay  Jordan   Gross Pay\tLopez\nNet Pay\nJordan' },
   { id: 'phrase-all-allowlisted-stays', locale: 'en', text: 'Federal Income Tax   Social Security   Year to Date Gross Pay' },
+  // Leading introducers keep their own decision; the name behind them is still masked as a whole.
+  { id: 'introducer-before-name', locale: 'en', text: 'Employee Lucia Lindqvist\nEMPLOYER NORTHWIND STAFFING LLC\nPay Stub for Jordan Gross' },
+  { id: 'introducer-run-in-sentence', locale: 'en', text: 'This Lease is made between Jordan Gross and Maria Lopez, Tenants' },
+  { id: 'introducer-only-at-phrase-start', locale: 'en', text: 'Jordan Gross Employee\nGross Pay Jordan\nEmployee Gross Jordan\nSmith and Gross' },
+  { id: 'introducer-whole-token-only', locale: 'en', text: 'Pay-to Jordan Gross\nEmployee\'s Jordan Gross\nEmployee  Jordan Gross' },
+  { id: 'introducer-document-language', locale: 'es', text: 'Empleado Lucía Hernández\nDe la Cruz María\nEmployee Lucía Hernández' },
+  { id: 'introducer-other-language-not-used', locale: 'en', text: 'Empleado Lucía Hernández' },
+  { id: 'introducer-in-korean-document', locale: 'ko', text: 'Employee Kim Minji\n성명 김민지' },
   { id: 'email-and-usernames', locale: 'en', text: 'Contact payroll@brightharbor.example or @pay or john_gross or net_pay' },
   { id: 'month-name-dates', locale: 'en', text: 'Pay Date: October 17, 2026   Period: Oct. 1 2026 - 15 October 2026   17 de octubre de 2026   Sept 3rd, 2026   MAY 5, 2026' },
   { id: 'month-name-ascii-case-only', locale: 'en', text: 'Augu\u017Ft 17, 2026   AUGUST 17, 2026   17 DE AGOSTO DE 2026   Oct. 3RD, 2026   \u212Aay 5, 2026' },

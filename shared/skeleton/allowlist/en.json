@@ -1,6 +1,6 @@
 {
  "locale": "en",
- "version": 2,
+ "version": 3,
  "words": [
   "a",
   "account",
@@ -172,6 +172,7 @@
   "state",
   "statement",
   "status",
+  "stub",
   "sui",
   "summary",
   "take",
@@ -214,5 +215,33 @@
   "year",
   "years",
   "ytd"
+ ],
+ "introducers": [
+  "and",
+  "between",
+  "by",
+  "employee",
+  "employer",
+  "for",
+  "from",
+  "is",
+  "landlord",
+  "lease",
+  "lessee",
+  "lessor",
+  "made",
+  "name",
+  "of",
+  "owner",
+  "paid",
+  "pay",
+  "paystub",
+  "statement",
+  "stub",
+  "tenant",
+  "tenants",
+  "the",
+  "this",
+  "to"
  ]
 }

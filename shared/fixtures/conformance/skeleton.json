@@ -230,15 +230,14 @@
       "locale": "en",
       "input": "Pay   𮯰 𞗐 􏿿 Date",
       "expected": {
-        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧",
+        "skeleton": "Pay ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧",
         "map": {
-          "W1": "Pay",
-          "W2": "",
-          "W3": "",
-          "W4": "𮯰",
-          "W5": "𞗐",
-          "W6": "􏿿",
-          "W7": "Date"
+          "W1": "",
+          "W2": "",
+          "W3": "𮯰",
+          "W4": "𞗐",
+          "W5": "􏿿",
+          "W6": "Date"
         }
       }
     },
@@ -416,6 +415,122 @@
       "expected": {
         "skeleton": "Federal Income Tax   Social Security   Year to Date Gross Pay",
         "map": {}
+      }
+    },
+    {
+      "id": "introducer-before-name",
+      "locale": "en",
+      "input": "Employee Lucia Lindqvist\nEMPLOYER NORTHWIND STAFFING LLC\nPay Stub for Jordan Gross",
+      "expected": {
+        "skeleton": "Employee ⟦W1⟧ ⟦W2⟧\nEMPLOYER ⟦W3⟧ ⟦W4⟧ ⟦W5⟧\nPay Stub for ⟦W6⟧ ⟦W7⟧",
+        "map": {
+          "W1": "Lucia",
+          "W2": "Lindqvist",
+          "W3": "NORTHWIND",
+          "W4": "STAFFING",
+          "W5": "LLC",
+          "W6": "Jordan",
+          "W7": "Gross"
+        }
+      }
+    },
+    {
+      "id": "introducer-run-in-sentence",
+      "locale": "en",
+      "input": "This Lease is made between Jordan Gross and Maria Lopez, Tenants",
+      "expected": {
+        "skeleton": "This Lease is made between ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧",
+        "map": {
+          "W1": "Jordan",
+          "W2": "Gross",
+          "W3": "and",
+          "W4": "Maria",
+          "W5": "Lopez",
+          "W6": "Tenants"
+        }
+      }
+    },
+    {
+      "id": "introducer-only-at-phrase-start",
+      "locale": "en",
+      "input": "Jordan Gross Employee\nGross Pay Jordan\nEmployee Gross Jordan\nSmith and Gross",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦W4⟧ ⟦W5⟧ ⟦W6⟧\nEmployee ⟦W7⟧ ⟦W8⟧\n⟦W9⟧ ⟦W10⟧ ⟦W11⟧",
+        "map": {
+          "W1": "Jordan",
+          "W2": "Gross",
+          "W3": "Employee",
+          "W4": "Gross",
+          "W5": "Pay",
+          "W6": "Jordan",
+          "W7": "Gross",
+          "W8": "Jordan",
+          "W9": "Smith",
+          "W10": "and",
+          "W11": "Gross"
+        }
+      }
+    },
+    {
+      "id": "introducer-whole-token-only",
+      "locale": "en",
+      "input": "Pay-to Jordan Gross\nEmployee's Jordan Gross\nEmployee  Jordan Gross",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦W4⟧ ⟦W5⟧ ⟦W6⟧\nEmployee  ⟦W7⟧ ⟦W8⟧",
+        "map": {
+          "W1": "Pay-to",
+          "W2": "Jordan",
+          "W3": "Gross",
+          "W4": "Employee's",
+          "W5": "Jordan",
+          "W6": "Gross",
+          "W7": "Jordan",
+          "W8": "Gross"
+        }
+      }
+    },
+    {
+      "id": "introducer-document-language",
+      "locale": "es",
+      "input": "Empleado Lucía Hernández\nDe la Cruz María\nEmployee Lucía Hernández",
+      "expected": {
+        "skeleton": "Empleado ⟦W1⟧ ⟦W2⟧\n⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧\nEmployee ⟦W7⟧ ⟦W8⟧",
+        "map": {
+          "W1": "Lucía",
+          "W2": "Hernández",
+          "W3": "De",
+          "W4": "la",
+          "W5": "Cruz",
+          "W6": "María",
+          "W7": "Lucía",
+          "W8": "Hernández"
+        }
+      }
+    },
+    {
+      "id": "introducer-other-language-not-used",
+      "locale": "en",
+      "input": "Empleado Lucía Hernández",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧",
+        "map": {
+          "W1": "Empleado",
+          "W2": "Lucía",
+          "W3": "Hernández"
+        }
+      }
+    },
+    {
+      "id": "introducer-in-korean-document",
+      "locale": "ko",
+      "input": "Employee Kim Minji\n성명 김민지",
+      "expected": {
+        "skeleton": "Employee ⟦W1⟧ ⟦W2⟧\n성명 ⟦W3⟧",
+        "map": {
+          "W1": "Kim",
+          "W2": "Minji",
+          "W3": "김민지"
+        }
       }
     },
     {

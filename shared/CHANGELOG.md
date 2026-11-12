@@ -1,5 +1,19 @@
 # Contract changelog
 
+## v1.4 — 2026-11-12
+
+From re-running the extraction evaluation on v1.3 skeletons, and from an independent test of the Web app.
+
+| Change | Why |
+|---|---|
+| **Introducers at the start of a phrase are kept** (`skeleton/SPEC.md` section 4.2). Allowlist files gain a closed `introducers` list; `skeletonize()` takes it as a third argument | The phrase rule turned `Employee Lucia Lindqvist` into three placeholders. The model could not tell the label from the name, and all-fields-correct on English paystubs fell from 100 % to about 60 % |
+| English allowlist gains `stub` | `Pay Stub` was masked |
+| `routing.json`: `onDeviceFailure` describes the single retry of a failed `PREFER_ON_DEVICE` task with `ONLY_IN_CLOUD`, shown with reason `on-device-failed` | A device model that fails after it was reported available left the user with nothing. The input of such a task is cloud-safe by the routing rule, so the retry sends nothing new |
+| 21 copy keys: resume, the amount as understood, the record of outgoing requests (attempted, sent, failed, deleted), hiding more words in the preview, a document that is not a paystub, the averaging formula | |
+| Fixtures: 7 new skeleton cases for introducers | |
+
+Existing skeleton fixtures whose output changes are listed by `npm run generate`; a port that passed v1.3 fails those until it implements section 4.2.
+
 ## v1.3 — 2026-11-12
 
 Found while porting the engine to Kotlin and Swift.

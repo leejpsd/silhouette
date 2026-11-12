@@ -18,6 +18,8 @@
     "nearby.help":                { "input": ["Generalized"],            "mode": "ONLY_IN_CLOUD",    "tools": ["googleMaps"],   "note": "Location is the county centroid, never device GPS", "reason": "needs-places" },
     "readAloud":                  { "input": ["Generalized", "Public"],  "mode": "ONLY_IN_CLOUD",    "model": "tts", "reason": "speech" }
   },
+  "onDeviceFailure": { "appliesTo": "PREFER_ON_DEVICE", "retry": "ONLY_IN_CLOUD", "times": 1, "reason": "on-device-failed",
+                       "note": "Never applies to ONLY_ON_DEVICE tasks. A PREFER_ON_DEVICE task has cloud-safe input by the rule above, so the retry sends nothing that the first attempt could not have sent." },
   "remoteConfigKeys": ["route_short_text_max_words", "route_ondevice_locales_web", "route_ondevice_locales_android", "route_ondevice_locales_ios",
                        "feature_grounding_search", "feature_grounding_maps", "feature_tts", "prompt_pointer_extract_v", "prompt_explain_v", "skeleton_allowlist_v"]
 }

@@ -55,9 +55,10 @@ const PHRASE_JOINERS = new Set([' ', ', ', ' & ']);
 /**
  * @param {string} text Raw document text
  * @param {Set<string>} allow Lowercase allowlist (document language ∪ en)
+ * @param {Set<string>} [introducers] Lowercase introducer list (document language ∪ en), a subset of `allow`
  * @returns {{skeleton: string, map: Record<string, string>}}
  */
-export function skeletonize(text, allow) {
+export function skeletonize(text, allow, introducers = new Set()) {
   const input = normalize(text);
   // Pass 1: tokens. Consecutive safe characters form one separator token.
   const tokens = [];
@@ -74,9 +75,13 @@ export function skeletonize(text, allow) {
     if (tokens[i].kind !== 'W') { i++; continue; }
     let j = i;
     while (j + 2 < tokens.length && tokens[j + 1].kind === 'O' && PHRASE_JOINERS.has(tokens[j + 1].text) && tokens[j + 2].kind === 'W') j += 2;
+    // Leading introducers ("Employee", "This Lease is made between") are labels in front of a name,
+    // never part of it. They keep their own decision; the rest of the phrase is decided as before.
+    let start = i;
+    while (start < j && tokens[start].keep && introducers.has(tokens[start].text.toLowerCase())) start += 2;
     let keep = true;
-    for (let k = i; k <= j; k += 2) keep = keep && tokens[k].keep;
-    for (let k = i; k <= j; k += 2) tokens[k].keep = keep;
+    for (let k = start; k <= j; k += 2) keep = keep && tokens[k].keep;
+    for (let k = start; k <= j; k += 2) tokens[k].keep = keep;
     i = j + 1;
   }
   // Pass 3: placeholders, numbered in document order.

@@ -52,6 +52,12 @@ export function lintAllowlist(list) {
     if (/[\u03C3\u03C2\u0130\u0131\u00DF]/u.test(word)) errors.push(`allowlist: "${word}" uses a letter whose case mapping differs across platforms`);
   }
   if (new Set(list.words).size !== (list.words ?? []).length) errors.push('allowlist: duplicate entries');
+  if (!Array.isArray(list.introducers)) errors.push('allowlist: "introducers" must be an array (it may be empty)');
+  else {
+    const words = new Set(list.words ?? []);
+    for (const word of list.introducers) if (!words.has(word)) errors.push(`allowlist: introducer "${word}" is not in "words"`);
+    if (new Set(list.introducers).size !== list.introducers.length) errors.push('allowlist: duplicate introducers');
+  }
   return errors;
 }
 

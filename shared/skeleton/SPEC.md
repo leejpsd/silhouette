@@ -1,4 +1,4 @@
-# Skeletonizer specification (v1.3)
+# Skeletonizer specification (v1.4)
 
 The Skeletonizer turns `Raw` document text into a `Skeleton`: the labels and layout stay, every value goes.
 It is deterministic and must produce byte-identical output on Web, Android and iOS.
@@ -103,6 +103,25 @@ If **any** word of a phrase is not allowlisted, **every** word of that phrase is
 Anything else ends a phrase: two or more spaces, a tab, a line break, a colon, a slash, a number or a date. So `Employee: Jordan` keeps `Employee`, and a table row `Gross Pay    Jordan` keeps `Gross Pay`.
 
 The cost is that a label written next to an unknown word with a single space is lost (`CA SDI` becomes two placeholders). The rule trades labels for privacy on purpose.
+
+### 4.2 Introducers at the start of a phrase
+
+Each allowlist file also has a short closed list, `introducers`: role labels and function words that stand in front of a name and are not part of one (`employee`, `tenant`, `for`, `between`, …). Every introducer is also in `words`. The list for a document is the union of the lists for the document's language and `en`, like the allowlist.
+
+Before the phrase rule is applied, the words at the **start** of a phrase are checked one by one. While the word's lowercase form is an introducer, and it is not the last word of the phrase, it is set aside and kept. The phrase rule then applies to the remaining words.
+
+| Input | Skeleton |
+|---|---|
+| `Employee Lucia Lindqvist` | `Employee ⟦W1⟧ ⟦W2⟧` |
+| `This Lease is made between Jordan Gross and Maria Lopez` | `This Lease is made between ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧` |
+| `Employee Gross Jordan` | `Employee ⟦W1⟧ ⟦W2⟧` |
+| `Jordan Gross Employee` | `⟦W1⟧ ⟦W2⟧ ⟦W3⟧` |
+
+- Only the start of a phrase is checked. An introducer in the middle or at the end (`and` in the second row) is decided by the phrase rule.
+- The whole token is compared. The hyphen rule of section 4 does not make a token an introducer (`Pay-to` is not one).
+- Without this rule a model sees `⟦W1⟧ ⟦W2⟧ ⟦W3⟧` for `Employee Lucia Lindqvist` and cannot tell the label from the name; in the extraction evaluation it then returned the label as part of the name.
+
+What it costs: when a name itself begins with an introducer (`The Lindqvist Group`), that one word stays visible. The list therefore holds only words that say nothing about who the person or company is. Titles such as `Mr` and `Ms` are not on it.
 
 ## 5. Pointer rehydration
 

@@ -10,7 +10,7 @@ export function build() {
   const bands = c.readJson('../bands/zz-test.json');
   const pack = c.readJson('../rulepacks/zz-test/pack.json');
   const skeletons = Object.fromEntries(
-    c.skeletonCases.map((k) => [k.id, s.skeletonize(k.text, c.allowlist(k.locale))]),
+    c.skeletonCases.map((k) => [k.id, s.skeletonize(k.text, c.allowlist(k.locale), c.introducers(k.locale))]),
   );
   return {
     'skeleton.json': {
