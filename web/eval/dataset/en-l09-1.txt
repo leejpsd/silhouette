@@ -1,0 +1,14 @@
+TALLGRASS LAUNDRY INC
+Monthly Salary Statement
+Employee: Victor Moreau
+Pay Schedule: Monthly    Pay Date: 04/05/26
+Covers 03/01/26 - 03/31/26
+
+                            Current       YTD
+Salary                      7,333.33      22,161.33
+Gross Pay                   7,333.33      22,161.33
+Federal Income Tax          696.67        2,105.33
+Social Security             454.67        1,374.01
+Medicare                    106.33        321.33
+Health Insurance            81.04         244.90
+Net Pay                     5,994.62      18,115.74

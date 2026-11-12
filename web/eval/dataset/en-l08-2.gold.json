@@ -1,0 +1,31 @@
+{
+  "employerName": "Sundale Printing Inc",
+  "employeeName": "Aisha Haddad",
+  "payFrequency": "biweekly",
+  "payDate": "07-13-2026",
+  "periodStart": "06-24-2026",
+  "periodEnd": "07-07-2026",
+  "grossPay": 2974.14,
+  "netPay": 2359.97,
+  "ytdGross": 43493.84,
+  "hoursWorked": 79.5,
+  "hourlyRate": 36.05,
+  "deductions": [
+    {
+      "amount": 276.6,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 184.4,
+      "kind": "social_security"
+    },
+    {
+      "amount": 43.13,
+      "kind": "medicare"
+    },
+    {
+      "amount": 110.04,
+      "kind": "state_tax"
+    }
+  ]
+}

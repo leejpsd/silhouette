@@ -1,0 +1,31 @@
+{
+  "employerName": "QUILLMARK GROCERS CORP",
+  "employeeName": "Daniel Haddad",
+  "payFrequency": "monthly",
+  "payDate": "03/02/2026",
+  "periodStart": "02/01/2026",
+  "periodEnd": "02/28/2026",
+  "grossPay": 2940.46,
+  "netPay": 2315.6,
+  "ytdGross": 5904.44,
+  "hoursWorked": 173.5,
+  "hourlyRate": 16.45,
+  "deductions": [
+    {
+      "amount": 288.17,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 182.31,
+      "kind": "social_security"
+    },
+    {
+      "amount": 42.64,
+      "kind": "medicare"
+    },
+    {
+      "amount": 111.74,
+      "kind": "state_tax"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "employerName": "Goldleaf Grocers Llc",
+  "employeeName": "Omar Lindqvist",
+  "payFrequency": "monthly",
+  "payDate": "04/02/26",
+  "periodStart": "03/01/26",
+  "periodEnd": "03/31/26",
+  "grossPay": 7416.67,
+  "netPay": 6148.51,
+  "ytdGross": 21538.01,
+  "deductions": [
+    {
+      "amount": 637.83,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 459.83,
+      "kind": "social_security"
+    },
+    {
+      "amount": 107.54,
+      "kind": "medicare"
+    },
+    {
+      "amount": 62.96,
+      "kind": "health"
+    }
+  ]
+}

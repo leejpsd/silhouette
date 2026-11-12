@@ -1,0 +1,272 @@
+[
+  {
+    "id": "en-l01-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L01",
+    "frequency": "biweekly"
+  },
+  {
+    "id": "en-l01-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L01",
+    "frequency": "semimonthly"
+  },
+  {
+    "id": "en-l01-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L01",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l02-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L02",
+    "frequency": "semimonthly"
+  },
+  {
+    "id": "en-l02-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L02",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l02-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L02",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l03-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L03",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l03-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L03",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l03-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L03",
+    "frequency": "biweekly"
+  },
+  {
+    "id": "en-l04-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L04",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l04-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L04",
+    "frequency": "biweekly"
+  },
+  {
+    "id": "en-l04-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L04",
+    "frequency": "semimonthly"
+  },
+  {
+    "id": "en-l05-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L05",
+    "frequency": "biweekly"
+  },
+  {
+    "id": "en-l05-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L05",
+    "frequency": "semimonthly"
+  },
+  {
+    "id": "en-l05-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L05",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l06-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L06",
+    "frequency": "semimonthly"
+  },
+  {
+    "id": "en-l06-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L06",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l06-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L06",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l07-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L07",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l07-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L07",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l07-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L07",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l08-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L08",
+    "frequency": "weekly"
+  },
+  {
+    "id": "en-l08-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L08",
+    "frequency": "biweekly"
+  },
+  {
+    "id": "en-l08-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L08",
+    "frequency": "semimonthly"
+  },
+  {
+    "id": "en-l09-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L09",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l09-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L09",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l09-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L09",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l10-1",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L10",
+    "frequency": "semimonthly"
+  },
+  {
+    "id": "en-l10-2",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L10",
+    "frequency": "monthly"
+  },
+  {
+    "id": "en-l10-3",
+    "docType": "paystub",
+    "language": "en",
+    "layout": "L10",
+    "frequency": "weekly"
+  },
+  {
+    "id": "ko-k1-1",
+    "docType": "paystub",
+    "language": "ko",
+    "layout": "K1"
+  },
+  {
+    "id": "ko-k1-2",
+    "docType": "paystub",
+    "language": "ko",
+    "layout": "K1"
+  },
+  {
+    "id": "ko-k2-1",
+    "docType": "paystub",
+    "language": "ko",
+    "layout": "K2"
+  },
+  {
+    "id": "ko-k2-2",
+    "docType": "paystub",
+    "language": "ko",
+    "layout": "K2"
+  },
+  {
+    "id": "ko-k3-1",
+    "docType": "paystub",
+    "language": "ko",
+    "layout": "K3"
+  },
+  {
+    "id": "ko-k3-2",
+    "docType": "paystub",
+    "language": "ko",
+    "layout": "K3"
+  },
+  {
+    "id": "lease-e1-1",
+    "docType": "lease",
+    "language": "en",
+    "layout": "E1"
+  },
+  {
+    "id": "lease-e1-2",
+    "docType": "lease",
+    "language": "en",
+    "layout": "E1"
+  },
+  {
+    "id": "lease-e2-1",
+    "docType": "lease",
+    "language": "en",
+    "layout": "E2"
+  },
+  {
+    "id": "lease-e2-2",
+    "docType": "lease",
+    "language": "en",
+    "layout": "E2"
+  }
+]

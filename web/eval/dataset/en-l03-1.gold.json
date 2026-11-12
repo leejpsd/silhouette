@@ -1,0 +1,32 @@
+{
+  "employerName": "BRIGHTWATER FOODS INC",
+  "employeeName": "Ines Strand",
+  "payFrequency": "monthly",
+  "payDate": "02/28/26",
+  "periodStart": "02/01/26",
+  "periodEnd": "02/28/26",
+  "grossPay": 4833.33,
+  "netPay": 3602.15,
+  "deductions": [
+    {
+      "amount": 575.17,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 299.67,
+      "kind": "social_security"
+    },
+    {
+      "amount": 70.08,
+      "kind": "medicare"
+    },
+    {
+      "amount": 212.67,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 73.59,
+      "kind": "health"
+    }
+  ]
+}

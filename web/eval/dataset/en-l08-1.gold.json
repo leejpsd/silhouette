@@ -1,0 +1,31 @@
+{
+  "employerName": "REDMESA ROOFING LLC",
+  "employeeName": "Hana Kowalski",
+  "payFrequency": "weekly",
+  "payDate": "02-17-2026",
+  "periodStart": "02-10-2026",
+  "periodEnd": "02-16-2026",
+  "grossPay": 806.58,
+  "netPay": 637.59,
+  "ytdGross": 5573.46,
+  "hoursWorked": 35.5,
+  "hourlyRate": 19.09,
+  "deductions": [
+    {
+      "amount": 64.53,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 50.01,
+      "kind": "social_security"
+    },
+    {
+      "amount": 11.7,
+      "kind": "medicare"
+    },
+    {
+      "amount": 42.75,
+      "kind": "state_tax"
+    }
+  ]
+}

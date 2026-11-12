@@ -1,0 +1,35 @@
+{
+  "employerName": "Willowby Roofing Inc",
+  "employeeName": "Maria Abara",
+  "payFrequency": "weekly",
+  "payDate": "2026-05-26",
+  "periodStart": "2026-05-14",
+  "periodEnd": "2026-05-20",
+  "grossPay": 622.3,
+  "netPay": 398.81,
+  "ytdGross": 12138.58,
+  "hoursWorked": 35,
+  "hourlyRate": 17.78,
+  "deductions": [
+    {
+      "amount": 73.43,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 38.58,
+      "kind": "social_security"
+    },
+    {
+      "amount": 9.02,
+      "kind": "medicare"
+    },
+    {
+      "amount": 18.67,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 83.79,
+      "kind": "health"
+    }
+  ]
+}

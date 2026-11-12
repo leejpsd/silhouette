@@ -1,0 +1,27 @@
+{
+  "employerName": "한빛물류 주식회사",
+  "employeeName": "박민준",
+  "payDate": "2026-5-17",
+  "grossPay": 2927000,
+  "netPay": 2545520,
+  "deductions": [
+    {
+      "amount": 96590
+    },
+    {
+      "amount": 9650
+    },
+    {
+      "amount": 131710
+    },
+    {
+      "amount": 103760
+    },
+    {
+      "amount": 13430
+    },
+    {
+      "amount": 26340
+    }
+  ]
+}

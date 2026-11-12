@@ -1,0 +1,35 @@
+{
+  "employerName": "SILVERPINE FOODS INC",
+  "employeeName": "Leila Fontaine",
+  "payFrequency": "semimonthly",
+  "payDate": "04/19/2026",
+  "periodStart": "04/01/2026",
+  "periodEnd": "04/15/2026",
+  "grossPay": 3406.74,
+  "netPay": 2485.22,
+  "ytdGross": 24828.3,
+  "hoursWorked": 83,
+  "hourlyRate": 36.73,
+  "deductions": [
+    {
+      "amount": 350.89,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 173.74,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 211.22,
+      "kind": "social_security"
+    },
+    {
+      "amount": 49.4,
+      "kind": "medicare"
+    },
+    {
+      "amount": 136.27,
+      "kind": "retirement"
+    }
+  ]
+}

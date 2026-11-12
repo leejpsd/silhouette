@@ -1,0 +1,15 @@
+            Willowby Roofing Inc
+            EIN 71-5047121
+
+Employee Maria Abara   ID 081655
+Period 2026-05-14 to 2026-05-20   Paid on 2026-05-26   Pay Frequency: Weekly
+
+Description               Hours   Rate     Current      YTD
+Regular                   35.00   17.78    622.30       12,138.58
+Federal Income Tax                         -73.43       -1,432.31
+Social Security                            -38.58       -752.60
+Medicare                                   -9.02        -176.03
+State Income Tax                           -18.67       -364.09
+Health Insurance                           -83.79       -1,634.38
+Gross Pay                                  622.30       12,138.58
+Net Pay                                    398.81

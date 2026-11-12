@@ -1,0 +1,31 @@
+{
+  "employerName": "Willowby Textiles Corp",
+  "employeeName": "Victor Delgado",
+  "payFrequency": "semimonthly",
+  "payDate": "06-21-2026",
+  "periodStart": "06-01-2026",
+  "periodEnd": "06-15-2026",
+  "grossPay": 3504.13,
+  "netPay": 2812.07,
+  "ytdGross": 39561.63,
+  "hoursWorked": 83.5,
+  "hourlyRate": 40.51,
+  "deductions": [
+    {
+      "amount": 343.4,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 217.26,
+      "kind": "social_security"
+    },
+    {
+      "amount": 50.81,
+      "kind": "medicare"
+    },
+    {
+      "amount": 80.59,
+      "kind": "state_tax"
+    }
+  ]
+}

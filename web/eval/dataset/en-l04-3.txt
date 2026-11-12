@@ -1,0 +1,15 @@
+Employer: Redmesa Textiles Corp
+Employee: Priya Novak
+Employee Number: 021765
+Frequency: Semimonthly
+Period Start: 09/01/2026
+Period End: 09/15/2026
+Pay Date: 09/16/2026
+Hourly Rate: $39.45
+Regular Hours: 78.50
+Gross Pay: $3,096.83
+Federal Income Tax: $257.04
+Social Security: $192.00
+Medicare: $44.90
+Net Pay: $2,602.89
+YTD Gross: $52,299.23

@@ -1,0 +1,33 @@
+{
+  "employerName": "Brightwater Bakery Llc",
+  "employeeName": "Lucia Herrera",
+  "payFrequency": "weekly",
+  "payDate": "03/17/2026",
+  "periodStart": "03/06/2026",
+  "periodEnd": "03/12/2026",
+  "grossPay": 1711.54,
+  "netPay": 1292.64,
+  "ytdGross": 19049.44,
+  "deductions": [
+    {
+      "amount": 189.98,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 106.12,
+      "kind": "social_security"
+    },
+    {
+      "amount": 24.82,
+      "kind": "medicare"
+    },
+    {
+      "amount": 46.63,
+      "kind": "health"
+    },
+    {
+      "amount": 51.35,
+      "kind": "retirement"
+    }
+  ]
+}

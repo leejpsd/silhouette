@@ -1,0 +1,27 @@
+{
+  "employerName": "Redmesa Textiles Corp",
+  "employeeName": "Priya Novak",
+  "payFrequency": "semimonthly",
+  "payDate": "09/16/2026",
+  "periodStart": "09/01/2026",
+  "periodEnd": "09/15/2026",
+  "grossPay": 3096.83,
+  "netPay": 2602.89,
+  "ytdGross": 52299.23,
+  "hoursWorked": 78.5,
+  "hourlyRate": 39.45,
+  "deductions": [
+    {
+      "amount": 257.04,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 192,
+      "kind": "social_security"
+    },
+    {
+      "amount": 44.9,
+      "kind": "medicare"
+    }
+  ]
+}

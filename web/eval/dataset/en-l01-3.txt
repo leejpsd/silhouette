@@ -1,0 +1,17 @@
+QUILLMARK GROCERS CORP                         Earnings Statement
+Employee: Daniel Haddad          Employee ID: 081318
+Address: 8971 Mulberry Rd, Ashford, NV 91447
+Pay Period: 02/01/2026 - 02/28/2026      Pay Date: 03/02/2026
+Pay Frequency: Monthly
+
+Earnings          Rate      Hours     Current        YTD
+Regular           16.45     173.50    2,854.08       5,730.99
+Overtime          24.68     3.50      86.38          173.45
+Gross Pay                             2,940.46       5,904.44
+
+Deductions                            Current        YTD
+Federal Income Tax                    288.17         578.64
+Social Security                       182.31         366.08
+Medicare                              42.64          85.62
+State Income Tax                      111.74         224.37
+Net Pay                               2,315.60

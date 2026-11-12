@@ -1,0 +1,15 @@
+Cedarline Grocers Corp                PAYROLL ADVICE
+Daniel Lopez   Employee ID 076058
+Pay Period 01/24/2026 - 02/06/2026   Paid 02/06/2026   Bi-Weekly
+
+Earnings      Hours     Rate      Amount
+Regular       79.00     23.06     1,821.74
+Overtime      1.50      34.59     51.89
+Gross Pay 1,873.63      YTD Gross 5,583.41
+
+Deductions
+Federal Income Tax    153.64      State Income Tax      97.43
+Social Security       116.17      Medicare              27.17
+Retirement Plan       74.95       
+Total Deductions 469.36
+Net Pay 1,404.27

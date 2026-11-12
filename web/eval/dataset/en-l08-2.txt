@@ -1,0 +1,16 @@
+PAY STATEMENT
+Sundale Printing Inc
+Aisha Haddad                Employee ID 076396
+Pay Date: 07-13-2026   Period: 06-24-2026 - 07-07-2026   Pay Frequency: Bi-Weekly
+
+Regular         79.50    hours at 36.05   2,865.98
+Overtime        2.00     hours at 54.08   108.16
+Gross Earnings                            2,974.14
+Federal Income Tax                        276.60
+Social Security                           184.40
+Medicare                                  43.13
+State Income Tax                          110.04
+Take Home Pay                             2,359.97
+
+Year to Date
+Gross 43,493.84   Deductions 8,981.62   Net 34,512.22

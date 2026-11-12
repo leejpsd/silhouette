@@ -1,0 +1,27 @@
+{
+  "employerName": "푸른제약 주식회사",
+  "employeeName": "한예린",
+  "payDate": "2026.08.08",
+  "grossPay": 2404000,
+  "netPay": 2111830,
+  "deductions": [
+    {
+      "amount": 60100
+    },
+    {
+      "amount": 6010
+    },
+    {
+      "amount": 108180
+    },
+    {
+      "amount": 85220
+    },
+    {
+      "amount": 11030
+    },
+    {
+      "amount": 21630
+    }
+  ]
+}

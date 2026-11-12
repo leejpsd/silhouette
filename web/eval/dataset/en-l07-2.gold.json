@@ -1,0 +1,31 @@
+{
+  "employerName": "Blueharbor Motors Inc",
+  "employeeName": "Priya Okafor",
+  "payFrequency": "weekly",
+  "payDate": "09/14/2026",
+  "periodStart": "09/08/2026",
+  "periodEnd": "09/14/2026",
+  "grossPay": 1443.76,
+  "netPay": 1154.29,
+  "ytdGross": 53627.2,
+  "hoursWorked": 37,
+  "hourlyRate": 27.59,
+  "deductions": [
+    {
+      "amount": 121.28,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 89.51,
+      "kind": "social_security"
+    },
+    {
+      "amount": 20.93,
+      "kind": "medicare"
+    },
+    {
+      "amount": 57.75,
+      "kind": "retirement"
+    }
+  ]
+}

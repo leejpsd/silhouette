@@ -1,0 +1,17 @@
+IRONBRIDGE CLINIC CORP
+EARNINGS STATEMENT                Check Date 04-04-2026
+Name: Kenji Delgado         ID 074791
+Period Beginning: 03-16-2026    Period Ending: 03-31-2026
+Frequency: Semimonthly
+
+Description     Hours    Rate     YTD           Current
+Regular         87.00    33.37    17,767.54     2,903.19
+Overtime        3.00     50.06    919.08        150.18
+Gross Earnings                    18,686.62     3,053.37
+
+Withholdings                      YTD           Current
+Federal Income Tax                1,868.69      305.34
+Social Security                   1,158.56      189.31
+Medicare                          270.92        44.27
+Health Insurance                  629.27        102.82
+Net Pay                                         2,411.63

@@ -1,0 +1,31 @@
+{
+  "employerName": "TALLGRASS TEXTILES LLC",
+  "employeeName": "Aisha Moreau",
+  "payFrequency": "monthly",
+  "payDate": "11-05-2026",
+  "periodStart": "10-01-2026",
+  "periodEnd": "10-31-2026",
+  "grossPay": 4608.18,
+  "netPay": 3635.42,
+  "ytdGross": 47906.64,
+  "hoursWorked": 175,
+  "hourlyRate": 25.78,
+  "deductions": [
+    {
+      "amount": 534.55,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 285.71,
+      "kind": "social_security"
+    },
+    {
+      "amount": 66.82,
+      "kind": "medicare"
+    },
+    {
+      "amount": 85.68,
+      "kind": "health"
+    }
+  ]
+}

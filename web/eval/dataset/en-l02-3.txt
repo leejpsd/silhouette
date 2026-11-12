@@ -1,0 +1,17 @@
+TALLGRASS LOGISTICS INC
+EARNINGS STATEMENT                Check Date 06-17-2026
+Name: Victor Kowalski         ID 086985
+Period Beginning: 06-05-2026    Period Ending: 06-11-2026
+Frequency: Weekly
+
+Description     Hours    Rate     YTD           Current
+Regular         31.50    30.05    21,825.29     946.58
+Overtime        4.00     45.08    4,157.71      180.32
+Gross Earnings                    25,983.00     1,126.90
+
+Withholdings                      YTD           Current
+Federal Income Tax                2,130.67      92.41
+Social Security                   1,611.10      69.87
+Medicare                          376.75        16.34
+Health Insurance                  1,951.07      84.62
+Net Pay                                         863.66

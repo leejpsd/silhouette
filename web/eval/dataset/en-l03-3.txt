@@ -1,0 +1,17 @@
+MARIGOLD STAFFING CORP
+Pay Stub for Grace Raman
+Pay Date 02/15/26   Pay Period 01/28/26 to 02/10/26
+Pay Frequency: Bi-Weekly
+
+Earnings                      Amount
+Salary                        1,384.62
+Total Gross                   1,384.62
+
+Deductions                    Amount
+Federal Income Tax            137.08
+Social Security               85.85
+Medicare                      20.08
+State Income Tax              42.92
+Health Insurance              115.30
+Total Deductions              401.23
+Net Pay                       983.39

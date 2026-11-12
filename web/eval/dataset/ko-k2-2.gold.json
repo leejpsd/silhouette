@@ -1,0 +1,27 @@
+{
+  "employerName": "다온건설 주식회사",
+  "employeeName": "윤가람",
+  "payDate": "2026.05.10",
+  "grossPay": 4160000,
+  "netPay": 3677280,
+  "deductions": [
+    {
+      "amount": 83200
+    },
+    {
+      "amount": 8320
+    },
+    {
+      "amount": 187200
+    },
+    {
+      "amount": 147470
+    },
+    {
+      "amount": 19090
+    },
+    {
+      "amount": 37440
+    }
+  ]
+}

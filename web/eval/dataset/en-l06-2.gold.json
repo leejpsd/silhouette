@@ -1,0 +1,33 @@
+{
+  "employerName": "Marigold Grocers Corp",
+  "employeeName": "Aisha Lindqvist",
+  "payFrequency": "monthly",
+  "payDate": "12/03/2026",
+  "periodStart": "11/01/2026",
+  "periodEnd": "11/30/2026",
+  "grossPay": 5916.67,
+  "netPay": 4495.93,
+  "ytdGross": 65024.17,
+  "deductions": [
+    {
+      "amount": 615.33,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 366.83,
+      "kind": "social_security"
+    },
+    {
+      "amount": 85.79,
+      "kind": "medicare"
+    },
+    {
+      "amount": 56.96,
+      "kind": "health"
+    },
+    {
+      "amount": 295.83,
+      "kind": "retirement"
+    }
+  ]
+}

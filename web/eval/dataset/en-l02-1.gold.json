@@ -1,0 +1,31 @@
+{
+  "employerName": "IRONBRIDGE CLINIC CORP",
+  "employeeName": "Kenji Delgado",
+  "payFrequency": "semimonthly",
+  "payDate": "04-04-2026",
+  "periodStart": "03-16-2026",
+  "periodEnd": "03-31-2026",
+  "grossPay": 3053.37,
+  "netPay": 2411.63,
+  "ytdGross": 18686.62,
+  "hoursWorked": 87,
+  "hourlyRate": 33.37,
+  "deductions": [
+    {
+      "amount": 305.34,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 189.31,
+      "kind": "social_security"
+    },
+    {
+      "amount": 44.27,
+      "kind": "medicare"
+    },
+    {
+      "amount": 102.82,
+      "kind": "health"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "employerName": "Cedarline Foods Llc",
+  "employeeName": "Hana Strand",
+  "payFrequency": "monthly",
+  "payDate": "2026-08-06",
+  "periodStart": "2026-07-01",
+  "periodEnd": "2026-07-31",
+  "grossPay": 4240.08,
+  "netPay": 3288.88,
+  "ytdGross": 28891.92,
+  "hoursWorked": 151,
+  "hourlyRate": 28.08,
+  "deductions": [
+    {
+      "amount": 402.81,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 262.88,
+      "kind": "social_security"
+    },
+    {
+      "amount": 61.48,
+      "kind": "medicare"
+    },
+    {
+      "amount": 135.68,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 88.35,
+      "kind": "health"
+    }
+  ]
+}

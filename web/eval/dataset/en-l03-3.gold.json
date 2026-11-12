@@ -1,0 +1,32 @@
+{
+  "employerName": "MARIGOLD STAFFING CORP",
+  "employeeName": "Grace Raman",
+  "payFrequency": "biweekly",
+  "payDate": "02/15/26",
+  "periodStart": "01/28/26",
+  "periodEnd": "02/10/26",
+  "grossPay": 1384.62,
+  "netPay": 983.39,
+  "deductions": [
+    {
+      "amount": 137.08,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 85.85,
+      "kind": "social_security"
+    },
+    {
+      "amount": 20.08,
+      "kind": "medicare"
+    },
+    {
+      "amount": 42.92,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 115.3,
+      "kind": "health"
+    }
+  ]
+}

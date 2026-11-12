@@ -1,0 +1,6522 @@
+{
+  "variant": "v3",
+  "spec": {
+    "id": "v3",
+    "schemas": "described",
+    "nullable": true,
+    "example": false,
+    "lineNumbers": false,
+    "model": "gemini-3.5-flash-lite"
+  },
+  "date": "2026-11-12T04:54:06.797Z",
+  "set": "all",
+  "metrics": {
+    "enPaystub": {
+      "documents": 30,
+      "errors": 0,
+      "allFieldsCorrect": 0.9333333333333333,
+      "fields": {
+        "employerName": {
+          "correct": 30,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "employeeName": {
+          "correct": 30,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "payFrequency": {
+          "correct": 30,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "payDate": {
+          "correct": 30,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "periodStart": {
+          "correct": 30,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "periodEnd": {
+          "correct": 30,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "grossPay": {
+          "correct": 28,
+          "missing": 0,
+          "wrong": 2,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 0.9333333333333333,
+          "precision": 0.9333333333333333,
+          "wrongRate": 0.06666666666666667
+        },
+        "netPay": {
+          "correct": 30,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "ytdGross": {
+          "correct": 27,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 3,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "hoursWorked": {
+          "correct": 21,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 9,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "hourlyRate": {
+          "correct": 21,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 9,
+          "invalid": 0,
+          "docs": 30,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        }
+      },
+      "deductions": {
+        "itemRecall": 1,
+        "itemPrecision": 1,
+        "exactDocs": 1,
+        "kindAccuracy": 1
+      },
+      "tokens": {
+        "prompt": 435,
+        "output": 183,
+        "thoughts": 0
+      },
+      "latencyMs": {
+        "median": 3099,
+        "p90": 8160
+      }
+    },
+    "koPaystub": {
+      "documents": 6,
+      "errors": 0,
+      "allFieldsCorrect": 0.6666666666666666,
+      "fields": {
+        "employerName": {
+          "correct": 6,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 6,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "employeeName": {
+          "correct": 4,
+          "missing": 0,
+          "wrong": 2,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 6,
+          "recall": 0.6666666666666666,
+          "precision": 0.6666666666666666,
+          "wrongRate": 0.3333333333333333
+        },
+        "payFrequency": {
+          "correct": 0,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 1,
+          "absent": 5,
+          "invalid": 0,
+          "docs": 6,
+          "recall": null,
+          "precision": 0,
+          "wrongRate": 0.16666666666666666
+        },
+        "payDate": {
+          "correct": 6,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 6,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "periodStart": {
+          "correct": 0,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 6,
+          "invalid": 0,
+          "docs": 6,
+          "recall": null,
+          "precision": null,
+          "wrongRate": 0
+        },
+        "periodEnd": {
+          "correct": 0,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 6,
+          "invalid": 0,
+          "docs": 6,
+          "recall": null,
+          "precision": null,
+          "wrongRate": 0
+        },
+        "grossPay": {
+          "correct": 6,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 6,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "netPay": {
+          "correct": 6,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 6,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "ytdGross": {
+          "correct": 0,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 6,
+          "invalid": 0,
+          "docs": 6,
+          "recall": null,
+          "precision": null,
+          "wrongRate": 0
+        },
+        "hoursWorked": {
+          "correct": 0,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 6,
+          "invalid": 0,
+          "docs": 6,
+          "recall": null,
+          "precision": null,
+          "wrongRate": 0
+        },
+        "hourlyRate": {
+          "correct": 0,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 6,
+          "invalid": 0,
+          "docs": 6,
+          "recall": null,
+          "precision": null,
+          "wrongRate": 0
+        }
+      },
+      "deductions": {
+        "itemRecall": 1,
+        "itemPrecision": 1,
+        "exactDocs": 1,
+        "kindAccuracy": 0
+      },
+      "tokens": {
+        "prompt": 430,
+        "output": 202,
+        "thoughts": 0
+      },
+      "latencyMs": {
+        "median": 2427,
+        "p90": 7873
+      }
+    },
+    "lease": {
+      "documents": 4,
+      "errors": 0,
+      "allFieldsCorrect": 0.5,
+      "fields": {
+        "tenantNames": {
+          "correct": 4,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 4,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "landlordName": {
+          "correct": 2,
+          "missing": 0,
+          "wrong": 2,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 4,
+          "recall": 0.5,
+          "precision": 0.5,
+          "wrongRate": 0.5
+        },
+        "monthlyRent": {
+          "correct": 4,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 4,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "deposit": {
+          "correct": 4,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 4,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "leaseStart": {
+          "correct": 4,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 4,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "leaseEnd": {
+          "correct": 4,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 4,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        },
+        "occupantCount": {
+          "correct": 4,
+          "missing": 0,
+          "wrong": 0,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 4,
+          "recall": 1,
+          "precision": 1,
+          "wrongRate": 0
+        }
+      },
+      "deductions": null,
+      "tokens": {
+        "prompt": 476,
+        "output": 107,
+        "thoughts": 0
+      },
+      "latencyMs": {
+        "median": 6513,
+        "p90": 6954
+      }
+    }
+  },
+  "targetMet": false,
+  "documents": [
+    {
+      "id": "en-l01-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L01",
+      "frequency": "biweekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "biweekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Blueharbor Textiles Inc",
+        "employeeName": "Aisha Lopez",
+        "payFrequency": "biweekly",
+        "payDate": "11/16/2026",
+        "periodStart": "10/29/2026",
+        "periodEnd": "11/11/2026",
+        "grossPay": 2583,
+        "netPay": 1946.29,
+        "ytdGross": 61000.04,
+        "hoursWorked": 67,
+        "hourlyRate": 36.9,
+        "deductions": [
+          {
+            "amount": 302.21,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 160.15,
+            "kind": "social_security"
+          },
+          {
+            "amount": 37.45,
+            "kind": "medicare"
+          },
+          {
+            "amount": 136.9,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 482,
+        "candidatesTokenCount": 132,
+        "totalTokenCount": 614,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 482
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 6026,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 774,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                        Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧            Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Blueharbor Textiles Inc",
+        "employeeName": "Aisha Lopez",
+        "payFrequency": "biweekly",
+        "payDate": "11/16/2026",
+        "periodStart": "10/29/2026",
+        "periodEnd": "11/11/2026",
+        "grossPay": 2583,
+        "netPay": 1946.29,
+        "ytdGross": 61000.04,
+        "hoursWorked": 67,
+        "hourlyRate": 36.9,
+        "deductions": [
+          {
+            "amount": 302.21,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 160.15,
+            "kind": "social_security"
+          },
+          {
+            "amount": 37.45,
+            "kind": "medicare"
+          },
+          {
+            "amount": 136.9,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l01-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L01",
+      "frequency": "semimonthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "NORTHWIND LOGISTICS LLC",
+        "employeeName": "Hana Novak",
+        "payFrequency": "semimonthly",
+        "payDate": "05/15/2026",
+        "periodStart": "05/01/2026",
+        "periodEnd": "05/15/2026",
+        "grossPay": 3017.85,
+        "netPay": 2343.36,
+        "ytdGross": 27233.05,
+        "hoursWorked": 76,
+        "hourlyRate": 38.94,
+        "deductions": [
+          {
+            "amount": 280.66,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 187.11,
+            "kind": "social_security"
+          },
+          {
+            "amount": 43.76,
+            "kind": "medicare"
+          },
+          {
+            "amount": 162.96,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 482,
+        "candidatesTokenCount": 134,
+        "totalTokenCount": 616,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 482
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1789,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 779,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                        Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧             Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧",
+      "attempts": 1,
+      "gold": {
+        "employerName": "NORTHWIND LOGISTICS LLC",
+        "employeeName": "Hana Novak",
+        "payFrequency": "semimonthly",
+        "payDate": "05/15/2026",
+        "periodStart": "05/01/2026",
+        "periodEnd": "05/15/2026",
+        "grossPay": 3017.85,
+        "netPay": 2343.36,
+        "ytdGross": 27233.05,
+        "hoursWorked": 76,
+        "hourlyRate": 38.94,
+        "deductions": [
+          {
+            "amount": 280.66,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 187.11,
+            "kind": "social_security"
+          },
+          {
+            "amount": 43.76,
+            "kind": "medicare"
+          },
+          {
+            "amount": 162.96,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l01-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L01",
+      "frequency": "monthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "QUILLMARK GROCERS CORP",
+        "employeeName": "Daniel Haddad",
+        "payFrequency": "monthly",
+        "payDate": "03/02/2026",
+        "periodStart": "02/01/2026",
+        "periodEnd": "02/28/2026",
+        "grossPay": 2940.46,
+        "netPay": 2315.6,
+        "ytdGross": 5904.44,
+        "hoursWorked": 173.5,
+        "hourlyRate": 16.45,
+        "deductions": [
+          {
+            "amount": 288.17,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 182.31,
+            "kind": "social_security"
+          },
+          {
+            "amount": 42.64,
+            "kind": "medicare"
+          },
+          {
+            "amount": 111.74,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 480,
+        "candidatesTokenCount": 242,
+        "totalTokenCount": 722,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 480
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 7192,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 771,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                         Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧          Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦",
+      "attempts": 1,
+      "gold": {
+        "employerName": "QUILLMARK GROCERS CORP",
+        "employeeName": "Daniel Haddad",
+        "payFrequency": "monthly",
+        "payDate": "03/02/2026",
+        "periodStart": "02/01/2026",
+        "periodEnd": "02/28/2026",
+        "grossPay": 2940.46,
+        "netPay": 2315.6,
+        "ytdGross": 5904.44,
+        "hoursWorked": 173.5,
+        "hourlyRate": 16.45,
+        "deductions": [
+          {
+            "amount": 288.17,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 182.31,
+            "kind": "social_security"
+          },
+          {
+            "amount": 42.64,
+            "kind": "medicare"
+          },
+          {
+            "amount": 111.74,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l02-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L02",
+      "frequency": "semimonthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N11",
+        "netPay": "N20",
+        "ytdGross": "N10",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "IRONBRIDGE CLINIC CORP",
+        "employeeName": "Kenji Delgado",
+        "payFrequency": "semimonthly",
+        "payDate": "04-04-2026",
+        "periodStart": "03-16-2026",
+        "periodEnd": "03-31-2026",
+        "grossPay": 3053.37,
+        "netPay": 2411.63,
+        "ytdGross": 18686.62,
+        "hoursWorked": 87,
+        "hourlyRate": 33.37,
+        "deductions": [
+          {
+            "amount": 305.34,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 189.31,
+            "kind": "social_security"
+          },
+          {
+            "amount": 44.27,
+            "kind": "medicare"
+          },
+          {
+            "amount": 102.82,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 447,
+        "candidatesTokenCount": 132,
+        "totalTokenCount": 579,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 447
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2270,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 688,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEARNINGS STATEMENT                Check Date ⟦D1⟧\nName: ⟦W4⟧ ⟦W5⟧         ID ⟦N1⟧\nPeriod Beginning: ⟦D2⟧ ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "IRONBRIDGE CLINIC CORP",
+        "employeeName": "Kenji Delgado",
+        "payFrequency": "semimonthly",
+        "payDate": "04-04-2026",
+        "periodStart": "03-16-2026",
+        "periodEnd": "03-31-2026",
+        "grossPay": 3053.37,
+        "netPay": 2411.63,
+        "ytdGross": 18686.62,
+        "hoursWorked": 87,
+        "hourlyRate": 33.37,
+        "deductions": [
+          {
+            "amount": 305.34,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 189.31,
+            "kind": "social_security"
+          },
+          {
+            "amount": 44.27,
+            "kind": "medicare"
+          },
+          {
+            "amount": 102.82,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l02-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L02",
+      "frequency": "monthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N11",
+        "netPay": "N20",
+        "ytdGross": "N10",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "TALLGRASS TEXTILES LLC",
+        "employeeName": "Aisha Moreau",
+        "payFrequency": "monthly",
+        "payDate": "11-05-2026",
+        "periodStart": "10-01-2026",
+        "periodEnd": "10-31-2026",
+        "grossPay": 4608.18,
+        "netPay": 3635.42,
+        "ytdGross": 47906.64,
+        "hoursWorked": 175,
+        "hourlyRate": 25.78,
+        "deductions": [
+          {
+            "amount": 534.55,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 285.71,
+            "kind": "social_security"
+          },
+          {
+            "amount": 66.82,
+            "kind": "medicare"
+          },
+          {
+            "amount": 85.68,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 444,
+        "candidatesTokenCount": 240,
+        "totalTokenCount": 684,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 444
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 3099,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 681,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEARNINGS STATEMENT                Check Date ⟦D1⟧\nName: ⟦W4⟧ ⟦W5⟧         ID ⟦N1⟧\nPeriod Beginning: ⟦D2⟧ ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "TALLGRASS TEXTILES LLC",
+        "employeeName": "Aisha Moreau",
+        "payFrequency": "monthly",
+        "payDate": "11-05-2026",
+        "periodStart": "10-01-2026",
+        "periodEnd": "10-31-2026",
+        "grossPay": 4608.18,
+        "netPay": 3635.42,
+        "ytdGross": 47906.64,
+        "hoursWorked": 175,
+        "hourlyRate": 25.78,
+        "deductions": [
+          {
+            "amount": 534.55,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 285.71,
+            "kind": "social_security"
+          },
+          {
+            "amount": 66.82,
+            "kind": "medicare"
+          },
+          {
+            "amount": 85.68,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l02-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L02",
+      "frequency": "weekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N11",
+        "netPay": "N20",
+        "ytdGross": "N10",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "TALLGRASS LOGISTICS INC",
+        "employeeName": "Victor Kowalski",
+        "payFrequency": "weekly",
+        "payDate": "06-17-2026",
+        "periodStart": "06-05-2026",
+        "periodEnd": "06-11-2026",
+        "grossPay": 1126.9,
+        "netPay": 863.66,
+        "ytdGross": 25983,
+        "hoursWorked": 31.5,
+        "hourlyRate": 30.05,
+        "deductions": [
+          {
+            "amount": 92.41,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 69.87,
+            "kind": "social_security"
+          },
+          {
+            "amount": 16.34,
+            "kind": "medicare"
+          },
+          {
+            "amount": 84.62,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 444,
+        "candidatesTokenCount": 129,
+        "totalTokenCount": 573,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 444
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1715,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 679,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEARNINGS STATEMENT                Check Date ⟦D1⟧\nName: ⟦W4⟧ ⟦W5⟧         ID ⟦N1⟧\nPeriod Beginning: ⟦D2⟧ ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "TALLGRASS LOGISTICS INC",
+        "employeeName": "Victor Kowalski",
+        "payFrequency": "weekly",
+        "payDate": "06-17-2026",
+        "periodStart": "06-05-2026",
+        "periodEnd": "06-11-2026",
+        "grossPay": 1126.9,
+        "netPay": 863.66,
+        "ytdGross": 25983,
+        "hoursWorked": 31.5,
+        "hourlyRate": 30.05,
+        "deductions": [
+          {
+            "amount": 92.41,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 69.87,
+            "kind": "social_security"
+          },
+          {
+            "amount": 16.34,
+            "kind": "medicare"
+          },
+          {
+            "amount": 84.62,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l03-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L03",
+      "frequency": "monthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W5",
+          "W6"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N2",
+        "netPay": "N9",
+        "deductions": [
+          {
+            "amount": "N3",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N4",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N5",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N6",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "BRIGHTWATER FOODS INC",
+        "employeeName": "Ines Strand",
+        "payFrequency": "monthly",
+        "payDate": "02/28/26",
+        "periodStart": "02/01/26",
+        "periodEnd": "02/28/26",
+        "grossPay": 4833.33,
+        "netPay": 3602.15,
+        "deductions": [
+          {
+            "amount": 575.17,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 299.67,
+            "kind": "social_security"
+          },
+          {
+            "amount": 70.08,
+            "kind": "medicare"
+          },
+          {
+            "amount": 212.67,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 73.59,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 367,
+        "candidatesTokenCount": 252,
+        "totalTokenCount": 619,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 367
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 8458,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 492,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nPay ⟦W4⟧ for ⟦W5⟧ ⟦W6⟧\nPay Date ⟦D1⟧   Pay Period ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Monthly\n\nEarnings          ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "BRIGHTWATER FOODS INC",
+        "employeeName": "Ines Strand",
+        "payFrequency": "monthly",
+        "payDate": "02/28/26",
+        "periodStart": "02/01/26",
+        "periodEnd": "02/28/26",
+        "grossPay": 4833.33,
+        "netPay": 3602.15,
+        "deductions": [
+          {
+            "amount": 575.17,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 299.67,
+            "kind": "social_security"
+          },
+          {
+            "amount": 70.08,
+            "kind": "medicare"
+          },
+          {
+            "amount": 212.67,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 73.59,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "absent",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l03-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L03",
+      "frequency": "weekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W5",
+          "W6"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N2",
+        "netPay": "N9",
+        "deductions": [
+          {
+            "amount": "N3",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N4",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N5",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N6",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "CEDARLINE PRINTING LLC",
+        "employeeName": "Ethan Lopez",
+        "payFrequency": "weekly",
+        "payDate": "06/06/26",
+        "periodStart": "05/25/26",
+        "periodEnd": "05/31/26",
+        "grossPay": 1153.85,
+        "netPay": 774.37,
+        "deductions": [
+          {
+            "amount": 135,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 71.54,
+            "kind": "social_security"
+          },
+          {
+            "amount": 16.73,
+            "kind": "medicare"
+          },
+          {
+            "amount": 61.15,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 95.06,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 367,
+        "candidatesTokenCount": 130,
+        "totalTokenCount": 497,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 367
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 8126,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 491,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nPay ⟦W4⟧ for ⟦W5⟧ ⟦W6⟧\nPay Date ⟦D1⟧   Pay Period ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Weekly\n\nEarnings           ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "CEDARLINE PRINTING LLC",
+        "employeeName": "Ethan Lopez",
+        "payFrequency": "weekly",
+        "payDate": "06/06/26",
+        "periodStart": "05/25/26",
+        "periodEnd": "05/31/26",
+        "grossPay": 1153.85,
+        "netPay": 774.37,
+        "deductions": [
+          {
+            "amount": 135,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 71.54,
+            "kind": "social_security"
+          },
+          {
+            "amount": 16.73,
+            "kind": "medicare"
+          },
+          {
+            "amount": 61.15,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 95.06,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "absent",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l03-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L03",
+      "frequency": "biweekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W5",
+          "W6"
+        ],
+        "payFrequency": "biweekly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N1",
+        "netPay": "N9",
+        "deductions": [
+          {
+            "amount": "N3",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N4",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N5",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N6",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "MARIGOLD STAFFING CORP",
+        "employeeName": "Grace Raman",
+        "payFrequency": "biweekly",
+        "payDate": "02/15/26",
+        "periodStart": "01/28/26",
+        "periodEnd": "02/10/26",
+        "grossPay": 1384.62,
+        "netPay": 983.39,
+        "deductions": [
+          {
+            "amount": 137.08,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 85.85,
+            "kind": "social_security"
+          },
+          {
+            "amount": 20.08,
+            "kind": "medicare"
+          },
+          {
+            "amount": 42.92,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 115.3,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 369,
+        "candidatesTokenCount": 271,
+        "totalTokenCount": 640,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 369
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2089,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 494,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nPay ⟦W4⟧ for ⟦W5⟧ ⟦W6⟧\nPay Date ⟦D1⟧   Pay Period ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Bi-Weekly\n\nEarnings        ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "MARIGOLD STAFFING CORP",
+        "employeeName": "Grace Raman",
+        "payFrequency": "biweekly",
+        "payDate": "02/15/26",
+        "periodStart": "01/28/26",
+        "periodEnd": "02/10/26",
+        "grossPay": 1384.62,
+        "netPay": 983.39,
+        "deductions": [
+          {
+            "amount": 137.08,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 85.85,
+            "kind": "social_security"
+          },
+          {
+            "amount": 20.08,
+            "kind": "medicare"
+          },
+          {
+            "amount": 42.92,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 115.3,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "absent",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l04-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L04",
+      "frequency": "weekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N4",
+        "netPay": "N8",
+        "ytdGross": "N9",
+        "hoursWorked": "N3",
+        "hourlyRate": "N2",
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N6",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N7",
+            "kind": "medicare"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "NORTHWIND BAKERY INC",
+        "employeeName": "Kenji Okafor",
+        "payFrequency": "weekly",
+        "payDate": "09/07/2026",
+        "periodStart": "08/29/2026",
+        "periodEnd": "09/04/2026",
+        "grossPay": 770.5,
+        "netPay": 642.99,
+        "ytdGross": 27764.95,
+        "hoursWorked": 33.5,
+        "hourlyRate": 23,
+        "deductions": [
+          {
+            "amount": 68.57,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 47.77,
+            "kind": "social_security"
+          },
+          {
+            "amount": 11.17,
+            "kind": "medicare"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 368,
+        "candidatesTokenCount": 228,
+        "totalTokenCount": 596,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 368
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 8160,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 289,
+      "promptPreview": "Employer: ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEmployee: ⟦W4⟧ ⟦W5⟧\nEmployee Number: ⟦N1⟧\nFrequency: Weekly\nPeriod Start: ⟦D1⟧\nPeriod End: ⟦D2⟧",
+      "attempts": 1,
+      "gold": {
+        "employerName": "NORTHWIND BAKERY INC",
+        "employeeName": "Kenji Okafor",
+        "payFrequency": "weekly",
+        "payDate": "09/07/2026",
+        "periodStart": "08/29/2026",
+        "periodEnd": "09/04/2026",
+        "grossPay": 770.5,
+        "netPay": 642.99,
+        "ytdGross": 27764.95,
+        "hoursWorked": 33.5,
+        "hourlyRate": 23,
+        "deductions": [
+          {
+            "amount": 68.57,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 47.77,
+            "kind": "social_security"
+          },
+          {
+            "amount": 11.17,
+            "kind": "medicare"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 3,
+          "predicted": 3,
+          "matched": 3,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 3,
+          "kindScored": 3
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l04-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L04",
+      "frequency": "biweekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "biweekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N4",
+        "netPay": "N8",
+        "ytdGross": "N9",
+        "hoursWorked": "N3",
+        "hourlyRate": "N2",
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N6",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N7",
+            "kind": "medicare"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Cedarline Logistics Corp",
+        "employeeName": "Ines Moreau",
+        "payFrequency": "biweekly",
+        "payDate": "05/27/2026",
+        "periodStart": "05/12/2026",
+        "periodEnd": "05/25/2026",
+        "grossPay": 1522.88,
+        "netPay": 1255.61,
+        "ytdGross": 17360.88,
+        "hoursWorked": 77.5,
+        "hourlyRate": 19.65,
+        "deductions": [
+          {
+            "amount": 150.77,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 94.42,
+            "kind": "social_security"
+          },
+          {
+            "amount": 22.08,
+            "kind": "medicare"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 369,
+        "candidatesTokenCount": 151,
+        "totalTokenCount": 520,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 369
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1844,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 291,
+      "promptPreview": "Employer: ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEmployee: ⟦W4⟧ ⟦W5⟧\nEmployee Number: ⟦N1⟧\nFrequency: Biweekly\nPeriod Start: ⟦D1⟧\nPeriod End: ⟦D",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Cedarline Logistics Corp",
+        "employeeName": "Ines Moreau",
+        "payFrequency": "biweekly",
+        "payDate": "05/27/2026",
+        "periodStart": "05/12/2026",
+        "periodEnd": "05/25/2026",
+        "grossPay": 1522.88,
+        "netPay": 1255.61,
+        "ytdGross": 17360.88,
+        "hoursWorked": 77.5,
+        "hourlyRate": 19.65,
+        "deductions": [
+          {
+            "amount": 150.77,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 94.42,
+            "kind": "social_security"
+          },
+          {
+            "amount": 22.08,
+            "kind": "medicare"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 3,
+          "predicted": 3,
+          "matched": 3,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 3,
+          "kindScored": 3
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l04-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L04",
+      "frequency": "semimonthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N4",
+        "netPay": "N8",
+        "ytdGross": "N9",
+        "hoursWorked": "N3",
+        "hourlyRate": "N2",
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N6",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N7",
+            "kind": "medicare"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Redmesa Textiles Corp",
+        "employeeName": "Priya Novak",
+        "payFrequency": "semimonthly",
+        "payDate": "09/16/2026",
+        "periodStart": "09/01/2026",
+        "periodEnd": "09/15/2026",
+        "grossPay": 3096.83,
+        "netPay": 2602.89,
+        "ytdGross": 52299.23,
+        "hoursWorked": 78.5,
+        "hourlyRate": 39.45,
+        "deductions": [
+          {
+            "amount": 257.04,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 192,
+            "kind": "social_security"
+          },
+          {
+            "amount": 44.9,
+            "kind": "medicare"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 371,
+        "candidatesTokenCount": 231,
+        "totalTokenCount": 602,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 371
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 7307,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 294,
+      "promptPreview": "Employer: ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEmployee: ⟦W4⟧ ⟦W5⟧\nEmployee Number: ⟦N1⟧\nFrequency: Semimonthly\nPeriod Start: ⟦D1⟧\nPeriod End:",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Redmesa Textiles Corp",
+        "employeeName": "Priya Novak",
+        "payFrequency": "semimonthly",
+        "payDate": "09/16/2026",
+        "periodStart": "09/01/2026",
+        "periodEnd": "09/15/2026",
+        "grossPay": 3096.83,
+        "netPay": 2602.89,
+        "ytdGross": 52299.23,
+        "hoursWorked": 78.5,
+        "hourlyRate": 39.45,
+        "deductions": [
+          {
+            "amount": 257.04,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 192,
+            "kind": "social_security"
+          },
+          {
+            "amount": 44.9,
+            "kind": "medicare"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 3,
+          "predicted": 3,
+          "matched": 3,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 3,
+          "kindScored": 3
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l05-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L05",
+      "frequency": "biweekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "biweekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N8",
+        "netPay": "N16",
+        "ytdGross": "N9",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N10",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N12",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "retirement"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Cedarline Grocers Corp",
+        "employeeName": "Daniel Lopez",
+        "payFrequency": "biweekly",
+        "payDate": "02/06/2026",
+        "periodStart": "01/24/2026",
+        "periodEnd": "02/06/2026",
+        "grossPay": 1873.63,
+        "netPay": 1404.27,
+        "ytdGross": 5583.41,
+        "hoursWorked": 79,
+        "hourlyRate": 23.06,
+        "deductions": [
+          {
+            "amount": 153.64,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 97.43,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 116.17,
+            "kind": "social_security"
+          },
+          {
+            "amount": 27.17,
+            "kind": "medicare"
+          },
+          {
+            "amount": 74.95,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 422,
+        "candidatesTokenCount": 140,
+        "totalTokenCount": 562,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 422
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 8003,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 479,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                PAYROLL ADVICE\n⟦W4⟧ ⟦W5⟧   Employee ID ⟦N1⟧\nPay Period ⟦D1⟧ - ⟦D2⟧   Paid ⟦D3⟧   Bi-Weekly",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Cedarline Grocers Corp",
+        "employeeName": "Daniel Lopez",
+        "payFrequency": "biweekly",
+        "payDate": "02/06/2026",
+        "periodStart": "01/24/2026",
+        "periodEnd": "02/06/2026",
+        "grossPay": 1873.63,
+        "netPay": 1404.27,
+        "ytdGross": 5583.41,
+        "hoursWorked": 79,
+        "hourlyRate": 23.06,
+        "deductions": [
+          {
+            "amount": 153.64,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 97.43,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 116.17,
+            "kind": "social_security"
+          },
+          {
+            "amount": 27.17,
+            "kind": "medicare"
+          },
+          {
+            "amount": 74.95,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l05-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L05",
+      "frequency": "semimonthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N4",
+        "netPay": "N16",
+        "ytdGross": "N9",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N10",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N12",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "retirement"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "SILVERPINE FOODS INC",
+        "employeeName": "Leila Fontaine",
+        "payFrequency": "semimonthly",
+        "payDate": "04/19/2026",
+        "periodStart": "04/01/2026",
+        "periodEnd": "04/15/2026",
+        "grossPay": 3048.59,
+        "netPay": 2485.22,
+        "ytdGross": 24828.3,
+        "hoursWorked": 83,
+        "hourlyRate": 36.73,
+        "deductions": [
+          {
+            "amount": 350.89,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 173.74,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 211.22,
+            "kind": "social_security"
+          },
+          {
+            "amount": 49.4,
+            "kind": "medicare"
+          },
+          {
+            "amount": 136.27,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 422,
+        "candidatesTokenCount": 187,
+        "totalTokenCount": 609,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 422
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 6581,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 481,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                PAYROLL ADVICE\n⟦W4⟧ ⟦W5⟧   Employee ID ⟦N1⟧\nPay Period ⟦D1⟧ - ⟦D2⟧   Paid ⟦D3⟧   Semi-Mont",
+      "attempts": 1,
+      "gold": {
+        "employerName": "SILVERPINE FOODS INC",
+        "employeeName": "Leila Fontaine",
+        "payFrequency": "semimonthly",
+        "payDate": "04/19/2026",
+        "periodStart": "04/01/2026",
+        "periodEnd": "04/15/2026",
+        "grossPay": 3406.74,
+        "netPay": 2485.22,
+        "ytdGross": 24828.3,
+        "hoursWorked": 83,
+        "hourlyRate": 36.73,
+        "deductions": [
+          {
+            "amount": 350.89,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 173.74,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 211.22,
+            "kind": "social_security"
+          },
+          {
+            "amount": 49.4,
+            "kind": "medicare"
+          },
+          {
+            "amount": 136.27,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "wrong",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l05-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L05",
+      "frequency": "monthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N4",
+        "netPay": "N16",
+        "ytdGross": "N9",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N10",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N12",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "retirement"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "NORTHWIND FREIGHT CORP",
+        "employeeName": "Lucia Strand",
+        "payFrequency": "monthly",
+        "payDate": "11/06/2026",
+        "periodStart": "10/01/2026",
+        "periodEnd": "10/31/2026",
+        "grossPay": 6189.01,
+        "netPay": 4963.07,
+        "ytdGross": 69209.88,
+        "hoursWorked": 168.5,
+        "hourlyRate": 36.73,
+        "deductions": [
+          {
+            "amount": 645.76,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 139.8,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 412.76,
+            "kind": "social_security"
+          },
+          {
+            "amount": 96.53,
+            "kind": "medicare"
+          },
+          {
+            "amount": 399.44,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 420,
+        "candidatesTokenCount": 184,
+        "totalTokenCount": 604,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 420
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1961,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 475,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                PAYROLL ADVICE\n⟦W4⟧ ⟦W5⟧   Employee ID ⟦N1⟧\nPay Period ⟦D1⟧ - ⟦D2⟧   Paid ⟦D3⟧   Monthly\n\n",
+      "attempts": 1,
+      "gold": {
+        "employerName": "NORTHWIND FREIGHT CORP",
+        "employeeName": "Lucia Strand",
+        "payFrequency": "monthly",
+        "payDate": "11/06/2026",
+        "periodStart": "10/01/2026",
+        "periodEnd": "10/31/2026",
+        "grossPay": 6657.36,
+        "netPay": 4963.07,
+        "ytdGross": 69209.88,
+        "hoursWorked": 168.5,
+        "hourlyRate": 36.73,
+        "deductions": [
+          {
+            "amount": 645.76,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 139.8,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 412.76,
+            "kind": "social_security"
+          },
+          {
+            "amount": 96.53,
+            "kind": "medicare"
+          },
+          {
+            "amount": 399.44,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "wrong",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l06-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L06",
+      "frequency": "semimonthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W9",
+          "W10"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N11",
+        "netPay": "N23",
+        "ytdGross": "N12",
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          },
+          {
+            "amount": "N21",
+            "kind": "retirement"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Marigold Printing Llc",
+        "employeeName": "Daniel Delgado",
+        "payFrequency": "semimonthly",
+        "payDate": "11/01/2026",
+        "periodStart": "10/16/2026",
+        "periodEnd": "10/31/2026",
+        "grossPay": 2333.33,
+        "netPay": 1817.39,
+        "ytdGross": 45203.6,
+        "deductions": [
+          {
+            "amount": 196,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 144.67,
+            "kind": "social_security"
+          },
+          {
+            "amount": 33.83,
+            "kind": "medicare"
+          },
+          {
+            "amount": 71.44,
+            "kind": "health"
+          },
+          {
+            "amount": 70,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 524,
+        "candidatesTokenCount": 264,
+        "totalTokenCount": 788,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 524
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2123,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 683,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦N1⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧, ⟦W7⟧ ⟦N2⟧\n⟦W8⟧ ⟦N3⟧-⟦N4⟧-⟦N5⟧\n\nPay To: ⟦W9⟧ ⟦W10⟧\n⟦N6⟧ ⟦W11⟧ ⟦W12⟧, ⟦W13⟧, ⟦W14⟧ ⟦N",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Marigold Printing Llc",
+        "employeeName": "Daniel Delgado",
+        "payFrequency": "semimonthly",
+        "payDate": "11/01/2026",
+        "periodStart": "10/16/2026",
+        "periodEnd": "10/31/2026",
+        "grossPay": 2333.33,
+        "netPay": 1817.39,
+        "ytdGross": 45203.6,
+        "deductions": [
+          {
+            "amount": 196,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 144.67,
+            "kind": "social_security"
+          },
+          {
+            "amount": 33.83,
+            "kind": "medicare"
+          },
+          {
+            "amount": 71.44,
+            "kind": "health"
+          },
+          {
+            "amount": 70,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l06-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L06",
+      "frequency": "monthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W9",
+          "W10"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N11",
+        "netPay": "N23",
+        "ytdGross": "N12",
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          },
+          {
+            "amount": "N21",
+            "kind": "retirement"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Marigold Grocers Corp",
+        "employeeName": "Aisha Lindqvist",
+        "payFrequency": "monthly",
+        "payDate": "12/03/2026",
+        "periodStart": "11/01/2026",
+        "periodEnd": "11/30/2026",
+        "grossPay": 5916.67,
+        "netPay": 4495.93,
+        "ytdGross": 65024.17,
+        "deductions": [
+          {
+            "amount": 615.33,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 366.83,
+            "kind": "social_security"
+          },
+          {
+            "amount": 85.79,
+            "kind": "medicare"
+          },
+          {
+            "amount": 56.96,
+            "kind": "health"
+          },
+          {
+            "amount": 295.83,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 522,
+        "candidatesTokenCount": 181,
+        "totalTokenCount": 703,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 522
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 12193,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 677,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦N1⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧, ⟦W7⟧ ⟦N2⟧\n⟦W8⟧ ⟦N3⟧-⟦N4⟧-⟦N5⟧\n\nPay To: ⟦W9⟧ ⟦W10⟧\n⟦N6⟧ ⟦W11⟧ ⟦W12⟧, ⟦W13⟧, ⟦W14⟧ ⟦N",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Marigold Grocers Corp",
+        "employeeName": "Aisha Lindqvist",
+        "payFrequency": "monthly",
+        "payDate": "12/03/2026",
+        "periodStart": "11/01/2026",
+        "periodEnd": "11/30/2026",
+        "grossPay": 5916.67,
+        "netPay": 4495.93,
+        "ytdGross": 65024.17,
+        "deductions": [
+          {
+            "amount": 615.33,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 366.83,
+            "kind": "social_security"
+          },
+          {
+            "amount": 85.79,
+            "kind": "medicare"
+          },
+          {
+            "amount": 56.96,
+            "kind": "health"
+          },
+          {
+            "amount": 295.83,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l06-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L06",
+      "frequency": "weekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W9",
+          "W10"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N11",
+        "netPay": "N23",
+        "ytdGross": "N12",
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          },
+          {
+            "amount": "N21",
+            "kind": "retirement"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Brightwater Bakery Llc",
+        "employeeName": "Lucia Herrera",
+        "payFrequency": "weekly",
+        "payDate": "03/17/2026",
+        "periodStart": "03/06/2026",
+        "periodEnd": "03/12/2026",
+        "grossPay": 1711.54,
+        "netPay": 1292.64,
+        "ytdGross": 19049.44,
+        "deductions": [
+          {
+            "amount": 189.98,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 106.12,
+            "kind": "social_security"
+          },
+          {
+            "amount": 24.82,
+            "kind": "medicare"
+          },
+          {
+            "amount": 46.63,
+            "kind": "health"
+          },
+          {
+            "amount": 51.35,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 522,
+        "candidatesTokenCount": 138,
+        "totalTokenCount": 660,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 522
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 6323,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 677,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦N1⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧, ⟦W7⟧ ⟦N2⟧\n⟦W8⟧ ⟦N3⟧-⟦N4⟧-⟦N5⟧\n\nPay To: ⟦W9⟧ ⟦W10⟧\n⟦N6⟧ ⟦W11⟧ ⟦W12⟧, ⟦W13⟧, ⟦W14⟧ ⟦N",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Brightwater Bakery Llc",
+        "employeeName": "Lucia Herrera",
+        "payFrequency": "weekly",
+        "payDate": "03/17/2026",
+        "periodStart": "03/06/2026",
+        "periodEnd": "03/12/2026",
+        "grossPay": 1711.54,
+        "netPay": 1292.64,
+        "ytdGross": 19049.44,
+        "deductions": [
+          {
+            "amount": 189.98,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 106.12,
+            "kind": "social_security"
+          },
+          {
+            "amount": 24.82,
+            "kind": "medicare"
+          },
+          {
+            "amount": 46.63,
+            "kind": "health"
+          },
+          {
+            "amount": 51.35,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l07-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L07",
+      "frequency": "weekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N28",
+        "ytdGross": "N19",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N20",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N22",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N24",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N26",
+            "kind": "retirement"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "QUILLMARK FREIGHT CORP",
+        "employeeName": "Lucia Lindqvist",
+        "payFrequency": "weekly",
+        "payDate": "03/26/2026",
+        "periodStart": "03/14/2026",
+        "periodEnd": "03/20/2026",
+        "grossPay": 1239.78,
+        "netPay": 978.8,
+        "ytdGross": 14481.91,
+        "hoursWorked": 39,
+        "hourlyRate": 21.87,
+        "deductions": [
+          {
+            "amount": 116.54,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 76.87,
+            "kind": "social_security"
+          },
+          {
+            "amount": 17.98,
+            "kind": "medicare"
+          },
+          {
+            "amount": 49.59,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 489,
+        "candidatesTokenCount": 170,
+        "totalTokenCount": 659,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 489
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1877,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 726,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ - Weekly Pay Statement\nEmployee ⟦W4⟧ ⟦W5⟧ (⟦N1⟧)\nWeek ⟦D1⟧ ⟦W6⟧ ⟦D2⟧    Pay Date ⟦D3⟧\nPay Frequency: Week",
+      "attempts": 1,
+      "gold": {
+        "employerName": "QUILLMARK FREIGHT CORP",
+        "employeeName": "Lucia Lindqvist",
+        "payFrequency": "weekly",
+        "payDate": "03/26/2026",
+        "periodStart": "03/14/2026",
+        "periodEnd": "03/20/2026",
+        "grossPay": 1239.78,
+        "netPay": 978.8,
+        "ytdGross": 14481.91,
+        "hoursWorked": 39,
+        "hourlyRate": 21.87,
+        "deductions": [
+          {
+            "amount": 116.54,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 76.87,
+            "kind": "social_security"
+          },
+          {
+            "amount": 17.98,
+            "kind": "medicare"
+          },
+          {
+            "amount": 49.59,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l07-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L07",
+      "frequency": "weekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N28",
+        "ytdGross": "N19",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N20",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N22",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N24",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N26",
+            "kind": "retirement"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Blueharbor Motors Inc",
+        "employeeName": "Priya Okafor",
+        "payFrequency": "weekly",
+        "payDate": "09/14/2026",
+        "periodStart": "09/08/2026",
+        "periodEnd": "09/14/2026",
+        "grossPay": 1443.76,
+        "netPay": 1154.29,
+        "ytdGross": 53627.2,
+        "hoursWorked": 37,
+        "hourlyRate": 27.59,
+        "deductions": [
+          {
+            "amount": 121.28,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 89.51,
+            "kind": "social_security"
+          },
+          {
+            "amount": 20.93,
+            "kind": "medicare"
+          },
+          {
+            "amount": 57.75,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 489,
+        "candidatesTokenCount": 170,
+        "totalTokenCount": 659,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 489
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 6896,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 723,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ - Weekly Pay Statement\nEmployee ⟦W4⟧ ⟦W5⟧ (⟦N1⟧)\nWeek ⟦D1⟧ ⟦W6⟧ ⟦D2⟧    Pay Date ⟦D3⟧\nPay Frequency: Week",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Blueharbor Motors Inc",
+        "employeeName": "Priya Okafor",
+        "payFrequency": "weekly",
+        "payDate": "09/14/2026",
+        "periodStart": "09/08/2026",
+        "periodEnd": "09/14/2026",
+        "grossPay": 1443.76,
+        "netPay": 1154.29,
+        "ytdGross": 53627.2,
+        "hoursWorked": 37,
+        "hourlyRate": 27.59,
+        "deductions": [
+          {
+            "amount": 121.28,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 89.51,
+            "kind": "social_security"
+          },
+          {
+            "amount": 20.93,
+            "kind": "medicare"
+          },
+          {
+            "amount": 57.75,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l07-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L07",
+      "frequency": "weekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N28",
+        "ytdGross": "N19",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N20",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N22",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N24",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N26",
+            "kind": "retirement"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "REDMESA LAUNDRY LLC",
+        "employeeName": "Grace Haddad",
+        "payFrequency": "weekly",
+        "payDate": "11/17/2026",
+        "periodStart": "11/05/2026",
+        "periodEnd": "11/11/2026",
+        "grossPay": 792.78,
+        "netPay": 644.13,
+        "ytdGross": 36337.74,
+        "hoursWorked": 36,
+        "hourlyRate": 16.23,
+        "deductions": [
+          {
+            "amount": 64.22,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 49.15,
+            "kind": "social_security"
+          },
+          {
+            "amount": 11.5,
+            "kind": "medicare"
+          },
+          {
+            "amount": 23.78,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 489,
+        "candidatesTokenCount": 170,
+        "totalTokenCount": 659,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 489
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1938,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 729,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ - Weekly Pay Statement\nEmployee ⟦W4⟧ ⟦W5⟧ (⟦N1⟧)\nWeek ⟦D1⟧ ⟦W6⟧ ⟦D2⟧    Pay Date ⟦D3⟧\nPay Frequency: Week",
+      "attempts": 1,
+      "gold": {
+        "employerName": "REDMESA LAUNDRY LLC",
+        "employeeName": "Grace Haddad",
+        "payFrequency": "weekly",
+        "payDate": "11/17/2026",
+        "periodStart": "11/05/2026",
+        "periodEnd": "11/11/2026",
+        "grossPay": 792.78,
+        "netPay": 644.13,
+        "ytdGross": 36337.74,
+        "hoursWorked": 36,
+        "hourlyRate": 16.23,
+        "deductions": [
+          {
+            "amount": 64.22,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 49.15,
+            "kind": "social_security"
+          },
+          {
+            "amount": 11.5,
+            "kind": "medicare"
+          },
+          {
+            "amount": 23.78,
+            "kind": "retirement"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l08-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L08",
+      "frequency": "weekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N8",
+        "netPay": "N13",
+        "ytdGross": "N14",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N11",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N12",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "REDMESA ROOFING LLC",
+        "employeeName": "Hana Kowalski",
+        "payFrequency": "weekly",
+        "payDate": "02-17-2026",
+        "periodStart": "02-10-2026",
+        "periodEnd": "02-16-2026",
+        "grossPay": 806.58,
+        "netPay": 637.59,
+        "ytdGross": 5573.46,
+        "hoursWorked": 35.5,
+        "hourlyRate": 19.09,
+        "deductions": [
+          {
+            "amount": 64.53,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 50.01,
+            "kind": "social_security"
+          },
+          {
+            "amount": 11.7,
+            "kind": "medicare"
+          },
+          {
+            "amount": 42.75,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 421,
+        "candidatesTokenCount": 258,
+        "totalTokenCount": 679,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 421
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2097,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 567,
+      "promptPreview": "PAY STATEMENT\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦W4⟧ ⟦W5⟧                Employee ID ⟦N1⟧\nPay Date: ⟦D1⟧   Period: ⟦D2⟧ - ⟦D3⟧   Pay Freque",
+      "attempts": 1,
+      "gold": {
+        "employerName": "REDMESA ROOFING LLC",
+        "employeeName": "Hana Kowalski",
+        "payFrequency": "weekly",
+        "payDate": "02-17-2026",
+        "periodStart": "02-10-2026",
+        "periodEnd": "02-16-2026",
+        "grossPay": 806.58,
+        "netPay": 637.59,
+        "ytdGross": 5573.46,
+        "hoursWorked": 35.5,
+        "hourlyRate": 19.09,
+        "deductions": [
+          {
+            "amount": 64.53,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 50.01,
+            "kind": "social_security"
+          },
+          {
+            "amount": 11.7,
+            "kind": "medicare"
+          },
+          {
+            "amount": 42.75,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l08-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L08",
+      "frequency": "biweekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "biweekly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N8",
+        "netPay": "N13",
+        "ytdGross": "N14",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N11",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N12",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Sundale Printing Inc",
+        "employeeName": "Aisha Haddad",
+        "payFrequency": "biweekly",
+        "payDate": "07-13-2026",
+        "periodStart": "06-24-2026",
+        "periodEnd": "07-07-2026",
+        "grossPay": 2974.14,
+        "netPay": 2359.97,
+        "ytdGross": 43493.84,
+        "hoursWorked": 79.5,
+        "hourlyRate": 36.05,
+        "deductions": [
+          {
+            "amount": 276.6,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 184.4,
+            "kind": "social_security"
+          },
+          {
+            "amount": 43.13,
+            "kind": "medicare"
+          },
+          {
+            "amount": 110.04,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 423,
+        "candidatesTokenCount": 130,
+        "totalTokenCount": 553,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 423
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 5882,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 570,
+      "promptPreview": "PAY STATEMENT\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦W4⟧ ⟦W5⟧                Employee ID ⟦N1⟧\nPay Date: ⟦D1⟧   Period: ⟦D2⟧ - ⟦D3⟧   Pay Freque",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Sundale Printing Inc",
+        "employeeName": "Aisha Haddad",
+        "payFrequency": "biweekly",
+        "payDate": "07-13-2026",
+        "periodStart": "06-24-2026",
+        "periodEnd": "07-07-2026",
+        "grossPay": 2974.14,
+        "netPay": 2359.97,
+        "ytdGross": 43493.84,
+        "hoursWorked": 79.5,
+        "hourlyRate": 36.05,
+        "deductions": [
+          {
+            "amount": 276.6,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 184.4,
+            "kind": "social_security"
+          },
+          {
+            "amount": 43.13,
+            "kind": "medicare"
+          },
+          {
+            "amount": 110.04,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l08-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L08",
+      "frequency": "semimonthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N8",
+        "netPay": "N13",
+        "ytdGross": "N14",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3",
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N11",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N12",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Willowby Textiles Corp",
+        "employeeName": "Victor Delgado",
+        "payFrequency": "semimonthly",
+        "payDate": "06-21-2026",
+        "periodStart": "06-01-2026",
+        "periodEnd": "06-15-2026",
+        "grossPay": 3504.13,
+        "netPay": 2812.07,
+        "ytdGross": 39561.63,
+        "hoursWorked": 83.5,
+        "hourlyRate": 40.51,
+        "deductions": [
+          {
+            "amount": 343.4,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 217.26,
+            "kind": "social_security"
+          },
+          {
+            "amount": 50.81,
+            "kind": "medicare"
+          },
+          {
+            "amount": 80.59,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 423,
+        "candidatesTokenCount": 261,
+        "totalTokenCount": 684,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 423
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2041,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 573,
+      "promptPreview": "PAY STATEMENT\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦W4⟧ ⟦W5⟧                Employee ID ⟦N1⟧\nPay Date: ⟦D1⟧   Period: ⟦D2⟧ - ⟦D3⟧   Pay Freque",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Willowby Textiles Corp",
+        "employeeName": "Victor Delgado",
+        "payFrequency": "semimonthly",
+        "payDate": "06-21-2026",
+        "periodStart": "06-01-2026",
+        "periodEnd": "06-15-2026",
+        "grossPay": 3504.13,
+        "netPay": 2812.07,
+        "ytdGross": 39561.63,
+        "hoursWorked": 83.5,
+        "hourlyRate": 40.51,
+        "deductions": [
+          {
+            "amount": 343.4,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 217.26,
+            "kind": "social_security"
+          },
+          {
+            "amount": 50.81,
+            "kind": "medicare"
+          },
+          {
+            "amount": 80.59,
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l09-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L09",
+      "frequency": "monthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N3",
+        "netPay": "N13",
+        "ytdGross": "N4",
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N9",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N11",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "TALLGRASS LAUNDRY INC",
+        "employeeName": "Victor Moreau",
+        "payFrequency": "monthly",
+        "payDate": "04/05/26",
+        "periodStart": "03/01/26",
+        "periodEnd": "03/31/26",
+        "grossPay": 7333.33,
+        "netPay": 5994.62,
+        "ytdGross": 22161.33,
+        "deductions": [
+          {
+            "amount": 696.67,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 454.67,
+            "kind": "social_security"
+          },
+          {
+            "amount": 106.33,
+            "kind": "medicare"
+          },
+          {
+            "amount": 81.04,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 391,
+        "candidatesTokenCount": 122,
+        "totalTokenCount": 513,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 391
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 6467,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 475,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nMonthly Salary Statement\nEmployee: ⟦W4⟧ ⟦W5⟧\nPay ⟦W6⟧: Monthly    Pay Date: ⟦D1⟧\n⟦W7⟧ ⟦D2⟧ - ⟦D3⟧\n\n      ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "TALLGRASS LAUNDRY INC",
+        "employeeName": "Victor Moreau",
+        "payFrequency": "monthly",
+        "payDate": "04/05/26",
+        "periodStart": "03/01/26",
+        "periodEnd": "03/31/26",
+        "grossPay": 7333.33,
+        "netPay": 5994.62,
+        "ytdGross": 22161.33,
+        "deductions": [
+          {
+            "amount": 696.67,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 454.67,
+            "kind": "social_security"
+          },
+          {
+            "amount": 106.33,
+            "kind": "medicare"
+          },
+          {
+            "amount": 81.04,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l09-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L09",
+      "frequency": "monthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N3",
+        "netPay": "N13",
+        "ytdGross": "N4",
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N9",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N11",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Silverpine Textiles Inc",
+        "employeeName": "Hana Kowalski",
+        "payFrequency": "monthly",
+        "payDate": "09/06/26",
+        "periodStart": "08/01/26",
+        "periodEnd": "08/31/26",
+        "grossPay": 4250,
+        "netPay": 3483.9,
+        "ytdGross": 34714,
+        "deductions": [
+          {
+            "amount": 412.25,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 263.5,
+            "kind": "social_security"
+          },
+          {
+            "amount": 61.63,
+            "kind": "medicare"
+          },
+          {
+            "amount": 28.72,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 391,
+        "candidatesTokenCount": 161,
+        "totalTokenCount": 552,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 391
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2066,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 476,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nMonthly Salary Statement\nEmployee: ⟦W4⟧ ⟦W5⟧\nPay ⟦W6⟧: Monthly    Pay Date: ⟦D1⟧\n⟦W7⟧ ⟦D2⟧ - ⟦D3⟧\n\n      ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Silverpine Textiles Inc",
+        "employeeName": "Hana Kowalski",
+        "payFrequency": "monthly",
+        "payDate": "09/06/26",
+        "periodStart": "08/01/26",
+        "periodEnd": "08/31/26",
+        "grossPay": 4250,
+        "netPay": 3483.9,
+        "ytdGross": 34714,
+        "deductions": [
+          {
+            "amount": 412.25,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 263.5,
+            "kind": "social_security"
+          },
+          {
+            "amount": 61.63,
+            "kind": "medicare"
+          },
+          {
+            "amount": 28.72,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l09-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L09",
+      "frequency": "monthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D1",
+        "periodStart": "D2",
+        "periodEnd": "D3",
+        "grossPay": "N3",
+        "netPay": "N13",
+        "ytdGross": "N4",
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N9",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N11",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Goldleaf Grocers Llc",
+        "employeeName": "Omar Lindqvist",
+        "payFrequency": "monthly",
+        "payDate": "04/02/26",
+        "periodStart": "03/01/26",
+        "periodEnd": "03/31/26",
+        "grossPay": 7416.67,
+        "netPay": 6148.51,
+        "ytdGross": 21538.01,
+        "deductions": [
+          {
+            "amount": 637.83,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 459.83,
+            "kind": "social_security"
+          },
+          {
+            "amount": 107.54,
+            "kind": "medicare"
+          },
+          {
+            "amount": 62.96,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 391,
+        "candidatesTokenCount": 161,
+        "totalTokenCount": 552,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 391
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1763,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 475,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nMonthly Salary Statement\nEmployee: ⟦W4⟧ ⟦W5⟧\nPay ⟦W6⟧: Monthly    Pay Date: ⟦D1⟧\n⟦W7⟧ ⟦D2⟧ - ⟦D3⟧\n\n      ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Goldleaf Grocers Llc",
+        "employeeName": "Omar Lindqvist",
+        "payFrequency": "monthly",
+        "payDate": "04/02/26",
+        "periodStart": "03/01/26",
+        "periodEnd": "03/31/26",
+        "grossPay": 7416.67,
+        "netPay": 6148.51,
+        "ytdGross": 21538.01,
+        "deductions": [
+          {
+            "amount": 637.83,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 459.83,
+            "kind": "social_security"
+          },
+          {
+            "amount": 107.54,
+            "kind": "medicare"
+          },
+          {
+            "amount": 62.96,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 4,
+          "predicted": 4,
+          "matched": 4,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 4,
+          "kindScored": 4
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l10-1",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L10",
+      "frequency": "semimonthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N20",
+        "ytdGross": "N19",
+        "hoursWorked": "N4",
+        "hourlyRate": "N5",
+        "deductions": [
+          {
+            "amount": "N8",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N12",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "TALLGRASS TEXTILES INC",
+        "employeeName": "Victor Raman",
+        "payFrequency": "semimonthly",
+        "payDate": "2026-03-19",
+        "periodStart": "2026-03-01",
+        "periodEnd": "2026-03-15",
+        "grossPay": 1180.9,
+        "netPay": 900.04,
+        "ytdGross": 5668.34,
+        "hoursWorked": 70,
+        "hourlyRate": 16.87,
+        "deductions": [
+          {
+            "amount": 108.64,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 73.22,
+            "kind": "social_security"
+          },
+          {
+            "amount": 17.12,
+            "kind": "medicare"
+          },
+          {
+            "amount": 37.79,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 44.09,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 445,
+        "candidatesTokenCount": 143,
+        "totalTokenCount": 588,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 445
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2117,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 683,
+      "promptPreview": "            ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n            EIN ⟦N1⟧-⟦N2⟧\n\nEmployee ⟦W4⟧ ⟦W5⟧   ID ⟦N3⟧\nPeriod ⟦D1⟧ to ⟦D2⟧   Paid on ⟦D3⟧   ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "TALLGRASS TEXTILES INC",
+        "employeeName": "Victor Raman",
+        "payFrequency": "semimonthly",
+        "payDate": "2026-03-19",
+        "periodStart": "2026-03-01",
+        "periodEnd": "2026-03-15",
+        "grossPay": 1180.9,
+        "netPay": 900.04,
+        "ytdGross": 5668.34,
+        "hoursWorked": 70,
+        "hourlyRate": 16.87,
+        "deductions": [
+          {
+            "amount": 108.64,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 73.22,
+            "kind": "social_security"
+          },
+          {
+            "amount": 17.12,
+            "kind": "medicare"
+          },
+          {
+            "amount": 37.79,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 44.09,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l10-2",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L10",
+      "frequency": "monthly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N20",
+        "ytdGross": "N19",
+        "hoursWorked": "N4",
+        "hourlyRate": "N5",
+        "deductions": [
+          {
+            "amount": "N8",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N12",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Cedarline Foods Llc",
+        "employeeName": "Hana Strand",
+        "payFrequency": "monthly",
+        "payDate": "2026-08-06",
+        "periodStart": "2026-07-01",
+        "periodEnd": "2026-07-31",
+        "grossPay": 4240.08,
+        "netPay": 3288.88,
+        "ytdGross": 28891.92,
+        "hoursWorked": 151,
+        "hourlyRate": 28.08,
+        "deductions": [
+          {
+            "amount": 402.81,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 262.88,
+            "kind": "social_security"
+          },
+          {
+            "amount": 61.48,
+            "kind": "medicare"
+          },
+          {
+            "amount": 135.68,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 88.35,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 442,
+        "candidatesTokenCount": 186,
+        "totalTokenCount": 628,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 442
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 7120,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 676,
+      "promptPreview": "            ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n            EIN ⟦N1⟧-⟦N2⟧\n\nEmployee ⟦W4⟧ ⟦W5⟧   ID ⟦N3⟧\nPeriod ⟦D1⟧ to ⟦D2⟧   Paid on ⟦D3⟧   ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Cedarline Foods Llc",
+        "employeeName": "Hana Strand",
+        "payFrequency": "monthly",
+        "payDate": "2026-08-06",
+        "periodStart": "2026-07-01",
+        "periodEnd": "2026-07-31",
+        "grossPay": 4240.08,
+        "netPay": 3288.88,
+        "ytdGross": 28891.92,
+        "hoursWorked": 151,
+        "hourlyRate": 28.08,
+        "deductions": [
+          {
+            "amount": 402.81,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 262.88,
+            "kind": "social_security"
+          },
+          {
+            "amount": 61.48,
+            "kind": "medicare"
+          },
+          {
+            "amount": 135.68,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 88.35,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "en-l10-3",
+      "docType": "paystub",
+      "language": "en",
+      "layout": "L10",
+      "frequency": "weekly",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N20",
+        "ytdGross": "N19",
+        "hoursWorked": "N4",
+        "hourlyRate": "N5",
+        "deductions": [
+          {
+            "amount": "N8",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N12",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "health"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "Willowby Roofing Inc",
+        "employeeName": "Maria Abara",
+        "payFrequency": "weekly",
+        "payDate": "2026-05-26",
+        "periodStart": "2026-05-14",
+        "periodEnd": "2026-05-20",
+        "grossPay": 622.3,
+        "netPay": 398.81,
+        "ytdGross": 12138.58,
+        "hoursWorked": 35,
+        "hourlyRate": 17.78,
+        "deductions": [
+          {
+            "amount": 73.43,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 38.58,
+            "kind": "social_security"
+          },
+          {
+            "amount": 9.02,
+            "kind": "medicare"
+          },
+          {
+            "amount": 18.67,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 83.79,
+            "kind": "health"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 442,
+        "candidatesTokenCount": 186,
+        "totalTokenCount": 628,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 442
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2154,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 684,
+      "promptPreview": "            ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n            EIN ⟦N1⟧-⟦N2⟧\n\nEmployee ⟦W4⟧ ⟦W5⟧   ID ⟦N3⟧\nPeriod ⟦D1⟧ to ⟦D2⟧   Paid on ⟦D3⟧   ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Willowby Roofing Inc",
+        "employeeName": "Maria Abara",
+        "payFrequency": "weekly",
+        "payDate": "2026-05-26",
+        "periodStart": "2026-05-14",
+        "periodEnd": "2026-05-20",
+        "grossPay": 622.3,
+        "netPay": 398.81,
+        "ytdGross": 12138.58,
+        "hoursWorked": 35,
+        "hourlyRate": 17.78,
+        "deductions": [
+          {
+            "amount": 73.43,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 38.58,
+            "kind": "social_security"
+          },
+          {
+            "amount": 9.02,
+            "kind": "medicare"
+          },
+          {
+            "amount": 18.67,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 83.79,
+            "kind": "health"
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "correct",
+          "payDate": "correct",
+          "periodStart": "correct",
+          "periodEnd": "correct",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "correct",
+          "hoursWorked": "correct",
+          "hourlyRate": "correct"
+        },
+        "deductions": {
+          "gold": 5,
+          "predicted": 5,
+          "matched": 5,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 5,
+          "kindScored": 5
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "ko-k1-1",
+      "docType": "paystub",
+      "language": "ko",
+      "layout": "K1",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2"
+        ],
+        "employeeName": [
+          "W3"
+        ],
+        "payDate": [
+          "N4",
+          "N5",
+          "N6"
+        ],
+        "grossPay": "N10",
+        "netPay": "N18",
+        "deductions": [
+          {
+            "amount": "N11",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N12",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N13",
+            "kind": "retirement"
+          },
+          {
+            "amount": "N14",
+            "kind": "health"
+          },
+          {
+            "amount": "N15",
+            "kind": "health"
+          },
+          {
+            "amount": "N16",
+            "kind": "other"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "다온건설 주식회사",
+        "employeeName": "강도윤",
+        "payDate": "2026-4-6",
+        "grossPay": 2670000,
+        "netPay": 2380740,
+        "deductions": [
+          {
+            "amount": 34710,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 3470,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 120150,
+            "kind": "retirement"
+          },
+          {
+            "amount": 94650,
+            "kind": "health"
+          },
+          {
+            "amount": 12250,
+            "kind": "health"
+          },
+          {
+            "amount": 24030,
+            "kind": "other"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 453,
+        "candidatesTokenCount": 275,
+        "totalTokenCount": 728,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 453
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1844,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 491,
+      "promptPreview": "급여명세서\n회사명: ⟦W1⟧ ⟦W2⟧      귀속 연월: ⟦N1⟧년 ⟦N2⟧월\n성명: ⟦W3⟧      사번: ⟦N3⟧      부서: ⟦W4⟧\n지급일: ⟦N4⟧년 ⟦N5⟧월 ⟦N6⟧일\n\n지급 항목         ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "다온건설 주식회사",
+        "employeeName": "강도윤",
+        "payDate": "2026-4-6",
+        "grossPay": 2670000,
+        "netPay": 2380740,
+        "deductions": [
+          {
+            "amount": 34710
+          },
+          {
+            "amount": 3470
+          },
+          {
+            "amount": 120150
+          },
+          {
+            "amount": 94650
+          },
+          {
+            "amount": 12250
+          },
+          {
+            "amount": 24030
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "absent",
+          "payDate": "correct",
+          "periodStart": "absent",
+          "periodEnd": "absent",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "absent",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 6,
+          "predicted": 6,
+          "matched": 6,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 0,
+          "kindScored": 0
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "ko-k1-2",
+      "docType": "paystub",
+      "language": "ko",
+      "layout": "K1",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2"
+        ],
+        "employeeName": [
+          "W3"
+        ],
+        "payDate": [
+          "N4",
+          "N5",
+          "N6"
+        ],
+        "grossPay": "N10",
+        "netPay": "N18",
+        "deductions": [
+          {
+            "amount": "N11",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N12",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N13",
+            "kind": "retirement"
+          },
+          {
+            "amount": "N14",
+            "kind": "health"
+          },
+          {
+            "amount": "N15",
+            "kind": "health"
+          },
+          {
+            "amount": "N16",
+            "kind": "other"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "한빛물류 주식회사",
+        "employeeName": "박민준",
+        "payDate": "2026-5-17",
+        "grossPay": 2927000,
+        "netPay": 2545520,
+        "deductions": [
+          {
+            "amount": 96590,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 9650,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 131710,
+            "kind": "retirement"
+          },
+          {
+            "amount": 103760,
+            "kind": "health"
+          },
+          {
+            "amount": 13430,
+            "kind": "health"
+          },
+          {
+            "amount": 26340,
+            "kind": "other"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 453,
+        "candidatesTokenCount": 186,
+        "totalTokenCount": 639,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 453
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 7873,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 491,
+      "promptPreview": "급여명세서\n회사명: ⟦W1⟧ ⟦W2⟧      귀속 연월: ⟦N1⟧년 ⟦N2⟧월\n성명: ⟦W3⟧      사번: ⟦N3⟧      부서: ⟦W4⟧\n지급일: ⟦N4⟧년 ⟦N5⟧월 ⟦N6⟧일\n\n지급 항목         ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "한빛물류 주식회사",
+        "employeeName": "박민준",
+        "payDate": "2026-5-17",
+        "grossPay": 2927000,
+        "netPay": 2545520,
+        "deductions": [
+          {
+            "amount": 96590
+          },
+          {
+            "amount": 9650
+          },
+          {
+            "amount": 131710
+          },
+          {
+            "amount": 103760
+          },
+          {
+            "amount": 13430
+          },
+          {
+            "amount": 26340
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "absent",
+          "payDate": "correct",
+          "periodStart": "absent",
+          "periodEnd": "absent",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "absent",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 6,
+          "predicted": 6,
+          "matched": 6,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 0,
+          "kindScored": 0
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "ko-k2-1",
+      "docType": "paystub",
+      "language": "ko",
+      "layout": "K2",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2"
+        ],
+        "employeeName": [
+          "W3",
+          "W4"
+        ],
+        "payFrequency": "monthly",
+        "payDate": "D1",
+        "grossPay": "N13",
+        "netPay": "N15",
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N9",
+            "kind": "other"
+          },
+          {
+            "amount": "N10",
+            "kind": "health"
+          },
+          {
+            "amount": "N11",
+            "kind": "other"
+          },
+          {
+            "amount": "N12",
+            "kind": "other"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "푸른제약 주식회사",
+        "employeeName": "한예린 운영팀",
+        "payFrequency": "monthly",
+        "payDate": "2026.08.08",
+        "grossPay": 2404000,
+        "netPay": 2111830,
+        "deductions": [
+          {
+            "amount": 60100,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 6010,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 108180,
+            "kind": "other"
+          },
+          {
+            "amount": 85220,
+            "kind": "health"
+          },
+          {
+            "amount": 11030,
+            "kind": "other"
+          },
+          {
+            "amount": 21630,
+            "kind": "other"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 424,
+        "candidatesTokenCount": 179,
+        "totalTokenCount": 603,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 424
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2115,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 410,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧  급여 명세서\n⟦W3⟧ (⟦W4⟧)   사번 ⟦N1⟧\n귀속 ⟦N2⟧년 ⟦N3⟧월   지급일 ⟦D1⟧\n\n지급 항목       금액            공제 항목       금액\n기본급         ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "푸른제약 주식회사",
+        "employeeName": "한예린",
+        "payDate": "2026.08.08",
+        "grossPay": 2404000,
+        "netPay": 2111830,
+        "deductions": [
+          {
+            "amount": 60100
+          },
+          {
+            "amount": 6010
+          },
+          {
+            "amount": 108180
+          },
+          {
+            "amount": 85220
+          },
+          {
+            "amount": 11030
+          },
+          {
+            "amount": 21630
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "wrong",
+          "payFrequency": "spurious",
+          "payDate": "correct",
+          "periodStart": "absent",
+          "periodEnd": "absent",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "absent",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 6,
+          "predicted": 6,
+          "matched": 6,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 0,
+          "kindScored": 0
+        },
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "ko-k2-2",
+      "docType": "paystub",
+      "language": "ko",
+      "layout": "K2",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2"
+        ],
+        "employeeName": [
+          "W3",
+          "W4"
+        ],
+        "payDate": "D1",
+        "grossPay": "N13",
+        "netPay": "N15",
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N9",
+            "kind": "retirement"
+          },
+          {
+            "amount": "N10",
+            "kind": "health"
+          },
+          {
+            "amount": "N11",
+            "kind": "health"
+          },
+          {
+            "amount": "N12",
+            "kind": "other"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "다온건설 주식회사",
+        "employeeName": "윤가람 운영팀",
+        "payDate": "2026.05.10",
+        "grossPay": 4160000,
+        "netPay": 3677280,
+        "deductions": [
+          {
+            "amount": 83200,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 8320,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 187200,
+            "kind": "retirement"
+          },
+          {
+            "amount": 147470,
+            "kind": "health"
+          },
+          {
+            "amount": 19090,
+            "kind": "health"
+          },
+          {
+            "amount": 37440,
+            "kind": "other"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 421,
+        "candidatesTokenCount": 268,
+        "totalTokenCount": 689,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 421
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2427,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 410,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧  급여 명세서\n⟦W3⟧ (⟦W4⟧)   사번 ⟦N1⟧\n귀속 ⟦N2⟧년 ⟦N3⟧월   지급일 ⟦D1⟧\n\n지급 항목       금액            공제 항목       금액\n기본급         ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "다온건설 주식회사",
+        "employeeName": "윤가람",
+        "payDate": "2026.05.10",
+        "grossPay": 4160000,
+        "netPay": 3677280,
+        "deductions": [
+          {
+            "amount": 83200
+          },
+          {
+            "amount": 8320
+          },
+          {
+            "amount": 187200
+          },
+          {
+            "amount": 147470
+          },
+          {
+            "amount": 19090
+          },
+          {
+            "amount": 37440
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "wrong",
+          "payFrequency": "absent",
+          "payDate": "correct",
+          "periodStart": "absent",
+          "periodEnd": "absent",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "absent",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 6,
+          "predicted": 6,
+          "matched": 6,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 0,
+          "kindScored": 0
+        },
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "ko-k3-1",
+      "docType": "paystub",
+      "language": "ko",
+      "layout": "K3",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2"
+        ],
+        "employeeName": [
+          "W3"
+        ],
+        "payDate": "D1",
+        "grossPay": "N4",
+        "netPay": "N12",
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N6",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "retirement"
+          },
+          {
+            "amount": "N8",
+            "kind": "health"
+          },
+          {
+            "amount": "N9",
+            "kind": "health"
+          },
+          {
+            "amount": "N10",
+            "kind": "other"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "다온건설 주식회사",
+        "employeeName": "이서연",
+        "payDate": "2026-02-08",
+        "grossPay": 3860000,
+        "netPay": 3314450,
+        "deductions": [
+          {
+            "amount": 165980,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 16590,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 173700,
+            "kind": "retirement"
+          },
+          {
+            "amount": 136830,
+            "kind": "health"
+          },
+          {
+            "amount": 17710,
+            "kind": "health"
+          },
+          {
+            "amount": 34740,
+            "kind": "other"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 408,
+        "candidatesTokenCount": 171,
+        "totalTokenCount": 579,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 408
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 6799,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 193,
+      "promptPreview": "[⟦W1⟧ ⟦W2⟧] 급여 내역\n성명: ⟦W3⟧\n부서: ⟦W4⟧ / 사번: ⟦N1⟧\n지급일: ⟦D1⟧\n\n기본급: ⟦N2⟧원\n식대: ⟦N3⟧원\n지급합계: ⟦N4⟧원\n소득세: ⟦N5⟧원\n지방소득세: ⟦N6⟧원\n국민연금:",
+      "attempts": 1,
+      "gold": {
+        "employerName": "다온건설 주식회사",
+        "employeeName": "이서연",
+        "payDate": "2026-02-08",
+        "grossPay": 3860000,
+        "netPay": 3314450,
+        "deductions": [
+          {
+            "amount": 165980
+          },
+          {
+            "amount": 16590
+          },
+          {
+            "amount": 173700
+          },
+          {
+            "amount": 136830
+          },
+          {
+            "amount": 17710
+          },
+          {
+            "amount": 34740
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "absent",
+          "payDate": "correct",
+          "periodStart": "absent",
+          "periodEnd": "absent",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "absent",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 6,
+          "predicted": 6,
+          "matched": 6,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 0,
+          "kindScored": 0
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "ko-k3-2",
+      "docType": "paystub",
+      "language": "ko",
+      "layout": "K3",
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2"
+        ],
+        "employeeName": [
+          "W3"
+        ],
+        "payDate": "D1",
+        "grossPay": "N5",
+        "netPay": "N13",
+        "deductions": [
+          {
+            "amount": "N6",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N8",
+            "kind": "retirement"
+          },
+          {
+            "amount": "N9",
+            "kind": "health"
+          },
+          {
+            "amount": "N10",
+            "kind": "health"
+          },
+          {
+            "amount": "N11",
+            "kind": "other"
+          }
+        ]
+      },
+      "rehydrated": {
+        "employerName": "새솔식품 주식회사",
+        "employeeName": "김지원",
+        "payDate": "2026-06-25",
+        "grossPay": 2730000,
+        "netPay": 2338160,
+        "deductions": [
+          {
+            "amount": 122850,
+            "kind": "federal_tax"
+          },
+          {
+            "amount": 12280,
+            "kind": "state_tax"
+          },
+          {
+            "amount": 122850,
+            "kind": "retirement"
+          },
+          {
+            "amount": 96770,
+            "kind": "health"
+          },
+          {
+            "amount": 12530,
+            "kind": "health"
+          },
+          {
+            "amount": 24560,
+            "kind": "other"
+          }
+        ]
+      },
+      "usage": {
+        "promptTokenCount": 420,
+        "candidatesTokenCount": 131,
+        "totalTokenCount": 551,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 420
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2001,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 205,
+      "promptPreview": "[⟦W1⟧ ⟦W2⟧] 급여 내역\n성명: ⟦W3⟧\n부서: ⟦W4⟧ / 사번: ⟦N1⟧\n지급일: ⟦D1⟧\n\n기본급: ⟦N2⟧원\n식대: ⟦N3⟧원\n상여금: ⟦N4⟧원\n지급합계: ⟦N5⟧원\n소득세: ⟦N6⟧원\n지방소득세: ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "새솔식품 주식회사",
+        "employeeName": "김지원",
+        "payDate": "2026-06-25",
+        "grossPay": 2730000,
+        "netPay": 2338160,
+        "deductions": [
+          {
+            "amount": 122850
+          },
+          {
+            "amount": 12280
+          },
+          {
+            "amount": 122850
+          },
+          {
+            "amount": 96770
+          },
+          {
+            "amount": 12530
+          },
+          {
+            "amount": 24560
+          }
+        ]
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "payFrequency": "absent",
+          "payDate": "correct",
+          "periodStart": "absent",
+          "periodEnd": "absent",
+          "grossPay": "correct",
+          "netPay": "correct",
+          "ytdGross": "absent",
+          "hoursWorked": "absent",
+          "hourlyRate": "absent"
+        },
+        "deductions": {
+          "gold": 6,
+          "predicted": 6,
+          "matched": 6,
+          "extra": 0,
+          "exact": true,
+          "kindCorrect": 0,
+          "kindScored": 0
+        },
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "lease-e1-1",
+      "docType": "lease",
+      "language": "en",
+      "layout": "E1",
+      "ok": true,
+      "pointers": {
+        "tenantNames": [
+          "W6",
+          "W7"
+        ],
+        "landlordName": [
+          "W1",
+          "W2",
+          "W3",
+          "W4"
+        ],
+        "monthlyRent": "N4",
+        "deposit": "N6",
+        "leaseStart": "D1",
+        "leaseEnd": "D2",
+        "occupantCount": "N7"
+      },
+      "rehydrated": {
+        "tenantNames": "Daniel Takeda",
+        "landlordName": "Meadow Crossing Rentals INC",
+        "monthlyRent": 2090,
+        "deposit": 3135,
+        "leaseStart": "04/01/2026",
+        "leaseEnd": "03/31/2027",
+        "occupantCount": 3
+      },
+      "usage": {
+        "promptTokenCount": 426,
+        "candidatesTokenCount": 110,
+        "totalTokenCount": 536,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 426
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1722,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 321,
+      "promptPreview": "RESIDENTIAL LEASE AGREEMENT\n\nLandlord: ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\nTenant(⟦W5⟧): ⟦W6⟧ ⟦W7⟧\nPremises: ⟦N1⟧ ⟦W8⟧ ⟦W9⟧, ⟦W10⟧, ⟦W11",
+      "attempts": 1,
+      "gold": {
+        "tenantNames": "Daniel Takeda",
+        "landlordName": "Meadow Crossing Rentals INC",
+        "monthlyRent": 2090,
+        "deposit": 3135,
+        "leaseStart": "04/01/2026",
+        "leaseEnd": "03/31/2027",
+        "occupantCount": 3
+      },
+      "score": {
+        "outcomes": {
+          "tenantNames": "correct",
+          "landlordName": "correct",
+          "monthlyRent": "correct",
+          "deposit": "correct",
+          "leaseStart": "correct",
+          "leaseEnd": "correct",
+          "occupantCount": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "lease-e1-2",
+      "docType": "lease",
+      "language": "en",
+      "layout": "E1",
+      "ok": true,
+      "pointers": {
+        "tenantNames": [
+          "W6",
+          "W7"
+        ],
+        "landlordName": [
+          "W1",
+          "W2",
+          "W3",
+          "W4"
+        ],
+        "monthlyRent": "N4",
+        "deposit": "N6",
+        "leaseStart": "D1",
+        "leaseEnd": "D2",
+        "occupantCount": "N7"
+      },
+      "rehydrated": {
+        "tenantNames": "Kenji Strand",
+        "landlordName": "Meadow Hollow Rentals INC",
+        "monthlyRent": 2940,
+        "deposit": 2940,
+        "leaseStart": "08/01/2026",
+        "leaseEnd": "07/31/2027",
+        "occupantCount": 4
+      },
+      "usage": {
+        "promptTokenCount": 422,
+        "candidatesTokenCount": 110,
+        "totalTokenCount": 532,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 422
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 6954,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 317,
+      "promptPreview": "RESIDENTIAL LEASE AGREEMENT\n\nLandlord: ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\nTenant(⟦W5⟧): ⟦W6⟧ ⟦W7⟧\nPremises: ⟦N1⟧ ⟦W8⟧ ⟦W9⟧, ⟦W10⟧, ⟦W11",
+      "attempts": 1,
+      "gold": {
+        "tenantNames": "Kenji Strand",
+        "landlordName": "Meadow Hollow Rentals INC",
+        "monthlyRent": 2940,
+        "deposit": 2940,
+        "leaseStart": "08/01/2026",
+        "leaseEnd": "07/31/2027",
+        "occupantCount": 4
+      },
+      "score": {
+        "outcomes": {
+          "tenantNames": "correct",
+          "landlordName": "correct",
+          "monthlyRent": "correct",
+          "deposit": "correct",
+          "leaseStart": "correct",
+          "leaseEnd": "correct",
+          "occupantCount": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": true
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "lease-e2-1",
+      "docType": "lease",
+      "language": "en",
+      "layout": "E2",
+      "ok": true,
+      "pointers": {
+        "tenantNames": [
+          "W9",
+          "W10"
+        ],
+        "landlordName": [
+          "W1",
+          "W2",
+          "W3",
+          "W4",
+          "W5",
+          "W6",
+          "W7",
+          "W8"
+        ],
+        "monthlyRent": "N8",
+        "deposit": "N10",
+        "leaseStart": "D1",
+        "leaseEnd": "D2",
+        "occupantCount": "N12"
+      },
+      "rehydrated": {
+        "tenantNames": "Lucia Abara",
+        "landlordName": "PARTIES is made between Summit Hollow Rentals INC",
+        "monthlyRent": 2830,
+        "deposit": 2830,
+        "leaseStart": "2026-08-01",
+        "leaseEnd": "2027-07-31",
+        "occupantCount": 1
+      },
+      "usage": {
+        "promptTokenCount": 525,
+        "candidatesTokenCount": 71,
+        "totalTokenCount": 596,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 525
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 6513,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 475,
+      "promptPreview": "LEASE\n\n⟦N1⟧. ⟦W1⟧. This lease ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧ ⟦W8⟧ (Landlord) and ⟦W9⟧ ⟦W10⟧ (Tenant).\n⟦N2⟧. PREMISES. ⟦N3",
+      "attempts": 1,
+      "gold": {
+        "tenantNames": "Lucia Abara",
+        "landlordName": "Summit Hollow Rentals INC",
+        "monthlyRent": 2830,
+        "deposit": 2830,
+        "leaseStart": "2026-08-01",
+        "leaseEnd": "2027-07-31",
+        "occupantCount": 1
+      },
+      "score": {
+        "outcomes": {
+          "tenantNames": "correct",
+          "landlordName": "wrong",
+          "monthlyRent": "correct",
+          "deposit": "correct",
+          "leaseStart": "correct",
+          "leaseEnd": "correct",
+          "occupantCount": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    },
+    {
+      "id": "lease-e2-2",
+      "docType": "lease",
+      "language": "en",
+      "layout": "E2",
+      "ok": true,
+      "pointers": {
+        "tenantNames": [
+          "W9",
+          "W10"
+        ],
+        "landlordName": [
+          "W1",
+          "W2",
+          "W3",
+          "W4",
+          "W5",
+          "W6",
+          "W7",
+          "W8"
+        ],
+        "monthlyRent": "N8",
+        "deposit": "N10",
+        "leaseStart": "D1",
+        "leaseEnd": "D2",
+        "occupantCount": "N12"
+      },
+      "rehydrated": {
+        "tenantNames": "Ethan Herrera",
+        "landlordName": "PARTIES is made between Summit Gables Rentals INC",
+        "monthlyRent": 2380,
+        "deposit": 3570,
+        "leaseStart": "2026-04-01",
+        "leaseEnd": "2027-03-31",
+        "occupantCount": 2
+      },
+      "usage": {
+        "promptTokenCount": 529,
+        "candidatesTokenCount": 137,
+        "totalTokenCount": 666,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 529
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 2511,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 479,
+      "promptPreview": "LEASE\n\n⟦N1⟧. ⟦W1⟧. This lease ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧ ⟦W8⟧ (Landlord) and ⟦W9⟧ ⟦W10⟧ (Tenant).\n⟦N2⟧. PREMISES. ⟦N3",
+      "attempts": 1,
+      "gold": {
+        "tenantNames": "Ethan Herrera",
+        "landlordName": "Summit Gables Rentals INC",
+        "monthlyRent": 2380,
+        "deposit": 3570,
+        "leaseStart": "2026-04-01",
+        "leaseEnd": "2027-03-31",
+        "occupantCount": 2
+      },
+      "score": {
+        "outcomes": {
+          "tenantNames": "correct",
+          "landlordName": "wrong",
+          "monthlyRent": "correct",
+          "deposit": "correct",
+          "leaseStart": "correct",
+          "leaseEnd": "correct",
+          "occupantCount": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "v3",
+        "schemas": "described",
+        "nullable": true,
+        "example": false,
+        "lineNumbers": false,
+        "model": "gemini-3.5-flash-lite"
+      }
+    }
+  ]
+}

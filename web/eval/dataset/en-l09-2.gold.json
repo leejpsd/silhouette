@@ -1,0 +1,29 @@
+{
+  "employerName": "Silverpine Textiles Inc",
+  "employeeName": "Hana Kowalski",
+  "payFrequency": "monthly",
+  "payDate": "09/06/26",
+  "periodStart": "08/01/26",
+  "periodEnd": "08/31/26",
+  "grossPay": 4250,
+  "netPay": 3483.9,
+  "ytdGross": 34714,
+  "deductions": [
+    {
+      "amount": 412.25,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 263.5,
+      "kind": "social_security"
+    },
+    {
+      "amount": 61.63,
+      "kind": "medicare"
+    },
+    {
+      "amount": 28.72,
+      "kind": "health"
+    }
+  ]
+}

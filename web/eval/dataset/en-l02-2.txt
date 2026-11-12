@@ -1,0 +1,17 @@
+TALLGRASS TEXTILES LLC
+EARNINGS STATEMENT                Check Date 11-05-2026
+Name: Aisha Moreau         ID 067607
+Period Beginning: 10-01-2026    Period Ending: 10-31-2026
+Frequency: Monthly
+
+Description     Hours    Rate     YTD           Current
+Regular         175.00   25.78    46,901.59     4,511.50
+Overtime        2.50     38.67    1,005.05      96.68
+Gross Earnings                    47,906.64     4,608.18
+
+Withholdings                      YTD           Current
+Federal Income Tax                5,557.18      534.55
+Social Security                   2,970.23      285.71
+Medicare                          694.66        66.82
+Health Insurance                  890.73        85.68
+Net Pay                                         3,635.42

@@ -1,0 +1,27 @@
+{
+  "employerName": "NORTHWIND BAKERY INC",
+  "employeeName": "Kenji Okafor",
+  "payFrequency": "weekly",
+  "payDate": "09/07/2026",
+  "periodStart": "08/29/2026",
+  "periodEnd": "09/04/2026",
+  "grossPay": 770.5,
+  "netPay": 642.99,
+  "ytdGross": 27764.95,
+  "hoursWorked": 33.5,
+  "hourlyRate": 23,
+  "deductions": [
+    {
+      "amount": 68.57,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 47.77,
+      "kind": "social_security"
+    },
+    {
+      "amount": 11.17,
+      "kind": "medicare"
+    }
+  ]
+}

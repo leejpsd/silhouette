@@ -1,0 +1,31 @@
+{
+  "employerName": "NORTHWIND LOGISTICS LLC",
+  "employeeName": "Hana Novak",
+  "payFrequency": "semimonthly",
+  "payDate": "05/15/2026",
+  "periodStart": "05/01/2026",
+  "periodEnd": "05/15/2026",
+  "grossPay": 3017.85,
+  "netPay": 2343.36,
+  "ytdGross": 27233.05,
+  "hoursWorked": 76,
+  "hourlyRate": 38.94,
+  "deductions": [
+    {
+      "amount": 280.66,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 187.11,
+      "kind": "social_security"
+    },
+    {
+      "amount": 43.76,
+      "kind": "medicare"
+    },
+    {
+      "amount": 162.96,
+      "kind": "state_tax"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+PAY STATEMENT
+Willowby Textiles Corp
+Victor Delgado                Employee ID 034969
+Pay Date: 06-21-2026   Period: 06-01-2026 - 06-15-2026   Pay Frequency: Semi-Monthly
+
+Regular         83.50    hours at 40.51   3,382.59
+Overtime        2.00     hours at 60.77   121.54
+Gross Earnings                            3,504.13
+Federal Income Tax                        343.40
+Social Security                           217.26
+Medicare                                  50.81
+State Income Tax                          80.59
+Take Home Pay                             2,812.07
+
+Year to Date
+Gross 39,561.63   Deductions 7,813.36   Net 31,748.27

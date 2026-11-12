@@ -1,0 +1,108 @@
+{
+  "total": 460,
+  "runs": [
+    {
+      "date": "2026-11-12T04:33:56.749Z",
+      "variants": [
+        "v0"
+      ],
+      "set": "en",
+      "documents": 2,
+      "calls": 2
+    },
+    {
+      "date": "2026-11-12T04:34:09.658Z",
+      "variants": [
+        "v0"
+      ],
+      "set": "en",
+      "documents": 1,
+      "calls": 1
+    },
+    {
+      "date": "2026-11-12T04:34:26.573Z",
+      "variants": [
+        "v0"
+      ],
+      "set": "en",
+      "documents": 3,
+      "calls": 3
+    },
+    {
+      "date": "2026-11-12T04:35:07.206Z",
+      "variants": [
+        "v0"
+      ],
+      "set": "en",
+      "documents": 3,
+      "calls": 3
+    },
+    {
+      "date": "2026-11-12T04:35:27.807Z",
+      "variants": [
+        "v2"
+      ],
+      "set": "en",
+      "documents": 3,
+      "calls": 3
+    },
+    {
+      "date": "2026-11-12T04:39:36.947Z",
+      "variants": [
+        "v0",
+        "v1",
+        "v2",
+        "v3"
+      ],
+      "set": "all",
+      "documents": 40,
+      "calls": 40
+    },
+    {
+      "date": "2026-11-12T04:54:06.801Z",
+      "variants": [
+        "v0",
+        "v1",
+        "v2",
+        "v3"
+      ],
+      "set": "all",
+      "documents": 40,
+      "calls": 160
+    },
+    {
+      "date": "2026-11-12T05:21:00Z",
+      "variants": [
+        "v2r",
+        "v2j",
+        "v4",
+        "v2t",
+        "v2f"
+      ],
+      "set": "all",
+      "documents": 40,
+      "calls": 162,
+      "note": "stopped during v2f (503 deadline errors); count reconstructed from partial results"
+    },
+    {
+      "date": "2026-11-12T05:22:26.492Z",
+      "variants": [
+        "v2a",
+        "v2jr"
+      ],
+      "set": "all",
+      "documents": 40,
+      "calls": 81
+    },
+    {
+      "date": "2026-11-12T05:45:00Z",
+      "variants": [
+        "v2f"
+      ],
+      "set": "en",
+      "documents": 10,
+      "calls": 5,
+      "note": "stopped: gemini-3.8-flash answered HTTP 500 and 503 (deadline expired) to every request"
+    }
+  ]
+}

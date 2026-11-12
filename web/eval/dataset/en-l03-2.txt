@@ -1,0 +1,17 @@
+CEDARLINE PRINTING LLC
+Pay Stub for Ethan Lopez
+Pay Date 06/06/26   Pay Period 05/25/26 to 05/31/26
+Pay Frequency: Weekly
+
+Earnings                      Amount
+Salary                        1,153.85
+Total Gross                   1,153.85
+
+Deductions                    Amount
+Federal Income Tax            135.00
+Social Security               71.54
+Medicare                      16.73
+State Income Tax              61.15
+Health Insurance              95.06
+Total Deductions              379.48
+Net Pay                       774.37

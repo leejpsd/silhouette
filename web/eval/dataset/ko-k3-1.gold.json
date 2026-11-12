@@ -1,0 +1,27 @@
+{
+  "employerName": "다온건설 주식회사",
+  "employeeName": "이서연",
+  "payDate": "2026-02-08",
+  "grossPay": 3860000,
+  "netPay": 3314450,
+  "deductions": [
+    {
+      "amount": 165980
+    },
+    {
+      "amount": 16590
+    },
+    {
+      "amount": 173700
+    },
+    {
+      "amount": 136830
+    },
+    {
+      "amount": 17710
+    },
+    {
+      "amount": 34740
+    }
+  ]
+}

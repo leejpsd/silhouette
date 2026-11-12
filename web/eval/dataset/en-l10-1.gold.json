@@ -1,0 +1,35 @@
+{
+  "employerName": "TALLGRASS TEXTILES INC",
+  "employeeName": "Victor Raman",
+  "payFrequency": "semimonthly",
+  "payDate": "2026-03-19",
+  "periodStart": "2026-03-01",
+  "periodEnd": "2026-03-15",
+  "grossPay": 1180.9,
+  "netPay": 900.04,
+  "ytdGross": 5668.34,
+  "hoursWorked": 70,
+  "hourlyRate": 16.87,
+  "deductions": [
+    {
+      "amount": 108.64,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 73.22,
+      "kind": "social_security"
+    },
+    {
+      "amount": 17.12,
+      "kind": "medicare"
+    },
+    {
+      "amount": 37.79,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 44.09,
+      "kind": "health"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+Marigold Grocers Corp
+1139 Mulberry Ave, Brookdale, AZ 85084
+Phone 733-690-5501
+
+Pay To: Aisha Lindqvist
+5774 Sycamore St, Brookdale, CA 89282
+
+Check Number 17516     Pay Date 12/03/2026
+Pay Period 11/01/2026 - 11/30/2026     Pay Frequency Monthly
+
+Earnings                  This Period     Year to Date
+Salary                    5,916.67        65,024.17
+Gross Pay                 5,916.67        65,024.17
+Federal Income Tax        615.33          6,762.43
+Social Security           366.83          4,031.43
+Medicare                  85.79           942.79
+Health Insurance          56.96           625.96
+Retirement Plan           295.83          3,251.13
+Net Pay                   4,495.93
+
+Direct Deposit Account ending 3503   Amount $4,495.93

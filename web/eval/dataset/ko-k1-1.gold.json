@@ -1,0 +1,27 @@
+{
+  "employerName": "다온건설 주식회사",
+  "employeeName": "강도윤",
+  "payDate": "2026-4-6",
+  "grossPay": 2670000,
+  "netPay": 2380740,
+  "deductions": [
+    {
+      "amount": 34710
+    },
+    {
+      "amount": 3470
+    },
+    {
+      "amount": 120150
+    },
+    {
+      "amount": 94650
+    },
+    {
+      "amount": 12250
+    },
+    {
+      "amount": 24030
+    }
+  ]
+}

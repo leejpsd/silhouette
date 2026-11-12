@@ -1,0 +1,17 @@
+BRIGHTWATER FOODS INC
+Pay Stub for Ines Strand
+Pay Date 02/28/26   Pay Period 02/01/26 to 02/28/26
+Pay Frequency: Monthly
+
+Earnings                      Amount
+Salary                        4,833.33
+Total Gross                   4,833.33
+
+Deductions                    Amount
+Federal Income Tax            575.17
+Social Security               299.67
+Medicare                      70.08
+State Income Tax              212.67
+Health Insurance              73.59
+Total Deductions              1,231.18
+Net Pay                       3,602.15

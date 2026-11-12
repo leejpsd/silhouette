@@ -1,0 +1,29 @@
+{
+  "employerName": "TALLGRASS LAUNDRY INC",
+  "employeeName": "Victor Moreau",
+  "payFrequency": "monthly",
+  "payDate": "04/05/26",
+  "periodStart": "03/01/26",
+  "periodEnd": "03/31/26",
+  "grossPay": 7333.33,
+  "netPay": 5994.62,
+  "ytdGross": 22161.33,
+  "deductions": [
+    {
+      "amount": 696.67,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 454.67,
+      "kind": "social_security"
+    },
+    {
+      "amount": 106.33,
+      "kind": "medicare"
+    },
+    {
+      "amount": 81.04,
+      "kind": "health"
+    }
+  ]
+}

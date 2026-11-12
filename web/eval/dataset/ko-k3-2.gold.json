@@ -1,0 +1,27 @@
+{
+  "employerName": "새솔식품 주식회사",
+  "employeeName": "김지원",
+  "payDate": "2026-06-25",
+  "grossPay": 2730000,
+  "netPay": 2338160,
+  "deductions": [
+    {
+      "amount": 122850
+    },
+    {
+      "amount": 12280
+    },
+    {
+      "amount": 122850
+    },
+    {
+      "amount": 96770
+    },
+    {
+      "amount": 12530
+    },
+    {
+      "amount": 24560
+    }
+  ]
+}

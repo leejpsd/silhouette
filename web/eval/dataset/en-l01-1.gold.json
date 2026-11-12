@@ -1,0 +1,31 @@
+{
+  "employerName": "Blueharbor Textiles Inc",
+  "employeeName": "Aisha Lopez",
+  "payFrequency": "biweekly",
+  "payDate": "11/16/2026",
+  "periodStart": "10/29/2026",
+  "periodEnd": "11/11/2026",
+  "grossPay": 2583,
+  "netPay": 1946.29,
+  "ytdGross": 61000.04,
+  "hoursWorked": 67,
+  "hourlyRate": 36.9,
+  "deductions": [
+    {
+      "amount": 302.21,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 160.15,
+      "kind": "social_security"
+    },
+    {
+      "amount": 37.45,
+      "kind": "medicare"
+    },
+    {
+      "amount": 136.9,
+      "kind": "state_tax"
+    }
+  ]
+}

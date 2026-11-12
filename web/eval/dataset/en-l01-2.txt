@@ -1,0 +1,17 @@
+NORTHWIND LOGISTICS LLC                        Earnings Statement
+Employee: Hana Novak             Employee ID: 089340
+Address: 9315 Larkspur Ave, Glenwood, NV 96743
+Pay Period: 05/01/2026 - 05/15/2026      Pay Date: 05/15/2026
+Pay Frequency: Semi-Monthly
+
+Earnings          Rate      Hours     Current        YTD
+Regular           38.94     76.00     2,959.44       26,705.92
+Overtime          58.41     1.00      58.41          527.13
+Gross Pay                             3,017.85       27,233.05
+
+Deductions                            Current        YTD
+Federal Income Tax                    280.66         2,532.66
+Social Security                       187.11         1,688.47
+Medicare                              43.76          394.88
+State Income Tax                      162.96         1,470.56
+Net Pay                               2,343.36

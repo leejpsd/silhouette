@@ -1,0 +1,35 @@
+{
+  "employerName": "NORTHWIND FREIGHT CORP",
+  "employeeName": "Lucia Strand",
+  "payFrequency": "monthly",
+  "payDate": "11/06/2026",
+  "periodStart": "10/01/2026",
+  "periodEnd": "10/31/2026",
+  "grossPay": 6657.36,
+  "netPay": 4963.07,
+  "ytdGross": 69209.88,
+  "hoursWorked": 168.5,
+  "hourlyRate": 36.73,
+  "deductions": [
+    {
+      "amount": 645.76,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 139.8,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 412.76,
+      "kind": "social_security"
+    },
+    {
+      "amount": 96.53,
+      "kind": "medicare"
+    },
+    {
+      "amount": 399.44,
+      "kind": "retirement"
+    }
+  ]
+}

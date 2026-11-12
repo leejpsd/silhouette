@@ -1,0 +1,27 @@
+{
+  "employerName": "Cedarline Logistics Corp",
+  "employeeName": "Ines Moreau",
+  "payFrequency": "biweekly",
+  "payDate": "05/27/2026",
+  "periodStart": "05/12/2026",
+  "periodEnd": "05/25/2026",
+  "grossPay": 1522.88,
+  "netPay": 1255.61,
+  "ytdGross": 17360.88,
+  "hoursWorked": 77.5,
+  "hourlyRate": 19.65,
+  "deductions": [
+    {
+      "amount": 150.77,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 94.42,
+      "kind": "social_security"
+    },
+    {
+      "amount": 22.08,
+      "kind": "medicare"
+    }
+  ]
+}

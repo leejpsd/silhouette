@@ -1,0 +1,31 @@
+{
+  "employerName": "QUILLMARK FREIGHT CORP",
+  "employeeName": "Lucia Lindqvist",
+  "payFrequency": "weekly",
+  "payDate": "03/26/2026",
+  "periodStart": "03/14/2026",
+  "periodEnd": "03/20/2026",
+  "grossPay": 1239.78,
+  "netPay": 978.8,
+  "ytdGross": 14481.91,
+  "hoursWorked": 39,
+  "hourlyRate": 21.87,
+  "deductions": [
+    {
+      "amount": 116.54,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 76.87,
+      "kind": "social_security"
+    },
+    {
+      "amount": 17.98,
+      "kind": "medicare"
+    },
+    {
+      "amount": 49.59,
+      "kind": "retirement"
+    }
+  ]
+}

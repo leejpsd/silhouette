@@ -1,0 +1,33 @@
+{
+  "employerName": "Marigold Printing Llc",
+  "employeeName": "Daniel Delgado",
+  "payFrequency": "semimonthly",
+  "payDate": "11/01/2026",
+  "periodStart": "10/16/2026",
+  "periodEnd": "10/31/2026",
+  "grossPay": 2333.33,
+  "netPay": 1817.39,
+  "ytdGross": 45203.6,
+  "deductions": [
+    {
+      "amount": 196,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 144.67,
+      "kind": "social_security"
+    },
+    {
+      "amount": 33.83,
+      "kind": "medicare"
+    },
+    {
+      "amount": 71.44,
+      "kind": "health"
+    },
+    {
+      "amount": 70,
+      "kind": "retirement"
+    }
+  ]
+}

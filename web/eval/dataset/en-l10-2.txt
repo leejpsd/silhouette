@@ -1,0 +1,15 @@
+            Cedarline Foods Llc
+            EIN 20-6792501
+
+Employee Hana Strand   ID 026012
+Period 2026-07-01 to 2026-07-31   Paid on 2026-08-06   Pay Frequency: Monthly
+
+Description               Hours   Rate     Current      YTD
+Regular                   151.00  28.08    4,240.08     28,891.92
+Federal Income Tax                         -402.81      -2,744.73
+Social Security                            -262.88      -1,791.26
+Medicare                                   -61.48       -418.90
+State Income Tax                           -135.68      -924.50
+Health Insurance                           -88.35       -602.01
+Gross Pay                                  4,240.08     28,891.92
+Net Pay                                    3,288.88

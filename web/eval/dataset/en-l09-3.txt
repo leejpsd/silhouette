@@ -1,0 +1,14 @@
+Goldleaf Grocers Llc
+Monthly Salary Statement
+Employee: Omar Lindqvist
+Pay Schedule: Monthly    Pay Date: 04/02/26
+Covers 03/01/26 - 03/31/26
+
+                            Current       YTD
+Salary                      7,416.67      21,538.01
+Gross Pay                   7,416.67      21,538.01
+Federal Income Tax          637.83        1,852.25
+Social Security             459.83        1,335.35
+Medicare                    107.54        312.30
+Health Insurance            62.96         182.84
+Net Pay                     6,148.51      17,855.27

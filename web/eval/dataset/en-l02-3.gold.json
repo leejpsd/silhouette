@@ -1,0 +1,31 @@
+{
+  "employerName": "TALLGRASS LOGISTICS INC",
+  "employeeName": "Victor Kowalski",
+  "payFrequency": "weekly",
+  "payDate": "06-17-2026",
+  "periodStart": "06-05-2026",
+  "periodEnd": "06-11-2026",
+  "grossPay": 1126.9,
+  "netPay": 863.66,
+  "ytdGross": 25983,
+  "hoursWorked": 31.5,
+  "hourlyRate": 30.05,
+  "deductions": [
+    {
+      "amount": 92.41,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 69.87,
+      "kind": "social_security"
+    },
+    {
+      "amount": 16.34,
+      "kind": "medicare"
+    },
+    {
+      "amount": 84.62,
+      "kind": "health"
+    }
+  ]
+}

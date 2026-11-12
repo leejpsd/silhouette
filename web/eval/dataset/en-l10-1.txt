@@ -1,0 +1,15 @@
+            TALLGRASS TEXTILES INC
+            EIN 24-2966559
+
+Employee Victor Raman   ID 053100
+Period 2026-03-01 to 2026-03-15   Paid on 2026-03-19   Pay Frequency: Semimonthly
+
+Description               Hours   Rate     Current      YTD
+Regular                   70.00   16.87    1,180.90     5,668.34
+Federal Income Tax                         -108.64      -521.48
+Social Security                            -73.22       -351.46
+Medicare                                   -17.12       -82.16
+State Income Tax                           -37.79       -181.39
+Health Insurance                           -44.09       -211.65
+Gross Pay                                  1,180.90     5,668.34
+Net Pay                                    900.04

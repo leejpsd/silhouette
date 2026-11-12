@@ -1,0 +1,32 @@
+{
+  "employerName": "CEDARLINE PRINTING LLC",
+  "employeeName": "Ethan Lopez",
+  "payFrequency": "weekly",
+  "payDate": "06/06/26",
+  "periodStart": "05/25/26",
+  "periodEnd": "05/31/26",
+  "grossPay": 1153.85,
+  "netPay": 774.37,
+  "deductions": [
+    {
+      "amount": 135,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 71.54,
+      "kind": "social_security"
+    },
+    {
+      "amount": 16.73,
+      "kind": "medicare"
+    },
+    {
+      "amount": 61.15,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 95.06,
+      "kind": "health"
+    }
+  ]
+}

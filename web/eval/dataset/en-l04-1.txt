@@ -1,0 +1,15 @@
+Employer: NORTHWIND BAKERY INC
+Employee: Kenji Okafor
+Employee Number: 041559
+Frequency: Weekly
+Period Start: 08/29/2026
+Period End: 09/04/2026
+Pay Date: 09/07/2026
+Hourly Rate: $23.00
+Regular Hours: 33.50
+Gross Pay: $770.50
+Federal Income Tax: $68.57
+Social Security: $47.77
+Medicare: $11.17
+Net Pay: $642.99
+YTD Gross: $27,764.95

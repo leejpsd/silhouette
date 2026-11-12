@@ -1,0 +1,17 @@
+Blueharbor Motors Inc - Weekly Pay Statement
+Employee Priya Okafor (059763)
+Week 09/08/2026 through 09/14/2026    Pay Date 09/14/2026
+Pay Frequency: Weekly
+
+Type                Hours    Rate     Current      YTD
+Regular             37.00    27.59    1,020.83     37,917.95
+Overtime            4.50     41.39    186.26       6,918.62
+Holiday             8.00     27.59    220.72       8,198.32
+Shift Differential  11.00    1.45     15.95        592.31
+Total Gross                           1,443.76     53,627.20
+
+Federal Income Tax                    121.28       4,505.00
+Social Security                       89.51        3,324.83
+Medicare                              20.93        777.29
+Retirement Plan                       57.75        2,145.03
+Net Pay                               1,154.29

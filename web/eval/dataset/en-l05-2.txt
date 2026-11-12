@@ -1,0 +1,15 @@
+SILVERPINE FOODS INC                PAYROLL ADVICE
+Leila Fontaine   Employee ID 015735
+Pay Period 04/01/2026 - 04/15/2026   Paid 04/19/2026   Semi-Monthly
+
+Earnings      Hours     Rate      Amount
+Regular       83.00     36.73     3,048.59
+Overtime      6.50      55.10     358.15
+Gross Pay 3,406.74      YTD Gross 24,828.30
+
+Deductions
+Federal Income Tax    350.89      State Income Tax      173.74
+Social Security       211.22      Medicare              49.40
+Retirement Plan       136.27      
+Total Deductions 921.52
+Net Pay 2,485.22

@@ -1,0 +1,15 @@
+NORTHWIND FREIGHT CORP                PAYROLL ADVICE
+Lucia Strand   Employee ID 003871
+Pay Period 10/01/2026 - 10/31/2026   Paid 11/06/2026   Monthly
+
+Earnings      Hours     Rate      Amount
+Regular       168.50    36.73     6,189.01
+Overtime      8.50      55.10     468.35
+Gross Pay 6,657.36      YTD Gross 69,209.88
+
+Deductions
+Federal Income Tax    645.76      State Income Tax      139.80
+Social Security       412.76      Medicare              96.53
+Retirement Plan       399.44      
+Total Deductions 1,694.29
+Net Pay 4,963.07

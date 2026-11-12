@@ -1,0 +1,17 @@
+QUILLMARK FREIGHT CORP - Weekly Pay Statement
+Employee Lucia Lindqvist (064620)
+Week 03/14/2026 through 03/20/2026    Pay Date 03/26/2026
+Pay Frequency: Weekly
+
+Type                Hours    Rate     Current      YTD
+Regular             39.00    21.87    852.93       9,963.13
+Overtime            6.00     32.81    196.86       2,299.51
+Holiday             8.00     21.87    174.96       2,043.75
+Shift Differential  9.00     1.67     15.03        175.52
+Total Gross                           1,239.78     14,481.91
+
+Federal Income Tax                    116.54       1,361.30
+Social Security                       76.87        897.91
+Medicare                              17.98        210.04
+Retirement Plan                       49.59        579.24
+Net Pay                               978.80
