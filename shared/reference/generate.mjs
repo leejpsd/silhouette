@@ -76,6 +76,15 @@ export function build() {
         }),
       ],
     },
+    'silhouette-verdict.json': {
+      spec: 'rulepacks/SPEC.md section 7', pack: 'rulepacks/zz-test/pack.json', bands: 'bands/zz-test.json',
+      cases: c.silhouetteVerdictCases.map((k) => {
+        const exact = { ...k.exact };
+        if (k.bandFrom !== undefined) { delete exact.incomeBand; exact.annualIncome = k.bandFrom; }
+        const profile = s.generalize(exact, bands);
+        return { id: k.id, profile, expected: s.silhouetteVerdicts(pack, bands, profile) };
+      }),
+    },
     'verdict.json': {
       spec: 'rulepacks/SPEC.md v1.2 section 5', pack: 'rulepacks/zz-test/pack.json', bands: 'bands/zz-test.json',
       cases: c.verdictCases.map((k) => {

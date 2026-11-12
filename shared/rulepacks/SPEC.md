@@ -137,3 +137,19 @@ Patterns match the **whole** string. In ICU and Java, `$` also matches before a 
 **Invalid input raises `GeneralizeError`** and produces no profile: an unknown band id, an income that is not a finite number or falls in no band, a household size that is not a positive integer, a county that is not a slug, an unknown housing value. Error messages never contain user values.
 
 Canonical serialization: all six keys in schema order, no whitespace, `null` for unanswered fields, integers without a fraction. Because every string is a slug or a band id, no character ever needs escaping, so the output is identical on every platform.
+
+## 7. Verdicts from the silhouette
+
+The verdict on screen is computed from exact values and from answers to sensitive questions. Sending it, or the state of a single criterion, to a cloud-capable task would reveal those answers (a passed residency criterion says what the person answered). So explanations, prepared questions and every other cloud-capable task are given a second result, computed by the same engine from the `Generalized` profile alone:
+
+1. Start with no answers.
+2. `incomeBand`: the profile's band, when it is not `null`.
+3. `householdSize`: the profile's value when it is an integer and the pack has a question `householdSize` that is not `sensitive`. The capped form (`"6+"`) is not an answer.
+4. `housing` and `county`: the profile's value when it is not `null` and the pack has a non-sensitive question with that id.
+5. Run the verdict algorithm of section 5. Everything else is unanswered, so criteria that need it are `unknown`.
+
+The result keeps `programId`, `verdict` and each criterion's `id` and `state` only: no `estimatedAmount`, no `dependsOn`. It is `Generalized`.
+
+When this result differs from the verdict on screen, the app says that the explanation only knows the silhouette and that the result on screen is the one that counts. A model is told which criteria are not known because the answer stays on the device (`prompts/explain.v2.md`), so that it does not tell a person they skipped a question they answered privately.
+
+Cases: `fixtures/conformance/silhouette-verdict.json`.

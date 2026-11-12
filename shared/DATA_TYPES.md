@@ -16,6 +16,10 @@ Every value in Silhouette carries one of four types. The type decides where the 
 
 Because of this rule, a cloud fallback can never break the product's promise: whatever a `PREFER_*` call falls back with was already safe to send.
 
+### Verdicts are `Raw` too
+
+A verdict, or the state of one criterion, computed from exact values or from answers to sensitive questions is `Raw`: it can reveal the answer it was computed from. A cloud-capable task that needs a verdict is given the one the engine reaches from the `Generalized` profile alone (`rulepacks/SPEC.md` section 7).
+
 ## Enforcing it in code
 
 Each platform defines wrapper types with the same names and makes the rule a compile-time property:

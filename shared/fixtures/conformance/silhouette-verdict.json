@@ -1,0 +1,613 @@
+{
+  "spec": "rulepacks/SPEC.md section 7",
+  "pack": "rulepacks/zz-test/pack.json",
+  "bands": "bands/zz-test.json",
+  "cases": [
+    {
+      "id": "full-profile-low-band",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "A",
+        "householdSize": 3,
+        "childAgeBands": [
+          "0-5",
+          "6-17"
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "full-profile-mid-band",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "C",
+        "householdSize": 3,
+        "childAgeBands": [
+          "0-5",
+          "6-17"
+        ],
+        "county": "testshire",
+        "housing": "renter"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "maybe",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "mixed"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "maybe",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "mixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "full-profile-top-band",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "E",
+        "householdSize": 2,
+        "childAgeBands": [],
+        "county": "testshire",
+        "housing": "owner"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "fail"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "band-only",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "A",
+        "householdSize": 1,
+        "childAgeBands": null,
+        "county": null,
+        "housing": "other"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "unlikely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "fail"
+            }
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "household-over-cap-is-unknown",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "C",
+        "householdSize": "6+",
+        "childAgeBands": null,
+        "county": null,
+        "housing": "renter"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "household-at-cap",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "C",
+        "householdSize": 6,
+        "childAgeBands": null,
+        "county": null,
+        "housing": "renter"
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "pass"
+            }
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "pass"
+            }
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "likely",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "pass"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "income-only",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": "B",
+        "householdSize": null,
+        "childAgeBands": null,
+        "county": null,
+        "housing": null
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "pass"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nothing-answered",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "incomeBand": null,
+        "householdSize": null,
+        "childAgeBands": null,
+        "county": null,
+        "housing": null
+      },
+      "expected": [
+        {
+          "programId": "work-credit",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "has-earnings",
+              "state": "unknown"
+            },
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "food-help",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "residency",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "utility-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-limit",
+              "state": "unknown"
+            },
+            {
+              "id": "housing",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "phone-discount",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "income-or-benefit",
+              "state": "unknown"
+            }
+          ]
+        },
+        {
+          "programId": "senior-food",
+          "verdict": "depends",
+          "criteria": [
+            {
+              "id": "gross-limit",
+              "state": "unknown"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

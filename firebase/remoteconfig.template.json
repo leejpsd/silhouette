@@ -51,14 +51,14 @@
     },
     "prompt_pointer_extract_v": {
       "defaultValue": {
-        "value": "3"
+        "value": "4"
       },
       "valueType": "NUMBER",
       "description": "shared/prompts/pointer-extract.v{n}.md"
     },
     "prompt_explain_v": {
       "defaultValue": {
-        "value": "1"
+        "value": "2"
       },
       "valueType": "NUMBER",
       "description": "shared/prompts/explain.v{n}.md"

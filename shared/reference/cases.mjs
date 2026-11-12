@@ -227,3 +227,15 @@ export const verdictCases = [
   { id: 'error-income-and-unknown-band', answers: { incomeBand: 'Z', householdSize: 1 } },
   { id: 'household-above-table', answers: { annualIncome: 60000, householdSize: 8, benefits: [], hasOlderMember: 'no' } },
 ];
+
+// Verdicts from the silhouette alone (rulepacks/SPEC.md section 7). Each `exact` is generalized first.
+export const silhouetteVerdictCases = [
+  { id: 'full-profile-low-band', exact: { jurisdiction: 'zz-test', annualIncome: 12000, householdSize: 3, childAges: [4, 9], county: 'testshire', housing: 'renter' } },
+  { id: 'full-profile-mid-band', exact: { jurisdiction: 'zz-test', annualIncome: 30524.9, householdSize: 3, childAges: [4, 9], county: 'testshire', housing: 'renter' } },
+  { id: 'full-profile-top-band', exact: { jurisdiction: 'zz-test', annualIncome: 250000, householdSize: 2, childAges: [], county: 'testshire', housing: 'owner' } },
+  { id: 'band-only', exact: { jurisdiction: 'zz-test', incomeBand: null, householdSize: 1, housing: 'other' }, bandFrom: 14999.99 },
+  { id: 'household-over-cap-is-unknown', exact: { jurisdiction: 'zz-test', annualIncome: 30000, householdSize: 9, housing: 'renter' } },
+  { id: 'household-at-cap', exact: { jurisdiction: 'zz-test', annualIncome: 30000, householdSize: 6, housing: 'renter' } },
+  { id: 'income-only', exact: { jurisdiction: 'zz-test', annualIncome: 20000 } },
+  { id: 'nothing-answered', exact: { jurisdiction: 'zz-test' } },
+];

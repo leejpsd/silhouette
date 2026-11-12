@@ -457,3 +457,21 @@ export function verdicts(pack, bands, answers) {
     return result;
   });
 }
+
+/**
+ * The verdict engine run on the profile silhouette alone (rulepacks/SPEC.md section 7). This, and
+ * never the on-screen verdict, is what a cloud-capable task may be given.
+ */
+export function silhouetteVerdicts(pack, bands, profile) {
+  const open = new Set(pack.questions.filter((q) => q.sensitive !== true).map((q) => q.id));
+  const answers = {};
+  if (given(profile.incomeBand)) answers.incomeBand = profile.incomeBand;
+  if (open.has('householdSize') && typeof profile.householdSize === 'number') answers.householdSize = profile.householdSize;
+  if (open.has('housing') && given(profile.housing)) answers.housing = profile.housing;
+  if (open.has('county') && given(profile.county)) answers.county = profile.county;
+  return verdicts(pack, bands, answers).map((v) => ({
+    programId: v.programId,
+    verdict: v.verdict,
+    criteria: v.criteria.map((c) => ({ id: c.id, state: c.state })),
+  }));
+}

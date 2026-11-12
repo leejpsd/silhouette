@@ -1,5 +1,18 @@
 # Contract changelog
 
+## v1.7 — 2026-11-13
+
+From building explanations and questions in the Web app.
+
+| Change | Why |
+|---|---|
+| **Verdicts from the silhouette** (`rulepacks/SPEC.md` section 7, `DATA_TYPES.md`): a verdict or criterion state computed from exact or sensitive answers is `Raw`. Cloud-capable tasks get the verdict the engine reaches from the `Generalized` profile alone. `silhouetteVerdicts()` in the reference, fixture `silhouette-verdict.json` (8 cases) | A passed residency criterion in a prompt tells the cloud what the person answered to a question marked as never leaving the device |
+| `prompts/explain.v2.md`: criteria not met are listed apart from criteria that are not known because the answer stays on the device; the model is told not to ask for that information or to call it skipped | With one combined list, real answers told people they had skipped questions they had answered privately |
+| New prompts: `ask.v1`, `current-status.v1`, `discover.v1`, `nearby.v1`, `read-aloud.v1` | Tasks in `routing.json` that had no shared prompt |
+| `prompts/pointer-extract.v4.md`: hours worked and hourly rate are those of the Regular (base pay) line | With v3, a layout with four earnings lines lost both fields in 4 of 6 documents. With v4: all fields correct on 38 English paystubs in two runs |
+| 92 copy keys in en, es and ko: explanations, prepared and typed questions, the step before a request is sent, current information, official information, other help, help nearby, read aloud, labels of outgoing fields | |
+| Remote Config defaults: `prompt_pointer_extract_v` = 4, `prompt_explain_v` = 2 | |
+
 ## v1.6 — 2026-11-13
 
 | Change | Why |
