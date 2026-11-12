@@ -39,6 +39,8 @@ import app.silhouette.benefits.i18n.Strings
 import app.silhouette.benefits.quickcheck.AnswerError
 import app.silhouette.benefits.quickcheck.Draft
 import app.silhouette.benefits.quickcheck.EXACT_CHOICE
+import app.silhouette.benefits.quickcheck.MAX_EXACT_INCOME
+import app.silhouette.benefits.quickcheck.parseIncomeAmount
 import app.silhouette.benefits.quickcheck.Step
 import app.silhouette.benefits.quickcheck.draftToValue
 import app.silhouette.benefits.quickcheck.initialDraft
@@ -141,7 +143,7 @@ fun QuestionContent(app: AppController, route: Route.Question) {
                     label = { Text(t("income.exact.label")) },
                     singleLine = true,
                     isError = errorText != null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { submit() }),
                     textStyle = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
@@ -149,6 +151,16 @@ fun QuestionContent(app: AppController, route: Route.Question) {
                         .testTag("exact-income")
                         .semantics { errorText?.let { error(it) } },
                 )
+                // Show the amount exactly as understood, so a misplaced separator is caught before continuing.
+                parseIncomeAmount(text)?.takeIf { text.isNotBlank() && it <= MAX_EXACT_INCOME }?.let { amount ->
+                    Text(
+                        t("q.amountUnderstood", "amount" to t.decimal(amount)),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .testTag("amount-understood")
+                            .semantics { liveRegion = LiveRegionMode.Polite },
+                    )
+                }
                 PrivateNote(t("q.private"), Modifier.testTag("exact-private-note"))
             }
         }

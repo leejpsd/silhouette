@@ -1,6 +1,8 @@
 package app.silhouette.benefits.content
 
+import app.silhouette.benefits.core.Allowlist
 import app.silhouette.benefits.core.Bands
+import app.silhouette.benefits.core.Raw
 import app.silhouette.benefits.core.RulePack
 import app.silhouette.benefits.i18n.AppLanguage
 import app.silhouette.benefits.i18n.CopyTable
@@ -11,6 +13,16 @@ import app.silhouette.benefits.ui.theme.DesignTokens
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+
+/** A built-in synthetic document (shared/samples/): invented person, employer and numbers. */
+data class SampleDocument(val id: String, val language: String, val labelKey: String, val text: Raw<String> = Raw.of("")) {
+    companion object {
+        val ALL: List<SampleDocument> = listOf(
+            SampleDocument("paystub-en-01", "en", "doc.sample.enText"),
+            SampleDocument("payslip-ko-01", "ko", "doc.sample.koText"),
+        )
+    }
+}
 
 /** Reads files of the shared contract by path relative to the shared folder. Null when absent. */
 fun interface ContentSource {
@@ -28,7 +40,17 @@ class AppContent(
     val sharedCopy: Map<AppLanguage, CopyTable>,
     val packCopy: Map<AppLanguage, CopyTable>,
     val tokens: DesignTokens,
+    /** `skeleton/allowlist/{language}.json` per language. */
+    private val allowlistFiles: Map<String, kotlinx.serialization.json.JsonElement>,
+    /** `schemas/pointer.paystub.json` and friends, by file name. */
+    val pointerSchemas: Map<String, JsonObject>,
+    /** Built-in sample documents (shared/samples/), Raw text by id. */
+    val samples: List<SampleDocument>,
 ) {
+    /** The allowlist for a document: its language ∪ `en` (shared/skeleton/SPEC.md section 4). */
+    fun allowlist(language: String): Allowlist =
+        Allowlist.fromFiles(listOfNotNull(allowlistFiles["en"], allowlistFiles[language].takeIf { language != "en" }))
+
     /** Synthetic packs used only for tests and demos; the app shows a banner while one is active. */
     val isDemoPack: Boolean get() = pack.jurisdiction in DEMO_JURISDICTIONS
 
@@ -45,7 +67,13 @@ class AppContent(
             fun tables(dir: String): Map<AppLanguage, CopyTable> = AppLanguage.entries.mapNotNull { lang ->
                 source.text("$dir/${lang.tag}.json")?.let { lang to copyTable(it) }
             }.toMap().also { require(AppLanguage.EN in it) { "missing $dir/en.json" } }
+            val schemaNames = listOf("pointer.paystub.json")
             return AppContent(
+                allowlistFiles = AppLanguage.entries.mapNotNull { lang ->
+                    source.text("skeleton/allowlist/${lang.tag}.json")?.let { lang.tag to Json.parseToJsonElement(it) }
+                }.toMap().also { require("en" in it) { "missing skeleton/allowlist/en.json" } },
+                pointerSchemas = schemaNames.associateWith { Json.parseToJsonElement(required("schemas/$it")) as JsonObject },
+                samples = SampleDocument.ALL.map { s -> s.copy(text = Raw.of(required("samples/${s.id}.txt"))) },
                 pack = pack,
                 bands = bands,
                 steps = buildSteps(pack, bands),

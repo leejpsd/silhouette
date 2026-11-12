@@ -12,7 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import app.silhouette.benefits.ui.screens.DocumentContent
+import app.silhouette.benefits.ui.screens.PreviewContent
 import app.silhouette.benefits.ui.screens.ProgramContent
+import app.silhouette.benefits.ui.screens.ReviewContent
 import app.silhouette.benefits.ui.screens.QuestionContent
 import app.silhouette.benefits.ui.screens.ResultsContent
 import app.silhouette.benefits.ui.screens.StartContent
@@ -39,6 +42,9 @@ fun SilhouetteApp(app: AppController) {
                                 is Route.Question -> QuestionContent(app, route)
                                 Route.Results -> ResultsContent(app)
                                 is Route.Program -> ProgramContent(app, route)
+                                Route.Document -> DocumentContent(app)
+                                Route.Preview -> PreviewContent(app)
+                                Route.Review -> ReviewContent(app)
                             }
                             Footer(t, onDelete = { app.deleteEverything() })
                         }
@@ -58,5 +64,8 @@ private fun paneTitle(app: AppController, route: Route): String {
         is Route.Question -> t("question.${route.stepId}.label")
         Route.Results -> t("results.title")
         is Route.Program -> app.content.pack.programInfo.find { it.id == route.id }?.let { t.programName(it.id, it.name) } ?: t("results.title")
+        Route.Document -> t("doc.title")
+        Route.Preview -> t("preview.title")
+        Route.Review -> t("review.title")
     }
 }

@@ -44,6 +44,7 @@ fun StartContent(app: AppController) {
             onClick = app::begin,
             modifier = Modifier.testTag("start-begin"),
         )
+        SecondaryButton(t("start.sample"), onClick = app::openDocument, modifier = Modifier.testTag("start-document"))
         if (app.started) SecondaryButton(t("start.restart"), onClick = app::restart, modifier = Modifier.testTag("start-restart"))
     }
 }

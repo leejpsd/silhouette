@@ -17,6 +17,20 @@ internal fun parseNumber(token: String): Double? {
     return token.replace(",", "").toDouble()
 }
 
+/**
+ * An amount typed by the user: surrounding spaces and one leading currency symbol are removed,
+ * then the text must have the number format of SPEC.md section 5 (`28,000.50`, `28000.5`).
+ * Anything else (`28.000,50`, `1e3`, `-5`, two amounts) returns null, so it can be rejected with
+ * a message instead of being misread.
+ */
+public fun parseTypedAmount(text: String): Double? {
+    var t = text.trim()
+    if (t.isNotEmpty() && Character.getType(t.codePointAt(0)) == Character.CURRENCY_SYMBOL.toInt()) {
+        t = t.substring(Character.charCount(t.codePointAt(0))).trim()
+    }
+    return parseNumber(t)
+}
+
 private fun JsonElement?.stringOrNull(): String? = (this as? JsonPrimitive)?.takeIf { it.isString }?.content
 
 private fun ownField(obj: JsonElement?, key: String): JsonElement? = (obj as? JsonObject)?.get(key)

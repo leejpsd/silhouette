@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -161,6 +162,7 @@ fun LeavingBar(strings: Strings, log: OutboundLog) {
     val c = LocalSilhouetteColors.current
     val d = LocalDimens.current
     val entries by log.entries.collectAsState()
+    val left = entries.filter { it.status != OutboundLog.Status.KEPT_ON_DEVICE }
     var open by rememberSaveable { mutableStateOf(false) }
     val fieldName = { f: String -> strings.lookup("outbound.field.$f")?.let { strings("outbound.field.$f") } ?: f }
     Column(
@@ -182,12 +184,31 @@ fun LeavingBar(strings: Strings, log: OutboundLog) {
             ) {
                 Text(strings("leaving.body"), style = MaterialTheme.typography.bodyMedium)
                 for (e in entries) {
-                    Text(
-                        e.fields.joinToString(", ") { fieldName(it) } + " — " + strings("outbound.sentTo", "destination" to e.destination),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                    var showPayload by rememberSaveable(e.id) { mutableStateOf(false) }
+                    Column(Modifier.testTag("outbound-entry"), verticalArrangement = Arrangement.spacedBy(d.xxs)) {
+                        Text(
+                            e.fields.joinToString(", ") { fieldName(it) } + " · " + strings("outbound.status.${e.status.name}"),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        val keptHere = e.status == OutboundLog.Status.KEPT_ON_DEVICE
+                        // A request answered on this device went nowhere, so it has no destination line.
+                        if (!keptHere) Text(strings("outbound.sentTo", "destination" to e.destination), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
+                        if (e.payload != null) {
+                            TextButton(onClick = { showPayload = !showPayload }, modifier = Modifier.heightIn(min = d.minTapTarget)) {
+                                Text(strings(if (keptHere) "outbound.showSilhouette" else "outbound.showPayload"), style = MaterialTheme.typography.labelLarge)
+                            }
+                            if (showPayload) {
+                                Text(
+                                    e.payload,
+                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
+                                    softWrap = false,
+                                    modifier = Modifier.horizontalScroll(rememberScrollState()).testTag("outbound-payload"),
+                                )
+                            }
+                        }
+                    }
                 }
-                if (entries.isNotEmpty()) Text(strings("leaving.network"), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
+                if (left.isNotEmpty()) Text(strings("leaving.network"), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
             }
         }
         Row(
@@ -195,10 +216,11 @@ fun LeavingBar(strings: Strings, log: OutboundLog) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(d.xs),
         ) {
-            val status = if (entries.isEmpty()) {
+            // Only what left, or may have left, the device counts here.
+            val status = if (left.isEmpty()) {
                 strings("leaving.none")
             } else {
-                strings("outbound.count", "count" to entries.size, "list" to entries.flatMap { it.fields }.distinct().joinToString(", ") { fieldName(it) })
+                strings("outbound.count", "count" to left.size, "list" to left.flatMap { it.fields }.distinct().joinToString(", ") { fieldName(it) })
             }
             // Title and status share one paragraph so the bar stays short at large font sizes.
             Text(

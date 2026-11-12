@@ -106,6 +106,8 @@ abstract class SyncSharedContract : DefaultTask() {
             "bands/*.json",
             "design/tokens.json",
             "skeleton/allowlist/*.json",
+            "schemas/pointer.*.json",
+            "samples/*.txt",
         )
         val REQUIRED = listOf(
             "copy/en.json",
@@ -113,6 +115,8 @@ abstract class SyncSharedContract : DefaultTask() {
             "bands/zz-test.json",
             "design/tokens.json",
             "skeleton/allowlist/en.json",
+            "schemas/pointer.paystub.json",
+            "samples/paystub-en-01.txt",
         )
     }
 }
@@ -148,7 +152,7 @@ abstract class SyncConformanceFixtures : DefaultTask() {
     }
 
     companion object {
-        val INCLUDES = listOf("fixtures/**", "schemas/**", "skeleton/**", "rulepacks/**", "bands/**")
+        val INCLUDES = listOf("fixtures/**", "schemas/**", "skeleton/**", "rulepacks/**", "bands/**", "reference/silhouette.mjs")
     }
 }
 
@@ -161,7 +165,7 @@ val syncConformanceFixtures = tasks.register<SyncConformanceFixtures>("syncConfo
 
 val syncSharedContract = tasks.register<SyncSharedContract>("syncSharedContract") {
     group = "build"
-    description = "Copies shared/copy, shared/rulepacks/zz-test, shared/bands, shared/design/tokens.json and shared/skeleton/allowlist into generated assets."
+    description = "Copies shared/copy, shared/rulepacks/zz-test, shared/bands, shared/design/tokens.json, shared/skeleton/allowlist, the pointer schemas and the sample documents into generated assets."
     sharedDir.set(layout.settingsDirectory.dir("../shared"))
     outputDir.set(layout.buildDirectory.dir("generated/sharedContract/assets"))
 }

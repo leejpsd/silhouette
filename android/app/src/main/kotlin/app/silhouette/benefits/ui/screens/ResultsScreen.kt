@@ -29,6 +29,10 @@ import app.silhouette.benefits.ui.AppController
 import app.silhouette.benefits.ui.Lead
 import app.silhouette.benefits.ui.MarkKind
 import app.silhouette.benefits.ui.Meta
+import app.silhouette.benefits.ui.Panel
+import app.silhouette.benefits.ui.PrimaryButton
+import app.silhouette.benefits.quickcheck.AnswerValue
+import app.silhouette.benefits.quickcheck.INCOME_STEP
 import app.silhouette.benefits.ui.Route
 import app.silhouette.benefits.ui.ScreenHeading
 import app.silhouette.benefits.ui.SecondaryButton
@@ -43,6 +47,11 @@ fun ResultsContent(app: AppController) {
     val d = LocalDimens.current
     ScreenHeading(t("results.title"))
     Lead(t("results.lead"))
+    (app.answers[INCOME_STEP] as? AnswerValue.ExactIncome)?.takeIf { it.fromDocument }?.let {
+        Panel(Modifier.testTag("income-from-document")) {
+            Text(t("results.fromDocument", "amount" to t.decimal(it.amount)), style = MaterialTheme.typography.bodyLarge)
+        }
+    }
     for ((verdict, programs) in groupByVerdict(app.results)) {
         Column(
             Modifier.testTag("group-${verdict.wire}"),
@@ -60,6 +69,7 @@ fun ResultsContent(app: AppController) {
         }
     }
     if (app.results.any { it.verdict == Verdict.MAYBE }) Meta(t("results.maybeHint"))
+    PrimaryButton(t("results.addDocument"), onClick = app::openDocument, modifier = Modifier.testTag("results-add-document"))
     SecondaryButton(t("results.edit"), onClick = { app.navigate(Route.Question(app.steps.first().id)) }, modifier = Modifier.testTag("results-edit"))
 }
 

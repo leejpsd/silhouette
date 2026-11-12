@@ -10,7 +10,14 @@ import app.silhouette.benefits.core.PLACEHOLDER_OPEN
 import app.silhouette.benefits.core.Raw
 import app.silhouette.benefits.core.RuleError
 import app.silhouette.benefits.core.RulePack
-import app.silhouette.benefits.core.TOKEN_PATTERN
+import app.silhouette.benefits.core.MONTH_NAMES
+import app.silhouette.benefits.core.ModelSchema
+import app.silhouette.benefits.core.ModelSchemaError
+import app.silhouette.benefits.core.PaystubValues
+import app.silhouette.benefits.core.SAFE_CLASS
+import app.silhouette.benefits.core.SchemaDialect
+import app.silhouette.benefits.core.Validation
+import app.silhouette.benefits.core.ValidationInputError
 import app.silhouette.benefits.core.Unknown
 import app.silhouette.benefits.core.canonical
 import app.silhouette.benefits.core.evaluate
@@ -30,7 +37,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import java.util.Locale
 
 /** Read access to the shared contract folder: a directory on the JVM, packaged assets on a device. */
 public interface FixtureSource {
@@ -61,6 +67,7 @@ public class ConformanceFailure(message: String) : AssertionError(message)
 public object ConformanceSuite {
     public const val CONFORMANCE_DIR: String = "fixtures/conformance"
     public const val CANARY_DIR: String = "fixtures/canary"
+    public const val REFERENCE: String = "reference/silhouette.mjs"
 
     private val runners: Map<String, (Context) -> List<ConformanceCase>> = mapOf(
         "skeleton.json" to { c -> skeletonCases(c) },
@@ -68,6 +75,8 @@ public object ConformanceSuite {
         "generalize.json" to { c -> generalizeCases(c) },
         "evaluator.json" to { c -> evaluatorCases(c) },
         "verdict.json" to { c -> verdictCases(c) },
+        "validate.json" to { c -> validateCases(c) },
+        "model-schema.json" to { c -> modelSchemaCases(c) },
     )
 
     /** The conformance files this suite knows how to run. */
@@ -90,10 +99,18 @@ public object ConformanceSuite {
             }
         }
         out += canaryCases(source)
-        out += ConformanceCase("skeleton/SPEC.md", "the tokenizer pattern is the combined reference regex, character for character") {
-            val spec = source.text("skeleton/SPEC.md")
-            val block = Regex("Combined reference regex[^\\n]*\\n+```\\n([^\\n]+)\\n```").find(spec)
-            equal(block?.groupValues?.get(1), TOKEN_PATTERN, "tokenizer pattern")
+        out += ConformanceCase(REFERENCE, "the safe-character list is the reference SAFE_CLASS, range for range") {
+            val reference = source.text(REFERENCE)
+            val block = Regex("export const SAFE_CLASS =\\s*([^;]+);").find(reference)?.groupValues?.get(1) ?: fail("SAFE_CLASS not found")
+            // Concatenated JavaScript string literals ('...' + '...'); `\\\\` in the source is one backslash.
+            val joined = Regex("'([^']*)'").findAll(block).joinToString("") { it.groupValues[1].replace("\\\\", "\\") }
+            equal(joined, SAFE_CLASS, "SAFE_CLASS")
+        }
+        out += ConformanceCase(REFERENCE, "the month names are the reference MONTHS") {
+            val reference = source.text(REFERENCE)
+            val block = Regex("export const MONTHS = \\[([^;]+)\\];").find(reference)?.groupValues?.get(1) ?: fail("MONTHS not found")
+            val groups = Regex("\\[([^\\]]*)\\]").findAll(block).map { g -> Regex("'([^']*)'").findAll(g.groupValues[1]).map { it.groupValues[1] }.toList() }.toList()
+            equal(groups, MONTH_NAMES, "MONTHS")
         }
         return out
     }
@@ -103,7 +120,8 @@ public object ConformanceSuite {
     // ---------- skeleton.json ----------
 
     private val placeholderRef = Regex("$PLACEHOLDER_OPEN([DNW][0-9]+)$PLACEHOLDER_CLOSE")
-    private val letters = Regex("[\\p{L}\\p{M}]+")
+    /** Word material: anything that is not safe and not an ASCII digit (SPEC.md section 2). */
+    private val words = Regex("[^0-9$SAFE_CLASS]+(?:['\u2019\\-][^0-9$SAFE_CLASS]+)*")
 
     private fun skeletonCases(c: Context): List<ConformanceCase> = nonEmpty(c, c.fixture.cases().flatMap { k ->
         val id = k.str("id")
@@ -115,12 +133,12 @@ public object ConformanceSuite {
                 equal(expected.str("skeleton"), result.skeleton.text, "skeleton")
                 exact(expected.obj("map"), JsonObject(result.map.reveal().mapValues { JsonPrimitive(it.value) }))
             },
-            ConformanceCase(c.file, "$id: no digit and no non-allowlisted word survives") {
+            ConformanceCase(c.file, "$id: only safe characters and allowlisted words survive") {
                 val allow = allowlist(c.source, k.str("locale"))
                 val stripped = result.skeleton.text.replace(placeholderRef, "")
                 check(stripped.none { it in '0'..'9' }) { "a digit survived" }
-                for (word in letters.findAll(stripped).map { it.value }) {
-                    check(word.lowercase(Locale.ROOT) in allow) { "\"$word\" survived but is not allowlisted" }
+                for (word in words.findAll(stripped).map { it.value }) {
+                    check(allow.allows(word)) { "a word survived but is not allowlisted" }
                 }
             },
             ConformanceCase(c.file, "$id: skeleton + map rebuild the normalized input") {
@@ -214,6 +232,40 @@ public object ConformanceSuite {
         })
     }
 
+    // ---------- validate.json ----------
+
+    private fun validateCases(c: Context): List<ConformanceCase> = nonEmpty(c, c.fixture.cases().map { k ->
+        ConformanceCase(c.file, k.str("id")) {
+            val run = { Validation.validatePaystubs((k["stubs"] as JsonArray).map { PaystubValues.fromJson(it) }, k.str("jurisdiction")) }
+            when {
+                k.containsKey("expectedError") -> expectError(k.str("expectedError")) { run() }
+                k.containsKey("expected") -> exact(k["expected"]!!, run().toJson())
+                else -> fail("case has neither expected nor expectedError")
+            }
+        }
+    })
+
+    // ---------- model-schema.json ----------
+
+    private fun modelSchemaCases(c: Context): List<ConformanceCase> = nonEmpty(c, c.fixture.cases().map { k ->
+        ConformanceCase(c.file, k.str("id")) {
+            val options = k["options"] as? JsonObject ?: JsonObject(emptyMap())
+            val requiredNullable = (options["requiredNullable"] as? JsonPrimitive)?.content == "true"
+            val dialect = when ((options["dialect"] as? JsonPrimitive)?.content) {
+                null, "openapi" -> SchemaDialect.OPENAPI
+                "jsonschema" -> SchemaDialect.JSONSCHEMA
+                else -> fail("unknown dialect")
+            }
+            val run = { ModelSchema.toModelSchema(k["schema"]!!, requiredNullable, dialect) }
+            when {
+                // The fixture marks errors with `true`: any ModelSchemaError is expected.
+                k.containsKey("expectedError") -> expectError("ModelSchemaError") { run() }
+                k.containsKey("expected") -> exact(k["expected"]!!, run())
+                else -> fail("case has neither expected nor expectedError")
+            }
+        }
+    })
+
     // ---------- Canary ----------
 
     private fun canaryCases(source: FixtureSource): List<ConformanceCase> {
@@ -249,6 +301,8 @@ public object ConformanceSuite {
         "GeneralizeError" to GeneralizeError::class.java,
         "RuleError" to RuleError::class.java,
         "InputError" to InputError::class.java,
+        "ValidationInputError" to ValidationInputError::class.java,
+        "ModelSchemaError" to ModelSchemaError::class.java,
     )
 
     /** Hidden files (".DS_Store") are not fixtures. */

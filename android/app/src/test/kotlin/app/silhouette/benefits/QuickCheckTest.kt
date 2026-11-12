@@ -14,6 +14,7 @@ import app.silhouette.benefits.quickcheck.draftToValue
 import app.silhouette.benefits.quickcheck.encodeAnswers
 import app.silhouette.benefits.quickcheck.firstOpenStep
 import app.silhouette.benefits.quickcheck.groupByVerdict
+import app.silhouette.benefits.quickcheck.plainAmount
 import app.silhouette.benefits.quickcheck.stepCount
 import app.silhouette.benefits.quickcheck.stepForVariable
 import app.silhouette.benefits.quickcheck.toEngineAnswers
@@ -57,8 +58,8 @@ class QuickCheckTest {
         assertNull(validateAnswer(step("benefits"), AnswerValue.Picks(emptyList())))
         assertEquals(AnswerError.CHOOSE, validateAnswer(step("benefits"), AnswerValue.Picks(listOf("snap", "snap"))))
         assertEquals(AnswerError.CHOOSE, validateAnswer(step(INCOME_STEP), AnswerValue.IncomeBandChoice("Z")))
-        assertEquals(AnswerError.AMOUNT, validateAnswer(step(INCOME_STEP), AnswerValue.ExactIncome(-1)))
-        assertNull(validateAnswer(step(INCOME_STEP), AnswerValue.ExactIncome(32000)))
+        assertEquals(AnswerError.AMOUNT, validateAnswer(step(INCOME_STEP), AnswerValue.ExactIncome(-1.0)))
+        assertNull(validateAnswer(step(INCOME_STEP), AnswerValue.ExactIncome(32000.0)))
     }
 
     @Test
@@ -69,13 +70,32 @@ class QuickCheckTest {
         assertEquals(AnswerError.INTEGER, validateAnswer(household, draftToValue(household, Draft(text = "4.5"))!!))
         assertEquals(AnswerError.INTEGER, validateAnswer(household, draftToValue(household, Draft(text = "99999999999999"))!!))
         val income = step(INCOME_STEP)
-        assertEquals(AnswerValue.ExactIncome(32500), draftToValue(income, Draft(text = "32,500", choice = EXACT_CHOICE)))
-        assertEquals(AnswerValue.ExactIncome(-1), draftToValue(income, Draft(text = "lots", choice = EXACT_CHOICE)))
+        assertEquals(AnswerValue.ExactIncome(32500.0), draftToValue(income, Draft(text = "32,500", choice = EXACT_CHOICE)))
+        assertEquals(AnswerError.AMOUNT, validateAnswer(income, draftToValue(income, Draft(text = "lots", choice = EXACT_CHOICE))!!))
         assertEquals(AnswerValue.IncomeBandChoice("B"), draftToValue(income, Draft(choice = "B")))
         assertNull(draftToValue(income, Draft()))
         // Submitting a multi question with nothing ticked answers "none of these".
         assertEquals(AnswerValue.Picks(emptyList()), draftToValue(step("benefits"), Draft()))
         assertEquals(AnswerValue.Picks(listOf("snap", "ssi")), draftToValue(step("benefits"), Draft(picked = listOf("ssi", "snap"))))
+    }
+
+    /** A typed income with decimals is read as written, never a hundred times too large. */
+    @Test
+    fun `typed yearly amounts keep their decimal point`() {
+        val income = step(INCOME_STEP)
+        fun read(text: String) = draftToValue(income, Draft(text = text, choice = EXACT_CHOICE)) as AnswerValue.ExactIncome
+        assertEquals(28000.5, read("28000.50").amount, 0.0)
+        assertEquals(28000.5, read("28,000.50").amount, 0.0)
+        assertEquals(28000.5, read(" $28,000.50 ").amount, 0.0)
+        assertEquals(28000.5, read("28000.5").amount, 0.0)
+        assertEquals(32000.0, read("€32000").amount, 0.0)
+        for (bad in listOf("28.000,50", "28 000", "2,80,00", "1e5", "-100", "28000.50.10", "$", "")) {
+            assertEquals(bad, AnswerError.AMOUNT, validateAnswer(income, read(bad)))
+        }
+        assertEquals(AnswerError.AMOUNT, validateAnswer(income, read("100,000,001")))
+        assertEquals(Json.parseToJsonElement("""{"annualIncome":28000.5}"""), toEngineAnswers(steps, QuickCheckAnswers().with(INCOME_STEP, read("28,000.50"))))
+        assertEquals("28000.5", plainAmount(28000.5))
+        assertEquals("32000", plainAmount(32000.0))
     }
 
     @Test
@@ -98,7 +118,7 @@ class QuickCheckTest {
             Json.parseToJsonElement("""{"householdSize":3,"incomeBand":"C","benefits":[]}"""),
             toEngineAnswers(steps, answers),
         )
-        val exact = QuickCheckAnswers().with(INCOME_STEP, AnswerValue.ExactIncome(30524))
+        val exact = QuickCheckAnswers().with(INCOME_STEP, AnswerValue.ExactIncome(30524.0))
         assertEquals(Json.parseToJsonElement("""{"annualIncome":30524}"""), toEngineAnswers(steps, exact))
     }
 
@@ -107,7 +127,7 @@ class QuickCheckTest {
         // verdict.json case "exact-all-likely".
         val answers = QuickCheckAnswers()
             .with("hasEarnedIncome", AnswerValue.Choice("yes"))
-            .with(INCOME_STEP, AnswerValue.ExactIncome(30524))
+            .with(INCOME_STEP, AnswerValue.ExactIncome(30524.0))
             .with("householdSize", AnswerValue.Count(3))
             .with("numChildren", AnswerValue.Count(2))
             .with("housing", AnswerValue.Choice("renter"))
@@ -120,7 +140,7 @@ class QuickCheckTest {
     @Test
     fun `skipping the sensitive question makes food help depend on it`() {
         val skipped = QuickCheckAnswers()
-            .with(INCOME_STEP, AnswerValue.ExactIncome(19000))
+            .with(INCOME_STEP, AnswerValue.ExactIncome(19000.0))
             .with("householdSize", AnswerValue.Count(1))
             .with("residentStatus", null)
         val food = verdictOf(skipped, "food-help")
@@ -132,7 +152,7 @@ class QuickCheckTest {
 
     @Test
     fun `zero benefits picked is an answer, skipping is not`() {
-        val base = QuickCheckAnswers().with("householdSize", AnswerValue.Count(2)).with(INCOME_STEP, AnswerValue.ExactIncome(90000))
+        val base = QuickCheckAnswers().with("householdSize", AnswerValue.Count(2)).with(INCOME_STEP, AnswerValue.ExactIncome(90000.0))
         assertEquals(Verdict.DEPENDS, verdictOf(base.with("benefits", null), "phone-discount").verdict)
         assertEquals(Verdict.UNLIKELY, verdictOf(base.with("benefits", AnswerValue.Picks(emptyList())), "phone-discount").verdict)
     }
@@ -174,7 +194,7 @@ class QuickCheckTest {
 
     @Test
     fun `answers never show their values as text`() {
-        val answers = QuickCheckAnswers().with(INCOME_STEP, AnswerValue.ExactIncome(987654))
+        val answers = QuickCheckAnswers().with(INCOME_STEP, AnswerValue.ExactIncome(987654.0))
         assertFalse(answers.toString().contains("987654"))
     }
 }

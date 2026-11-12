@@ -7,9 +7,18 @@ generalized profile, or public content.
 The cross-platform contract lives in [`../shared`](../shared/README.md). This project implements it
 and tests itself against the shared fixtures, read in place.
 
-What works today: the **Quick Check**. A few questions, one per screen, then verdicts for every
-program in the rule pack, decided on the device by the deterministic rules engine. There are no AI
-calls, no Firebase and no network permission yet.
+What works today:
+
+- the **Quick Check**: a few questions, one per screen, then verdicts for every program in the
+  rule pack, decided on the device by the deterministic rules engine;
+- the **document flow**: add a paystub (shared or pasted text, a text PDF, typing the numbers, or a
+  built-in sample), see its silhouette exactly as it would be sent and hide any remaining word,
+  review each value next to its source line, run the consistency checks and use the worked-out
+  yearly income.
+
+There are no AI calls, no Firebase and no network permission yet. Pointer extraction goes through a
+`PointerExtractor` interface; the only implementation in this build is the fixed answer key of the
+built-in sample documents, labelled as such. Any other document is typed in, and the app says why.
 
 ## Modules
 
@@ -23,13 +32,16 @@ calls, no Firebase and no network permission yet.
 | File | Contract |
 |---|---|
 | `DataTypes.kt` | `Raw<T>`, `Skeleton`, `Generalized<T>`, `Public<T>` and the sealed `CloudSafe` (`shared/DATA_TYPES.md`) |
-| `Skeletonizer.kt` | Document text → skeleton plus placeholder map (`shared/skeleton/SPEC.md` sections 1–4) |
-| `Rehydrator.kt` | Model pointers → exact values (`shared/skeleton/SPEC.md` section 5) |
+| `Skeletonizer.kt` | Document text → skeleton plus placeholder map (`shared/skeleton/SPEC.md` sections 1–4.1): deny by default from an explicit safe-character list, month-name dates, phrases masked as a whole. Optional user-hidden words for the preview |
+| `Rehydrator.kt` | Model pointers → exact values (`shared/skeleton/SPEC.md` section 5); `parseTypedAmount` for amounts typed by the user |
+| `Review.kt` | Review fields with their highlighted source lines, from a pointer schema and the model's pointers |
+| `Validation.kt` | Paystub checks, date parsing per jurisdiction and annualization in integer cents with exact arithmetic (`shared/validation/SPEC.md`) |
+| `ModelSchema.kt` | The schema a model accepts, derived from a pointer schema (`shared/schemas/MODEL_SCHEMA.md`) |
 | `Generalizer.kt` | Exact profile → profile silhouette and its canonical JSON (`shared/rulepacks/SPEC.md` section 6) |
 | `Evaluator.kt` | Strict, three-valued expression language (`shared/rulepacks/SPEC.md` section 3) |
 | `Verdicts.kt` | Rule pack model (questions, order, programs) and verdicts with income-band sample points (`shared/rulepacks/SPEC.md` sections 2, 4, 5) |
 | `JsonValues.kt` | JSON trees as engine values, with JavaScript number formatting so output is byte-identical across platforms |
-| `conformance/ConformanceSuite.kt` | Every case of `shared/fixtures/conformance/` and `shared/fixtures/canary/` as runnable checks. The same suite runs on the JVM and on an Android runtime |
+| `conformance/ConformanceSuite.kt` | Every case of the seven files in `shared/fixtures/conformance/` and of `shared/fixtures/canary/`, plus a check that the safe-character list and month names equal those of `shared/reference/silhouette.mjs`. The same suite runs on the JVM and on an Android runtime |
 
 How the routing rule is enforced:
 
@@ -47,14 +59,17 @@ How the routing rule is enforced:
 
 | Package | What it does |
 |---|---|
-| `quickcheck` | Pure flow logic: steps in the pack's `questionOrder`, validation, drafts, the conversion to engine answers, grouping by verdict, and the storage format |
+| `quickcheck` | Pure flow logic: steps in the pack's `questionOrder`, validation, drafts, the conversion to engine answers, grouping by verdict, and the storage format. A typed income accepts only the document number format (`28,000.50`, `28000.5`) after removing spaces and a leading currency symbol, and the screen shows the amount as understood |
+| `document` | The document session, review rows and the conversion of confirmed values into validation input |
+| `ai` | `PointerExtractor` (input: `Skeleton`; output: pointers, inference source and routing reason), `PointerExtraction` (records every call in the outbound ledger before it starts) and `SampleAnswerKeyExtractor`, a fixed answer key that answers only for the exact silhouettes of the built-in samples |
 | `i18n` | Copy with per-key fallback: `shared/copy/{lang}` → `shared/rulepacks/{pack}/copy/{lang}` → app keys, then the same in English. English, Spanish and Korean |
-| `data` | `EncryptedStore` (AES-256-GCM, key in the Android Keystore), the answer repository, the language setting, and `OutboundLog` |
+| `data` | `EncryptedStore` (AES-256-GCM, key in the Android Keystore), the answer and ledger repository, the language setting, `OutboundLog` and `PdfText` (the platform `PdfRenderer` text layer, Android 15 and later) |
 | `content` | Loads the rule pack, bands, copy and design tokens from the synced assets |
 | `ui` | `AppController` (state, navigation, persistence), the Compose screens and the app chrome |
 | `ui/theme` | Material 3 theme built from `shared/design/tokens.json`: light and dark colors, type scale, spacing, radii |
 
-Screens: start, one question per screen, results grouped by verdict, and program detail. Every
+Screens: start, one question per screen, results grouped by verdict, program detail, add a
+document, silhouette preview and review. Every
 question can be skipped. Sensitive questions, and the exact-income field, say that the answer
 never leaves the device. In a multi-choice question, ticking nothing is a valid answer ("none of
 these") and is different from skipping. From a program's detail, "Answer: …" opens the question it
@@ -63,9 +78,10 @@ depends on and comes back.
 App chrome:
 
 - **Demo banner** whenever a synthetic rule pack (`zz-test`) is active.
-- **"Leaving your device" bar** on every screen. It reads only `OutboundLog`. Any future outbound
-  call must record there before it sends, so the bar can never show less than was actually sent.
-  Today the log stays empty.
+- **"Leaving your device" bar** on every screen. It reads only `OutboundLog`, which records every
+  outbound call before it starts (status attempted, then sent, failed, or answered on this device),
+  with the exact cloud-safe payload, and is stored encrypted. Only entries that left or may have
+  left the device count as sent.
 - **"Delete everything"**, behind a confirmation. It deletes the stored answers, the Keystore key,
   the language choice and the outbound log.
 
@@ -90,7 +106,8 @@ Accessibility:
 - UI tests run the Accessibility Test Framework checks on every action.
 
 The build task `syncSharedContract` copies `shared/copy`, `shared/rulepacks/zz-test`,
-`shared/bands`, `shared/design/tokens.json` and `shared/skeleton/allowlist` into generated assets
+`shared/bands`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, the pointer schemas and
+`shared/samples` into generated assets
 (`assets/shared/…`). `syncConformanceFixtures` does the same for the instrumented-test APK. Nothing
 is copied by hand.
 
@@ -120,6 +137,9 @@ is copied by hand.
   detected, and deletion removes the key.
 - `QuickCheckFlowTest`: completing the Quick Check; skipping the sensitive question and answering
   it from the program detail; "Delete everything"; the language switch.
+- `DocumentFlowUiTest`: a sample paystub from silhouette to "use this as my yearly income"; hiding
+  a word and undoing it; a typed income with decimals.
+- `ShareAndPdfTest`: text shared from another app; reading a PDF text layer on the device.
 - `ScreenshotTour` (skipped unless asked for): saves a screenshot of every screen.
 
 ```bash
@@ -138,5 +158,7 @@ is copied by hand.
   shipped.
 - `Raw` resists accidental leaks (logging, string templates, serialization). Reflection can still
   read the private field.
-- Unicode letter classes depend on the runtime's Unicode tables (the JDK's for unit tests, the OS
-  ICU on a device). Behaviour on old Android versions has not been run.
+- The document text is kept in memory only; leaving the app discards a document in progress.
+- Reading a PDF needs Android 15 or later (the platform text API); older versions offer paste and
+  typing instead. A scanned PDF has no text layer.
+- Photos are offered only with an on-device model, which this build does not have.

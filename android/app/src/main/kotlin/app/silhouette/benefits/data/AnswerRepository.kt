@@ -10,7 +10,12 @@ interface AnswerRepository {
 
     fun save(answers: JsonObject)
 
-    /** Removes the answers and anything needed to read them (the encryption key). */
+    /** The persisted outbound ledger (JSON), or null. */
+    fun loadLedger(): String? = null
+
+    fun saveLedger(json: String) {}
+
+    /** Removes the answers, the ledger and anything needed to read them (the encryption key). */
     fun deleteAll()
 }
 
@@ -26,9 +31,14 @@ class EncryptedAnswerRepository(private val store: EncryptedStore) : AnswerRepos
 
     override fun save(answers: JsonObject) = store.write(RECORD, answers.toString().toByteArray(Charsets.UTF_8))
 
+    override fun loadLedger(): String? = store.read(LEDGER)?.toString(Charsets.UTF_8)
+
+    override fun saveLedger(json: String) = store.write(LEDGER, json.toByteArray(Charsets.UTF_8))
+
     override fun deleteAll() = store.deleteEverything()
 
     companion object {
         const val RECORD: String = "quickcheck-answers"
+        const val LEDGER: String = "outbound-ledger"
     }
 }

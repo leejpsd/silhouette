@@ -4,14 +4,40 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import app.silhouette.benefits.ai.DocType
+import app.silhouette.benefits.ai.ExtractorUnavailable
+import app.silhouette.benefits.ai.PointerExtraction
+import app.silhouette.benefits.ai.PointerRequest
+import app.silhouette.benefits.ai.PointerResult
 import app.silhouette.benefits.content.AppContent
+import app.silhouette.benefits.content.SampleDocument
+import app.silhouette.benefits.core.FieldKind
 import app.silhouette.benefits.core.ProgramVerdict
+import app.silhouette.benefits.core.Raw
+import app.silhouette.benefits.core.SkeletonPiece
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import app.silhouette.benefits.core.Validation
+import app.silhouette.benefits.core.buildReview
+import app.silhouette.benefits.core.skeletonize
+import app.silhouette.benefits.document.DeductionRow
+import app.silhouette.benefits.document.DocumentSession
+import app.silhouette.benefits.document.Extraction
+import app.silhouette.benefits.document.ReviewRow
+import app.silhouette.benefits.document.ReviewState
+import app.silhouette.benefits.document.RowStatus
+import app.silhouette.benefits.document.SourceKind
+import app.silhouette.benefits.document.initialReview
+import app.silhouette.benefits.document.parseReviewNumber
+import app.silhouette.benefits.document.toValues
 import app.silhouette.benefits.data.AnswerRepository
 import app.silhouette.benefits.data.LanguageStore
 import app.silhouette.benefits.data.OutboundLog
 import app.silhouette.benefits.i18n.AppLanguage
 import app.silhouette.benefits.i18n.Strings
 import app.silhouette.benefits.quickcheck.AnswerValue
+import app.silhouette.benefits.quickcheck.INCOME_STEP
 import app.silhouette.benefits.quickcheck.QuickCheckAnswers
 import app.silhouette.benefits.quickcheck.Step
 import app.silhouette.benefits.quickcheck.computeVerdicts
@@ -33,6 +59,15 @@ sealed interface Route {
     data object Results : Route
 
     data class Program(val id: String) : Route
+
+    /** Add a document. */
+    data object Document : Route
+
+    /** The silhouette preview: exactly what could leave the device. */
+    data object Preview : Route
+
+    /** Review of the found values, checks and the yearly income. */
+    data object Review : Route
 }
 
 /**
@@ -49,6 +84,7 @@ class AppController(
     val outbound: OutboundLog,
     private val scope: CoroutineScope,
     private val io: CoroutineDispatcher,
+    private val extraction: PointerExtraction = PointerExtraction(emptyList(), outbound),
 ) {
     val steps: List<Step> get() = content.steps
 
@@ -68,6 +104,12 @@ class AppController(
     var notice: String? by mutableStateOf(null)
         private set
 
+    var document: DocumentSession by mutableStateOf(DocumentSession(language = strings.language.tag))
+        private set
+
+    var review: ReviewState by mutableStateOf(ReviewState())
+        private set
+
     val results: List<ProgramVerdict> by derivedStateOf {
         computeVerdicts(content.pack, content.bands, content.steps, answers)
     }
@@ -77,7 +119,9 @@ class AppController(
     fun load() {
         scope.launch {
             val stored = withContext(io) { runCatching { repository.load() }.getOrNull() }
+            val ledger = withContext(io) { runCatching { repository.loadLedger() }.getOrNull() }
             answers = decodeAnswers(steps, stored)
+            outbound.restore(OutboundLog.decode(ledger))
             loaded = true
         }
     }
@@ -140,17 +184,182 @@ class AppController(
             }
             Route.Results -> navigate(Route.Start)
             is Route.Program -> navigate(Route.Results)
+            Route.Document -> navigate(if (started) Route.Results else Route.Start)
+            Route.Preview -> navigate(Route.Document)
+            Route.Review -> navigate(if (document.skeleton != null) Route.Preview else Route.Document)
         }
         return true
     }
 
+    // ---------- Documents ----------
+
+    fun openDocument() {
+        if (document.confirmedStubs.isEmpty() && document.text == null) document = document.copy(language = strings.language.tag)
+        navigate(Route.Document)
+    }
+
+    fun setDocumentLanguage(tag: String) {
+        document = document.copy(language = tag)
+    }
+
+    /** Text shared into the app from another app: shown in the paste box first. */
+    fun receiveSharedText(text: String) {
+        document = document.copy(sharedText = text, sharedReceived = true, error = null)
+        navigate(Route.Document)
+    }
+
+    /** The shared text is now in the paste box. */
+    fun sharedTextShown() {
+        document = document.copy(sharedText = null)
+    }
+
+    /** Every source ends here: Raw text → silhouette, then the preview. */
+    fun acceptText(text: Raw<String>, source: SourceKind, language: String = document.language) {
+        val skeleton = skeletonize(text, content.allowlist(language))
+        document = document.copy(language = language, text = text, source = source, hidden = emptyList(), hiddenWords = emptyList(), skeleton = skeleton, extraction = null, error = null, sharedText = null, sharedReceived = false)
+        navigate(Route.Preview)
+    }
+
+    fun acceptSample(sample: SampleDocument) = acceptText(sample.text, SourceKind.SAMPLE, sample.language)
+
+    /** Hides one more word of the silhouette before anything is sent. */
+    fun hideWord(ordinal: Int) {
+        val word = document.skeleton?.pieces?.filterIsInstance<SkeletonPiece.KeptWord>()?.find { it.ordinal == ordinal }?.text ?: return
+        document = document.copy(hiddenWords = document.hiddenWords + word)
+        reskeletonize(document.hidden + ordinal)
+    }
+
+    fun undoHide() {
+        document = document.copy(hiddenWords = document.hiddenWords.dropLast(1))
+        reskeletonize(document.hidden.dropLast(1))
+    }
+
+    /** The word hidden last; it was part of the visible silhouette, so it is not a hidden value. */
+    fun lastHiddenWord(): String? = document.hiddenWords.lastOrNull()
+
+    /** Deduction kinds of the paystub pointer schema. */
+    val deductionKinds: List<String> by lazy {
+        val schema = content.pointerSchemas.getValue(DocType.PAYSTUB.schemaFile)
+        val kind = (((schema["properties"] as JsonObject)["deductions"] as JsonObject)["items"] as JsonObject)
+            .let { (it["properties"] as JsonObject)["kind"] as JsonObject }
+        (kind["enum"] as JsonArray).map { (it as JsonPrimitive).content }
+    }
+
+    private fun reskeletonize(hidden: List<Int>) {
+        val text = document.text ?: return
+        document = document.copy(hidden = hidden, skeleton = skeletonize(text, content.allowlist(document.language), hidden.toSet()))
+    }
+
+    /** Whether something can read this silhouette (a model, or the answers of a built-in sample). */
+    val canExtract: Boolean
+        get() = document.skeleton?.let { extraction.extractorFor(it.skeleton, document.language) != null } == true
+
+    /** Hands the silhouette to the pointer extractor, then opens the review. */
+    fun send() {
+        val skeleton = document.skeleton ?: return
+        document = document.copy(sending = true, error = null)
+        scope.launch {
+            try {
+                val result = extraction.extract(PointerRequest(skeleton.skeleton, DocType.PAYSTUB, document.language))
+                val schema = content.pointerSchemas.getValue(DocType.PAYSTUB.schemaFile)
+                val fields = buildReview(schema, result.pointers, skeleton)
+                document = document.copy(sending = false, extraction = Extraction(fields, result.source(), result.reason))
+                review = initialReview(schema, fields)
+                navigate(Route.Review)
+            } catch (_: ExtractorUnavailable) {
+                document = document.copy(sending = false, error = "preview.noExtractor")
+            } catch (_: Exception) {
+                document = document.copy(sending = false, error = "error.unknown")
+            }
+        }
+    }
+
+    private fun PointerResult.source() = inferenceSource
+
+    /** "Type the numbers yourself": an empty review, nothing sent. */
+    fun typeInstead() {
+        document = document.copy(extraction = null, error = null, source = document.source ?: SourceKind.MANUAL)
+        review = initialReview(content.pointerSchemas.getValue(DocType.PAYSTUB.schemaFile), null)
+        navigate(Route.Review)
+    }
+
+    fun confirmRow(name: String) = updateRows { it.copy(status = RowStatus.CONFIRMED).takeIf { r -> r.name == name } }
+
+    fun confirmAll() {
+        review = review.copy(
+            rows = review.rows.map { if (it.status == RowStatus.PENDING) it.copy(status = RowStatus.CONFIRMED) else it },
+            deductions = review.deductions.map { if (it.status == RowStatus.PENDING && parseReviewNumber(it.amount) != null) it.copy(status = RowStatus.CONFIRMED) else it },
+            result = null,
+        )
+    }
+
+    /** Saves an edited value. Returns false when a number field does not hold a number. */
+    fun saveRow(name: String, text: String): Boolean {
+        val row = review.rows.find { it.name == name } ?: return false
+        val value = text.trim()
+        if (row.kind == FieldKind.NUMBER && value.isNotEmpty() && parseReviewNumber(value) == null) return false
+        updateRows { r -> if (r.name == name) r.copy(text = value, status = if (value.isEmpty()) RowStatus.EMPTY else RowStatus.CONFIRMED) else null }
+        return true
+    }
+
+    private fun updateRows(change: (ReviewRow) -> ReviewRow?) {
+        review = review.copy(rows = review.rows.map { change(it) ?: it }, result = null)
+    }
+
+    fun addDeduction() {
+        review = review.copy(deductions = review.deductions + DeductionRow("", "", RowStatus.PENDING, emptyList()), result = null)
+    }
+
+    fun updateDeduction(index: Int, amount: String, kind: String) {
+        review = review.copy(
+            deductions = review.deductions.mapIndexed { i, d -> if (i == index) d.copy(amount = amount, kind = kind, status = RowStatus.PENDING) else d },
+            result = null,
+        )
+    }
+
+    /** Confirms a deduction. Returns false when its amount is not a number. */
+    fun confirmDeduction(index: Int): Boolean {
+        val d = review.deductions.getOrNull(index) ?: return false
+        if (parseReviewNumber(d.amount) == null) return false
+        review = review.copy(deductions = review.deductions.mapIndexed { i, x -> if (i == index) x.copy(status = RowStatus.CONFIRMED) else x }, result = null)
+        return true
+    }
+
+    fun removeDeduction(index: Int) {
+        review = review.copy(deductions = review.deductions.filterIndexed { i, _ -> i != index }, result = null)
+    }
+
+    /** Validation and annualization of every confirmed paystub (shared/validation/SPEC.md). */
+    fun checkReview() {
+        val values = document.confirmedStubs + toValues(review)
+        review = review.copy(result = Validation.validatePaystubs(values, content.pack.jurisdiction))
+    }
+
+    /** Keeps this paystub and adds another one. */
+    fun addAnotherPaystub() {
+        document = DocumentSession(language = document.language, confirmedStubs = document.confirmedStubs + toValues(review))
+        review = ReviewState()
+        navigate(Route.Document)
+    }
+
+    /** Uses the worked-out yearly income as the income answer; band-based `maybe` results become clear. */
+    fun useAnnualIncome() {
+        val annual = review.result?.annualization ?: return
+        answers = answers.with(INCOME_STEP, AnswerValue.ExactIncome(annual.annualIncome.toDouble(), fromDocument = true))
+        persist()
+        navigate(Route.Results)
+    }
+
     fun deleteEverything(onDone: () -> Unit = {}) {
         answers = QuickCheckAnswers()
+        document = DocumentSession(language = strings.language.tag)
+        review = ReviewState()
         outbound.clear()
         scope.launch {
             withContext(io) { repository.deleteAll() }
             languageStore.clear()
             strings = strings.withLanguage(languageStore.current())
+            document = DocumentSession(language = strings.language.tag)
             route = Route.Start
             notice = "delete.done"
             onDone()

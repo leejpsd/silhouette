@@ -43,6 +43,8 @@ tasks.test {
     inputs.dir(sharedDir.dir("schemas")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("sharedSchemas")
     inputs.dir(sharedDir.dir("rulepacks")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("sharedRulepacks")
     inputs.dir(sharedDir.dir("bands")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("sharedBands")
+    inputs.dir(sharedDir.dir("samples")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("sharedSamples")
+    inputs.dir(sharedDir.dir("reference")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("sharedReference")
     inputs.dir(routingProofDir).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("routingProofSnippets")
 
     val proofClasspath = sourceSets.main.get().runtimeClasspath

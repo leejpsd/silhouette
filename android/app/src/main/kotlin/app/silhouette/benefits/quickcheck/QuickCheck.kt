@@ -6,6 +6,7 @@ import app.silhouette.benefits.core.ProgramVerdict
 import app.silhouette.benefits.core.Raw
 import app.silhouette.benefits.core.RulePack
 import app.silhouette.benefits.core.Verdict
+import app.silhouette.benefits.core.parseTypedAmount
 import app.silhouette.benefits.core.verdicts
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -14,7 +15,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.longOrNull
+import kotlinx.serialization.json.doubleOrNull
 
 // Quick Check model: pure logic, no Android dependencies. One question per screen. Every question
 // can be skipped; a skipped answer is null and the verdict engine reports it as `depends`.
@@ -23,7 +24,7 @@ import kotlinx.serialization.json.longOrNull
 const val INCOME_STEP: String = "income"
 
 /** Upper bound for a typed yearly income. */
-const val MAX_EXACT_INCOME: Long = 100_000_000
+const val MAX_EXACT_INCOME: Double = 100_000_000.0
 
 /** One screen of the Quick Check. */
 sealed interface Step {
@@ -57,14 +58,15 @@ sealed interface AnswerValue {
 
     data class IncomeBandChoice(val bandId: String) : AnswerValue
 
-    data class ExactIncome(val amount: Long) : AnswerValue
+    /** A yearly amount, typed by the user or worked out from a paystub ([fromDocument]). */
+    data class ExactIncome(val amount: Double, val fromDocument: Boolean = false) : AnswerValue
 }
 
 /** Why an answer was rejected. Each maps to a copy key. */
 enum class AnswerError(val copyKey: String) {
     INTEGER("q.error.integer"),
     CHOOSE("q.error.choose"),
-    AMOUNT("q.error.amount"),
+    AMOUNT("q.error.amountFormat"),
 }
 
 /**
@@ -140,7 +142,7 @@ fun validateAnswer(step: Step, value: AnswerValue): AnswerError? = when (step) {
     is Step.BoolQuestion -> if (value is AnswerValue.Flag) null else AnswerError.CHOOSE
     is Step.Income -> when (value) {
         is AnswerValue.IncomeBandChoice -> if (step.bands.any { it.id == value.bandId }) null else AnswerError.CHOOSE
-        is AnswerValue.ExactIncome -> if (value.amount in 0..MAX_EXACT_INCOME) null else AnswerError.AMOUNT
+        is AnswerValue.ExactIncome -> if (value.amount.isFinite() && value.amount in 0.0..MAX_EXACT_INCOME) null else AnswerError.AMOUNT
         else -> AnswerError.CHOOSE
     }
 }
@@ -153,7 +155,7 @@ internal fun toEngineAnswers(steps: List<Step>, answers: QuickCheckAnswers): Jso
         if (validateAnswer(step, value) != null) continue
         when (value) {
             is AnswerValue.IncomeBandChoice -> out["incomeBand"] = JsonPrimitive(value.bandId)
-            is AnswerValue.ExactIncome -> out["annualIncome"] = JsonPrimitive(value.amount)
+            is AnswerValue.ExactIncome -> out["annualIncome"] = jsonAmount(value.amount)
             else -> out[step.id] = encodeValue(value)
         }
     }
@@ -188,7 +190,7 @@ const val EXACT_CHOICE: String = "exact"
 fun initialDraft(step: Step, value: AnswerValue?): Draft = when (value) {
     null -> Draft()
     is AnswerValue.IncomeBandChoice -> Draft(choice = value.bandId)
-    is AnswerValue.ExactIncome -> Draft(text = value.amount.toString(), choice = EXACT_CHOICE)
+    is AnswerValue.ExactIncome -> Draft(text = plainAmount(value.amount), choice = EXACT_CHOICE)
     is AnswerValue.Picks -> Draft(picked = value.values)
     is AnswerValue.Count -> Draft(text = value.value.toString())
     is AnswerValue.Choice -> Draft(choice = value.value)
@@ -196,7 +198,18 @@ fun initialDraft(step: Step, value: AnswerValue?): Draft = when (value) {
 }
 
 private val DIGITS = Regex("^[0-9]+$")
-private val INCOME_SEPARATORS = Regex("[\\s,._']")
+
+/** An amount as plain digits for editing: `28000.5`, `32000`. */
+fun plainAmount(amount: Double): String =
+    java.math.BigDecimal(amount.toString()).stripTrailingZeros().toPlainString()
+
+/**
+ * Reads a typed yearly amount: spaces and one leading currency symbol are removed, then only the
+ * number format of shared/skeleton/SPEC.md section 5 is accepted (`28,000.50`, `28000.5`).
+ * `28.000,50` and anything else is rejected rather than guessed, so a decimal point can never
+ * turn into a hundredfold amount. Returns null when the text is not an amount.
+ */
+fun parseIncomeAmount(text: String): Double? = parseTypedAmount(text)
 
 /**
  * Turns a draft into an answer. Returns null when nothing was chosen. A value that does not parse
@@ -221,12 +234,8 @@ fun draftToValue(step: Step, draft: Draft): AnswerValue? = when (step) {
     }
     is Step.Income -> when (draft.choice) {
         "" -> null
-        EXACT_CHOICE -> {
-            val digits = draft.text.replace(INCOME_SEPARATORS, "")
-            AnswerValue.ExactIncome(
-                if (DIGITS.matches(digits) && digits.length <= 12) digits.toLong() else -1,
-            )
-        }
+        // Text that is not an amount becomes an invalid value, so validation reports the format.
+        EXACT_CHOICE -> AnswerValue.ExactIncome(parseIncomeAmount(draft.text) ?: Double.NaN)
         else -> AnswerValue.IncomeBandChoice(draft.choice)
     }
 }
@@ -239,13 +248,19 @@ fun stepCount(step: Step.IntQuestion, text: String, delta: Int): String {
 
 // ---------- Storage format ----------
 
+/** A whole amount as a JSON integer (`32000`), anything else as a decimal (`28000.5`). */
+private fun jsonAmount(amount: Double): JsonPrimitive =
+    if (amount == Math.floor(amount) && kotlin.math.abs(amount) < 9.0E15) JsonPrimitive(amount.toLong()) else JsonPrimitive(amount)
+
 private fun encodeValue(value: AnswerValue): JsonElement = when (value) {
     is AnswerValue.Count -> JsonPrimitive(value.value)
     is AnswerValue.Choice -> JsonPrimitive(value.value)
     is AnswerValue.Flag -> JsonPrimitive(value.value)
     is AnswerValue.Picks -> JsonArray(value.values.map { JsonPrimitive(it) })
     is AnswerValue.IncomeBandChoice -> JsonObject(mapOf("band" to JsonPrimitive(value.bandId)))
-    is AnswerValue.ExactIncome -> JsonObject(mapOf("exact" to JsonPrimitive(value.amount)))
+    is AnswerValue.ExactIncome -> JsonObject(
+        if (value.fromDocument) mapOf("exact" to jsonAmount(value.amount), "fromDocument" to JsonPrimitive(true)) else mapOf("exact" to jsonAmount(value.amount)),
+    )
 }
 
 /** The answers as JSON for the encrypted store. Skipped steps are JSON null. */
@@ -284,10 +299,11 @@ private fun decodeValue(step: Step, element: JsonElement): AnswerValue? {
         is Step.Income -> {
             val obj = element as? JsonObject ?: return null
             val band = (obj["band"] as? JsonPrimitive)?.takeIf { it.isString }?.content
-            val exact = (obj["exact"] as? JsonPrimitive)?.takeIf { !it.isString }?.longOrNull
+            val exact = (obj["exact"] as? JsonPrimitive)?.takeIf { !it.isString }?.doubleOrNull
+            val fromDocument = (obj["fromDocument"] as? JsonPrimitive)?.booleanOrNull == true
             when {
                 band != null -> AnswerValue.IncomeBandChoice(band)
-                exact != null -> AnswerValue.ExactIncome(exact)
+                exact != null -> AnswerValue.ExactIncome(exact, fromDocument)
                 else -> null
             }
         }

@@ -73,6 +73,15 @@ class CopyTest {
     }
 
     @Test
+    fun `amounts show two decimals only when they have a fraction`() {
+        val en = content.strings(AppLanguage.EN)
+        assertEquals("28,000.50", en.decimal(28000.5))
+        assertEquals("32,000", en.decimal(32000.0))
+        assertEquals("1,271.88", en.money(127188))
+        assertEquals("Understood as 28,000.50 a year.", en("q.amountUnderstood", "amount" to en.decimal(28000.5)))
+    }
+
+    @Test
     fun `band labels use the language's number format`() {
         val bands = content.bands.annualIncome
         val en = content.strings(AppLanguage.EN)

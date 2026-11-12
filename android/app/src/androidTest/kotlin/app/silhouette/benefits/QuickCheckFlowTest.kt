@@ -108,7 +108,7 @@ class QuickCheckFlowTest {
                 .with("householdSize", AnswerValue.Count(2))
                 .with("numChildren", AnswerValue.Count(1))
                 .with("hasEarnedIncome", AnswerValue.Choice("yes"))
-                .with(INCOME_STEP, AnswerValue.ExactIncome(32000))
+                .with(INCOME_STEP, AnswerValue.ExactIncome(32000.0))
                 .with("housing", AnswerValue.Choice("renter"))
                 .with("benefits", AnswerValue.Picks(emptyList()))
                 .with("hasOlderMember", AnswerValue.Choice("no"))

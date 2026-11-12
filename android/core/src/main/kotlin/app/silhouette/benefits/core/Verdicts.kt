@@ -110,8 +110,9 @@ public class RulePack private constructor(
                 json = root,
                 jurisdiction = root["jurisdiction"].text("jurisdiction"),
                 verifiedOn = root["verifiedOn"].textOrNull("verifiedOn"),
-                constants = root["constants"]?.toValue(),
-                hasConstants = root.containsKey("constants"),
+                // Required since v1.3; use {} when a pack has none.
+                constants = (root["constants"] as? JsonObject ?: malformed("constants")).toValue(),
+                hasConstants = true,
                 questions = questions,
                 questionOrder = if (root.containsKey("questionOrder")) root["questionOrder"].texts("questionOrder") else null,
                 programInfo = programJson.map { p ->

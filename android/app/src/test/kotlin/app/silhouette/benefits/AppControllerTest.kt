@@ -106,7 +106,7 @@ class AppControllerTest {
         loaded()
         assertTrue(app.started)
         assertEquals(Verdict.LIKELY, app.results.first { it.programId == "food-help" }.verdict)
-        app.answer(INCOME_STEP, AnswerValue.ExactIncome(90000))
+        app.answer(INCOME_STEP, AnswerValue.ExactIncome(90000.0))
         assertEquals(Verdict.UNLIKELY, app.results.first { it.programId == "food-help" }.verdict)
     }
 
@@ -115,7 +115,7 @@ class AppControllerTest {
         loaded()
         app.setLanguage(AppLanguage.KO)
         app.answer(steps[0].id, AnswerValue.Count(2))
-        outbound.record(OutboundLog.Entry(OutboundLog.Channel.OTHER, 0, "example.test", listOf("x")))
+        outbound.begin(OutboundLog.Channel.OTHER, "example.test", listOf("x"), null)
         scope.advanceUntilIdle()
         app.deleteEverything()
         scope.advanceUntilIdle()
