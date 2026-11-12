@@ -1,0 +1,14 @@
+{
+  "parameters": {
+    "route_short_text_max_words":     { "defaultValue": { "value": "80" },            "valueType": "NUMBER",  "description": "explain.short runs PREFER_ON_DEVICE at or below this length" },
+    "route_ondevice_locales_web":     { "defaultValue": { "value": "[\"en\",\"es\"]" }, "valueType": "JSON",    "description": "Locales the Chrome on-device model handles" },
+    "route_ondevice_locales_android": { "defaultValue": { "value": "[\"en\",\"ko\"]" }, "valueType": "JSON",    "description": "Locales validated for Gemini Nano on Android" },
+    "route_ondevice_locales_ios":     { "defaultValue": { "value": "[\"en\",\"es\",\"ko\"]" }, "valueType": "JSON", "description": "Upper bound; the app also checks supportedLanguages at runtime" },
+    "feature_grounding_search":       { "defaultValue": { "value": "true" },          "valueType": "BOOLEAN", "description": "Kill switch for Search grounding (paid tier)" },
+    "feature_grounding_maps":         { "defaultValue": { "value": "true" },          "valueType": "BOOLEAN", "description": "Kill switch for Maps grounding (paid tier)" },
+    "feature_tts":                    { "defaultValue": { "value": "true" },          "valueType": "BOOLEAN", "description": "Read aloud" },
+    "prompt_pointer_extract_v":       { "defaultValue": { "value": "1" },             "valueType": "NUMBER",  "description": "shared/prompts/pointer-extract.v{n}.md" },
+    "prompt_explain_v":               { "defaultValue": { "value": "1" },             "valueType": "NUMBER",  "description": "shared/prompts/explain.v{n}.md" },
+    "skeleton_allowlist_v":           { "defaultValue": { "value": "1" },             "valueType": "NUMBER",  "description": "Allowlist version bundled with the app" }
+  }
+}

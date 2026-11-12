@@ -1,0 +1,24 @@
+# secrets and local config
+.env
+.env.*
+!.env.example
+**/google-services.json
+**/GoogleService-Info.plist
+.firebase/
+*-debug.log
+firebase-debug.log
+
+# dependencies and build output
+node_modules/
+dist/
+build/
+.gradle/
+local.properties
+*.xcuserstate
+xcuserdata/
+DerivedData/
+.DS_Store
+
+# editor
+.vscode/
+.idea/

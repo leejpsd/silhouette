@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// Silhouette stores no profile data in Firestore. These rules enforce that:
+// user documents may only contain the listed keys.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Rule packs: public read, admin write.
+    match /rulePacks/{jurisdiction} {
+      allow read: if true;
+      allow write: if isAdmin();
+      match /{path=**} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+    }
+
+    match /users/{uid} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['locale', 'jurisdiction'])
+        && request.resource.data.locale is string
+        && request.resource.data.jurisdiction is string;
+
+      // Saved programs: ids and dates only.
+      match /saved/{programId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['ruleVersion', 'status', 'deadline'])
+          && request.resource.data.ruleVersion is int
+          && request.resource.data.status in ['saved', 'preparing', 'applied']
+          && (!('deadline' in request.resource.data) || request.resource.data.deadline is timestamp);
+      }
+    }
+  }
+}
