@@ -1,18 +1,22 @@
 # Silhouette for Android
 
 The Android app of Silhouette, which finds public benefits a person may qualify for. Exact values
-from a person's documents stay on the device. A cloud call only ever receives a silhouette: a
-document skeleton, a generalized profile, or public content.
+stay on the device. A cloud call only ever receives a silhouette: a document skeleton, a
+generalized profile, or public content.
 
 The cross-platform contract lives in [`../shared`](../shared/README.md). This project implements it
-and tests itself against the shared fixtures in place.
+and tests itself against the shared fixtures, read in place.
+
+What works today: the **Quick Check**. A few questions, one per screen, then verdicts for every
+program in the rule pack, decided on the device by the deterministic rules engine. There are no AI
+calls, no Firebase and no network permission yet.
 
 ## Modules
 
 | Module | What it is |
 |---|---|
-| `:core` | Pure Kotlin/JVM library with no Android dependencies: the data types, Skeletonizer, Rehydrator, Generalizer, expression evaluator and verdict engine |
-| `:app` | Android application (Jetpack Compose, minSdk 26). It currently shows the app name and the first line of the privacy promise |
+| `:core` | Pure Kotlin/JVM library with no Android dependencies: data types, Skeletonizer, Rehydrator, Generalizer, expression evaluator, verdict engine, and the shared conformance suite |
+| `:app` | Android application (Jetpack Compose, Material 3, minSdk 26) |
 
 ### `:core`
 
@@ -23,52 +27,116 @@ and tests itself against the shared fixtures in place.
 | `Rehydrator.kt` | Model pointers → exact values (`shared/skeleton/SPEC.md` section 5) |
 | `Generalizer.kt` | Exact profile → profile silhouette and its canonical JSON (`shared/rulepacks/SPEC.md` section 6) |
 | `Evaluator.kt` | Strict, three-valued expression language (`shared/rulepacks/SPEC.md` section 3) |
-| `Verdicts.kt` | Rule pack verdicts with income band sample points (`shared/rulepacks/SPEC.md` sections 4–5) |
+| `Verdicts.kt` | Rule pack model (questions, order, programs) and verdicts with income-band sample points (`shared/rulepacks/SPEC.md` sections 2, 4, 5) |
 | `JsonValues.kt` | JSON trees as engine values, with JavaScript number formatting so output is byte-identical across platforms |
-| `CopyStrings.kt` | UI strings from `shared/copy`, falling back to English |
+| `conformance/ConformanceSuite.kt` | Every case of `shared/fixtures/conformance/` and `shared/fixtures/canary/` as runnable checks. The same suite runs on the JVM and on an Android runtime |
 
 How the routing rule is enforced:
 
 - A `Raw` value prints as `[Raw]`, compares by identity and has no serializer. Only code inside
   `:core` can read it (`reveal()` is `internal`).
 - `CloudSafe` is sealed, and the constructors of `Skeleton` and `Generalized` are internal, so only
-  `skeletonize()`, `generalize()` and `canonical()` can turn `Raw` input into a cloud-safe value.
+  `skeletonize()`, `generalize()` and `canonical()` turn `Raw` input into a cloud-safe value.
   `Public.of` accepts plain text and JSON trees only.
-- `core/src/routingProof/` holds snippets that must **fail to compile** for exactly these reasons
-  (passing a `Raw` where `CloudSafe` is required, calling `reveal()`, constructing a `Skeleton`,
-  implementing `CloudSafe`, …). `RoutingProofTest` compiles each one with the Kotlin compiler
-  against the compiled `:core` classes and checks the expected compiler diagnostic. A control
-  snippet that uses the allowed path must compile.
+- `core/src/routingProof/` holds snippets that must **fail to compile** for exactly these reasons.
+  `RoutingProofTest` compiles each one with the Kotlin compiler against the compiled `:core`
+  classes and checks for the expected compiler diagnostic. A control snippet that uses the allowed
+  path must compile.
 
 ### `:app`
 
+| Package | What it does |
+|---|---|
+| `quickcheck` | Pure flow logic: steps in the pack's `questionOrder`, validation, drafts, the conversion to engine answers, grouping by verdict, and the storage format |
+| `i18n` | Copy with per-key fallback: `shared/copy/{lang}` → `shared/rulepacks/{pack}/copy/{lang}` → app keys, then the same in English. English, Spanish and Korean |
+| `data` | `EncryptedStore` (AES-256-GCM, key in the Android Keystore), the answer repository, the language setting, and `OutboundLog` |
+| `content` | Loads the rule pack, bands, copy and design tokens from the synced assets |
+| `ui` | `AppController` (state, navigation, persistence), the Compose screens and the app chrome |
+| `ui/theme` | Material 3 theme built from `shared/design/tokens.json`: light and dark colors, type scale, spacing, radii |
+
+Screens: start, one question per screen, results grouped by verdict, and program detail. Every
+question can be skipped. Sensitive questions, and the exact-income field, say that the answer
+never leaves the device. In a multi-choice question, ticking nothing is a valid answer ("none of
+these") and is different from skipping. From a program's detail, "Answer: …" opens the question it
+depends on and comes back.
+
+App chrome:
+
+- **Demo banner** whenever a synthetic rule pack (`zz-test`) is active.
+- **"Leaving your device" bar** on every screen. It reads only `OutboundLog`. Any future outbound
+  call must record there before it sends, so the bar can never show less than was actually sent.
+  Today the log stays empty.
+- **"Delete everything"**, behind a confirmation. It deletes the stored answers, the Keystore key,
+  the language choice and the outbound log.
+
+Answers:
+
+- **In memory:** answers are a `QuickCheckAnswers` value. It is not `CloudSafe`, and its string
+  form does not reveal values. It is wrapped in `Raw` when handed to the verdict engine.
+- **At rest:** answers are encrypted with a non-exportable Keystore key in the no-backup folder.
+  Backup and device transfer are disabled.
+
+Language: chosen in the app, defaulting to the device language. On Android 13 and later it is the
+system per-app language (`res/xml/locales_config.xml`). On older versions it is an app preference.
+
+Accessibility:
+
+- Every screen announces a pane title, and headings are marked.
+- Choices are full-row radio buttons or checkboxes with targets of at least 48 dp.
+- Verdict marks (solid, half-filled, dashed and faint silhouettes) and criterion icons always sit
+  next to text, so color is never the only signal.
+- Text carries the app language, so Korean keeps words whole when lines wrap and screen readers
+  use the right voice.
+- UI tests run the Accessibility Test Framework checks on every action.
+
 The build task `syncSharedContract` copies `shared/copy`, `shared/rulepacks/zz-test`,
 `shared/bands`, `shared/design/tokens.json` and `shared/skeleton/allowlist` into generated assets
-(`assets/shared/…`). The files are never copied by hand. The app has no network permission.
+(`assets/shared/…`). `syncConformanceFixtures` does the same for the instrumented-test APK. Nothing
+is copied by hand.
 
 ## Requirements
 
 - JDK 21 on `PATH` (Gradle runs on it; bytecode targets Java 17).
-- Android SDK with platform `android-36.1` and Build Tools `36.1.0`. Create `local.properties`
-  with `sdk.dir=/path/to/Android/sdk`. The build never downloads SDK components
-  (`android.builder.sdkDownload=false`); a missing component fails the build.
+- Android SDK with platform `android-36.1` and Build Tools `36.1.0`. Put `sdk.dir=/path/to/sdk` in
+  `local.properties`. The build never downloads SDK components
+  (`android.builder.sdkDownload=false`), so a missing component fails the build.
 - The `../shared` folder next to this one.
 
 ## Build and test
 
 ```bash
-./gradlew :core:test          # contract conformance, canary, number format, data types, routing proof
-./gradlew :app:assembleDebug  # app/build/outputs/apk/debug/app-debug.apk
+./gradlew :core:test                 # conformance, canary, number format, data types, routing proof (JVM)
+./gradlew :app:testDebugUnitTest     # Quick Check logic, copy, design tokens, app controller (JVM)
+./gradlew :app:assembleDebug         # app/build/outputs/apk/debug/app-debug.apk
+./gradlew :app:connectedDebugAndroidTest   # on a device or emulator, see below
 ```
 
-`:core:test` reads `../shared/fixtures/conformance/` and `../shared/fixtures/canary/` directly. It
-fails when the conformance folder contains a file it has no runner for, or when a runner's file is
-missing. Each fixture case is reported as its own test.
+`connectedDebugAndroidTest` runs:
+
+- `ConformanceOnDeviceTest`: the whole conformance suite on the Android runtime. There, regex,
+  Unicode tables and case mapping come from the platform's ICU instead of the JDK. The runtime's
+  ICU and Unicode versions are logged under the tag `Conformance`.
+- `EncryptedStoreTest`: round trip, no plaintext on disk, the key is not exportable, tampering is
+  detected, and deletion removes the key.
+- `QuickCheckFlowTest`: completing the Quick Check; skipping the sensitive question and answering
+  it from the program detail; "Delete everything"; the language switch.
+- `ScreenshotTour` (skipped unless asked for): saves a screenshot of every screen.
+
+```bash
+./gradlew :app:connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=app.silhouette.benefits.ScreenshotTour \
+  -Pandroid.testInstrumentationRunnerArguments.screenshots=true \
+  -Pandroid.testInstrumentationRunnerArguments.language=ko
+# → app/build/outputs/connected_android_test_additional_output/…
+# Dark mode and font size follow the device: adb shell cmd uimode night yes,
+# adb shell settings put system font_scale 2.0
+```
 
 ## Known limits
 
-- Conformance runs on the JVM (`java.util.regex`, JDK Unicode tables). On a device, Android's
-  regex engine and Unicode tables come from ICU and depend on the OS version, so letters added in
-  recent Unicode versions can be classified differently there.
+- The bundled typeface is the system font; the token font family (Atkinson Hyperlegible) is not
+  shipped.
 - `Raw` resists accidental leaks (logging, string templates, serialization). Reflection can still
   read the private field.
+- Unicode letter classes depend on the runtime's Unicode tables (the JDK's for unit tests, the OS
+  ICU on a device). Behaviour on old Android versions has not been run.

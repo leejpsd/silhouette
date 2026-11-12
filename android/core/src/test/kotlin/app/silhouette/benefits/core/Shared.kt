@@ -16,12 +16,4 @@ internal object Shared {
     fun text(relative: String): String = file(relative).readText(Charsets.UTF_8)
 
     fun json(relative: String): JsonElement = Json.parseToJsonElement(text(relative))
-
-    /** Names of the files in a folder, sorted. Hidden files (".DS_Store") are not fixtures. */
-    fun listFiles(dir: File): List<String> =
-        (dir.listFiles() ?: error("not a folder: $dir")).filter { it.isFile && !it.name.startsWith(".") }.map { it.name }.sorted()
-
-    /** SPEC.md section 4: the app locale's allowlist ∪ en. */
-    fun allowlist(locale: String): Allowlist =
-        Allowlist.fromFiles(listOf(json("skeleton/allowlist/en.json"), json("skeleton/allowlist/$locale.json")))
 }

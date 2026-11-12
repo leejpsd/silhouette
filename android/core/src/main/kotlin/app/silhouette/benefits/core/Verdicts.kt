@@ -2,6 +2,7 @@ package app.silhouette.benefits.core
 
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.TreeSet
@@ -20,27 +21,67 @@ internal class CriterionRule(val id: String, val logic: Any?, val hasUncertainIf
 
 internal class ProgramRule(val id: String, val criteria: List<CriterionRule>, val hasAmount: Boolean, val amount: Any?)
 
+/** A question of a rule pack (shared/rulepacks/SPEC.md section 2). */
+public data class Question(
+    val id: String,
+    /** `int`, `bool`, `enum` or `multi`. */
+    val type: String,
+    /** Choices for `enum` and `multi`; empty otherwise. */
+    val values: List<String>,
+    /** Bounds for `int`; null otherwise. */
+    val min: Int?,
+    val max: Int?,
+    /** The answer is Raw, is asked with the "never leaves your device" note, and never feeds the Generalizer. */
+    val sensitive: Boolean,
+)
+
+/** The displayable part of a program: name, the period its figures apply to, and caveat copy keys. */
+public data class ProgramInfo(
+    val id: String,
+    val name: String,
+    val period: String?,
+    val caveats: List<String>,
+)
+
 /**
- * `shared/rulepacks/{jurisdiction}/pack.json`, as read by the verdict engine. The full JSON tree is
- * kept in [json] for display (names, sources, questions).
+ * `shared/rulepacks/{jurisdiction}/pack.json`. The verdict engine reads the criteria; the app reads
+ * the questions, their order and the program information. The full JSON tree is kept in [json].
  */
 public class RulePack private constructor(
     public val json: JsonObject,
     public val jurisdiction: String,
+    /** The sign-off date, or null while the pack is not verified. */
+    public val verifiedOn: String?,
     internal val constants: Any?,
     internal val hasConstants: Boolean,
-    public val questionIds: List<String>,
+    public val questions: List<Question>,
+    /** Every question id plus the reserved step id `"income"`, or null for the default order. */
+    public val questionOrder: List<String>?,
+    public val programInfo: List<ProgramInfo>,
     internal val programs: List<ProgramRule>,
 ) {
+    public val questionIds: List<String> get() = questions.map { it.id }
+
     public companion object {
         /** Reads a rule pack. Throws IllegalArgumentException when its structure is malformed. */
         public fun parse(json: JsonElement): RulePack {
             val root = json as? JsonObject ?: malformed("root")
             fun JsonElement?.text(what: String): String =
                 (this as? JsonPrimitive)?.takeIf { it.isString }?.content ?: malformed(what)
+            fun JsonElement?.textOrNull(what: String): String? =
+                if (this == null || this is JsonNull) null else text(what)
             fun JsonElement?.objects(what: String): List<JsonObject> =
                 (this as? JsonArray)?.map { it as? JsonObject ?: malformed(what) } ?: malformed(what)
-            val programs = root["programs"].objects("programs").map { program ->
+            fun JsonElement?.texts(what: String): List<String> =
+                if (this == null) emptyList() else (this as? JsonArray)?.map { it.text(what) } ?: malformed(what)
+            fun JsonElement?.intOrNull(what: String): Int? {
+                if (this == null) return null
+                val n = (this as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toDoubleOrNull() ?: malformed(what)
+                if (n != kotlin.math.floor(n) || n < Int.MIN_VALUE || n > Int.MAX_VALUE) malformed(what)
+                return n.toInt()
+            }
+            val programJson = root["programs"].objects("programs")
+            val programs = programJson.map { program ->
                 ProgramRule(
                     id = program["id"].text("programs.id"),
                     criteria = program["criteria"].objects("criteria").map { c ->
@@ -55,12 +96,32 @@ public class RulePack private constructor(
                     amount = program["amount"]?.toValue(),
                 )
             }
+            val questions = root["questions"].objects("questions").map { q ->
+                Question(
+                    id = q["id"].text("questions.id"),
+                    type = q["type"].text("questions.type"),
+                    values = q["values"].texts("questions.values"),
+                    min = q["min"].intOrNull("questions.min"),
+                    max = q["max"].intOrNull("questions.max"),
+                    sensitive = (q["sensitive"] as? JsonPrimitive)?.takeIf { !it.isString }?.content == "true",
+                )
+            }
             return RulePack(
                 json = root,
                 jurisdiction = root["jurisdiction"].text("jurisdiction"),
+                verifiedOn = root["verifiedOn"].textOrNull("verifiedOn"),
                 constants = root["constants"]?.toValue(),
                 hasConstants = root.containsKey("constants"),
-                questionIds = root["questions"].objects("questions").map { it["id"].text("questions.id") },
+                questions = questions,
+                questionOrder = if (root.containsKey("questionOrder")) root["questionOrder"].texts("questionOrder") else null,
+                programInfo = programJson.map { p ->
+                    ProgramInfo(
+                        id = p["id"].text("programs.id"),
+                        name = p["name"].text("programs.name"),
+                        period = p["period"].textOrNull("programs.period"),
+                        caveats = p["caveats"].texts("programs.caveats"),
+                    )
+                },
                 programs = programs,
             )
         }

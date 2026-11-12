@@ -23,6 +23,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures {
@@ -35,12 +36,33 @@ android {
     }
 }
 
+// JVM unit tests read the shared contract in place, like :core.
+val sharedPath: String = layout.settingsDirectory.dir("../shared").asFile.absolutePath
+
+android.testOptions.unitTests.all { test ->
+    test.systemProperty("silhouette.shared", sharedPath)
+    test.inputs.dir(sharedPath).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("shared")
+}
+
 dependencies {
     implementation(project(":core"))
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.activity.compose)
+
+    testImplementation(libs.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
+
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.compose.ui.test.junit4.accessibility)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    // Compose UI tests pull in Espresso 3.5, which calls an input API removed in Android 17.
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    debugImplementation(libs.compose.ui.test.manifest)
 }
 
 /**
@@ -95,6 +117,48 @@ abstract class SyncSharedContract : DefaultTask() {
     }
 }
 
+/**
+ * Copies the conformance fixtures and everything they reference into the instrumented-test APK
+ * (`assets/shared/…`), so the conformance suite also runs on an Android runtime. Test APK only.
+ */
+abstract class SyncConformanceFixtures : DefaultTask() {
+    @get:Internal
+    abstract val sharedDir: DirectoryProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    val fixtureFiles: FileTree
+        get() = sharedDir.get().asFileTree.matching { include(INCLUDES) }
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @get:Inject
+    abstract val fileSystem: FileSystemOperations
+
+    @TaskAction
+    fun sync() {
+        fileSystem.sync {
+            from(sharedDir) {
+                include(INCLUDES)
+                into("shared")
+            }
+            into(outputDir)
+        }
+    }
+
+    companion object {
+        val INCLUDES = listOf("fixtures/**", "schemas/**", "skeleton/**", "rulepacks/**", "bands/**")
+    }
+}
+
+val syncConformanceFixtures = tasks.register<SyncConformanceFixtures>("syncConformanceFixtures") {
+    group = "build"
+    description = "Copies shared/fixtures and the files they reference into the instrumented-test assets."
+    sharedDir.set(layout.settingsDirectory.dir("../shared"))
+    outputDir.set(layout.buildDirectory.dir("generated/conformanceFixtures/assets"))
+}
+
 val syncSharedContract = tasks.register<SyncSharedContract>("syncSharedContract") {
     group = "build"
     description = "Copies shared/copy, shared/rulepacks/zz-test, shared/bands, shared/design/tokens.json and shared/skeleton/allowlist into generated assets."
@@ -105,5 +169,6 @@ val syncSharedContract = tasks.register<SyncSharedContract>("syncSharedContract"
 androidComponents {
     onVariants { variant ->
         variant.sources.assets?.addGeneratedSourceDirectory(syncSharedContract, SyncSharedContract::outputDir)
+        variant.androidTest?.sources?.assets?.addGeneratedSourceDirectory(syncConformanceFixtures, SyncConformanceFixtures::outputDir)
     }
 }
