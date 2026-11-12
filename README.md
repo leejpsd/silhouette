@@ -32,6 +32,11 @@ Silhouette is a hybrid on-device + cloud app built with [Firebase AI Logic](http
 cd shared/reference && npm test
 ```
 
+## Built with
+
+- [Firebase AI Logic](https://firebase.google.com/docs/ai-logic) hybrid inference, App Check, Cloud Firestore and Remote Config
+- [Claude Code](https://claude.com/claude-code) as the coding agent, with [Firebase Agent Skills](https://firebase.google.com/docs/ai-assistance/agent-skills)
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).
