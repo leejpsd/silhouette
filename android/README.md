@@ -32,7 +32,7 @@ built-in sample documents, labelled as such. Any other document is typed in, and
 | File | Contract |
 |---|---|
 | `DataTypes.kt` | `Raw<T>`, `Skeleton`, `Generalized<T>`, `Public<T>` and the sealed `CloudSafe` (`shared/DATA_TYPES.md`) |
-| `Skeletonizer.kt` | Document text → skeleton plus placeholder map (`shared/skeleton/SPEC.md` sections 1–4.1): deny by default from an explicit safe-character list, month-name dates, phrases masked as a whole. Optional user-hidden words for the preview |
+| `Skeletonizer.kt` | Document text → skeleton plus placeholder map (`shared/skeleton/SPEC.md` sections 1–4.1): deny by default from an explicit safe-character list, month-name dates, phrases masked as a whole, leading introducers (`Employee`, `between`) kept in front of a masked name. Optional user-hidden words for the preview |
 | `Rehydrator.kt` | Model pointers → exact values (`shared/skeleton/SPEC.md` section 5); `parseTypedAmount` for amounts typed by the user |
 | `Review.kt` | Review fields with their highlighted source lines, from a pointer schema and the model's pointers |
 | `Validation.kt` | Paystub checks, date parsing per jurisdiction and annualization in integer cents with exact arithmetic (`shared/validation/SPEC.md`) |

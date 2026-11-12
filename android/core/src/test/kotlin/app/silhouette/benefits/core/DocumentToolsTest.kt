@@ -37,6 +37,21 @@ class DocumentToolsTest {
     }
 
     @Test
+    fun `a leading introducer stays a visible, hideable label in front of a masked name`() {
+        val allow = allowlist("en")
+        val result = skeletonize(Raw.of("Employee Lucia Lindqvist"), allow)
+        assertEquals("Employee ⟦W1⟧ ⟦W2⟧", result.skeleton.text)
+        val label = result.pieces.first() as SkeletonPiece.KeptWord
+        assertEquals("Employee", label.text)
+        // Hiding the label masks the whole phrase: a hidden introducer is not set aside.
+        val hidden = skeletonize(Raw.of("Employee Lucia Lindqvist"), allow, hide = setOf(label.ordinal))
+        assertEquals("⟦W1⟧ ⟦W2⟧ ⟦W3⟧", hidden.skeleton.text)
+        // Introducers come from the document language's file plus English only.
+        assertEquals("Empleado ⟦W1⟧ ⟦W2⟧", skeletonize(Raw.of("Empleado Lucía Hernández"), allowlist("es")).skeleton.text)
+        assertEquals("⟦W1⟧ ⟦W2⟧ ⟦W3⟧", skeletonize(Raw.of("Empleado Lucía Hernández"), allowlist("ko")).skeleton.text)
+    }
+
+    @Test
     fun `month names are matched ASCII case-insensitively only`() {
         val allow = allowlist("en")
         assertEquals("⟦D1⟧", skeletonize(Raw.of("OCTOBER 17, 2026"), allow).skeleton.text)

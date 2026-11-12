@@ -66,7 +66,7 @@ fun PreviewContent(app: AppController) {
         t("preview.counts", "numbers" to (counts['N'] ?: 0), "dates" to (counts['D'] ?: 0), "words" to (counts['W'] ?: 0)),
         Modifier.testTag("preview-counts"),
     )
-    Meta(t("preview.hideHint"))
+    Meta(t("preview.hideHelp"))
 
     val placeholderStyle = SpanStyle(background = c.private, color = c.onPrivate, fontWeight = FontWeight.SemiBold)
     val linkStyle = TextLinkStyles(SpanStyle(textDecoration = TextDecoration.Underline, color = MaterialTheme.colorScheme.primary))
@@ -76,7 +76,8 @@ fun PreviewContent(app: AppController) {
                 is SkeletonPiece.Separator -> append(piece.text)
                 is SkeletonPiece.Placeholder -> withStyle(placeholderStyle) { append(piece.id) }
                 is SkeletonPiece.KeptWord -> withLink(
-                    LinkAnnotation.Clickable(tag = "hide-${piece.ordinal}", styles = linkStyle) { app.hideWord(piece.ordinal) },
+                    // The tag doubles as the link's spoken label ("Hide “Gross”").
+                    LinkAnnotation.Clickable(tag = t("preview.hideWord", "word" to piece.text), styles = linkStyle) { app.hideWord(piece.ordinal) },
                 ) { append(piece.text) }
             }
         }
@@ -100,14 +101,14 @@ fun PreviewContent(app: AppController) {
     if (doc.hidden.isNotEmpty()) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(d.xs)) {
             Text(
-                t("preview.hidden", "word" to app.lastHiddenWord().orEmpty()),
+                t("preview.hidden") + ": " + app.document.hiddenWords.joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .weight(1f)
                     .testTag("hidden-notice")
                     .semantics { liveRegion = LiveRegionMode.Polite },
             )
-            QuietButton(t("preview.undo"), onClick = app::undoHide, modifier = Modifier.testTag("undo-hide"))
+            QuietButton(t("preview.unhide", "word" to app.lastHiddenWord().orEmpty()), onClick = app::undoHide, modifier = Modifier.testTag("undo-hide"))
         }
     }
 

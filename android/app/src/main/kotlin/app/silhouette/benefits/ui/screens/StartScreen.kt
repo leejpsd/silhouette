@@ -11,6 +11,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import app.silhouette.benefits.quickcheck.firstOpenStep
 import app.silhouette.benefits.ui.AppController
 import app.silhouette.benefits.ui.BulletList
 import app.silhouette.benefits.ui.Lead
@@ -40,7 +41,12 @@ fun StartContent(app: AppController) {
     Meta(t("start.rules", "name" to t("pack.${app.content.pack.jurisdiction}.name")))
     Column(verticalArrangement = Arrangement.spacedBy(d.sm)) {
         PrimaryButton(
-            if (app.started) t("start.continue") else t("start.begin"),
+            when {
+                !app.started -> t("start.begin")
+                // Some questions are still open: resume them; otherwise go straight to the results.
+                firstOpenStep(app.steps, app.answers) < app.steps.size -> t("start.resume")
+                else -> t("start.continue")
+            },
             onClick = app::begin,
             modifier = Modifier.testTag("start-begin"),
         )

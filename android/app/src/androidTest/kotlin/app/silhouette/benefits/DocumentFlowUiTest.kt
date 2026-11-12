@@ -119,7 +119,7 @@ class DocumentFlowUiTest {
         tag("exact-income").performTextReplacement("28.000,50")
         tag("amount-understood").assertDoesNotExist()
         click("question-next")
-        compose.onNodeWithText(t("q.error.amountFormat")).assertExists()
+        compose.onNodeWithText(t("q.error.amount")).assertExists()
         tag("exact-income").performTextReplacement("$28,000.50")
         click("question-next")
         assertEquals(AnswerValue.ExactIncome(28000.5), latestAnswer())

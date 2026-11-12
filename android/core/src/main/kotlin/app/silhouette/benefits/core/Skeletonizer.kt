@@ -74,10 +74,17 @@ private val TOKEN: Pattern = Pattern.compile(TOKEN_SOURCE, Pattern.CASE_INSENSIT
 
 // ---------- 4. Allowlist ----------
 
-/** Words that survive skeletonization: the union of the document language's allowlist and `en`. */
-public class Allowlist(words: Collection<String>) {
+/**
+ * Words that survive skeletonization, and the introducers among them (SPEC.md section 4.2): the
+ * union of the document language's allowlist file and `en`.
+ */
+public class Allowlist(words: Collection<String>, introducers: Collection<String> = emptyList()) {
     // String equality in Kotlin is exact (by UTF-16 unit, hence by code point); no normalization.
     private val words: Set<String> = words.toHashSet()
+    private val introducers: Set<String> = introducers.toHashSet()
+
+    /** Section 4.2: the whole token's lowercase form is an introducer (no hyphen rule). */
+    internal fun introduces(word: String): Boolean = word.lowercase(Locale.ROOT) in introducers
 
     public operator fun contains(lowercaseWord: String): Boolean = lowercaseWord in words
 
@@ -90,14 +97,18 @@ public class Allowlist(words: Collection<String>) {
     }
 
     public companion object {
-        /** Builds the union of `skeleton/allowlist/{language}.json` files (`{"words": [...]}`). */
-        public fun fromFiles(files: List<JsonElement>): Allowlist = Allowlist(
-            files.flatMap { file ->
-                val words = (file as? JsonObject)?.get("words") as? JsonArray
-                    ?: throw IllegalArgumentException("an allowlist file needs a words array")
-                words.map { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content ?: throw IllegalArgumentException("allowlist words are strings") }
-            },
-        )
+        /**
+         * Builds the union of `skeleton/allowlist/{language}.json` files
+         * (`{"words": [...], "introducers": [...]}`; `introducers` may be absent).
+         */
+        public fun fromFiles(files: List<JsonElement>): Allowlist {
+            fun strings(file: JsonElement, key: String, required: Boolean): List<String> {
+                val list = (file as? JsonObject)?.get(key) as? JsonArray
+                    ?: if (required) throw IllegalArgumentException("an allowlist file needs a $key array") else return emptyList()
+                return list.map { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content ?: throw IllegalArgumentException("allowlist $key are strings") }
+            }
+            return Allowlist(files.flatMap { strings(it, "words", true) }, files.flatMap { strings(it, "introducers", false) })
+        }
     }
 }
 
@@ -145,7 +156,8 @@ private val PHRASE_JOINERS = setOf(" ", ", ", " & ")
  * cloud-safe value from Raw (shared/DATA_TYPES.md).
  *
  * [hide] lists word ordinals (see [SkeletonPiece.KeptWord.ordinal]) that the user chose to hide.
- * A hidden word is treated as not allowlisted, so the phrase rule masks its whole phrase. With no
+ * A hidden word is treated as not allowlisted, so the phrase rule masks its whole phrase; a hidden
+ * introducer is no longer set aside. With no
  * hidden words the output is exactly the contract's.
  */
 public fun skeletonize(text: Raw<String>, allow: Allowlist, hide: Set<Int> = emptySet()): SkeletonResult {
@@ -171,7 +183,10 @@ public fun skeletonize(text: Raw<String>, allow: Allowlist, hide: Set<Int> = emp
         }
     }
 
-    // Pass 2: a phrase is masked as a whole when any of its words is not allowlisted.
+    // Pass 2: a phrase is masked as a whole when any of its words is not allowlisted (section 4.1).
+    // Leading introducers ("Employee", "This Lease is made between") are labels in front of a name,
+    // never part of it: while a kept word at the start is an introducer and not the last word of the
+    // phrase, it keeps its own decision, and the rule applies to the rest (section 4.2).
     var i = 0
     while (i < tokens.size) {
         if (tokens[i].kind != 'W') {
@@ -180,8 +195,10 @@ public fun skeletonize(text: Raw<String>, allow: Allowlist, hide: Set<Int> = emp
         }
         var j = i
         while (j + 2 < tokens.size && tokens[j + 1].kind == 'O' && tokens[j + 1].text in PHRASE_JOINERS && tokens[j + 2].kind == 'W') j += 2
-        val keep = (i..j step 2).all { tokens[it].keep }
-        for (k in i..j step 2) tokens[k].keep = keep
+        var start = i
+        while (start < j && tokens[start].keep && allow.introduces(tokens[start].text)) start += 2
+        val keep = (start..j step 2).all { tokens[it].keep }
+        for (k in start..j step 2) tokens[k].keep = keep
         i = j + 1
     }
 

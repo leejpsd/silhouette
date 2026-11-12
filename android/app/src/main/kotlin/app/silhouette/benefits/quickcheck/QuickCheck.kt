@@ -66,7 +66,7 @@ sealed interface AnswerValue {
 enum class AnswerError(val copyKey: String) {
     INTEGER("q.error.integer"),
     CHOOSE("q.error.choose"),
-    AMOUNT("q.error.amountFormat"),
+    AMOUNT("q.error.amount"),
 }
 
 /**
