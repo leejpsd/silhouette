@@ -1,0 +1,15 @@
+# Build outputs
+build/
+DerivedData/
+SilhouetteCore/.build/
+.build/
+*.xcresult
+
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+.swiftpm/
+
+# macOS
+.DS_Store

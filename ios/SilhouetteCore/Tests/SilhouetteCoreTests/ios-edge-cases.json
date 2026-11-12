@@ -1,0 +1,475 @@
+{
+  "generatedFrom": "shared/reference/silhouette.mjs",
+  "skeleton": [
+    {
+      "id": "digit-then-combining-mark",
+      "locale": "en",
+      "input": "Gross 5́ Pay 12̈.50",
+      "expected": {
+        "skeleton": "Gross ⟦N1⟧⟦W1⟧ Pay ⟦N2⟧⟦W2⟧.⟦N3⟧",
+        "map": {
+          "N1": "5",
+          "W1": "́",
+          "N2": "12",
+          "W2": "̈",
+          "N3": "50"
+        }
+      }
+    },
+    {
+      "id": "decomposed-accent-is-composed",
+      "locale": "es",
+      "input": "Salario bruto: José café",
+      "expected": {
+        "skeleton": "Salario bruto: ⟦W1⟧ ⟦W2⟧",
+        "map": {
+          "W1": "José",
+          "W2": "café"
+        }
+      }
+    },
+    {
+      "id": "decomposed-hangul-is-composed",
+      "locale": "ko",
+      "input": "급여 가",
+      "expected": {
+        "skeleton": "급여 ⟦W1⟧",
+        "map": {
+          "W1": "가"
+        }
+      }
+    },
+    {
+      "id": "kelvin-sign-normalizes",
+      "locale": "en",
+      "input": "Kelvin Net Pay",
+      "expected": {
+        "skeleton": "⟦W1⟧ Net Pay",
+        "map": {
+          "W1": "Kelvin"
+        }
+      }
+    },
+    {
+      "id": "bracket-removal-after-nfc",
+      "locale": "en",
+      "input": "Net e⟦́ Pay",
+      "expected": {
+        "skeleton": "Net ⟦W1⟧ Pay",
+        "map": {
+          "W1": "é"
+        }
+      }
+    },
+    {
+      "id": "emoji-zwj-sequence",
+      "locale": "en",
+      "input": "Net Pay 👨‍👩‍👧 1,000.00",
+      "expected": {
+        "skeleton": "Net Pay 👨‍👩‍👧 ⟦N1⟧",
+        "map": {
+          "N1": "1,000.00"
+        }
+      }
+    },
+    {
+      "id": "flag-and-skin-tone",
+      "locale": "en",
+      "input": "🇺🇸 👍🏽 Gross",
+      "expected": {
+        "skeleton": "🇺🇸 👍🏽 Gross",
+        "map": {}
+      }
+    },
+    {
+      "id": "fullwidth-and-arabic-digits",
+      "locale": "en",
+      "input": "Total １２３ ٣٤ Pay",
+      "expected": {
+        "skeleton": "Total １２３ ٣٤ Pay",
+        "map": {}
+      }
+    },
+    {
+      "id": "dotted-capital-i",
+      "locale": "en",
+      "input": "İNCOME Income",
+      "expected": {
+        "skeleton": "⟦W1⟧ Income",
+        "map": {
+          "W1": "İNCOME"
+        }
+      }
+    },
+    {
+      "id": "cr-cr-lf",
+      "locale": "en",
+      "input": "Gross\r\r\nNet\n\rPay",
+      "expected": {
+        "skeleton": "Gross\n\nNet\n\nPay",
+        "map": {}
+      }
+    },
+    {
+      "id": "hyphen-with-combining-mark",
+      "locale": "en",
+      "input": "Year-́to-Date Pre-Tax",
+      "expected": {
+        "skeleton": "⟦W1⟧ Pre-Tax",
+        "map": {
+          "W1": "Year-́to-Date"
+        }
+      }
+    },
+    {
+      "id": "apostrophe-forms",
+      "locale": "en",
+      "input": "Employee's Employee’s O'Neil",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧",
+        "map": {
+          "W1": "Employee's",
+          "W2": "Employee’s",
+          "W3": "O'Neil"
+        }
+      }
+    },
+    {
+      "id": "astral-letters",
+      "locale": "en",
+      "input": "𐐀𐐁 𝐀BC Gross",
+      "expected": {
+        "skeleton": "⟦W1⟧ ⟦W2⟧ Gross",
+        "map": {
+          "W1": "𐐀𐐁",
+          "W2": "𝐀BC"
+        }
+      }
+    },
+    {
+      "id": "date-like-runs",
+      "locale": "en",
+      "input": "2026-10-15-01 1/2/3/4 12.34.56 1.2.3.4.5",
+      "expected": {
+        "skeleton": "⟦D1⟧-⟦N1⟧ ⟦D2⟧/⟦N2⟧ ⟦D3⟧ ⟦D4⟧.⟦N3⟧",
+        "map": {
+          "D1": "2026-10-15",
+          "N1": "01",
+          "D2": "1/2/3",
+          "N2": "4",
+          "D3": "12.34.56",
+          "D4": "1.2.3",
+          "N3": "4.5"
+        }
+      }
+    },
+    {
+      "id": "trailing-newline-number",
+      "locale": "en",
+      "input": "Net Pay 1,000\n",
+      "expected": {
+        "skeleton": "Net Pay ⟦N1⟧\n",
+        "map": {
+          "N1": "1,000"
+        }
+      }
+    }
+  ],
+  "jsNumberToString": [
+    {
+      "value": 0,
+      "expected": "0"
+    },
+    {
+      "value": 0,
+      "expected": "0"
+    },
+    {
+      "value": 1,
+      "expected": "1"
+    },
+    {
+      "value": -1,
+      "expected": "-1"
+    },
+    {
+      "value": 2.5,
+      "expected": "2.5"
+    },
+    {
+      "value": 0.1,
+      "expected": "0.1"
+    },
+    {
+      "value": 0.000001,
+      "expected": "0.000001"
+    },
+    {
+      "value": 1e-7,
+      "expected": "1e-7"
+    },
+    {
+      "value": 123456789012345680000,
+      "expected": "123456789012345680000"
+    },
+    {
+      "value": 1e+21,
+      "expected": "1e+21"
+    },
+    {
+      "value": 1.5e+300,
+      "expected": "1.5e+300"
+    },
+    {
+      "value": 9007199254740992,
+      "expected": "9007199254740992"
+    },
+    {
+      "value": 0.3333333333333333,
+      "expected": "0.3333333333333333"
+    },
+    {
+      "value": 100,
+      "expected": "100"
+    },
+    {
+      "value": 12345.678,
+      "expected": "12345.678"
+    },
+    {
+      "value": -5e-11,
+      "expected": "-5e-11"
+    }
+  ],
+  "parseNumber": [
+    {
+      "token": "1,000\n",
+      "expected": null
+    },
+    {
+      "token": "1,284.50",
+      "expected": 1284.5
+    },
+    {
+      "token": "00.5",
+      "expected": 0.5
+    },
+    {
+      "token": "1,000,000.000001",
+      "expected": 1000000.000001
+    },
+    {
+      "token": "9007199254740993",
+      "expected": 9007199254740992
+    },
+    {
+      "token": "123456789012345678901234567890",
+      "expected": 1.2345678901234568e+29
+    }
+  ],
+  "evaluator": {
+    "data": {
+      "z": 0,
+      "big": 9007199254740992,
+      "s": "é",
+      "kelvin": "K",
+      "K": 1,
+      "D": {
+        "́": 7
+      }
+    },
+    "cases": [
+      {
+        "id": "min-negative-zero",
+        "expr": {
+          "min": [
+            0,
+            {
+              "-": [
+                0,
+                0
+              ]
+            },
+            {
+              "*": [
+                -1,
+                0
+              ]
+            }
+          ]
+        },
+        "expected": 0,
+        "negativeZero": true
+      },
+      {
+        "id": "max-negative-zero-first",
+        "expr": {
+          "max": [
+            {
+              "*": [
+                -1,
+                0
+              ]
+            },
+            0
+          ]
+        },
+        "expected": 0,
+        "negativeZero": false
+      },
+      {
+        "id": "div-by-negative-zero",
+        "expr": {
+          "/": [
+            1,
+            {
+              "*": [
+                -1,
+                0
+              ]
+            }
+          ]
+        },
+        "expectedError": "RuleError"
+      },
+      {
+        "id": "cat-negative-zero",
+        "expr": {
+          "cat": [
+            "x",
+            {
+              "*": [
+                -1,
+                0
+              ]
+            }
+          ]
+        },
+        "expected": "x0",
+        "negativeZero": false
+      },
+      {
+        "id": "cat-largest-safe-integer",
+        "expr": {
+          "cat": [
+            9007199254740991
+          ]
+        },
+        "expected": "9007199254740991",
+        "negativeZero": false
+      },
+      {
+        "id": "error-cat-unsafe-integer",
+        "expr": {
+          "cat": [
+            {
+              "var": "big"
+            }
+          ]
+        },
+        "expectedError": "RuleError"
+      },
+      {
+        "id": "eq-decomposed-vs-precomposed",
+        "expr": {
+          "==": [
+            {
+              "var": "s"
+            },
+            "é"
+          ]
+        },
+        "expected": false,
+        "negativeZero": false
+      },
+      {
+        "id": "in-decomposed-vs-precomposed",
+        "expr": {
+          "in": [
+            "é",
+            [
+              {
+                "var": "s"
+              }
+            ]
+          ]
+        },
+        "expected": false,
+        "negativeZero": false
+      },
+      {
+        "id": "var-kelvin-sign-is-not-K",
+        "expr": {
+          "var": "K"
+        },
+        "expected": null,
+        "negativeZero": false
+      },
+      {
+        "id": "eq-kelvin-vs-K",
+        "expr": {
+          "==": [
+            {
+              "var": "kelvin"
+            },
+            "K"
+          ]
+        },
+        "expected": false,
+        "negativeZero": false
+      },
+      {
+        "id": "var-dot-then-combining-mark",
+        "expr": {
+          "var": "D.́"
+        },
+        "expected": 7,
+        "negativeZero": false
+      },
+      {
+        "id": "floor-negative-fraction",
+        "expr": {
+          "floor": -0.5
+        },
+        "expected": -1,
+        "negativeZero": false
+      },
+      {
+        "id": "overflow-is-infinite-then-error",
+        "expr": {
+          "<": [
+            {
+              "*": [
+                1e+308,
+                10
+              ]
+            },
+            1
+          ]
+        },
+        "expectedError": "RuleError"
+      },
+      {
+        "id": "true-is-not-one",
+        "expr": {
+          "==": [
+            true,
+            1
+          ]
+        },
+        "expected": false,
+        "negativeZero": false
+      },
+      {
+        "id": "true-is-not-a-number",
+        "expr": {
+          "+": [
+            true,
+            1
+          ]
+        },
+        "expectedError": "RuleError"
+      }
+    ]
+  }
+}

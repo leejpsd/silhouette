@@ -1,0 +1,139 @@
+// Conformance suite: runs every file in shared/fixtures/conformance/ against SilhouetteCore and
+// asserts exact equality with `expected`, `expectedError`, `expectedUnknown` and
+// `expectedUnknownReads` (including object key order and the canonical profile string).
+
+import Foundation
+import Testing
+@testable import SilhouetteCore
+
+@Suite("shared/fixtures/conformance")
+struct ConformanceTests {
+    /// Files this suite knows how to run. A new file in the folder fails the suite until a runner
+    /// is added.
+    static let knownFiles: Set<String> = ["evaluator.json", "generalize.json", "rehydrate.json", "skeleton.json", "verdict.json"]
+
+    @Test("every file in the folder has a runner, and every runner has a file")
+    func folderIsFullyCovered() throws {
+        let files = Set(try Shared.files(in: Shared.conformanceDir))
+        #expect(files.subtracting(Self.knownFiles).isEmpty, "no runner for: \(files.subtracting(Self.knownFiles).sorted())")
+        #expect(Self.knownFiles.subtracting(files).isEmpty, "missing fixture files: \(Self.knownFiles.subtracting(files).sorted())")
+        for file in files { #expect(try !Shared.cases(file).isEmpty, "\(file) has no cases") }
+    }
+
+    // MARK: skeleton.json
+
+    @Test("skeleton.json", arguments: try Shared.cases("skeleton.json"))
+    func skeleton(_ k: FixtureCase) throws {
+        let input = try #require(k["input"]?.stringValue)
+        let allow = try Shared.allowlist(try #require(k["locale"]?.stringValue))
+        let result = Skeletonizer.skeletonize(Raw(input), allowlist: allow)
+        let map = result.map.value
+
+        expectExactString(result.skeleton.text, k["expected"]?["skeleton"]?.stringValue, "\(k.id): skeleton")
+        expectIdentical(map.json, k["expected"]?["map"], "\(k.id): map")
+
+        // No ASCII digit and no non-allowlisted word survives.
+        let stripped = try NSRegularExpression(pattern: "\u{27E6}[DNW][0-9]+\u{27E7}")
+            .stringByReplacingMatches(in: result.skeleton.text, range: NSRange(location: 0, length: (result.skeleton.text as NSString).length), withTemplate: "")
+        #expect(!stripped.unicodeScalars.contains { ("0"..."9").contains($0) }, "\(k.id): digit survived")
+        let words = try NSRegularExpression(pattern: #"[\p{L}\p{M}]+"#)
+        let ns = stripped as NSString
+        for m in words.matches(in: stripped, range: NSRange(location: 0, length: ns.length)) {
+            let word = ns.substring(with: m.range)
+            #expect(allow.contains(word.lowercased()), "\(k.id): \"\(word)\" survived but is not allowlisted")
+        }
+
+        // Skeleton + map reconstruct the normalized input exactly.
+        let placeholder = try NSRegularExpression(pattern: "\u{27E6}([DNW][0-9]+)\u{27E7}")
+        let sk = result.skeleton.text as NSString
+        var rebuilt = ""
+        var cursor = 0
+        for m in placeholder.matches(in: result.skeleton.text, range: NSRange(location: 0, length: sk.length)) {
+            rebuilt += sk.substring(with: NSRange(location: cursor, length: m.range.location - cursor))
+            rebuilt += map[sk.substring(with: m.range(at: 1))] ?? ""
+            cursor = m.range.location + m.range.length
+        }
+        rebuilt += sk.substring(from: cursor)
+        expectExactString(rebuilt, Skeletonizer.normalize(input), "\(k.id): reconstruction")
+    }
+
+    // MARK: rehydrate.json
+
+    @Test("rehydrate.json numbers")
+    func rehydrateNumbers() throws {
+        let numbers = try #require(try Shared.conformance("rehydrate.json")["numbers"]?.arrayValue)
+        #expect(!numbers.isEmpty)
+        for n in numbers {
+            let token = try #require(n["token"]?.stringValue)
+            let actual: JSON = Rehydrator.parseNumber(token).map(JSON.number) ?? .null
+            expectIdentical(actual, n["expected"], "parseNumber(\(JSON.string(token).jsonText))")
+        }
+    }
+
+    @Test("rehydrate.json", arguments: try Shared.cases("rehydrate.json"))
+    func rehydrate(_ k: FixtureCase) throws {
+        let schema = try Shared.json("schemas/\(try #require(k["schema"]?.stringValue))")
+        let mapObject = try #require(k["map"]?.objectValue)
+        var entries: [(String, String)] = []
+        for (id, value) in mapObject.entries { entries.append((id, try #require(value.stringValue))) }
+        let pointers = try #require(k["pointers"])
+        let result = Rehydrator.rehydrate(schema: schema, pointers: pointers, map: Raw(PlaceholderMap(entries)))
+        expectIdentical(result.value, k["expected"], k.id)
+    }
+
+    // MARK: generalize.json
+
+    @Test("generalize.json", arguments: try Shared.cases("generalize.json"))
+    func generalize(_ k: FixtureCase) throws {
+        let bands = try Bands(json: Shared.json(try #require(try Shared.conformance("generalize.json")["bands"]?.stringValue)))
+        let exact = try #require(k["exact"])
+        if let error = k["expectedError"]?.stringValue {
+            expectFixtureError(error, k.id) { _ = try Generalizer.generalize(json: Raw(exact), bands: bands) }
+            return
+        }
+        let profile = try Generalizer.generalize(json: Raw(exact), bands: bands)
+        expectIdentical(profile.value.json, k["expected"], k.id)
+        expectExactString(profile.canonical, k["expectedCanonical"]?.stringValue, "\(k.id): canonical")
+        expectExactString(CloudBoundary.outbound(profile).text, k["expectedCanonical"]?.stringValue, "\(k.id): outbound payload")
+    }
+
+    // MARK: evaluator.json
+
+    @Test("evaluator.json", arguments: try Shared.cases("evaluator.json"))
+    func evaluator(_ k: FixtureCase) throws {
+        let file = try Shared.conformance("evaluator.json")
+        let data = try #require(file["data"])
+        let unavailable = Set(try #require(file["unavailable"]?.arrayValue).compactMap(\.stringValue))
+        let expr = try #require(k["expr"])
+        var ctx = EvalContext(unavailable: unavailable)
+        if let error = k["expectedError"]?.stringValue {
+            expectFixtureError(error, k.id) { _ = try RulesEngine.evaluate(expr, data: data, context: &ctx) }
+        } else if k["expectedUnknown"]?.boolValue == true {
+            let value = try RulesEngine.evaluate(expr, data: data, context: &ctx)
+            #expect(value.isUnknown, "\(k.id): expected unknown")
+            let reads = ctx.unknownReads.sorted { $0.utf16Precedes($1) }
+            expectIdentical(.array(reads.map(JSON.string)), k["expectedUnknownReads"], "\(k.id): unknown reads")
+        } else if let expected = k["expected"] {
+            let value = try RulesEngine.evaluate(expr, data: data, context: &ctx)
+            expectIdentical(try #require(value.json, "\(k.id): unexpected unknown"), expected, k.id)
+        } else {
+            Issue.record("\(k.id): case has no expected, expectedError or expectedUnknown")
+        }
+    }
+
+    // MARK: verdict.json
+
+    @Test("verdict.json", arguments: try Shared.cases("verdict.json"))
+    func verdict(_ k: FixtureCase) throws {
+        let file = try Shared.conformance("verdict.json")
+        let pack = try RulePack(json: Shared.json(try #require(file["pack"]?.stringValue)))
+        let bands = try Bands(json: Shared.json(try #require(file["bands"]?.stringValue)))
+        let answers = try #require(k["answers"])
+        if let error = k["expectedError"]?.stringValue {
+            expectFixtureError(error, k.id) { _ = try RulesEngine.verdicts(pack: pack, bands: bands, answers: Raw(answers)) }
+            return
+        }
+        let result = try RulesEngine.verdicts(pack: pack, bands: bands, answers: Raw(answers))
+        expectIdentical(.array(result.map(\.json)), k["expected"], k.id)
+    }
+}
