@@ -196,6 +196,30 @@
       "expected": null
     },
     {
+      "text": "60.000",
+      "expected": null
+    },
+    {
+      "text": "1.271",
+      "expected": null
+    },
+    {
+      "text": "28,000.505",
+      "expected": null
+    },
+    {
+      "text": "0.125",
+      "expected": null
+    },
+    {
+      "text": "0.5",
+      "expected": 0.5
+    },
+    {
+      "text": "12.34",
+      "expected": 12.34
+    },
+    {
       "text": "２８",
       "expected": null
     },

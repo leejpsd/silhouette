@@ -92,6 +92,7 @@ export const typedAmountCases = [
   '28000.50', '28,000.50', '28000.5', '28000', '0', '0.00', '$28,000.50', '$ 28000', '  28000  ', '\t28000\n', '\u00A028000\u00A0',
   '\u20AC1,200', '\u00A31200.5', '\u00A51200', '\u20A91,200,000', ' $\u00A01,200 ',
   '28.000,50', '28 000', '1,2345', '12,34', '.5', '7.', '-5', '+5', '1e3', '28000$', '$$5', '$', '', '   ', 'USD 5', '5 USD',
+  '60.000', '1.271', '28,000.505', '0.125', '0.5', '12.34',
   '\uFF12\uFF18', '\u30005', '\u20095', '5\u200B', '28000.50.1', '0x10', 'Infinity', 'NaN', "28'000",
 ];
 
@@ -238,4 +239,23 @@ export const silhouetteVerdictCases = [
   { id: 'household-at-cap', exact: { jurisdiction: 'zz-test', annualIncome: 30000, householdSize: 6, housing: 'renter' } },
   { id: 'income-only', exact: { jurisdiction: 'zz-test', annualIncome: 20000 } },
   { id: 'nothing-answered', exact: { jurisdiction: 'zz-test' } },
+];
+
+// Checks on model text (prompts/OUTPUT_CHECKS.md).
+export const outputCheckCases = [
+  { id: 'en-definite-claim', locale: 'en', scope: 'personal', text: 'Good news: you qualify for this program.' },
+  { id: 'en-definite-negative', locale: 'en', scope: 'personal', text: "Based on this, you don't qualify." },
+  { id: 'en-curly-apostrophe', locale: 'en', scope: 'personal', text: 'Sadly you\u2019re not eligible this year.' },
+  { id: 'en-case-and-spacing', locale: 'en', scope: 'personal', text: 'YOU   ARE\nELIGIBLE for help.' },
+  { id: 'en-conditional-is-fine', locale: 'en', scope: 'personal', text: 'To find out if you qualify, the app checks your answers on this device. It can also tell you when you are eligible to apply.' },
+  { id: 'en-may-is-fine-for-personal', locale: 'en', scope: 'personal', text: 'You may qualify because your household is under the limit.' },
+  { id: 'en-may-is-blocked-for-general', locale: 'en', scope: 'general', text: 'You may qualify because your household is under the limit.' },
+  { id: 'en-general-neutral', locale: 'en', scope: 'general', text: 'This program lowers utility bills for households under an income limit. Your result above shows whether you may qualify.' },
+  { id: 'en-second-occurrence-counts', locale: 'en', scope: 'general', text: 'The app shows whether you may qualify. From what I see, you may qualify.' },
+  { id: 'es-definite-claim', locale: 'es', scope: 'personal', text: 'Buenas noticias: calificas para este programa.' },
+  { id: 'es-conditional-is-fine', locale: 'es', scope: 'personal', text: 'La app revisa en tu dispositivo si calificas.' },
+  { id: 'es-overall-blocked-for-general', locale: 'es', scope: 'general', text: 'Es posible que califiques para este programa.' },
+  { id: 'es-general-neutral', locale: 'es', scope: 'general', text: 'Este programa reduce la factura de servicios para hogares con ingresos bajos.' },
+  { id: 'unknown-locale-uses-english', locale: 'fr', scope: 'personal', text: 'You qualify.' },
+  { id: 'empty-text', locale: 'en', scope: 'general', text: '' },
 ];

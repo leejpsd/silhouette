@@ -125,7 +125,10 @@ const TYPED_AMOUNT = new RegExp(`^${TYPED_SPACE}*(?:[$\u20AC\u00A3\u00A5\u20A9]$
 /** An amount typed by the user (skeleton/SPEC.md section 5.1). Returns undefined when it is not accepted. */
 export function parseTypedAmount(text) {
   if (typeof text !== 'string') return undefined;
-  return parseNumber(TYPED_AMOUNT.exec(text)[1]);
+  const token = TYPED_AMOUNT.exec(text)[1];
+  // At most two digits after the dot: "60.000" is a thousands group in much of the world, not 60.
+  if (/\.[0-9]{3,}$/.test(token)) return undefined;
+  return parseNumber(token);
 }
 
 function readField(spec, ref, map) {
@@ -474,4 +477,27 @@ export function silhouetteVerdicts(pack, bands, profile) {
     verdict: v.verdict,
     criteria: v.criteria.map((c) => ({ id: c.id, state: c.state })),
   }));
+}
+
+// ---------- Checks on model text ----------
+
+/**
+ * Whether a model's text makes a claim only the rule engine may make (prompts/OUTPUT_CHECKS.md).
+ * @param {string} text Model output
+ * @param {string} locale 'en', 'es', ...
+ * @param {'personal' | 'general'} scope 'general' for tasks that only know the silhouette
+ * @param {object} checks prompts/output-checks.json
+ * @returns {boolean} true when the text must not be shown
+ */
+export function modelTextIsBlocked(text, locale, scope, checks) {
+  const rules = Object.hasOwn(checks.locales, locale) ? checks.locales[locale] : checks.locales.en;
+  const haystack = text.normalize('NFC').toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ');
+  const phrases = scope === 'general' ? [...rules.definite, ...rules.overall] : rules.definite;
+  for (const phrase of phrases) {
+    for (let at = haystack.indexOf(phrase); at !== -1; at = haystack.indexOf(phrase, at + 1)) {
+      const before = haystack.slice(0, at);
+      if (!rules.allowBefore.some((lead) => before.endsWith(lead))) return true;
+    }
+  }
+  return false;
 }

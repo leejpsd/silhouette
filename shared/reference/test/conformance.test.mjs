@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { build } from '../generate.mjs';
 import * as s from '../silhouette.mjs';
-import { read, readJson, allowlist, introducers, skeletonCases } from '../cases.mjs';
+import { read, readJson, allowlist, introducers, skeletonCases, verdictCases } from '../cases.mjs';
 
 test('fixtures on disk match the reference implementation', () => {
   for (const [name, content] of Object.entries(build())) {
@@ -71,4 +71,33 @@ test('the synthetic pack passes the linter and bad packs are caught', async () =
   assert.match(broken((p) => { delete p.questions[0].min; }), /need integer min and max/);
   const gap = structuredClone(bands); gap.annualIncome[1].min = 16000;
   assert.match(lintPack(pack, gap).join('\n'), /does not start right after/);
+});
+
+test('a definite criterion state from the silhouette agrees with the state from exact answers', () => {
+  const bands = readJson('../bands/zz-test.json');
+  const pack = readJson('../rulepacks/zz-test/pack.json');
+  let compared = 0;
+  for (const k of verdictCases) {
+    const a = k.answers;
+    if (typeof a.annualIncome !== 'number' || a.annualIncome < 0) continue;
+    let exact, full;
+    try {
+      full = s.verdicts(pack, bands, a);
+      exact = { jurisdiction: 'zz-test', annualIncome: a.annualIncome };
+      if (Number.isInteger(a.householdSize) && a.householdSize >= 1) exact.householdSize = a.householdSize;
+      if (typeof a.housing === 'string') exact.housing = a.housing;
+      exact = s.generalize(exact, bands);
+    } catch { continue; }
+    const fromSilhouette = s.silhouetteVerdicts(pack, bands, exact);
+    for (const program of fromSilhouette) {
+      const onScreen = full.find((v) => v.programId === program.programId);
+      for (const criterion of program.criteria) {
+        if (criterion.state !== 'pass' && criterion.state !== 'fail') continue;
+        const other = onScreen.criteria.find((c) => c.id === criterion.id).state;
+        assert.equal(other, criterion.state, `${k.id} ${program.programId} ${criterion.id}`);
+        compared++;
+      }
+    }
+  }
+  assert.ok(compared > 20, `only ${compared} states compared`);
 });

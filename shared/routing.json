@@ -9,6 +9,7 @@
     "generalize":                 { "input": ["Raw"],                    "mode": "NONE" },
     "verdict":                    { "input": ["Raw"],                    "mode": "NONE" },
     "application.prefill":        { "input": ["Raw"],                    "mode": "NONE" },
+    "explain.personal":           { "input": ["Raw", "Public"],          "mode": "ONLY_ON_DEVICE",   "fallback": "explain.short", "note": "Explains the person's own result from the on-screen verdict, exact values and private answers. Without a device model the app offers the general explanation instead", "reason": "your-result-stays-on-device" },
     "explain.short":              { "input": ["Generalized", "Public"],  "mode": "PREFER_ON_DEVICE", "when": "words <= route_short_text_max_words && locale in route_ondevice_locales", "reason": "short-text" },
     "explain.long":               { "input": ["Generalized", "Public"],  "mode": "PREFER_IN_CLOUD",  "reason": "long-or-unsupported-locale" },
     "ask.chip":                   { "input": ["Generalized", "Public"],  "mode": "PREFER_ON_DEVICE", "reason": "prepared-question" },

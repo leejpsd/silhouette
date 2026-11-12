@@ -18,7 +18,7 @@ Because of this rule, a cloud fallback can never break the product's promise: wh
 
 ### Verdicts are `Raw` too
 
-A verdict, or the state of one criterion, computed from exact values or from answers to sensitive questions is `Raw`: it can reveal the answer it was computed from. A cloud-capable task that needs a verdict is given the one the engine reaches from the `Generalized` profile alone (`rulepacks/SPEC.md` section 7).
+A verdict, or the state of one criterion, computed from exact values or from answers to sensitive questions is `Raw`: it can reveal the answer it was computed from. A cloud-capable task is given criterion states that the engine reaches from the `Generalized` profile alone, and no overall verdict (`rulepacks/SPEC.md` section 7). Explaining a person's own result is an `ONLY_ON_DEVICE` task.
 
 ## Enforcing it in code
 

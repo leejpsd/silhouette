@@ -1,4 +1,4 @@
-# Skeletonizer specification (v1.6)
+# Skeletonizer specification (v1.9)
 
 The Skeletonizer turns `Raw` document text into a `Skeleton`: the labels and layout stay, every value goes.
 It is deterministic and must produce byte-identical output on Web, Android and iOS.
@@ -157,8 +157,9 @@ Income questions and the review screen accept a typed amount. Every platform rea
 1. Remove leading and trailing characters from this set only: tab (U+0009), line feed (U+000A), carriage return (U+000D), space (U+0020), no-break space (U+00A0).
 2. If the first character is one of `$ € £ ¥ ₩`, remove it, then remove characters of the same set that follow it.
 3. The rest must match the number format of step 2 above as a whole. `,` is removed and the rest is read as a decimal.
+4. A typed amount has at most two digits after the dot. `60.000` and `1.271` are refused: in much of the world that dot groups thousands, and reading it as a decimal would turn 60,000 into 60. (Numbers rehydrated from a document are not limited this way; an hourly rate may have three or four decimals.)
 
-Anything else is refused and the user is asked again: `28.000,50`, `28 000`, `-5`, `5 USD`, digits of another script, an empty field. Never strip punctuation and read what is left: `28000.50` read as 2,800,050 is a hundredfold error. The app shows the amount it understood before the user continues.
+Anything else is refused and the user is asked again, with a message that shows the accepted form (`q.error.amountDecimals` when rule 4 applies): `28.000,50`, `60.000`, `28 000`, `-5`, `5 USD`, digits of another script, an empty field. Never strip punctuation and read what is left: `28000.50` read as 2,800,050 is a hundredfold error. The app shows the amount it understood before the user continues.
 
 Cases are in `fixtures/conformance/rehydrate.json` under `typedAmounts`.
 

@@ -1,0 +1,87 @@
+{
+ "version": 1,
+ "note": "Phrases are lowercase. Matching is described in OUTPUT_CHECKS.md. 'definite' is checked for every task that shows model text about a program; 'overall' is checked in addition for tasks that only know the silhouette.",
+ "locales": {
+  "en": {
+   "allowBefore": [
+    "if ",
+    "whether ",
+    "when ",
+    "once ",
+    "unless ",
+    "until "
+   ],
+   "definite": [
+    "you qualify",
+    "you are eligible",
+    "you're eligible",
+    "you will receive",
+    "you will get",
+    "you do not qualify",
+    "you don't qualify",
+    "you are not eligible",
+    "you aren't eligible",
+    "you're not eligible"
+   ],
+   "overall": [
+    "you may qualify",
+    "you might qualify",
+    "you could qualify",
+    "you probably qualify",
+    "you likely qualify",
+    "you may be eligible",
+    "you might be eligible",
+    "you could be eligible",
+    "you may not qualify",
+    "you might not qualify",
+    "you probably do not qualify",
+    "you probably don't qualify",
+    "you are unlikely to qualify",
+    "you're unlikely to qualify"
+   ]
+  },
+  "es": {
+   "allowBefore": [
+    "si ",
+    "cuando ",
+    "una vez que "
+   ],
+   "definite": [
+    "calificas",
+    "usted califica",
+    "eres elegible",
+    "usted es elegible",
+    "recibirás",
+    "vas a recibir",
+    "no eres elegible"
+   ],
+   "overall": [
+    "puede que califiques",
+    "podrías calificar",
+    "tal vez califiques",
+    "quizá califiques",
+    "quizás califiques",
+    "es posible que califiques",
+    "probablemente califi",
+    "puedes calificar",
+    "podría calificar",
+    "puede que no califiques",
+    "es poco probable que califiques"
+   ]
+  },
+  "ko": {
+   "allowBefore": [],
+   "definite": [
+    "자격이 됩니다",
+    "자격이 있습니다",
+    "자격이 안 됩니다",
+    "자격이 없습니다"
+   ],
+   "overall": [
+    "자격이 될 수 있습니다",
+    "해당될 수 있습니다",
+    "해당되지 않을 수 있습니다"
+   ]
+  }
+ }
+}

@@ -1,5 +1,21 @@
 # Contract changelog
 
+## v1.9 — 2026-11-13
+
+From a second independent test of the Web app.
+
+| Change | Why |
+|---|---|
+| **A model that only knows the silhouette no longer states a result.** `prompts/explain.v3.md` and `prompts/ask.v2.md` are sent criterion states from the silhouette and no verdict, and are told not to say whether the person may qualify. They replace `explain.v2` and `ask.v1` | With a household that answered a private question "No", the screen said "Probably not" and the explanation under it began "You may qualify": the silhouette-only verdict differs from the result on screen, and the model restated it |
+| **`explain.personal`, `ONLY_ON_DEVICE`** (`routing.json`, `prompts/explain-personal.v1.md`), and `prompts/ask-personal.v1.md` for typed questions: the person's own result, with exact values and limits, is explained only by the on-device model. Without one, the app shows the rule engine's reasons as plain lines | The explanation of a person's own result needs `Raw` input, so it cannot be cloud-capable |
+| `rulepacks/SPEC.md` section 7: a `pass` or `fail` state from the silhouette always equals the state on screen; a test in the reference checks it | States the property the general explanation relies on |
+| **Checks on model text** (`prompts/OUTPUT_CHECKS.md`, `prompts/output-checks.json`, `modelTextIsBlocked()`, fixture `output-check.json`, 15 cases) | Nothing stopped a reply such as "You qualify for this program." from being shown |
+| **Typed amounts have at most two digits after the dot** (`skeleton/SPEC.md` section 5.1 rule 4; 6 more `typedAmounts` cases) | `60.000`, typed by someone who groups thousands with a dot, was read as 60 and every program showed "may qualify" |
+| 43 copy keys in en, es and ko: reasons from the rules, the general explanation, a blocked or cancelled answer, the daily limit of the cloud service, results after something was sent, labels used by the new visual design | |
+| Remote Config default `prompt_explain_v` = 3 | |
+
+Notes for implementers, from the same test: the request shown before sending and in the record must be the bytes that are sent (serialize once; do not drop keys that merely contain the word "token"); consent to "may be sent if this device can't" does not cover a later cloud-first request; a results screen must not say that nothing was sent once something was.
+
 ## v1.8 — 2026-11-13
 
 From the Android integration of Firebase AI Logic.

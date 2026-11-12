@@ -150,6 +150,6 @@ The verdict on screen is computed from exact values and from answers to sensitiv
 
 The result keeps `programId`, `verdict` and each criterion's `id` and `state` only: no `estimatedAmount`, no `dependsOn`. It is `Generalized`.
 
-When this result differs from the verdict on screen, the app says that the explanation only knows the silhouette and that the result on screen is the one that counts. A model is told which criteria are not known because the answer stays on the device (`prompts/explain.v2.md`), so that it does not tell a person they skipped a question they answered privately.
+A state of `pass` or `fail` in this result is always the state on screen too: the silhouette is a coarser view of the same answers, and the sample points of section 5 cover every threshold inside a band. Only `unknown` and `mixed` can differ. The overall verdict can differ, so **it is not sent and a model is never asked to state one** (`prompts/explain.v3.md`, `prompts/ask.v2.md`): a model that only knows the silhouette explains the program and what it checks. The person's own result is explained by the rule engine's reasons shown as plain lines, and, where the device has a model, by `explain.personal`, which is `ONLY_ON_DEVICE`. A model is told which criteria are checked on the device, so that it does not tell a person they skipped a question they answered privately.
 
 Cases: `fixtures/conformance/silhouette-verdict.json`.

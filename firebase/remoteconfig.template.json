@@ -58,7 +58,7 @@
     },
     "prompt_explain_v": {
       "defaultValue": {
-        "value": "2"
+        "value": "3"
       },
       "valueType": "NUMBER",
       "description": "shared/prompts/explain.v{n}.md"

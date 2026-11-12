@@ -85,6 +85,10 @@ export function build() {
         return { id: k.id, profile, expected: s.silhouetteVerdicts(pack, bands, profile) };
       }),
     },
+    'output-check.json': {
+      spec: 'prompts/OUTPUT_CHECKS.md', checks: 'prompts/output-checks.json',
+      cases: c.outputCheckCases.map((k) => ({ ...k, blocked: s.modelTextIsBlocked(k.text, k.locale, k.scope, c.readJson('../prompts/output-checks.json')) })),
+    },
     'verdict.json': {
       spec: 'rulepacks/SPEC.md v1.2 section 5', pack: 'rulepacks/zz-test/pack.json', bands: 'bands/zz-test.json',
       cases: c.verdictCases.map((k) => {

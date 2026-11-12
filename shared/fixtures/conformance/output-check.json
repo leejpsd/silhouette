@@ -1,0 +1,111 @@
+{
+  "spec": "prompts/OUTPUT_CHECKS.md",
+  "checks": "prompts/output-checks.json",
+  "cases": [
+    {
+      "id": "en-definite-claim",
+      "locale": "en",
+      "scope": "personal",
+      "text": "Good news: you qualify for this program.",
+      "blocked": true
+    },
+    {
+      "id": "en-definite-negative",
+      "locale": "en",
+      "scope": "personal",
+      "text": "Based on this, you don't qualify.",
+      "blocked": true
+    },
+    {
+      "id": "en-curly-apostrophe",
+      "locale": "en",
+      "scope": "personal",
+      "text": "Sadly you’re not eligible this year.",
+      "blocked": true
+    },
+    {
+      "id": "en-case-and-spacing",
+      "locale": "en",
+      "scope": "personal",
+      "text": "YOU   ARE\nELIGIBLE for help.",
+      "blocked": true
+    },
+    {
+      "id": "en-conditional-is-fine",
+      "locale": "en",
+      "scope": "personal",
+      "text": "To find out if you qualify, the app checks your answers on this device. It can also tell you when you are eligible to apply.",
+      "blocked": false
+    },
+    {
+      "id": "en-may-is-fine-for-personal",
+      "locale": "en",
+      "scope": "personal",
+      "text": "You may qualify because your household is under the limit.",
+      "blocked": false
+    },
+    {
+      "id": "en-may-is-blocked-for-general",
+      "locale": "en",
+      "scope": "general",
+      "text": "You may qualify because your household is under the limit.",
+      "blocked": true
+    },
+    {
+      "id": "en-general-neutral",
+      "locale": "en",
+      "scope": "general",
+      "text": "This program lowers utility bills for households under an income limit. Your result above shows whether you may qualify.",
+      "blocked": false
+    },
+    {
+      "id": "en-second-occurrence-counts",
+      "locale": "en",
+      "scope": "general",
+      "text": "The app shows whether you may qualify. From what I see, you may qualify.",
+      "blocked": true
+    },
+    {
+      "id": "es-definite-claim",
+      "locale": "es",
+      "scope": "personal",
+      "text": "Buenas noticias: calificas para este programa.",
+      "blocked": true
+    },
+    {
+      "id": "es-conditional-is-fine",
+      "locale": "es",
+      "scope": "personal",
+      "text": "La app revisa en tu dispositivo si calificas.",
+      "blocked": false
+    },
+    {
+      "id": "es-overall-blocked-for-general",
+      "locale": "es",
+      "scope": "general",
+      "text": "Es posible que califiques para este programa.",
+      "blocked": true
+    },
+    {
+      "id": "es-general-neutral",
+      "locale": "es",
+      "scope": "general",
+      "text": "Este programa reduce la factura de servicios para hogares con ingresos bajos.",
+      "blocked": false
+    },
+    {
+      "id": "unknown-locale-uses-english",
+      "locale": "fr",
+      "scope": "personal",
+      "text": "You qualify.",
+      "blocked": true
+    },
+    {
+      "id": "empty-text",
+      "locale": "en",
+      "scope": "general",
+      "text": "",
+      "blocked": false
+    }
+  ]
+}
