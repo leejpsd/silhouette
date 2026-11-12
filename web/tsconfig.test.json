@@ -1,0 +1,10 @@
+{
+  "//": "Type-checks all of src/ including tests and the type-level routing tests (*.test-d.ts) that rely on @ts-expect-error.",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["node", "vite/client"]
+  },
+  "include": ["src"]
+}
