@@ -3819,6 +3819,125 @@
       }
     },
     {
+      "id": "null-fields-are-absent",
+      "jurisdiction": "us-ca",
+      "stubs": [
+        {
+          "grossPay": 1000,
+          "netPay": null,
+          "ytdGross": null,
+          "hoursWorked": null,
+          "hourlyRate": null,
+          "payFrequency": null,
+          "payDate": null,
+          "periodStart": null,
+          "periodEnd": null,
+          "deductions": null
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "net-sum",
+              "status": "skipped"
+            },
+            {
+              "id": "rate-hours",
+              "status": "skipped"
+            },
+            {
+              "id": "period-length",
+              "status": "skipped"
+            },
+            {
+              "id": "pay-date",
+              "status": "skipped"
+            },
+            {
+              "id": "ytd-gross",
+              "status": "skipped"
+            },
+            {
+              "id": "ytd-periods",
+              "status": "skipped"
+            },
+            {
+              "id": "dates-parsed",
+              "status": "warn"
+            }
+          ]
+        ],
+        "duplicates": [],
+        "failure": "no-frequency",
+        "annualization": null
+      }
+    },
+    {
+      "id": "null-gross-is-no-gross",
+      "jurisdiction": "us-ca",
+      "stubs": [
+        {
+          "grossPay": null,
+          "netPay": 900,
+          "payDate": "10/20/2026",
+          "payFrequency": "weekly"
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "net-sum",
+              "status": "skipped"
+            },
+            {
+              "id": "rate-hours",
+              "status": "skipped"
+            },
+            {
+              "id": "period-length",
+              "status": "skipped"
+            },
+            {
+              "id": "pay-date",
+              "status": "skipped"
+            },
+            {
+              "id": "ytd-gross",
+              "status": "skipped"
+            },
+            {
+              "id": "ytd-periods",
+              "status": "skipped"
+            },
+            {
+              "id": "dates-parsed",
+              "status": "ok"
+            }
+          ]
+        ],
+        "duplicates": [],
+        "failure": "no-gross",
+        "annualization": null
+      }
+    },
+    {
+      "id": "error-null-deduction-amount",
+      "jurisdiction": "us-ca",
+      "stubs": [
+        {
+          "grossPay": 500,
+          "deductions": [
+            {
+              "amount": null
+            }
+          ]
+        }
+      ],
+      "expectedError": "ValidationInputError"
+    },
+    {
       "id": "error-negative-money",
       "jurisdiction": "us-ca",
       "stubs": [

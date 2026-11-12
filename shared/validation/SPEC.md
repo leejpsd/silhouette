@@ -25,6 +25,10 @@ Reference implementation: `reference/validate.mjs`. Fixture: `fixtures/conforman
 
 A money value or `hoursWorked` that is negative or not a finite number, or an unknown `payFrequency`, raises `ValidationInputError`. Messages never contain the value.
 
+A field whose value is `null` is absent, exactly as if the key were missing; this holds for every field, including `deductions`. A deduction whose `amount` is `null` is an input error.
+
+A platform may raise `ValidationInputError` for a money value of 10^15 or more. The fixtures stay below that.
+
 ## 2. Money
 
 1. `cents(x) = round(x × 100)`, where `x × 100` is computed in IEEE-754 double precision and rounded half away from zero. Because inputs are non-negative, this is half up.

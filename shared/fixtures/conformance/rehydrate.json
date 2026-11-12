@@ -66,6 +66,172 @@
       "expected": null
     }
   ],
+  "typedAmounts": [
+    {
+      "text": "28000.50",
+      "expected": 28000.5
+    },
+    {
+      "text": "28,000.50",
+      "expected": 28000.5
+    },
+    {
+      "text": "28000.5",
+      "expected": 28000.5
+    },
+    {
+      "text": "28000",
+      "expected": 28000
+    },
+    {
+      "text": "0",
+      "expected": 0
+    },
+    {
+      "text": "0.00",
+      "expected": 0
+    },
+    {
+      "text": "$28,000.50",
+      "expected": 28000.5
+    },
+    {
+      "text": "$ 28000",
+      "expected": 28000
+    },
+    {
+      "text": "  28000  ",
+      "expected": 28000
+    },
+    {
+      "text": "\t28000\n",
+      "expected": 28000
+    },
+    {
+      "text": " 28000 ",
+      "expected": 28000
+    },
+    {
+      "text": "€1,200",
+      "expected": 1200
+    },
+    {
+      "text": "£1200.5",
+      "expected": 1200.5
+    },
+    {
+      "text": "¥1200",
+      "expected": 1200
+    },
+    {
+      "text": "₩1,200,000",
+      "expected": 1200000
+    },
+    {
+      "text": " $ 1,200 ",
+      "expected": 1200
+    },
+    {
+      "text": "28.000,50",
+      "expected": null
+    },
+    {
+      "text": "28 000",
+      "expected": null
+    },
+    {
+      "text": "1,2345",
+      "expected": null
+    },
+    {
+      "text": "12,34",
+      "expected": null
+    },
+    {
+      "text": ".5",
+      "expected": null
+    },
+    {
+      "text": "7.",
+      "expected": null
+    },
+    {
+      "text": "-5",
+      "expected": null
+    },
+    {
+      "text": "+5",
+      "expected": null
+    },
+    {
+      "text": "1e3",
+      "expected": null
+    },
+    {
+      "text": "28000$",
+      "expected": null
+    },
+    {
+      "text": "$$5",
+      "expected": null
+    },
+    {
+      "text": "$",
+      "expected": null
+    },
+    {
+      "text": "",
+      "expected": null
+    },
+    {
+      "text": "   ",
+      "expected": null
+    },
+    {
+      "text": "USD 5",
+      "expected": null
+    },
+    {
+      "text": "5 USD",
+      "expected": null
+    },
+    {
+      "text": "２８",
+      "expected": null
+    },
+    {
+      "text": "　5",
+      "expected": null
+    },
+    {
+      "text": " 5",
+      "expected": null
+    },
+    {
+      "text": "5​",
+      "expected": null
+    },
+    {
+      "text": "28000.50.1",
+      "expected": null
+    },
+    {
+      "text": "0x10",
+      "expected": null
+    },
+    {
+      "text": "Infinity",
+      "expected": null
+    },
+    {
+      "text": "NaN",
+      "expected": null
+    },
+    {
+      "text": "28'000",
+      "expected": null
+    }
+  ],
   "cases": [
     {
       "id": "paystub-en-01-correct",

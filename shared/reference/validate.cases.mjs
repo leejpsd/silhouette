@@ -141,6 +141,10 @@ export const cases = [
   { id: 'round-cents-from-ieee-double', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 1.005, payFrequency: 'weekly' })] },
   { id: 'round-cents-third-decimal', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 100.125, netPay: 100.13, payFrequency: 'monthly' })] },
   // ---- input errors ----
+  // null means absent, for every field.
+  { id: 'null-fields-are-absent', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 1000, netPay: null, ytdGross: null, hoursWorked: null, hourlyRate: null, payFrequency: null, payDate: null, periodStart: null, periodEnd: null, deductions: null })] },
+  { id: 'null-gross-is-no-gross', jurisdiction: 'us-ca', stubs: [bare({ grossPay: null, netPay: 900, payDate: '10/20/2026', payFrequency: 'weekly' })] },
+  { id: 'error-null-deduction-amount', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 500, deductions: [{ amount: null }] })], expectError: true },
   { id: 'error-negative-money', jurisdiction: 'us-ca', stubs: [bare({ grossPay: -5 })], expectError: true },
   { id: 'error-negative-deduction', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 500, deductions: [{ amount: -1 }] })], expectError: true },
   { id: 'error-unknown-frequency', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 500, payFrequency: 'daily' })], expectError: true },

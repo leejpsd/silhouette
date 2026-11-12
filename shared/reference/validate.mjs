@@ -99,7 +99,9 @@ export function frequencyForLength(days) {
   return null;
 }
 
-function normalize(values, index, jurisdiction) {
+function normalize(input, index, jurisdiction) {
+  // A field that is null is absent, exactly as if the key were missing.
+  const values = Object.fromEntries(Object.entries(input).filter(([, value]) => value !== null));
   const money = (v) => (v === undefined ? null : toCents(v));
   if (values.payFrequency !== undefined && !FREQUENCIES.includes(values.payFrequency)) {
     throw new ValidationInputError('unknown pay frequency');

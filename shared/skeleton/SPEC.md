@@ -1,4 +1,4 @@
-# Skeletonizer specification (v1.5)
+# Skeletonizer specification (v1.6)
 
 The Skeletonizer turns `Raw` document text into a `Skeleton`: the labels and layout stay, every value goes.
 It is deterministic and must produce byte-identical output on Web, Android and iOS.
@@ -149,6 +149,18 @@ The model receives the skeleton and returns references such as `"N3"` or `["W4",
 Enums exist because a word that survives skeletonization has no placeholder and cannot be pointed at. Fields whose values are generic vocabulary (pay frequency, deduction kind) are therefore chosen from a closed list. A model can never write a free-form value.
 
 A dropped field is shown to the user as "not found" and can be typed in.
+
+### 5.1 Amounts typed by the user
+
+Income questions and the review screen accept a typed amount. Every platform reads it the same way:
+
+1. Remove leading and trailing characters from this set only: tab (U+0009), line feed (U+000A), carriage return (U+000D), space (U+0020), no-break space (U+00A0).
+2. If the first character is one of `$ € £ ¥ ₩`, remove it, then remove characters of the same set that follow it.
+3. The rest must match the number format of step 2 above as a whole. `,` is removed and the rest is read as a decimal.
+
+Anything else is refused and the user is asked again: `28.000,50`, `28 000`, `-5`, `5 USD`, digits of another script, an empty field. Never strip punctuation and read what is left: `28000.50` read as 2,800,050 is a hundredfold error. The app shows the amount it understood before the user continues.
+
+Cases are in `fixtures/conformance/rehydrate.json` under `typedAmounts`.
 
 ## 6. Known limits
 

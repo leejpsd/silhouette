@@ -1,5 +1,14 @@
 # Contract changelog
 
+## v1.6 — 2026-11-13
+
+| Change | Why |
+|---|---|
+| **Amounts typed by the user** (`skeleton/SPEC.md` section 5.1), `parseTypedAmount()` in the reference, 41 cases under `typedAmounts` in `rehydrate.json` | All three apps had stripped punctuation before reading the number, so `28000.50` became 2,800,050. Each fixed it separately; the rule and the set of characters trimmed are now shared |
+| Validation input: a `null` field is absent, for every field | The reference raised an error for `grossPay: null`, crashed on `payDate: null` and treated `deductions: null` as empty |
+| A platform may refuse money values of 10^15 or more | Fixed-width integer arithmetic on some platforms |
+| Fixtures: 3 validation cases for `null` | |
+
 ## v1.5 — 2026-11-12
 
 | Change | Why |

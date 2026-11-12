@@ -118,6 +118,16 @@ export function parseNumber(token) {
   return Number(token.replace(/,/g, ''));
 }
 
+// Characters removed around an amount the user typed: tab, line feed, carriage return, space, no-break space.
+const TYPED_SPACE = '[\\u0009\\u000A\\u000D\\u0020\\u00A0]';
+const TYPED_AMOUNT = new RegExp(`^${TYPED_SPACE}*(?:[$\u20AC\u00A3\u00A5\u20A9]${TYPED_SPACE}*)?(.*?)${TYPED_SPACE}*$`, 's');
+
+/** An amount typed by the user (skeleton/SPEC.md section 5.1). Returns undefined when it is not accepted. */
+export function parseTypedAmount(text) {
+  if (typeof text !== 'string') return undefined;
+  return parseNumber(TYPED_AMOUNT.exec(text)[1]);
+}
+
 function readField(spec, ref, map) {
   const kind = spec['x-kind'];
   if (kind === 'enum') return spec.enum.includes(ref) ? ref : undefined;

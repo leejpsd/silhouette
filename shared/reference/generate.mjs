@@ -20,6 +20,7 @@ export function build() {
     'rehydrate.json': {
       spec: 'skeleton/SPEC.md v1 section 5',
       numbers: c.numberCases.map((token) => ({ token, expected: s.parseNumber(token) ?? null })),
+      typedAmounts: c.typedAmountCases.map((text) => ({ text, expected: s.parseTypedAmount(text) ?? null })),
       cases: c.rehydrateCases.map((k) => ({
         id: k.id, schema: k.schema, map: skeletons[k.skeletonCase].map, pointers: k.pointers,
         expected: s.rehydrate(c.readJson(`../schemas/${k.schema}`), k.pointers, skeletons[k.skeletonCase].map),

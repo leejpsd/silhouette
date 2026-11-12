@@ -87,6 +87,14 @@ export const rehydrateCases = [
 
 export const numberCases = ['1,284.50', '1.284,50', '004417', '12,34', '2,485,000', '18.50', '1,2345', '0', '.5', '7.', '12\n', ' 12', '\uFF11\uFF12', '1e3', '-5', ''];
 
+// Amounts typed by the user (skeleton/SPEC.md section 5.1).
+export const typedAmountCases = [
+  '28000.50', '28,000.50', '28000.5', '28000', '0', '0.00', '$28,000.50', '$ 28000', '  28000  ', '\t28000\n', '\u00A028000\u00A0',
+  '\u20AC1,200', '\u00A31200.5', '\u00A51200', '\u20A91,200,000', ' $\u00A01,200 ',
+  '28.000,50', '28 000', '1,2345', '12,34', '.5', '7.', '-5', '+5', '1e3', '28000$', '$$5', '$', '', '   ', 'USD 5', '5 USD',
+  '\uFF12\uFF18', '\u30005', '\u20095', '5\u200B', '28000.50.1', '0x10', 'Infinity', 'NaN', "28'000",
+];
+
 export const generalizeCases = [
   { id: 'exact-mid-band', exact: { jurisdiction: 'zz-test', annualIncome: 30524.9, householdSize: 3, childAges: [4, 9], county: 'testshire', housing: 'renter' } },
   { id: 'band-edge-low', exact: { jurisdiction: 'zz-test', annualIncome: 14999.99, householdSize: 1, childAges: [], county: 'testshire', housing: 'owner' } },
