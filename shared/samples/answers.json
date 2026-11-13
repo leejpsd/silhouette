@@ -1,0 +1,87 @@
+{
+  "note": "Pointers for the silhouette of each bundled sample with an empty hide set. Used for the offline sample (routing.json offlineSample) and for tests.",
+  "samples": {
+    "paystub-en-01.txt": {
+      "locale": "en",
+      "schema": "pointer.paystub.json",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      }
+    },
+    "payslip-ko-01.txt": {
+      "locale": "ko",
+      "schema": "pointer.paystub.json",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2"
+        ],
+        "employeeName": [
+          "W3"
+        ],
+        "payDate": [
+          "N4",
+          "N5",
+          "N6"
+        ],
+        "grossPay": "N10",
+        "netPay": "N18",
+        "deductions": [
+          {
+            "amount": "N11"
+          },
+          {
+            "amount": "N12"
+          },
+          {
+            "amount": "N13"
+          },
+          {
+            "amount": "N14"
+          },
+          {
+            "amount": "N15"
+          },
+          {
+            "amount": "N16"
+          }
+        ]
+      }
+    }
+  }
+}

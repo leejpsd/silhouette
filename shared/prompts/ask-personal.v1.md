@@ -27,3 +27,4 @@ Write {maxWords} words or fewer.
 ## Notes for implementers
 
 - Same notes as `explain-personal.v1.md`.
+- Where the on-device API asks for languages when a session is created (Chrome), give the expected input languages as `en` and the answer language, and the output language as the answer language.

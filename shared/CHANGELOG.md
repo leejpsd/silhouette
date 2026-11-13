@@ -1,5 +1,14 @@
 # Contract changelog
 
+## v1.10 — 2026-11-13
+
+| Change | Why |
+|---|---|
+| **New visual design** (`design/tokens.json` version 4, `design/DESIGN.md`): ground, ink, the inverted block, paper, and one colour for what leaves the device; three open-licence typefaces; type scale with size steps; rotation, shadow, grain and motion tokens. The earlier token names remain as aliases | The product gets its own look; the earlier tokens were a neutral placeholder |
+| `samples/answers.json`: answer keys for the bundled samples, generated from the reference cases | `routing.json` `offlineSample` needs them on every platform |
+| `prompts/OUTPUT_CHECKS.md`: scope `general` also covers the text of `program.currentStatus` and `discover.leads` | Grounded text must not state a result either |
+| 10 copy keys in en, es and ko: screen-reader sentences for where an answer was written, hidden word / number / date, amounts as understood on the review screen, what changed after using an income | |
+
 ## v1.9 — 2026-11-13
 
 From a second independent test of the Web app.

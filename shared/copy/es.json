@@ -373,5 +373,15 @@
   "answers.cancel": "Cancelar",
   "answers.cancelled": "Cancelado. No se mostrará nada más de esta solicitud.",
   "answers.slow": "Esto está tardando más de lo normal.",
-  "send.notListed": "La solicitud también indica qué comprobaciones de este programa ya quedan resueltas con los datos generales. Nunca incluye tu resultado."
+  "send.notListed": "La solicitud también indica qué comprobaciones de este programa ya quedan resueltas con los datos generales. Nunca incluye tu resultado.",
+  "answers.ready": "La respuesta está lista.",
+  "badge.sentence.cloud": "Escrito en la nube: {reason}",
+  "badge.sentence.device": "Escrito en este dispositivo: {reason}",
+  "review.understood": "Entendido como {amount}.",
+  "review.changesTitle": "Qué cambió",
+  "review.change": "{program}: {before} → {after}",
+  "review.noChange": "Ningún resultado cambió.",
+  "placeholder.word": "palabra oculta",
+  "placeholder.number": "número oculto",
+  "placeholder.date": "fecha oculta"
 }

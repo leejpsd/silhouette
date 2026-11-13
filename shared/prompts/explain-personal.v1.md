@@ -28,3 +28,4 @@ Write {maxWords} words or fewer.
 - Keep the whole request under the platform's on-device input limit; drop the program facts first if it does not fit.
 - `{maxWords}` is at most 80 (on-device output is short).
 - The reply is checked with scope `personal` (`OUTPUT_CHECKS.md`) before it is shown.
+- Where the on-device API asks for languages when a session is created (Chrome), give the expected input languages as `en` and the answer language, and the output language as the answer language.

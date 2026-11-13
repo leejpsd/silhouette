@@ -5,7 +5,7 @@ A model explains; it never decides. Prompts say so, and this check enforces it o
 `output-checks.json` lists, per language, phrases that state a result:
 
 - `definite`: a result stated as fact ("you qualify", "you are not eligible"). Checked for every task.
-- `overall`: a hedged result ("you may qualify"). Checked in addition when the task only knows the silhouette (scope `general`: `explain.short`, `explain.long`, `ask.chip`), because the model does not know the person's result and its guess can contradict the rules. For scope `personal` (`explain.personal`, `ask.freeText`) hedged wording is what the prompt asks for.
+- `overall`: a hedged result ("you may qualify"). Checked in addition when the task only knows the silhouette (scope `general`: `explain.short`, `explain.long`, `ask.chip`, and the text of `program.currentStatus` and `discover.leads`), because the model does not know the person's result and its guess can contradict the rules. For scope `personal` (`explain.personal`, `ask.freeText`) hedged wording is what the prompt asks for.
 - `allowBefore`: words that make the phrase a condition, not a claim ("if you qualify", "whether you may qualify").
 
 ## Matching

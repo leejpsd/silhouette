@@ -103,9 +103,22 @@ export function build() {
   };
 }
 
+/** Answer keys for the bundled samples: what a correct reading of each sample's silhouette points at. */
+export function buildSampleAnswers() {
+  return {
+    note: 'Pointers for the silhouette of each bundled sample with an empty hide set. Used for the offline sample (routing.json offlineSample) and for tests.',
+    samples: Object.fromEntries(c.rehydrateCases.filter((k) => k.id.endsWith('-correct')).map((k) => {
+      const source = c.skeletonCases.find((x) => x.id === k.skeletonCase);
+      return [`${k.skeletonCase}.txt`, { locale: source.locale, schema: k.schema, pointers: k.pointers }];
+    })),
+  };
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   for (const [name, content] of Object.entries(build())) {
     fs.writeFileSync(new URL(`../fixtures/conformance/${name}`, import.meta.url), JSON.stringify(content, null, 2) + '\n');
     console.log('wrote', name);
   }
+  fs.writeFileSync(new URL('../samples/answers.json', import.meta.url), JSON.stringify(buildSampleAnswers(), null, 2) + '\n');
+  console.log('wrote', 'samples/answers.json');
 }

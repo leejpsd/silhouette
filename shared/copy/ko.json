@@ -373,5 +373,15 @@
   "answers.cancel": "취소",
   "answers.cancelled": "취소했습니다. 이 요청에 대해 더 표시되는 것은 없습니다.",
   "answers.slow": "평소보다 오래 걸리고 있습니다.",
-  "send.notListed": "요청에는 일반 정보만으로 이미 정해지는 확인 항목도 들어 있습니다. 내 결과는 들어 있지 않습니다."
+  "send.notListed": "요청에는 일반 정보만으로 이미 정해지는 확인 항목도 들어 있습니다. 내 결과는 들어 있지 않습니다.",
+  "answers.ready": "답이 준비되었습니다.",
+  "badge.sentence.cloud": "클라우드에서 작성: {reason}",
+  "badge.sentence.device": "이 기기에서 작성: {reason}",
+  "review.understood": "{amount}(으)로 이해했습니다.",
+  "review.changesTitle": "달라진 것",
+  "review.change": "{program}: {before} → {after}",
+  "review.noChange": "달라진 결과가 없습니다.",
+  "placeholder.word": "가려진 단어",
+  "placeholder.number": "가려진 숫자",
+  "placeholder.date": "가려진 날짜"
 }

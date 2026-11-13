@@ -373,5 +373,15 @@
   "answers.cancel": "Cancel",
   "answers.cancelled": "Cancelled. Nothing more will be shown for this request.",
   "answers.slow": "This is taking longer than usual.",
-  "send.notListed": "The request also carries which of this program’s checks the general facts already settle. It never carries your result."
+  "send.notListed": "The request also carries which of this program’s checks the general facts already settle. It never carries your result.",
+  "answers.ready": "The answer is ready.",
+  "badge.sentence.cloud": "Written in the cloud: {reason}",
+  "badge.sentence.device": "Written on this device: {reason}",
+  "review.understood": "Understood as {amount}.",
+  "review.changesTitle": "What changed",
+  "review.change": "{program}: {before} → {after}",
+  "review.noChange": "No result changed.",
+  "placeholder.word": "hidden word",
+  "placeholder.number": "hidden number",
+  "placeholder.date": "hidden date"
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { build } from '../generate.mjs';
+import { build, buildSampleAnswers } from '../generate.mjs';
 import * as s from '../silhouette.mjs';
 import { read, readJson, allowlist, introducers, skeletonCases, verdictCases } from '../cases.mjs';
 
@@ -8,6 +8,10 @@ test('fixtures on disk match the reference implementation', () => {
   for (const [name, content] of Object.entries(build())) {
     assert.deepEqual(readJson(`../fixtures/conformance/${name}`), JSON.parse(JSON.stringify(content)), name);
   }
+});
+
+test('sample answer keys on disk match the reference cases', () => {
+  assert.deepEqual(readJson('../samples/answers.json'), JSON.parse(JSON.stringify(buildSampleAnswers())));
 });
 
 test('a skeleton never contains a digit or a non-allowlisted word', () => {
