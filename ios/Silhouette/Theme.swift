@@ -92,8 +92,10 @@ private struct TokenFont: ViewModifier {
 
     func body(content: Content) -> some View {
         let token = theme.tokens.type[style.rawValue]
-        let size = CGFloat(token?.size ?? 17) * scale
-        let lineHeight = CGFloat(token?.lineHeight ?? 24) * scale
+        // The display sizes are set for a condensed display typeface the app does not bundle; in the
+        // system font they are capped so headings stay readable until the design is applied here.
+        let designSize = token?.family == "display" ? min(token?.size ?? 17, Self.displayCap[style] ?? 34) : (token?.size ?? 17)
+        let size = CGFloat(designSize) * scale
         let weight = Self.weight(token?.weight ?? 400)
         content
             .font(.system(size: size, weight: weight))
@@ -101,6 +103,8 @@ private struct TokenFont: ViewModifier {
             // Extra leading grows more slowly than the text at accessibility sizes.
             .lineSpacing(max(0, CGFloat(token?.lineHeight ?? 24) - CGFloat(token?.size ?? 17) * 1.2) * min(scale, 1.5))
     }
+
+    static let displayCap: [TypeStyle: Double] = [.display: 34, .title: 28, .heading: 22]
 
     static func weight(_ w: Double) -> Font.Weight {
         switch w {

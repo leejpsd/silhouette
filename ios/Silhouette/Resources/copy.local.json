@@ -1,27 +1,18 @@
 {
   "_note": "App strings that are not in shared/copy yet. Lookup per key: shared/copy/{locale}, the rule pack's copy/{locale}, this file {locale}, then the same three for en.",
   "en": {
-    "preview.view.leave": "What could leave",
-    "preview.view.phone": "On this phone",
-    "review.understood": "Understood as {amount}",
-    "review.changesTitle": "What changed in your results",
-    "review.change": "{program}: {before} → {after}",
-    "review.noChange": "Your results did not change."
+    "send.showRequest": "Show the request",
+    "send.requestAsBuilt": "The request object as this app builds it for Firebase AI Logic. The Firebase SDK writes the bytes that are sent, so this is the same request, not a byte-for-byte copy of it.",
+    "leaving.sdkNote": "The Firebase SDK also renews App Check and installation tokens in the background, and the system model can be updated by iOS. The app cannot see those requests, so they are not listed one by one."
   },
   "es": {
-    "preview.view.leave": "Lo que podría salir",
-    "preview.view.phone": "En este teléfono",
-    "review.understood": "Entendido como {amount}",
-    "review.changesTitle": "Qué cambió en tus resultados",
-    "review.change": "{program}: {before} → {after}",
-    "review.noChange": "Tus resultados no cambiaron."
+    "send.showRequest": "Ver la solicitud",
+    "send.requestAsBuilt": "El objeto de la solicitud tal como esta app lo prepara para Firebase AI Logic. El SDK de Firebase escribe los bytes que se envían, así que es la misma solicitud, no una copia byte a byte.",
+    "leaving.sdkNote": "El SDK de Firebase también renueva en segundo plano los tokens de App Check y de instalación, y iOS puede actualizar el modelo del sistema. La app no ve esas solicitudes, así que no se listan una por una."
   },
   "ko": {
-    "preview.view.leave": "밖으로 나갈 수 있는 것",
-    "preview.view.phone": "이 휴대폰에서",
-    "review.understood": "{amount}(으)로 인식했습니다",
-    "review.changesTitle": "결과에서 바뀐 점",
-    "review.change": "{program}: {before} → {after}",
-    "review.noChange": "결과가 바뀌지 않았습니다."
+    "send.showRequest": "요청 보기",
+    "send.requestAsBuilt": "이 앱이 Firebase AI Logic에 넘기는 요청 객체입니다. 실제로 전송되는 바이트는 Firebase SDK가 만들기 때문에, 같은 요청이지만 바이트 단위로 똑같은 사본은 아닙니다.",
+    "leaving.sdkNote": "Firebase SDK는 App Check와 설치 토큰을 백그라운드에서 갱신하고, 시스템 모델은 iOS가 업데이트할 수 있습니다. 앱은 이런 요청을 볼 수 없어서 하나하나 표시하지 않습니다."
   }
 }

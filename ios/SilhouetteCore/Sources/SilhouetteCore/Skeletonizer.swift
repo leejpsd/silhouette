@@ -60,7 +60,7 @@ public struct Allowlist: Sendable {
 /// A file under shared/ does not have the expected shape.
 public struct ContractFileError: Error, Sendable, CustomStringConvertible {
     public let description: String
-    init(_ description: String) { self.description = description }
+    package init(_ description: String) { self.description = description }
 }
 
 // MARK: - Placeholder map

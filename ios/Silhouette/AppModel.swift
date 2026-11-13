@@ -41,14 +41,27 @@ final class AppModel {
     private(set) var document: DocumentSession
     /// Verdicts that changed when the yearly income from a paystub was used.
     private(set) var incomeChange: [(program: String, before: Verdict, after: Verdict)]?
-    /// Every pointer extractor available in this build. No model yet: only the sample answer key.
-    @ObservationIgnored let extraction: PointerExtraction
+    /// The sample answer key for the bundled samples (routing.json offlineSample).
+    @ObservationIgnored let sampleKey: SampleAnswerKeyExtractor?
+    /// Model access through Firebase AI Logic (or the scripted model in UI tests).
+    @ObservationIgnored let port: any ModelPort
+    @ObservationIgnored let runner: TaskRunner
+    @ObservationIgnored let remoteConfig: RemoteConfigService
+    @ObservationIgnored let network = NetworkMonitor()
+    /// UI tests: `none`, `device` or `cloud` (no real model, no network).
+    @ObservationIgnored let testModel: String?
+    /// Explanations and questions of this session, consent and what has left (memory only).
+    var answers = AnswerSession()
+    var requests: [String: RequestState] = [:]
+    @ObservationIgnored var pendingContent: [String: String] = [:]
+    @ObservationIgnored var tasks: [String: Task<Void, Never>] = [:]
 
     @ObservationIgnored private let store: AnswerStore
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private var outboundObserver: UUID?
 
-    init(bundle: SharedBundle, store: AnswerStore, defaults: UserDefaults = .standard, resetOnLaunch: Bool = false) throws {
+    init(bundle: SharedBundle, store: AnswerStore, defaults: UserDefaults = .standard, resetOnLaunch: Bool = false,
+         testModel: String? = nil) throws {
         self.bundle = bundle
         self.theme = Theme(tokens: bundle.tokens)
         self.store = store
@@ -62,7 +75,15 @@ final class AppModel {
         session = QuickCheckSession(steps: steps, answers: saved)
         let preferred = AppLocale.preferred(from: Locale.preferredLanguages)
         document = (try? store.loadDocument(schema: bundle.paystubSchema)) ?? DocumentSession(language: preferred)
-        extraction = PointerExtraction(extractors: (try? SampleAnswerKeyExtractor(bundle: bundle)).map { [$0] } ?? [])
+        sampleKey = try? SampleAnswerKeyExtractor(bundle: bundle)
+        self.testModel = testModel
+        port = testModel.map { TestModelPort(mode: $0) } ?? FirebaseModelPort()
+        let rc = RemoteConfigService(defaults: bundle.remoteConfigTemplate.map(AppConfig.defaultValues) ?? [:])
+        remoteConfig = rc
+        let log = OutboundLog.shared
+        runner = TaskRunner(port: port, log: log, outputChecks: bundle.outputChecks,
+                            firstRequestFields: testModel == nil ? ["app-check-token-request", "installation"] : [],
+                            beforeCloudRequest: { await rc.fetchOnce(log: log) })
         locale = defaults.string(forKey: Self.localeKey).flatMap(AppLocale.init(rawValue:))
             ?? AppLocale.preferred(from: Locale.preferredLanguages)
         outbound = OutboundLog.shared.entries
@@ -96,12 +117,23 @@ final class AppModel {
         bundle.copy.has("outbound.field.\(field)") ? t("outbound.field.\(field)") : field
     }
 
-    /// "Nothing has left this device." or "{count} sent: {kinds}".
+    /// "Nothing has left this device." or "{count} sent: {kinds}" (requests answered on this device
+    /// are listed in the details but did not leave).
     var outboundSummary: String {
-        guard !outbound.isEmpty else { return t("leaving.none") }
+        let left = outbound.filter { if case .answeredOnDevice = $0.status { false } else { true } }
+        guard !left.isEmpty else { return t("leaving.none") }
         var kinds: [String] = []
-        for field in outbound.flatMap(\.fields) where !kinds.contains(field) { kinds.append(field) }
-        return t("outbound.count", ["count": String(outbound.count), "list": kinds.map(outboundFieldName).joined(separator: ", ")])
+        for field in left.flatMap(\.fields) where !kinds.contains(field) { kinds.append(field) }
+        return t("outbound.count", ["count": String(left.count), "list": kinds.map(outboundFieldName).joined(separator: ", ")])
+    }
+
+    func statusText(_ entry: OutboundEntry) -> String {
+        switch entry.status {
+        case .attempted: t("outbound.status.attempted")
+        case .sent(let status): t("outbound.status.sent", ["status": String(status)])
+        case .failed(let reason): t("outbound.status.failed", ["reason": reason])
+        case .answeredOnDevice: t("outbound.status.answeredOnDevice")
+        }
     }
 
     // MARK: Results
@@ -184,6 +216,10 @@ final class AppModel {
         defaults.removeObject(forKey: Self.localeKey)
         OutboundLog.shared.clear()
         outbound = []
+        for task in tasks.values { task.cancel() }
+        tasks = [:]
+        requests = [:]
+        answers.clear()
         session.reset()
         document = DocumentSession(language: AppLocale.preferred(from: Locale.preferredLanguages))
         incomeChange = nil
@@ -230,19 +266,45 @@ final class AppModel {
         persistDocument()
     }
 
-    /// The extractor that would read this silhouette, if any. Nothing is sent by asking.
+    /// Whether a model can be reached: the device model, or the network with a Firebase configuration.
+    var deviceModelAvailable: Bool { port.deviceAvailability() == .available }
+    var isOnline: Bool { testModel.map { $0 == "cloud" } ?? (network.isOnline && FirebaseServices.isConfigured) }
+
+    /// The reader for this silhouette: a model when one can be reached; otherwise, for a bundled sample
+    /// only, its answer key (routing.json offlineSample); otherwise none.
     var documentExtractor: (any PointerExtractor)? {
-        silhouette.flatMap { extraction.extractor(for: $0.skeleton, language: document.language) }
+        guard let silhouette else { return nil }
+        if deviceModelAvailable || isOnline { return modelExtractor }
+        if let key = sampleKey, key.canRead(silhouette.skeleton, language: document.language) { return key }
+        return nil
     }
+
+    var modelExtractor: ModelPointerExtractor? {
+        let rcVersion = bundle.remoteConfigTemplate.flatMap { AppConfig.defaultValues(template: $0)["prompt_pointer_extract_v"] }.flatMap(Int.init)
+        guard let template = bundle.prompts.versioned("pointer-extract", version: lastConfig?.promptPointerExtractV ?? rcVersion, among: 2...4)
+        else { return nil }
+        return ModelPointerExtractor(runner: runner, template: template, schema: bundle.paystubSchema, canRun: { true })
+    }
+
+    @ObservationIgnored var lastConfig: AppConfig?
+    var documentError: TaskError?
 
     /// Reads the silhouette through the extraction path and opens the review.
     func readDocument() async {
-        guard let silhouette else { return }
+        guard let silhouette, let extractor = documentExtractor else { return }
+        documentError = nil
+        if extractor is ModelPointerExtractor {
+            await remoteConfig.fetchOnce(log: OutboundLog.shared)
+            lastConfig = await remoteConfig.current()
+        }
         do {
-            let result = try await extraction.extract(PointerRequest(skeleton: silhouette.skeleton, language: document.language))
+            let reader = (extractor is ModelPointerExtractor ? modelExtractor : nil) ?? extractor
+            let result = try await reader.extract(PointerRequest(skeleton: silhouette.skeleton, language: document.language))
+            if result.source == .inCloud { answers.markSent(silhouette.skeleton.text) }
             document.apply(result, silhouette: silhouette, schema: bundle.paystubSchema)
         } catch {
-            document.startManual(schema: bundle.paystubSchema)
+            documentError = (error as? TaskError) ?? TaskError(.unknown, "extraction")
+            return
         }
         persistDocument()
         path.append(.documentReview)

@@ -20,6 +20,8 @@ public struct DesignTokens: Sendable {
         public let lineHeight: Double
         public let weight: Double
         public let letterSpacing: Double
+        /// `display`, `text` or `mono` (the typeface role), when the file names one.
+        public let family: String?
     }
 
     public let light: [String: RGBA]
@@ -64,7 +66,7 @@ public struct DesignTokens: Sendable {
         for (name, value) in json["typography"]?["scale"]?.objectValue?.entries ?? [] {
             guard let size = value["size"]?.numberValue, let line = value["lineHeight"]?.numberValue else { continue }
             styles[name] = TypeStyle(size: size, lineHeight: line, weight: value["weight"]?.numberValue ?? 400,
-                                     letterSpacing: value["letterSpacing"]?.numberValue ?? 0)
+                                     letterSpacing: value["letterSpacing"]?.numberValue ?? 0, family: value["family"]?.stringValue)
         }
         type = styles
         spacing = numbers("spacing")

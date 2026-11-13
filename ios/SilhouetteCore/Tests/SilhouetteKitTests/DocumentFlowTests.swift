@@ -26,12 +26,15 @@ struct DocumentFlowTests {
         return (b, try #require(b.samples.first { $0.id == id }))
     }
 
-    @Test("the sample answer key equals the *-correct pointers of the shared rehydrate fixture")
-    func answerKeyMatchesFixture() throws {
+    @Test("the sample answer key reads shared/samples/answers.json and covers every bundled sample")
+    func answerKeyFromSharedFile() throws {
+        let b = try Repo.bundle()
+        let key = try SampleAnswerKeyExtractor(bundle: b)
+        #expect(Set(key.entries.map(\.sampleId)) == Set(b.samples.map(\.id)))
         let fixture = try JSON.parse(Data(contentsOf: Repo.shared.appendingPathComponent("fixtures/conformance/rehydrate.json")))
-        for (id, text) in SampleAnswerKeyExtractor.pointers {
-            let c = try #require(fixture["cases"]?.arrayValue?.first { $0["id"]?.stringValue == "\(id)-correct" })
-            #expect(try JSON.parse(text).isIdentical(to: try #require(c["pointers"])), "\(id)")
+        for entry in key.entries {
+            let c = try #require(fixture["cases"]?.arrayValue?.first { $0["id"]?.stringValue == "\(entry.sampleId)-correct" })
+            #expect(entry.pointers.isIdentical(to: try #require(c["pointers"])), "\(entry.sampleId)")
         }
     }
 

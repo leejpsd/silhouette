@@ -2,9 +2,10 @@ import XCTest
 
 extension XCUIApplication {
     /// Launches with a clean device state unless `reset` is false.
-    static func silhouette(reset: Bool = true, extra: [String] = []) -> XCUIApplication {
+    /// `model`: the scripted model (`none`, `device` or `cloud`); UI tests never reach a real model.
+    static func silhouette(reset: Bool = true, model: String = "none", extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = (reset ? ["-UITestResetAll"] : []) + ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"] + extra
+        app.launchArguments = (reset ? ["-UITestResetAll"] : []) + ["-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-UITestModel", model] + extra
         return app
     }
 

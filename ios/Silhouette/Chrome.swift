@@ -212,13 +212,18 @@ struct LeavingDetails: View {
                 VStack(alignment: .leading, spacing: theme.space("md")) {
                     ScreenHeading(text: model.t("leaving.title"))
                     Text(model.outboundSummary).tokenFont(.bodyStrong)
-                    Text(model.t("leaving.body")).tokenFont(.body)
+                    Text(model.t(model.anythingLeft ? "leaving.bodySent" : "leaving.body")).tokenFont(.body)
+                    Text(model.t("leaving.sdkNote")).tokenFont(.small).foregroundStyle(theme.textMuted)
                     Text(model.t("leaving.network")).tokenFont(.small).foregroundStyle(theme.textMuted)
                     ForEach(model.outbound) { entry in
                         VStack(alignment: .leading, spacing: theme.space("xxs")) {
                             Text(entry.fields.map(model.outboundFieldName).joined(separator: ", "))
                                 .tokenFont(.bodyStrong)
-                            Text(model.t("outbound.sentTo", ["destination": entry.destination])).tokenFont(.small)
+                            Text(model.statusText(entry)).tokenFont(.small)
+                            if case .answeredOnDevice = entry.status {} else {
+                                Text(model.t("outbound.requestTo", ["destination": entry.destination, "path": ""])).tokenFont(.small)
+                            }
+                            if let m = entry.model { Text(model.t("outbound.model", ["model": m])).tokenFont(.small) }
                             if let payload = entry.payload {
                                 DisclosureGroup(model.t("outbound.showPayload")) {
                                     Text(payload.text).font(.footnote.monospaced()).textSelection(.enabled)

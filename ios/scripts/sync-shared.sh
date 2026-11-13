@@ -32,4 +32,10 @@ for item in $ITEMS; do
   cp -R "$SHARED/$item" "$DEST/$item"
 done
 
+# Remote Config defaults: the template the Firebase project is published from.
+TEMPLATE="$IOS_DIR/../firebase/remoteconfig.template.json"
+if [ -f "$TEMPLATE" ]; then
+  cp "$TEMPLATE" "$DEST/remoteconfig.template.json"
+fi
+
 echo "Synced shared/{$(echo $ITEMS | tr ' ' ',')} -> $DEST"

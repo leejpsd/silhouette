@@ -14,8 +14,9 @@ struct DocumentReviewScreen: View {
         let doc = model.document
         ScreenScroll {
             ScreenHeading(text: model.t("review.title")).accessibilityIdentifier("review.title")
-            if let extraction = doc.extraction, extraction.source == .sampleAnswerKey {
-                SourceBadge(text: model.t("badge.sampleKey"), reason: model.t(extraction.reason.copyKey))
+            if let extraction = doc.extraction {
+                ProvenanceBadge(source: extraction.source, reason: extraction.reason)
+                if extraction.reason == .onDeviceFailed { Text(model.t("answers.retried")).tokenFont(.small) }
             }
             if doc.foundNothing {
                 notADocument

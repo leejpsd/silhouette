@@ -46,24 +46,7 @@ struct ProgramScreen: View {
                     .background(theme.notice, in: RoundedRectangle(cornerRadius: theme.radius("control")))
                 }
 
-                ScreenHeading(text: model.t("detail.criteria"), style: .heading).padding(.top, theme.space("sm"))
-                VStack(spacing: theme.space("xs")) {
-                    ForEach(result.criteria, id: \.id) { criterion in
-                        HStack(alignment: .firstTextBaseline, spacing: theme.space("sm")) {
-                            StateIcon(state: criterion.state).alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 6 }
-                            VStack(alignment: .leading, spacing: theme.space("xxs")) {
-                                Text(model.t("criterion.\(programId).\(criterion.id)")).tokenFont(.body).foregroundStyle(theme.text)
-                                Text(model.t("state.\(criterion.state.rawValue)")).tokenFont(.small).foregroundStyle(theme.textMuted)
-                            }
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .padding(theme.space("sm"))
-                        .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radius("control")))
-                        .accessibilityElement(children: .combine)
-                        .accessibilityIdentifier("criterion.\(criterion.id)")
-                    }
-                }
+                WhySection(programId: programId).padding(.top, theme.space("sm"))
 
                 if !result.dependsOn.isEmpty {
                     ScreenHeading(text: model.t("detail.dependsOn"), style: .heading).padding(.top, theme.space("sm"))
@@ -75,6 +58,9 @@ struct ProgramScreen: View {
                         .accessibilityIdentifier("depends.\(variable)")
                     }
                 }
+
+                AboutSection(programId: programId).padding(.top, theme.space("md"))
+                FreeTextSection(programId: programId).padding(.top, theme.space("md"))
 
                 Text(model.bundle.packInfo.verifiedOn.map { model.t("rules.verifiedOn", ["date": $0]) } ?? model.t("detail.unverified"))
                     .tokenFont(.small)

@@ -19,6 +19,14 @@ public struct SharedBundle: Sendable {
     public let samples: [SampleDocument]
     /// Pointer-extraction prompts by version (`prompts/pointer-extract.v{n}.md`).
     public let pointerPrompts: [Int: String]
+    /// Every bundled prompt (`prompts/*.md`).
+    public let prompts: PromptLibrary
+    /// `prompts/output-checks.json`
+    public let outputChecks: JSON
+    /// `samples/answers.json`: answer keys of the bundled samples.
+    public let sampleAnswers: JSON
+    /// Remote Config defaults: the bundled copy of firebase/remoteconfig.template.json, when present.
+    public let remoteConfigTemplate: JSON?
 
     /// - Parameters:
     ///   - directory: a folder laid out like shared/ (`copy/`, `rulepacks/`, `bands/`, `design/`).
@@ -57,6 +65,10 @@ public struct SharedBundle: Sendable {
             if let t = text("prompts/pointer-extract.v\(version).md") { prompts[version] = t }
         }
         pointerPrompts = prompts
+        self.prompts = try PromptLibrary(directory: directory.appendingPathComponent("prompts", isDirectory: true))
+        outputChecks = try json("prompts/output-checks.json")
+        sampleAnswers = try json("samples/answers.json")
+        remoteConfigTemplate = try? json("remoteconfig.template.json")
     }
 
     /// The allowlist for a document: its language's list ∪ en (skeleton/SPEC.md section 4).

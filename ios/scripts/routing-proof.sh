@@ -1,7 +1,7 @@
 #!/bin/sh
 # Compile-time routing proof (shared/DATA_TYPES.md, "Enforcing it in code").
 #
-# Builds SilhouetteCore as a module, then type-checks every probe in
+# Builds SilhouetteCore and SilhouetteKit as modules, then type-checks every probe in
 # SilhouetteCore/RoutingProof/ as code from another package (the app):
 #   *.pass.swift must compile;
 #   *.fail.swift must fail with the diagnostic named on its "// expect-error:" line.
@@ -16,11 +16,16 @@ trap 'rm -rf "$WORK"' EXIT
 
 SWIFTC="xcrun --sdk macosx swiftc"
 
-echo "Building SilhouetteCore module..."
+echo "Building SilhouetteCore and SilhouetteKit modules..."
 $SWIFTC -emit-module -parse-as-library -swift-version 6 \
   -module-name SilhouetteCore -package-name SilhouetteCore \
   -emit-module-path "$WORK/SilhouetteCore.swiftmodule" \
   "$CORE"/Sources/SilhouetteCore/*.swift
+# shellcheck disable=SC2046
+$SWIFTC -emit-module -parse-as-library -swift-version 6 \
+  -module-name SilhouetteKit -package-name SilhouetteCore -I "$WORK" \
+  -emit-module-path "$WORK/SilhouetteKit.swiftmodule" \
+  $(find "$CORE/Sources/SilhouetteKit" -name '*.swift')
 
 failures=0
 for probe in "$PROBES"/*.pass.swift; do

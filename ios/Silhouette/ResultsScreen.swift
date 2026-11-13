@@ -12,7 +12,7 @@ struct ResultsScreen: View {
         let results = model.results
         ScreenScroll {
             ScreenHeading(text: model.t("results.title")).accessibilityIdentifier("results.title")
-            Text(model.t("results.lead")).tokenFont(.body).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
+            Text(model.t(model.anythingLeft ? "results.leadAfterSend" : "results.lead")).tokenFont(.body).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
             ForEach(QuickCheck.groups(results), id: \.verdict) { group in
                 VStack(alignment: .leading, spacing: theme.space("sm")) {
                     HStack(spacing: theme.space("sm")) {

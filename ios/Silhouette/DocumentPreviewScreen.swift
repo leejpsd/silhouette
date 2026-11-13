@@ -23,8 +23,8 @@ struct DocumentPreviewScreen: View {
                     .tokenFont(.bodyStrong)
                     .accessibilityIdentifier("preview.counts")
                 Picker(model.t("preview.title"), selection: $view) {
-                    Text(model.t("preview.view.leave")).tag(Mode.leave)
-                    Text(model.t("preview.view.phone")).tag(Mode.phone)
+                    Text(model.t("preview.couldLeave")).tag(Mode.leave)
+                    Text(model.t("preview.onPhone")).tag(Mode.phone)
                 }
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("preview.mode")
@@ -119,7 +119,35 @@ struct DocumentPreviewScreen: View {
     }
 
     @ViewBuilder private func reader(_ silhouette: SkeletonResult) -> some View {
-        if model.documentExtractor != nil {
+        let extractor = model.documentExtractor
+        if extractor is ModelPointerExtractor {
+            // A model reads the silhouette: on this device first, or in the cloud when this device
+            // has no model. What could leave is exactly the silhouette shown above.
+            VStack(alignment: .leading, spacing: theme.space("sm")) {
+                Text(model.t(model.deviceModelAvailable ? "preview.onDevice" : "preview.cloud")).tokenFont(.body)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("preview.modelLead")
+                ProvenanceBadge(source: model.deviceModelAvailable ? .onDevice : .inCloud, reason: .documentSilhouetteOnly,
+                                noDeviceModel: !model.deviceModelAvailable)
+                if let error = model.documentError {
+                    Text(model.t(error.copyKey)).tokenFont(.small).fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("preview.error")
+                }
+                if reading {
+                    HStack { ProgressView(); Text(model.t("preview.sending")).tokenFont(.small) }
+                } else {
+                    Button(model.t("send.send")) {
+                        reading = true
+                        Task { await model.readDocument(); reading = false }
+                    }
+                    .buttonStyle(.primaryAction)
+                    .accessibilityIdentifier("preview.send")
+                    Button(model.t("send.skip")) { model.typeNumbers() }
+                        .buttonStyle(.secondaryAction)
+                        .accessibilityIdentifier("preview.keep")
+                }
+            }
+        } else if extractor != nil {
             VStack(alignment: .leading, spacing: theme.space("sm")) {
                 SourceBadge(text: model.t("badge.sampleKey"), reason: model.t(RoutingReason.sampleAnswerKey.copyKey))
                 Text(model.t("preview.sample")).tokenFont(.body).fixedSize(horizontal: false, vertical: true)

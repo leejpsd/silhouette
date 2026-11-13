@@ -533,3 +533,94 @@ extension RulesEngine {
         return Generalized(value: result, canonical: JSON.array(result.map(\.json)).jsonText)
     }
 }
+
+// MARK: - Reasons for a result (no model)
+
+/// One comparison of an answer with a limit inside a criterion.
+public struct Comparison: Sendable {
+    public enum Yours: Sendable {
+        case number(Double)
+        /// Only an income band is known.
+        case band(Bands.IncomeBand)
+        case unanswered
+    }
+
+    public let variable: String
+    public let op: String
+    /// The limit for this person's answers (a table lookup resolved); `nil` when it depends on an
+    /// unanswered question.
+    public let limit: Double?
+    public let yours: Yours
+}
+
+public struct CriterionReason: Sendable {
+    public let id: String
+    public let state: CriterionState
+    public let comparisons: [Comparison]
+}
+
+extension RulesEngine {
+    private static let comparisonOps: Set<String> = ["<", "<=", ">", ">="]
+
+    /// `{op: [{"var": name}, limit]}` at the top of a criterion's logic or directly inside a
+    /// top-level `and` / `or`, where `name` is an answer (not a constant).
+    static func comparisons(in logic: JSON) -> [(variable: String, op: String, limit: JSON)] {
+        var out: [(String, String, JSON)] = []
+        func visit(_ node: JSON, depth: Int) {
+            guard case .object(let o) = node, o.count == 1 else { return }
+            let (op, args) = o.entries[0]
+            guard case .array(let a) = args else { return }
+            if comparisonOps.contains(op), a.count == 2 {
+                if case .string(let name)? = a[0]["var"], !name.hasPrefix("constants.") { out.append((name, op, a[1])) }
+            } else if (op == "and" || op == "or") && depth == 0 {
+                for child in a { visit(child, depth: depth + 1) }
+            }
+        }
+        visit(logic, depth: 0)
+        return out
+    }
+
+    /// The reasons for one program's result: each criterion with the state on screen and, where it
+    /// compares an answer with a limit, the limit and the person's value. Deterministic. It holds the
+    /// person's own values, so it stays Raw: for display on this device and on-device tasks only.
+    public static func criterionReasons(pack: RulePack, bands: Bands, answers rawAnswers: Raw<JSON>,
+                                        programId: String) throws(VerdictError) -> Raw<[CriterionReason]> {
+        guard let program = pack.programs.first(where: { $0.id == programId }),
+              let result = try verdicts(pack: pack, bands: bands, answers: rawAnswers).first(where: { $0.programId == programId })
+        else { return Raw([]) }
+        let answers = rawAnswers.value
+        var base = JSONObject()
+        base["constants"] = pack.constants
+        var unavailable = Set<String>()
+        for q in pack.questions {
+            if let a = answers[q.id], !a.isNull { base[q.id] = a } else { unavailable.insert(q.id) }
+        }
+        if case .number(let size)? = base["householdSize"] {
+            base["householdSizeCapped"] = .string(JSNumber.string(jsMin([size, bands.householdSizeCap])))
+        } else {
+            unavailable.insert("householdSizeCapped")
+        }
+        var exact: Double?
+        if case .number(let n)? = answers["annualIncome"] { exact = jsMax([n, 0]); base["annualIncome"] = .number(exact!) }
+        let band = exact == nil ? answers["incomeBand"]?.stringValue.flatMap { bands.band(id: $0) } : nil
+        let data = JSON.object(base)
+        let reasons = program.criteria.map { criterion -> CriterionReason in
+            let state = result.criteria.first { $0.id == criterion.id }?.state ?? .unknown
+            let comparisons = Self.comparisons(in: criterion.logic).map { c -> Comparison in
+                var ctx = EvalContext(unavailable: unavailable)
+                let limit = (try? evaluate(c.limit, data: data, context: &ctx))?.finiteNumber
+                let yours: Comparison.Yours
+                if c.variable == "annualIncome" {
+                    yours = exact.map { .number($0) } ?? band.map { .band($0) } ?? .unanswered
+                } else if case .number(let n)? = base[c.variable] {
+                    yours = .number(n)
+                } else {
+                    yours = .unanswered
+                }
+                return Comparison(variable: c.variable, op: c.op, limit: limit, yours: yours)
+            }
+            return CriterionReason(id: criterion.id, state: state, comparisons: comparisons)
+        }
+        return Raw(reasons)
+    }
+}

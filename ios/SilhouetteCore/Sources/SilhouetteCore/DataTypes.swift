@@ -48,6 +48,9 @@ extension Raw: CustomStringConvertible, CustomDebugStringConvertible, CustomRefl
 public struct CloudText: Sendable, Hashable {
     public let text: String
     init(_ text: String) { self.text = text }
+    /// A request composed inside this package from other `CloudText` values and bundled public
+    /// content (prompt templates, schemas). Package-only, like `Raw.value`.
+    package init(composed text: String) { self.text = text }
 }
 
 /// `Skeleton | Generalized | Public`: the only input a cloud-capable call accepts
@@ -87,6 +90,14 @@ public struct Public<Value: Sendable>: CloudSafe {
         self.text = text
     }
     public var cloudText: CloudText { CloudText(text) }
+}
+
+extension Public {
+    /// Public content built from material bundled with the app (rule packs, copy), with the text a
+    /// request would carry. Package-only.
+    package init(bundled value: Value, text: String) {
+        self.init(value: value, text: text)
+    }
 }
 
 extension Public where Value == String {
