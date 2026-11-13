@@ -1,5 +1,18 @@
 # Contract changelog
 
+## v1.14 — 2026-11-13
+
+From 36 real replies of the general explanation and the prepared questions, in English and Spanish (`web/eval/results/answers-v3.md`). No reply stated or hinted at a result, and the check on model text blocked nothing and missed nothing.
+
+| Change | Why |
+|---|---|
+| **Program copy for a model** (`rulepacks/SPEC.md` section 2.1): optional `program.{id}.summary`, `apply`, `documents`, `renewal`, `office`, and the rule that builds `{programFacts}`, including the answers a program uses. `zz-test` carries them in en, es and ko | With only criterion labels to go on, 13 of 18 replies about applying, papers and what the program offers said the information did not cover it |
+| `prompts/explain.v4.md`, `prompts/ask.v3.md`: say what a program offers only when the information says so; "the information about this program"; never "mobile app"; the advice disclaimer is about the text, not the program; mention sharing only when something is checked on the device | 6 replies guessed a purpose from the program's name; Spanish replies wrote "los hechos del programa" and "la aplicación móvil"; 2 replies said the benefit program does not give tax advice |
+| 7 sentences from real replies added to `output-check.json` as text that must stay allowed | |
+| Remote Config: `prompt_explain_v` = 4, new key `prompt_ask_v` = 3 | |
+
+In `explain-personal.v1.md` and `ask-personal.v1.md` the placeholder `{programSummaryFromRulePack}` is filled with the same `{programFacts}` text.
+
 ## v1.13 — 2026-11-13
 
 | Change | Why |

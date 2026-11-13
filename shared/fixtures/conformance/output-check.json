@@ -94,6 +94,55 @@
       "blocked": false
     },
     {
+      "id": "en-real-points-to-screen",
+      "locale": "en",
+      "scope": "general",
+      "text": "Check the screen above to see your result for this program.",
+      "blocked": false
+    },
+    {
+      "id": "en-real-change-result",
+      "locale": "en",
+      "scope": "general",
+      "text": "To change this result, you would need to change the things the program looks at.",
+      "blocked": false
+    },
+    {
+      "id": "en-real-no-need-to-share",
+      "locale": "en",
+      "scope": "general",
+      "text": "Because the app checks these things on your device, you do not need to share or send that information.",
+      "blocked": false
+    },
+    {
+      "id": "es-real-checks-points",
+      "locale": "es",
+      "scope": "general",
+      "text": "El programa Ayuda de alimentos (prueba) revisa ciertos puntos para ver si puedes recibir beneficios.",
+      "blocked": false
+    },
+    {
+      "id": "es-real-already-checked",
+      "locale": "es",
+      "scope": "general",
+      "text": "La aplicación ya revisó esta información en tu dispositivo para ver si cumples con las reglas del programa.",
+      "blocked": false
+    },
+    {
+      "id": "es-real-points-to-screen",
+      "locale": "es",
+      "scope": "general",
+      "text": "Revisa la parte de arriba de esta pantalla para ver lo que decidió la aplicación sobre tu caso.",
+      "blocked": false
+    },
+    {
+      "id": "es-real-could-change",
+      "locale": "es",
+      "scope": "general",
+      "text": "Como estos datos se comprobaron en tu dispositivo, los cambios en tu situación con respecto a ellos podrían cambiar este resultado.",
+      "blocked": false
+    },
+    {
       "id": "unknown-locale-uses-english",
       "locale": "fr",
       "scope": "personal",

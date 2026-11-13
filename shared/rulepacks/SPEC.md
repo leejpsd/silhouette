@@ -39,6 +39,26 @@ Labels live in `rulepacks/{jurisdiction}/copy/{locale}.json` with these keys. Ev
 | `programs[].amount` | Optional expression that returns an estimated amount |
 | `programs[].docsRequired`, `applyUrl`, `sources` | Shown in the app |
 
+### 2.1 Program copy and the information given to a model
+
+`rulepacks/{jurisdiction}/copy/{locale}.json` holds the labels of the pack. Besides `program.{id}.name` and the criterion labels, a pack may carry these optional keys per program, each one or two plain sentences:
+
+| Key | Content |
+|---|---|
+| `program.{id}.summary` | What the benefit is and its form (a tax credit, a discount on a bill, a monthly food benefit) |
+| `program.{id}.apply` | How to apply (online, by phone, in person) and who handles it |
+| `program.{id}.documents` | The papers people are usually asked for |
+| `program.{id}.renewal` | How long the benefit lasts and how it is renewed, when `period` does not already say it |
+| `program.{id}.office` | The name of the office or agency. Links stay in `sources` and `applyUrl` |
+
+They are `Public`. The app shows them on the program screen, and they are what a model is given as `{programFacts}`, built in this order, one item per line, skipping what is absent:
+
+1. `summary`, `apply`, `documents`, `renewal`, `office`;
+2. `This program uses: ` followed by the `variable.*` labels of every answer named in the program's criteria `requires`, in pack question order, with `annualIncome` first;
+3. `This program checks: ` followed by the criterion labels.
+
+Line 2 lets a model answer "what could change this result" without knowing the result. Like every text in a pack, these sentences are checked by a person against the official source before the pack is published.
+
 ## 3. Expression language
 
 A strict, typed subset of JSON Logic with **three-valued logic**. Each platform implements exactly these operators and no implicit type conversion. `fixtures/conformance/evaluator.json` pins the behaviour.

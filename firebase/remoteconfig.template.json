@@ -58,7 +58,7 @@
     },
     "prompt_explain_v": {
       "defaultValue": {
-        "value": "3"
+        "value": "4"
       },
       "valueType": "NUMBER",
       "description": "shared/prompts/explain.v{n}.md"
@@ -69,6 +69,13 @@
       },
       "valueType": "NUMBER",
       "description": "Allowlist version bundled with the app"
+    },
+    "prompt_ask_v": {
+      "defaultValue": {
+        "value": "3"
+      },
+      "valueType": "NUMBER",
+      "description": "Version of the prepared-question prompt (shared/prompts/ask.v{n}.md)"
     }
   }
 }

@@ -256,6 +256,14 @@ export const outputCheckCases = [
   { id: 'es-conditional-is-fine', locale: 'es', scope: 'personal', text: 'La app revisa en tu dispositivo si calificas.' },
   { id: 'es-overall-blocked-for-general', locale: 'es', scope: 'general', text: 'Es posible que califiques para este programa.' },
   { id: 'es-general-neutral', locale: 'es', scope: 'general', text: 'Este programa reduce la factura de servicios para hogares con ingresos bajos.' },
+  // Sentences from real replies that must stay allowed.
+  { id: 'en-real-points-to-screen', locale: 'en', scope: 'general', text: 'Check the screen above to see your result for this program.' },
+  { id: 'en-real-change-result', locale: 'en', scope: 'general', text: 'To change this result, you would need to change the things the program looks at.' },
+  { id: 'en-real-no-need-to-share', locale: 'en', scope: 'general', text: 'Because the app checks these things on your device, you do not need to share or send that information.' },
+  { id: 'es-real-checks-points', locale: 'es', scope: 'general', text: 'El programa Ayuda de alimentos (prueba) revisa ciertos puntos para ver si puedes recibir beneficios.' },
+  { id: 'es-real-already-checked', locale: 'es', scope: 'general', text: 'La aplicación ya revisó esta información en tu dispositivo para ver si cumples con las reglas del programa.' },
+  { id: 'es-real-points-to-screen', locale: 'es', scope: 'general', text: 'Revisa la parte de arriba de esta pantalla para ver lo que decidió la aplicación sobre tu caso.' },
+  { id: 'es-real-could-change', locale: 'es', scope: 'general', text: 'Como estos datos se comprobaron en tu dispositivo, los cambios en tu situación con respecto a ellos podrían cambiar este resultado.' },
   { id: 'unknown-locale-uses-english', locale: 'fr', scope: 'personal', text: 'You qualify.' },
   { id: 'empty-text', locale: 'en', scope: 'general', text: '' },
 ];
