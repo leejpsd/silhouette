@@ -135,8 +135,8 @@ public enum Validator {
 
     // MARK: Money
 
-    /// Largest cents value handled exactly (Int128 products stay in range far beyond any income).
-    static let maxCents: Double = 1e30
+    /// Money values of 10^15 or more are refused (shared/validation/SPEC.md section 1 allows this).
+    static let maxCents: Double = 1e17
 
     static func cents(_ value: JSON?) throws(ValidationInputError) -> Int128? {
         guard let value else { return nil }
@@ -144,7 +144,7 @@ public enum Validator {
             throw ValidationInputError("money values must be finite and non-negative")
         }
         let c = (x * 100).rounded(.toNearestOrAwayFromZero)
-        guard c <= maxCents else { throw ValidationInputError("money value too large") }
+        guard c < maxCents else { throw ValidationInputError("money value too large") }
         return Int128(c)
     }
 
@@ -235,7 +235,9 @@ public enum Validator {
     }
 
     private static func normalize(_ values: JSON, index: Int, jurisdiction: String) throws(ValidationInputError) -> Stub {
-        guard case .object(let v) = values else { throw ValidationInputError("a paystub must be an object") }
+        guard case .object(let input) = values else { throw ValidationInputError("a paystub must be an object") }
+        // A field that is null is absent, exactly as if the key were missing (section 1).
+        let v = JSONObject(input.entries.filter { !$0.value.isNull })
         var frequency: PayFrequency?
         if let f = v["payFrequency"] {
             guard case .string(let s) = f, let known = PayFrequency.allCases.first(where: { $0.rawValue.exactlyEquals(s) }) else {
@@ -247,7 +249,7 @@ public enum Validator {
         if let h = v["hoursWorked"] {
             guard case .number(let x) = h, x.isFinite, x >= 0 else { throw ValidationInputError("hours must be finite and non-negative") }
             let c = (x * 100).rounded(.toNearestOrAwayFromZero)
-            guard c <= maxCents else { throw ValidationInputError("hours value too large") }
+            guard c < maxCents else { throw ValidationInputError("hours value too large") }
             hours = Int128(c)
         }
         func date(_ key: String) throws(ValidationInputError) -> CivilDate? {
@@ -328,7 +330,9 @@ public enum Validator {
         let values = rawValues.value
         var stubs: [Stub] = []
         for (i, v) in values.enumerated() { stubs.append(try normalize(v, index: i, jurisdiction: jurisdiction)) }
-        let allChecks = zip(stubs, values).map { checks($0, raw: $1.objectValue ?? JSONObject()) }
+        let allChecks = zip(stubs, values).map { stub, value in
+            checks(stub, raw: JSONObject((value.objectValue ?? JSONObject()).entries.filter { !$0.value.isNull }))
+        }
 
         var seen = Set<String>()
         var duplicates: [Int] = []

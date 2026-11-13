@@ -11,6 +11,14 @@ public struct SharedBundle: Sendable {
     public let bands: Bands
     public let copy: CopyBook
     public let tokens: DesignTokens
+    /// `skeleton/allowlist/{language}.json` per language.
+    public let allowlistFiles: [AppLocale: JSON]
+    /// `schemas/pointer.paystub.json`
+    public let paystubSchema: JSON
+    /// Bundled sample documents (`samples/*.txt`), synthetic.
+    public let samples: [SampleDocument]
+    /// Pointer-extraction prompts by version (`prompts/pointer-extract.v{n}.md`).
+    public let pointerPrompts: [Int: String]
 
     /// - Parameters:
     ///   - directory: a folder laid out like shared/ (`copy/`, `rulepacks/`, `bands/`, `design/`).
@@ -34,6 +42,34 @@ public struct SharedBundle: Sendable {
         }
         copy = CopyBook(tables: tables)
         tokens = try DesignTokens(json: json("design/tokens.json"))
+        var lists: [AppLocale: JSON] = [:]
+        for locale in AppLocale.allCases { lists[locale] = try json("skeleton/allowlist/\(locale.rawValue).json") }
+        allowlistFiles = lists
+        paystubSchema = try json("schemas/pointer.paystub.json")
+        func text(_ path: String) -> String? {
+            (try? Data(contentsOf: directory.appendingPathComponent(path))).map { String(decoding: $0, as: UTF8.self) }
+        }
+        samples = SampleDocument.catalog.compactMap { entry in
+            text("samples/\(entry.id).txt").map { SampleDocument(id: entry.id, language: entry.language, titleKey: entry.titleKey, text: Raw($0)) }
+        }
+        var prompts: [Int: String] = [:]
+        for version in 1...20 {
+            if let t = text("prompts/pointer-extract.v\(version).md") { prompts[version] = t }
+        }
+        pointerPrompts = prompts
+    }
+
+    /// The allowlist for a document: its language's list ∪ en (skeleton/SPEC.md section 4).
+    public func allowlist(for language: AppLocale) throws -> Allowlist {
+        let files = [allowlistFiles[.en], language == .en ? nil : allowlistFiles[language]].compactMap { $0 }
+        return try Allowlist(files: files)
+    }
+
+    /// The pointer-extraction prompt for a Remote Config version; an unknown version means the newest.
+    public func pointerPrompt(version: Int?) -> (version: Int, text: String)? {
+        if let version, let text = pointerPrompts[version] { return (version, text) }
+        guard let newest = pointerPrompts.keys.max() else { return nil }
+        return (newest, pointerPrompts[newest]!)
     }
 
     public enum ContentError: Error, CustomStringConvertible {

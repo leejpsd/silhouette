@@ -11,11 +11,17 @@ enum Route: Hashable {
     case question(String, returnTo: ReturnTo?)
     case results
     case program(String)
+    case documentAdd
+    case documentPreview
+    case documentReview
 }
 
 enum ReturnTo: Hashable {
     case results
     case program(String)
+    case documentAdd
+    case documentPreview
+    case documentReview
 }
 
 @MainActor
@@ -31,6 +37,12 @@ final class AppModel {
     private(set) var outbound: [OutboundEntry] = []
     /// A copy key shown once on the start screen (for example after deleting everything).
     var notice: String?
+    /// The paystub in progress. Raw inside; saved only encrypted.
+    private(set) var document: DocumentSession
+    /// Verdicts that changed when the yearly income from a paystub was used.
+    private(set) var incomeChange: [(program: String, before: Verdict, after: Verdict)]?
+    /// Every pointer extractor available in this build. No model yet: only the sample answer key.
+    @ObservationIgnored let extraction: PointerExtraction
 
     @ObservationIgnored private let store: AnswerStore
     @ObservationIgnored private let defaults: UserDefaults
@@ -48,6 +60,9 @@ final class AppModel {
         }
         let saved = (try? store.load(steps: steps)) ?? Raw(QuickCheckAnswers())
         session = QuickCheckSession(steps: steps, answers: saved)
+        let preferred = AppLocale.preferred(from: Locale.preferredLanguages)
+        document = (try? store.loadDocument(schema: bundle.paystubSchema)) ?? DocumentSession(language: preferred)
+        extraction = PointerExtraction(extractors: (try? SampleAnswerKeyExtractor(bundle: bundle)).map { [$0] } ?? [])
         locale = defaults.string(forKey: Self.localeKey).flatMap(AppLocale.init(rawValue:))
             ?? AppLocale.preferred(from: Locale.preferredLanguages)
         outbound = OutboundLog.shared.entries
@@ -170,10 +185,110 @@ final class AppModel {
         OutboundLog.shared.clear()
         outbound = []
         session.reset()
+        document = DocumentSession(language: AppLocale.preferred(from: Locale.preferredLanguages))
+        incomeChange = nil
         locale = AppLocale.preferred(from: Locale.preferredLanguages)
         path = []
         notice = "delete.done"
     }
 
     var hasSavedData: Bool { store.hasSavedData }
+
+    // MARK: Document
+
+    private func persistDocument() {
+        try? store.saveDocument(document)
+    }
+
+    func openDocument() {
+        incomeChange = nil
+        path.append(.documentAdd)
+    }
+
+    func setDocumentLanguage(_ language: AppLocale) {
+        document.setLanguage(language)
+        persistDocument()
+    }
+
+    /// A new document from pasted, shared or PDF text, or a built-in sample.
+    func useDocumentText(_ text: Raw<String>, source: DocumentSourceKind, sample: SampleDocument? = nil) {
+        document.setText(text, source: source, sampleId: sample?.id, language: sample?.language)
+        incomeChange = nil
+        persistDocument()
+        path.append(.documentPreview)
+    }
+
+    var silhouette: SkeletonResult? { try? document.silhouette(bundle: bundle) }
+
+    func hideWord(_ word: String) {
+        document.hide(word)
+        persistDocument()
+    }
+
+    func unhideWord(_ word: String) {
+        document.unhide(word)
+        persistDocument()
+    }
+
+    /// The extractor that would read this silhouette, if any. Nothing is sent by asking.
+    var documentExtractor: (any PointerExtractor)? {
+        silhouette.flatMap { extraction.extractor(for: $0.skeleton, language: document.language) }
+    }
+
+    /// Reads the silhouette through the extraction path and opens the review.
+    func readDocument() async {
+        guard let silhouette else { return }
+        do {
+            let result = try await extraction.extract(PointerRequest(skeleton: silhouette.skeleton, language: document.language))
+            document.apply(result, silhouette: silhouette, schema: bundle.paystubSchema)
+        } catch {
+            document.startManual(schema: bundle.paystubSchema)
+        }
+        persistDocument()
+        path.append(.documentReview)
+    }
+
+    func typeNumbers() {
+        document.startManual(schema: bundle.paystubSchema)
+        persistDocument()
+        if path.last != .documentReview { path.append(.documentReview) }
+    }
+
+    func editDocument(_ change: (inout DocumentSession) -> Void) {
+        change(&document)
+        persistDocument()
+    }
+
+    var documentValidation: ValidationResult? {
+        try? document.validation(jurisdiction: bundle.packInfo.jurisdiction)
+    }
+
+    /// Uses the yearly income from the paystub as the exact Quick Check income, and records which
+    /// verdicts changed.
+    func useIncome(_ amount: Int) {
+        let before = Dictionary(uniqueKeysWithValues: results.map { ($0.programId, $0.verdict) })
+        answer(QuickCheck.incomeStep, .income(.exact(Double(amount))))
+        incomeChange = results.compactMap { r in
+            guard let b = before[r.programId], b != r.verdict else { return nil }
+            return (r.programId, b, r.verdict)
+        }
+    }
+
+    func addAnotherPaystub() {
+        document.addAnother()
+        incomeChange = nil
+        persistDocument()
+        path.append(.documentAdd)
+    }
+
+    func anotherDocument() {
+        document.reset()
+        persistDocument()
+        if let i = path.lastIndex(of: .documentAdd) { path.removeSubrange((i + 1)...) } else { path.append(.documentAdd) }
+    }
+
+    func showResults() {
+        let asked = session.steps.map { Route.question($0.id, returnTo: nil) }
+        path = asked + [.results]
+    }
 }

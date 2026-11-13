@@ -111,34 +111,62 @@ public struct AnswerStore: Sendable {
     }
 
     public func save(_ answers: Raw<QuickCheckAnswers>) throws {
-        let plain = AnswerCodec.encode(answers.value)
-        guard let key = try key(createIfMissing: true) else { return }
-        let sealed = try AES.GCM.seal(Data(plain.jsonText.utf8), using: key, authenticating: Self.additionalData)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try excludeFromBackup(directory)
-        #if os(iOS)
-        try sealed.combined!.write(to: fileURL, options: [.atomic, .completeFileProtection])
-        #else
-        try sealed.combined!.write(to: fileURL, options: [.atomic])
-        #endif
-        try excludeFromBackup(fileURL)
+        try seal(AnswerCodec.encode(answers.value), to: fileURL, additionalData: Self.additionalData)
     }
 
     /// The saved answers, or empty answers when nothing is saved. A file that cannot be decrypted
     /// (for example after the key was removed) throws `StoreError.unreadable`.
     public func load(steps: [Step]) throws -> Raw<QuickCheckAnswers> {
-        guard FileManager.default.fileExists(atPath: fileURL.path) else { return Raw(QuickCheckAnswers()) }
+        guard let json = try open(fileURL, additionalData: Self.additionalData) else { return Raw(QuickCheckAnswers()) }
+        return Raw(AnswerCodec.decode(json, steps: steps))
+    }
+
+    // MARK: The document in progress
+
+    static let documentAdditionalData = Data("silhouette.document.v1".utf8)
+    public var documentURL: URL { directory.appendingPathComponent("document.sealed") }
+
+    public func saveDocument(_ session: DocumentSession) throws {
+        try seal(DocumentCodec.encode(session.draft.value), to: documentURL, additionalData: Self.documentAdditionalData)
+    }
+
+    public func loadDocument(schema: JSON) throws -> DocumentSession? {
+        guard let json = try open(documentURL, additionalData: Self.documentAdditionalData),
+              let draft = DocumentCodec.decode(json, schema: schema) else { return nil }
+        return DocumentSession(draft: Raw(draft))
+    }
+
+    public func deleteDocument() throws {
+        if FileManager.default.fileExists(atPath: documentURL.path) { try FileManager.default.removeItem(at: documentURL) }
+    }
+
+    // MARK: Sealing
+
+    private func seal(_ json: JSON, to url: URL, additionalData: Data) throws {
+        guard let key = try key(createIfMissing: true) else { return }
+        let sealed = try AES.GCM.seal(Data(json.jsonText.utf8), using: key, authenticating: additionalData)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try excludeFromBackup(directory)
+        #if os(iOS)
+        try sealed.combined!.write(to: url, options: [.atomic, .completeFileProtection])
+        #else
+        try sealed.combined!.write(to: url, options: [.atomic])
+        #endif
+        try excludeFromBackup(url)
+    }
+
+    private func open(_ url: URL, additionalData: Data) throws -> JSON? {
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         guard let key = try key(createIfMissing: false) else { throw StoreError.unreadable }
         do {
-            let box = try AES.GCM.SealedBox(combined: Data(contentsOf: fileURL))
-            let plain = try AES.GCM.open(box, using: key, authenticating: Self.additionalData)
-            return Raw(AnswerCodec.decode(try JSON.parse(plain), steps: steps))
+            let box = try AES.GCM.SealedBox(combined: Data(contentsOf: url))
+            return try JSON.parse(AES.GCM.open(box, using: key, authenticating: additionalData))
         } catch {
             throw StoreError.unreadable
         }
     }
 
-    /// Removes the answers file and the device key.
+    /// Removes the answers, the document in progress and the device key.
     public func deleteEverything() throws {
         if FileManager.default.fileExists(atPath: directory.path) {
             try FileManager.default.removeItem(at: directory)

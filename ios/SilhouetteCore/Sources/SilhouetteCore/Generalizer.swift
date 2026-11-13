@@ -116,6 +116,15 @@ public struct GeneralizedProfile: Sendable {
     public let county: String?
     public let housing: Housing?
 
+    init(jurisdiction: String, incomeBand: String?, householdSize: HouseholdSize?, childAgeBands: [String]?, county: String?, housing: Housing?) {
+        self.jurisdiction = jurisdiction
+        self.incomeBand = incomeBand
+        self.householdSize = householdSize
+        self.childAgeBands = childAgeBands
+        self.county = county
+        self.housing = housing
+    }
+
     /// The profile as a JSON object, keys in schema order.
     public var json: JSON {
         func str(_ s: String?) -> JSON { s.map(JSON.string) ?? .null }

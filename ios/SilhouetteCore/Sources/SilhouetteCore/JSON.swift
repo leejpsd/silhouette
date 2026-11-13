@@ -15,7 +15,7 @@ extension String {
     /// Code-point equality, like JavaScript `===` on strings. Swift's `==` uses canonical
     /// equivalence, which would make `"e\u{301}" == "\u{E9}"` and `"\u{212A}" == "K"` true.
     @inlinable
-    func exactlyEquals(_ other: String) -> Bool {
+    package func exactlyEquals(_ other: String) -> Bool {
         utf8.elementsEqual(other.utf8)
     }
 

@@ -11,7 +11,8 @@ struct ConformanceTests {
     /// Files this suite knows how to run. A new file in the folder fails the suite until a runner
     /// is added.
     static let knownFiles: Set<String> = [
-        "evaluator.json", "generalize.json", "model-schema.json", "rehydrate.json", "skeleton.json", "validate.json", "verdict.json",
+        "evaluator.json", "generalize.json", "model-schema.json", "output-check.json", "rehydrate.json", "silhouette-verdict.json", "skeleton.json",
+        "validate.json", "verdict.json",
     ]
 
     @Test("every file in the folder has a runner, and every runner has a file")
@@ -71,6 +72,17 @@ struct ConformanceTests {
             let token = try #require(n["token"]?.stringValue)
             let actual: JSON = Rehydrator.parseNumber(token).map(JSON.number) ?? .null
             expectIdentical(actual, n["expected"], "parseNumber(\(JSON.string(token).jsonText))")
+        }
+    }
+
+    @Test("rehydrate.json typed amounts")
+    func typedAmounts() throws {
+        let cases = try #require(try Shared.conformance("rehydrate.json")["typedAmounts"]?.arrayValue)
+        #expect(cases.count >= 41)
+        for c in cases {
+            let text = try #require(c["text"]?.stringValue)
+            let actual: JSON = Rehydrator.parseTypedAmount(text).map(JSON.number) ?? .null
+            expectIdentical(actual, c["expected"], "parseTypedAmount(\(JSON.string(text).jsonText))")
         }
     }
 
@@ -170,5 +182,43 @@ struct ConformanceTests {
             return
         }
         expectIdentical(try ModelSchema.derive(schema, requiredNullable: requiredNullable, dialect: dialect), k["expected"], k.id)
+    }
+
+    // MARK: silhouette-verdict.json
+
+    @Test("silhouette-verdict.json", arguments: try Shared.cases("silhouette-verdict.json"))
+    func silhouetteVerdict(_ k: FixtureCase) throws {
+        let file = try Shared.conformance("silhouette-verdict.json")
+        let pack = try RulePack(json: Shared.json(try #require(file["pack"]?.stringValue)))
+        let bands = try Bands(json: Shared.json(try #require(file["bands"]?.stringValue)))
+        let p = try #require(k["profile"])
+        let size: GeneralizedProfile.HouseholdSize? = switch p["householdSize"] {
+        case .number(let n)?: .exact(Int(n))
+        case .string(let s)?: .capped(s)
+        default: nil
+        }
+        let profile = GeneralizedProfile(
+            jurisdiction: try #require(p["jurisdiction"]?.stringValue), incomeBand: p["incomeBand"]?.stringValue, householdSize: size,
+            childAgeBands: p["childAgeBands"]?.arrayValue?.compactMap(\.stringValue), county: p["county"]?.stringValue,
+            housing: p["housing"]?.stringValue.flatMap(GeneralizedProfile.Housing.init(rawValue:)))
+        let result = try RulesEngine.silhouetteVerdicts(pack: pack, bands: bands,
+                                                        profile: Generalized(value: profile, canonical: profile.canonical))
+        expectIdentical(.array(result.value.map(\.json)), k["expected"], k.id)
+        expectExactString(CloudBoundary.outbound(result).text, k["expected"]?.jsonText, "\(k.id): outbound text")
+    }
+
+    // MARK: output-check.json
+
+    @Test("output-check.json", arguments: try Shared.cases("output-check.json"))
+    func outputCheck(_ k: FixtureCase) throws {
+        let file = try Shared.conformance("output-check.json")
+        let checksPath = try #require(file["checks"]?.stringValue)
+        let checks = try Shared.json(checksPath)
+        let scopeName = try #require(k["scope"]?.stringValue)
+        let scope = try #require(OutputCheck.Scope(rawValue: scopeName))
+        let text = try #require(k["text"]?.stringValue)
+        let locale = try #require(k["locale"]?.stringValue)
+        let blocked = OutputCheck.isBlocked(text, locale: locale, scope: scope, checks: checks)
+        #expect(blocked == k["blocked"]?.boolValue, "\(k.id)")
     }
 }

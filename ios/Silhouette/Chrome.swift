@@ -24,6 +24,12 @@ struct RootView: View {
                             ResultsScreen()
                         case .program(let id):
                             ProgramScreen(programId: id)
+                        case .documentAdd:
+                            DocumentAddScreen()
+                        case .documentPreview:
+                            DocumentPreviewScreen()
+                        case .documentReview:
+                            DocumentReviewScreen()
                         }
                     }
                     .appToolbar()

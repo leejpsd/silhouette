@@ -1,6 +1,27 @@
 {
   "_note": "App strings that are not in shared/copy yet. Lookup per key: shared/copy/{locale}, the rule pack's copy/{locale}, this file {locale}, then the same three for en.",
-  "en": {},
-  "es": {},
-  "ko": {}
+  "en": {
+    "preview.view.leave": "What could leave",
+    "preview.view.phone": "On this phone",
+    "review.understood": "Understood as {amount}",
+    "review.changesTitle": "What changed in your results",
+    "review.change": "{program}: {before} → {after}",
+    "review.noChange": "Your results did not change."
+  },
+  "es": {
+    "preview.view.leave": "Lo que podría salir",
+    "preview.view.phone": "En este teléfono",
+    "review.understood": "Entendido como {amount}",
+    "review.changesTitle": "Qué cambió en tus resultados",
+    "review.change": "{program}: {before} → {after}",
+    "review.noChange": "Tus resultados no cambiaron."
+  },
+  "ko": {
+    "preview.view.leave": "밖으로 나갈 수 있는 것",
+    "preview.view.phone": "이 휴대폰에서",
+    "review.understood": "{amount}(으)로 인식했습니다",
+    "review.changesTitle": "결과에서 바뀐 점",
+    "review.change": "{program}: {before} → {after}",
+    "review.noChange": "결과가 바뀌지 않았습니다."
+  }
 }

@@ -35,6 +35,9 @@ struct ResultsScreen: View {
             if results.contains(where: { $0.verdict == .maybe }) {
                 Text(model.t("results.maybeHint")).tokenFont(.small).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
             }
+            Button(model.t("results.addDocument")) { model.openDocument() }
+                .buttonStyle(.primaryAction)
+                .accessibilityIdentifier("results.addDocument")
             Button(model.t("results.edit")) { model.editAnswers() }
                 .buttonStyle(.secondaryAction)
                 .accessibilityIdentifier("results.edit")

@@ -127,24 +127,3 @@ struct PlatformEdgeCaseTests {
         #expect(Rehydrator.parseNumber("1,000\n") == nil)
     }
 }
-
-@Suite("Typed amounts")
-struct TypedAmountTests {
-    /// Trim spaces and one leading currency symbol, then only the number format of
-    /// shared/skeleton/SPEC.md section 5. Never strip separators: "28000.50" must not become 2,800,050.
-    @Test("accepted and refused formats", arguments: [
-        ("28000.50", 28000.5), ("28,000.50", 28000.5), ("28000.5", 28000.5), ("28000", 28000.0), ("28,000", 28000.0),
-        ("$28,000.50", 28000.5), (" \u{20A9} 2,485,000 ", 2485000.0), ("\u{20AC}30000", 30000.0), ("\u{A3} 12.34", 12.34),
-        ("0", 0.0), ("\u{A0}1,234\u{3000}", 1234.0),
-    ] as [(String, Double)])
-    func accepted(_ text: String, _ expected: Double) {
-        #expect(Rehydrator.parseTypedAmount(text) == expected, "\(JSON.string(text).jsonText)")
-    }
-
-    @Test("refused", arguments: [
-        "28.000,50", "28000,50", "28 000", "1e3", "-5", "", " ", "$", "$$5", "5$", "28,00", "2,8000", "28000.", ".5", "USD 5", "\u{FF12}\u{FF18}",
-    ])
-    func refused(_ text: String) {
-        #expect(Rehydrator.parseTypedAmount(text) == nil, "\(JSON.string(text).jsonText)")
-    }
-}

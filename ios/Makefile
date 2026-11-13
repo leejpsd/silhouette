@@ -19,7 +19,7 @@ test-ios:
 
 ## XCUITests for the Quick Check flows
 ui-test:
-	xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/QuickCheckUITests
+	xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/QuickCheckUITests -only-testing:SilhouetteUITests/DocumentFlowUITests
 
 ## Screenshot tour (light/dark, en/ko/es, largest accessibility text) into SCREENSHOT_DIR
 screenshots:

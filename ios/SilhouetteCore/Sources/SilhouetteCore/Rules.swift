@@ -496,3 +496,40 @@ extension RulesEngine {
         }
     }
 }
+
+// MARK: - Verdicts from the silhouette (section 7)
+
+/// A verdict the engine reaches from the generalized profile alone: no amount, no `dependsOn`.
+public struct SilhouetteVerdict: Sendable {
+    public let programId: String
+    public let verdict: Verdict
+    public let criteria: [ProgramVerdict.CriterionResult]
+
+    public var json: JSON {
+        .object(JSONObject([
+            ("programId", .string(programId)),
+            ("verdict", .string(verdict.rawValue)),
+            ("criteria", .array(criteria.map { .object(JSONObject([("id", .string($0.id)), ("state", .string($0.state.rawValue))])) })),
+        ]))
+    }
+}
+
+extension RulesEngine {
+    /// rulepacks/SPEC.md section 7. The verdict on screen comes from exact and sensitive answers
+    /// and is Raw; this one comes from the `Generalized` profile alone, so it is `Generalized` too
+    /// and may be given to a cloud-capable task.
+    public static func silhouetteVerdicts(pack: RulePack, bands: Bands,
+                                          profile: Generalized<GeneralizedProfile>) throws(VerdictError) -> Generalized<[SilhouetteVerdict]> {
+        let p = profile.value
+        let open = Set(pack.questions.filter { !$0.sensitive }.map { ExactKey($0.id) })
+        var answers = JSONObject()
+        if let band = p.incomeBand { answers["incomeBand"] = .string(band) }
+        if open.contains(ExactKey("householdSize")), case .exact(let n)? = p.householdSize { answers["householdSize"] = .number(Double(n)) }
+        if open.contains(ExactKey("housing")), let housing = p.housing { answers["housing"] = .string(housing.rawValue) }
+        if open.contains(ExactKey("county")), let county = p.county { answers["county"] = .string(county) }
+        let result = try verdicts(pack: pack, bands: bands, answers: Raw(.object(answers))).map {
+            SilhouetteVerdict(programId: $0.programId, verdict: $0.verdict, criteria: $0.criteria)
+        }
+        return Generalized(value: result, canonical: JSON.array(result.map(\.json)).jsonText)
+    }
+}

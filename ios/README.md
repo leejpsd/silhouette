@@ -4,9 +4,10 @@ Silhouette finds public benefits a person may qualify for. Exact document values
 device; cloud calls only ever receive a silhouette. This folder holds the iOS app, its
 deterministic core, and the app logic that sits between them.
 
-The app currently runs the Quick Check end to end, fully on the device: start screen, one
-question per screen, results grouped by verdict, and a verdict card per program. It makes no
-network calls.
+The app runs the Quick Check end to end, fully on the device (start screen, one question per
+screen, results grouped by verdict, a verdict card per program), and the document flow (add a
+paystub, preview its silhouette, review the values, use the yearly income). It makes no network
+calls and uses no model yet.
 
 The cross-platform contracts live in [`../shared`](../shared/README.md). Nothing in this folder
 copies them: tests read them from `shared/` directly, and the app build copies them into the app
@@ -17,14 +18,14 @@ bundle.
 | Path | What it is |
 |---|---|
 | `SilhouetteCore/` | Swift package with no UI or model dependencies: the data types (`Raw`, `Skeleton`, `Generalized`, `Public`, `CloudSafe`), the Skeletonizer and Rehydrator (`shared/skeleton/SPEC.md`), the Generalizer, the expression evaluator and the verdict engine (`shared/rulepacks/SPEC.md`), validation and annualization (`shared/validation/SPEC.md`), the model schema derivation (`shared/schemas/MODEL_SCHEMA.md`), and a small order-preserving JSON type |
-| `SilhouetteCore/Sources/SilhouetteKit/` | App logic without UI: the Quick Check flow (steps from the pack's `questionOrder`, validation, engine answers, grouping), the encrypted answer store, the outbound log, UI copy with per-key fallback, and design tokens |
+| `SilhouetteCore/Sources/SilhouetteKit/` | App logic without UI: the Quick Check flow (steps from the pack's `questionOrder`, validation, engine answers, grouping), the document flow (silhouette preview, hidden words, review values, validation and annualization), the pointer-extraction path and the sample answer key, the encrypted store, the outbound log, routing reasons, UI copy with per-key fallback, prompts and design tokens |
 | `SilhouetteCore/Tests/` | Conformance tests over every file in `shared/fixtures/conformance/`, the canary leak test over `shared/fixtures/canary/`, Swift/JavaScript edge cases, runtime checks of `Raw`, and unit tests for SilhouetteKit |
 | `SilhouetteCore/RoutingProof/` | Small Swift files that must, or must not, compile against `SilhouetteCore` |
 | `Silhouette/` | SwiftUI app (iOS 26.0 or later): screens, chrome and the theme |
 | `Silhouette/Resources/copy.local.json` | App strings not yet in `shared/copy/` (never shadows a shared key; a test checks this) |
 | `SilhouetteUITests/` | XCUITests for the Quick Check flows, and a screenshot tour |
 | `project.yml` | XcodeGen spec; `Silhouette.xcodeproj` is generated from it |
-| `scripts/sync-shared.sh` | Build phase: copies `shared/copy`, `shared/rulepacks/zz-test`, `shared/bands`, `shared/design/tokens.json` and `shared/skeleton/allowlist` into the app bundle under `Shared/` |
+| `scripts/sync-shared.sh` | Build phase: copies `shared/copy`, `shared/rulepacks/zz-test`, `shared/bands`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, `shared/schemas/pointer.paystub.json`, `shared/samples` and `shared/prompts` into the app bundle under `Shared/` |
 | `scripts/routing-proof.sh` | Type-checks the probes in `RoutingProof/` |
 | `scripts/gen-edge-cases.mjs` | Regenerates `ios-edge-cases.json` from `shared/reference/silhouette.mjs` |
 
@@ -42,7 +43,7 @@ No signing team is needed for simulator builds.
 ```sh
 make test            # swift test in SilhouetteCore (macOS)
 make test-ios        # the same package tests on the iOS simulator (the Skeletonizer uses the OS's ICU)
-make ui-test         # XCUITests on the iOS simulator
+make ui-test         # XCUITests: Quick Check and document flows
 make screenshots     # screenshot tour into SCREENSHOT_DIR (default build/screenshots)
 make routing-proof   # compile-time routing check
 make build           # xcodebuild for SIMULATOR (default "iPhone 18 Pro")
@@ -79,6 +80,24 @@ make project         # xcodegen generate
   silhouette mark is solid (may qualify), half filled (possible), dashed (depends) or faint
   (probably not), and always sits next to text.
 - **Demo banner.** Shown on every screen while the synthetic `zz-test` pack is in use.
+- **Document flow.** A paystub comes from pasted or shared text, a PDF's text layer (PDFKit; no
+  OCR), a built-in sample, or the numbers typed by hand. A photo needs an on-device model and
+  says so. The document's language decides its allowlist (that language ∪ English), independent
+  of the app language. The preview shows what could leave next to the document as it reads on
+  this phone; tapping a visible word hides it everywhere (its phrase too), with undo and the
+  count of hidden numbers, dates and words.
+- **Pointer extraction.** `PointerExtractor` takes a `Skeleton` and nothing else. This version
+  has one implementation, the sample answer key: fixed pointers for the built-in samples, used
+  only when the silhouette is exactly a sample's, labelled "Sample answers, no AI", with reason
+  `sample-answer-key`. For any other document the app says automatic reading is not available
+  and offers typing the numbers.
+- **Review.** Each value sits next to the document line it came from and can be changed (amounts
+  follow the typed-amount rule) or typed when not found. The checks of
+  `shared/validation/SPEC.md` are listed in plain words, the yearly income is shown with its
+  arithmetic, and using it updates the Quick Check income and lists the verdicts that changed.
+- **Document data stays `Raw`.** The text, the placeholder map, the values and the hidden words
+  live in `Raw<DocumentDraft>`, are saved only in the encrypted store (a second sealed record),
+  and are removed by *Delete everything*.
 
 UI tests and screenshots use launch arguments that are ignored otherwise: `-UITestResetAll`
 (start from a clean state) and `-UITestAppearance dark|light`.

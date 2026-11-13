@@ -126,6 +126,7 @@ struct RoutingReasonTests {
             if let r = task["reason"]?.stringValue { reasons.insert(r) }
         }
         if let r = routing["onDeviceFailure"]?["reason"]?.stringValue { reasons.insert(r) }
+        if let r = routing["offlineSample"]?["reason"]?.stringValue { reasons.insert(r) }
         #expect(reasons == Set(RoutingReason.allCases.map(\.rawValue)))
         let copy = try Repo.bundle().copy
         for reason in RoutingReason.allCases { #expect(copy.has(reason.copyKey), "missing \(reason.copyKey)") }

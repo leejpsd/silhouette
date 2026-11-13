@@ -41,6 +41,9 @@ struct StartScreen: View {
                 Button(startLabel) { model.begin() }
                     .buttonStyle(.primaryAction)
                     .accessibilityIdentifier("start.begin")
+                Button(model.t("start.sample")) { model.openDocument() }
+                    .buttonStyle(.secondaryAction)
+                    .accessibilityIdentifier("start.sample")
                 if model.session.isStarted {
                     Button(model.t("start.restart")) { model.restart() }
                         .buttonStyle(.secondaryAction)

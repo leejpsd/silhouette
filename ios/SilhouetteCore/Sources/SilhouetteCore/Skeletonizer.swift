@@ -266,15 +266,24 @@ public enum Rehydrator {
         return Double(String(token.unicodeScalars.filter { $0 != "," }))
     }
 
-    /// A money amount typed by the user: trim spaces and one leading currency symbol
-    /// ($ € £ ¥ ₩), then accept only the number format of SPEC.md section 5 (`28,000.50` and
-    /// `28000.5` are valid, `28.000,50` is not). `nil` for anything else.
+    /// An amount typed by the user (SPEC.md section 5.1): around it, only tab, LF, CR, space and
+    /// no-break space are trimmed, with one optional leading `$ € £ ¥ ₩` followed by the same set;
+    /// the rest must have the number format of section 5. `nil` when it is not accepted.
     public static func parseTypedAmount(_ text: String) -> Double? {
-        var scalars = Substring(Validator.jsTrim(text)).unicodeScalars[...]
-        if let first = scalars.first, ["$", "\u{20AC}", "\u{A3}", "\u{A5}", "\u{20A9}"].contains(first) {
+        func isSpace(_ u: Unicode.Scalar) -> Bool { [0x09, 0x0A, 0x0D, 0x20, 0xA0].contains(u.value) }
+        var scalars = Array(text.unicodeScalars)[...]
+        while let f = scalars.first, isSpace(f) { scalars = scalars.dropFirst() }
+        if let f = scalars.first, [0x24, 0x20AC, 0xA3, 0xA5, 0x20A9].contains(f.value) {
             scalars = scalars.dropFirst()
+            while let f = scalars.first, isSpace(f) { scalars = scalars.dropFirst() }
         }
-        return parseNumber(Validator.jsTrim(String(String.UnicodeScalarView(scalars))))
+        while let l = scalars.last, isSpace(l) { scalars = scalars.dropLast() }
+        // At most two digits after the dot: "60.000" is a thousands group in much of the world, not 60.
+        if let dot = scalars.lastIndex(of: "."), scalars.distance(from: dot, to: scalars.endIndex) > 3,
+           scalars[scalars.index(after: dot)...].allSatisfy({ ("0"..."9").contains($0) }) {
+            return nil
+        }
+        return parseNumber(String(String.UnicodeScalarView(scalars)))
     }
 
     private static func isRef(_ value: JSON?, in map: PlaceholderMap, kind: UInt8) -> String? {

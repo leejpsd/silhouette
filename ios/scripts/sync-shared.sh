@@ -16,7 +16,7 @@ SHARED="$(cd "$IOS_DIR/../shared" && pwd)"
 DEST="$1"
 
 # Paths under shared/ that ship in the app bundle.
-ITEMS="copy rulepacks/zz-test bands design/tokens.json skeleton/allowlist"
+ITEMS="copy rulepacks/zz-test bands design/tokens.json skeleton/allowlist schemas/pointer.paystub.json samples prompts"
 
 for item in $ITEMS; do
   if [ ! -e "$SHARED/$item" ]; then
