@@ -6,6 +6,11 @@ import android.net.NetworkCapabilities
 import app.silhouette.benefits.ai.DeviceModel
 import app.silhouette.benefits.ai.DeviceModelState
 import app.silhouette.benefits.ai.LoggedModelPort
+import app.silhouette.benefits.ai.ModelPort
+import app.silhouette.benefits.ai.PersonalTasks
+import app.silhouette.benefits.ai.PreparedModelPort
+import app.silhouette.benefits.ai.TextTasks
+import app.silhouette.benefits.ai.firebase.FirebaseOnDeviceText
 import app.silhouette.benefits.ai.ModelPointerExtractor
 import app.silhouette.benefits.ai.PhotoReader
 import app.silhouette.benefits.ai.PointerExtraction
@@ -62,15 +67,30 @@ class SilhouetteApplication : Application() {
 
     val photoReader: PhotoReader by lazy { FirebasePhotoReader(content.photoPrompt) }
 
+    /**
+     * The one path to Firebase AI Logic for cloud-capable tasks: every request is recorded in the
+     * outbound log before it is made, and Remote Config is fetched once before the first one.
+     */
+    val modelPort: ModelPort by lazy {
+        PreparedModelPort(LoggedModelPort(FirebaseModelPort(), outbound, FirebaseModelPort.CLOUD_MODEL)) { remote.fetch() }
+    }
+
     val modelExtractor: ModelPointerExtractor by lazy {
         ModelPointerExtractor(
-            port = LoggedModelPort(FirebaseModelPort(), outbound, FirebaseModelPort.CLOUD_MODEL),
+            port = modelPort,
             builder = PointerRequestBuilder(content.pointerPrompts, content.pointerSchemas),
             settings = remote.settings,
             reachable = { hasNetwork() || deviceModel.state.value == DeviceModelState.Available },
-            beforeFirstRequest = { remote.fetch() },
         )
     }
+
+    /** The general explanation and prepared questions (cloud-capable, silhouette only). */
+    val textTasks: TextTasks by lazy {
+        TextTasks(modelPort, content.prompts, content.outputChecks, remote.settings, { deviceModel.state.value == DeviceModelState.Available }, FirebaseModelPort.CLOUD_MODEL)
+    }
+
+    /** The person's own result and typed questions (on this device only). */
+    val personalTasks: PersonalTasks by lazy { PersonalTasks(FirebaseOnDeviceText(), content.prompts, content.outputChecks) }
 
     /**
      * Pointer extractors, tried in order: the model (on device first, then the cloud), and the
@@ -85,7 +105,7 @@ class SilhouetteApplication : Application() {
                         id = sample.id,
                         language = sample.language,
                         skeleton = skeletonize(sample.text, content.allowlist(sample.language)).skeleton,
-                        pointers = SampleAnswerKeyExtractor.POINTERS.getValue(sample.id),
+                        pointers = content.sampleAnswers.getValue(sample.id),
                     )
                 },
             ),

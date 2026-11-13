@@ -52,11 +52,6 @@ public data class PaystubValues(
     val periodStart: String? = null,
     val periodEnd: String? = null,
     val deductions: List<Deduction> = emptyList(),
-    /**
-     * Date fields that were present in the input as `null`. They are absent for every rule except
-     * the `dates-parsed` check, where the conformance fixtures count them as given and unreadable.
-     */
-    val nullDates: Set<String> = emptySet(),
 ) {
     override fun toString(): String = "PaystubValues(values redacted)"
 
@@ -86,7 +81,6 @@ public data class PaystubValues(
                 else -> throw ValidationInputError("deductions must be a list")
             }
             return PaystubValues(
-                nullDates = listOf("payDate", "periodStart", "periodEnd").filter { obj[it] is JsonNull }.toSet(),
                 grossPay = number("grossPay"),
                 netPay = number("netPay"),
                 ytdGross = number("ytdGross"),
@@ -358,11 +352,7 @@ public object Validation {
             add("ytd-periods", CheckStatus.SKIPPED)
         }
 
-        val dates = listOf(
-            (raw.payDate != null || "payDate" in raw.nullDates) to s.payDate,
-            (raw.periodStart != null || "periodStart" in raw.nullDates) to s.periodStart,
-            (raw.periodEnd != null || "periodEnd" in raw.nullDates) to s.periodEnd,
-        ).filter { it.first }
+        val dates = listOf(raw.payDate to s.payDate, raw.periodStart to s.periodStart, raw.periodEnd to s.periodEnd).filter { it.first != null }
         add(
             "dates-parsed",
             when {

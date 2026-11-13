@@ -11,8 +11,9 @@ import java.io.File
 
 /**
  * The routing rule of shared/DATA_TYPES.md for the app: Raw values reach only on-device-only calls
- * and deterministic code. Cloud-capable calls take a [ModelCall], which carries a [Skeleton] and
- * text built from it; the photo reader is the only on-device-only call.
+ * and deterministic code. Cloud-capable calls take a [ModelCall], whose text is [CloudText] (made
+ * from bundled prompts and cloud-safe values) and whose payload is cloud-safe. The on-device-only
+ * calls are the photo reader and the person's own result ([PersonalRequest]).
  */
 class RoutingRuleTest {
     private val sources = File("src/main/kotlin").walk().filter { it.extension == "kt" }.associate { it.path to it.readText() }
@@ -25,8 +26,9 @@ class RoutingRuleTest {
                 assertFalse("${type.simpleName}.${field.name}", Raw::class.java.isAssignableFrom(field.type))
             }
         }
-        assertEquals(Skeleton::class.java, ModelCall::class.java.getDeclaredField("payload").type)
-        assertTrue(CloudSafe::class.java.isAssignableFrom(ModelCall::class.java.getDeclaredField("payload").type))
+        assertEquals(CloudSafe::class.java, ModelCall::class.java.getDeclaredField("payload").type)
+        assertEquals(CloudText::class.java, ModelCall::class.java.getDeclaredField("system").type)
+        assertEquals(CloudText::class.java, ModelCall::class.java.getDeclaredField("user").type)
         assertEquals(Skeleton::class.java, PointerRequest::class.java.getDeclaredField("skeleton").type)
         // A ModelCall cannot be on-device-only: that mode belongs to the photo reader.
         val modes = ModelPort::class.java.declaredMethods.single { it.name == "generate" }.parameterTypes.toList()
@@ -36,17 +38,22 @@ class RoutingRuleTest {
     @Test
     fun `only the Firebase adapters talk to Firebase AI Logic`() {
         val users = sources.filterValues { it.contains("import com.google.firebase.ai.") }.keys.map { File(it).name }.toSet()
-        assertEquals(setOf("FirebaseModelPort.kt", "FirebaseDeviceModel.kt", "FirebasePhotoReader.kt"), users)
+        assertEquals(setOf("FirebaseModelPort.kt", "FirebaseDeviceModel.kt", "FirebasePhotoReader.kt", "FirebaseOnDeviceText.kt"), users)
     }
 
     @Test
-    fun `the on-device-only mode is used only for photos, and photos are never sent to the cloud`() {
+    fun `the on-device-only mode is used only for photos and the person's own result, which never go to the cloud`() {
         val onlyOnDevice = sources.filterValues { it.contains("InferenceMode.ONLY_ON_DEVICE") }.keys.map { File(it).name }.toSet()
-        assertEquals(setOf("FirebaseModelPort.kt", "FirebasePhotoReader.kt"), onlyOnDevice)
-        val photo = sources.entries.single { it.key.endsWith("FirebasePhotoReader.kt") }.value
-        assertFalse(photo.contains("PREFER_ON_DEVICE"))
-        assertFalse(photo.contains("PREFER_IN_CLOUD"))
-        assertFalse(photo.contains("ONLY_IN_CLOUD"))
+        assertEquals(setOf("FirebaseModelPort.kt", "FirebasePhotoReader.kt", "FirebaseOnDeviceText.kt"), onlyOnDevice)
+        for (name in listOf("FirebasePhotoReader.kt", "FirebaseOnDeviceText.kt")) {
+            val source = sources.entries.single { it.key.endsWith(name) }.value
+            assertFalse(name, source.contains("PREFER_ON_DEVICE"))
+            assertFalse(name, source.contains("PREFER_IN_CLOUD"))
+            assertFalse(name, source.contains("ONLY_IN_CLOUD"))
+        }
+        // A reply reported from anywhere but the device is discarded.
+        val text = sources.entries.single { it.key.endsWith("FirebaseOnDeviceText.kt") }.value
+        assertTrue(text.contains("response.inferenceSource != SdkSource.ON_DEVICE"))
         // ModelCall refuses the on-device-only mode, so FirebaseModelPort never runs a photo task.
         val modelCall = sources.entries.single { it.key.endsWith("ModelPort.kt") && !it.key.contains("firebase") }.value
         assertTrue(modelCall.contains("require(mode != CallMode.ONLY_ON_DEVICE)"))
@@ -59,5 +66,61 @@ class RoutingRuleTest {
         // FirebaseModelPort is constructed nowhere else.
         val constructions = sources.filterValues { Regex("FirebaseModelPort\\(\\)").containsMatchIn(it) }.keys.map { File(it).name }
         assertEquals(listOf("SilhouetteApplication.kt"), constructions)
+    }
+
+    @Test
+    fun `the person's own result is carried only by on-device-only code`() {
+        val users = sources.filterValues { Regex("\\bPersonalRequest\\b").containsMatchIn(it) }.keys.map { File(it).name }.toSet()
+        assertEquals(setOf("PersonalTasks.kt", "FirebaseOnDeviceText.kt"), users)
+        val results = sources.filterValues { Regex("\\bPersonalResult\\b").containsMatchIn(it) }.keys.map { File(it).name }.toSet()
+        assertEquals(setOf("PersonalTasks.kt", "ProgramContext.kt"), results)
+        // The on-device-only adapter never builds a ModelCall.
+        val text = sources.entries.single { it.key.endsWith("FirebaseOnDeviceText.kt") }.value
+        assertFalse(text.contains("ModelCall"))
+    }
+
+    /**
+     * Public values become cloud request text, so every place that declares one is pinned here: each
+     * is a bundled prompt, rule-pack copy, a task constant or a number of words.
+     */
+    @Test
+    fun `cloud request text is made only from prompts, copy and cloud-safe values`() {
+        fun arguments(text: String): List<String> {
+            val out = ArrayList<String>()
+            var at = text.indexOf("Public.of(")
+            while (at >= 0) {
+                val start = at + "Public.of(".length
+                var depth = 1
+                var i = start
+                while (depth > 0) {
+                    when (text[i]) {
+                        '(' -> depth++
+                        ')' -> depth--
+                    }
+                    i++
+                }
+                out += text.substring(start, i - 1)
+                at = text.indexOf("Public.of(", start)
+            }
+            return out
+        }
+        val sites = sources.flatMap { (path, text) -> arguments(text).map { "${File(path).name}: $it" } }.sorted()
+        val expected = listOf(
+            "ExplainTasks.kt: labels.joinToString(\"; \").ifEmpty { \"none\" }",
+            "ExplainTasks.kt: languageName(input.locale)",
+            "ExplainTasks.kt: prompt.system",
+            "ExplainTasks.kt: prompt.user",
+            "ExplainTasks.kt: words.toString()",
+            "PointerRequestBuilder.kt: \"JSON schema of the answer:\\n${'$'}deviceSchema\"",
+            "PointerRequestBuilder.kt: prompt.system",
+            "PointerRequestBuilder.kt: prompt.user",
+            "PointerRequestBuilder.kt: request.docType.wire",
+            // A prepared question: copy text (`ask.chip.*`), never typed text.
+            "ProgramAnswers.kt: question",
+            "ProgramContext.kt: sentences.joinToString(\" \")",
+            "ProgramContext.kt: t.programName(info.id, info.name)",
+            "ProgramContext.kt: v",
+        ).sorted()
+        assertEquals(expected, sites)
     }
 }

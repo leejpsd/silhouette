@@ -24,12 +24,12 @@ class PointerRequestBuilderTest {
         val v2 = builder.build(PointerRequest(skeleton, DocType.PAYSTUB, "en"), CallMode.PREFER_ON_DEVICE, 2)
         val unknown = builder.build(PointerRequest(skeleton, DocType.PAYSTUB, "en"), CallMode.PREFER_ON_DEVICE, 99)
         val unset = builder.build(PointerRequest(skeleton, DocType.PAYSTUB, "en"), CallMode.PREFER_ON_DEVICE, null)
-        assertTrue(v3.system.contains("Gross pay is the total of all earnings"))
-        assertFalse(v2.system.contains("Gross pay is the total of all earnings"))
+        assertTrue(v3.system.text.contains("Gross pay is the total of all earnings"))
+        assertFalse(v2.system.text.contains("Gross pay is the total of all earnings"))
         val newest = builder.build(PointerRequest(skeleton, DocType.PAYSTUB, "en"), CallMode.PREFER_ON_DEVICE, PointerPrompts.BUNDLED.max())
         assertEquals(newest.system, unknown.system)
         assertEquals(newest.system, unset.system)
-        assertTrue(v3.user.startsWith("Document type: paystub\nDocument:\n${skeleton.text}"))
+        assertTrue(v3.user.text.startsWith("Document type: paystub\nDocument:\n${skeleton.text}"))
     }
 
     @Test
@@ -48,7 +48,7 @@ class PointerRequestBuilderTest {
         val deductions = schema.properties.getValue("deductions") as SchemaNode.Arr
         assertEquals(listOf("amount"), (deductions.items as SchemaNode.Obj).required)
         // The on-device model gets the same schema as text (JSON Schema dialect).
-        val text = call.user.substringAfter("JSON schema of the answer:\n")
+        val text = call.user.text.substringAfter("JSON schema of the answer:\n")
         assertEquals(JsonArray(fields.map { JsonPrimitive(it) }), (Json.parseToJsonElement(text) as JsonObject)["required"])
     }
 
@@ -66,7 +66,7 @@ class PointerRequestBuilderTest {
             val documentSkeleton = skeletonize(Raw.of(text), content.allowlist(language)).skeleton
             for (mode in listOf(CallMode.PREFER_ON_DEVICE, CallMode.ONLY_IN_CLOUD)) {
                 val call = builder.build(PointerRequest(documentSkeleton, DocType.PAYSTUB, language), mode, 3)
-                val body = listOf(call.system, call.user, call.payload.text, call.schema.toString(), call.task)
+                val body = listOf(call.system.text, call.user.text, CloudText.of(call.payload).text, call.schema.toString(), call.task)
                 for (value in values) for (part in body) assertFalse("leaked: $value", part.contains(value))
             }
         }

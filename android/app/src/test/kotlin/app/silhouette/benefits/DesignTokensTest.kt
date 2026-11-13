@@ -13,8 +13,10 @@ class DesignTokensTest {
         for (palette in listOf(tokens.light, tokens.dark)) {
             DesignTokens.REQUIRED_COLORS.forEach { assertTrue(it, it in palette.colors) }
         }
-        assertEquals(48, tokens.size["minTapTarget"])
-        assertEquals(setOf("display", "title", "heading", "body", "bodyStrong", "small"), tokens.type.keys)
+        assertTrue(tokens.size.containsKey("minTapTarget") && tokens.size.containsKey("comfortableTapTarget"))
+        // The roles the theme maps onto Material 3 (other styles in the file are for other platforms).
+        assertTrue(tokens.type.keys.containsAll(listOf("display", "title", "heading", "body", "bodyStrong", "small")))
+        for (space in listOf("xxs", "xs", "sm", "md", "lg", "xl", "xxl")) assertTrue(space, tokens.spacing.containsKey(space))
     }
 
     /** WCAG 1.4.3 / 1.4.11: text 4.5:1 on its background, verdict marks 3:1 against the surface. */

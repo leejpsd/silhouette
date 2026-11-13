@@ -16,6 +16,9 @@ enum class RoutingReason(val key: String) {
     NEEDS_PLACES("needs-places"),
     SPEECH("speech"),
 
+    /** `explain.personal`: the person's own result is explained only on the device. */
+    YOUR_RESULT_STAYS_ON_DEVICE("your-result-stays-on-device"),
+
     /** A PREFER_ON_DEVICE task failed on the device and was retried once with ONLY_IN_CLOUD. */
     ON_DEVICE_FAILED("on-device-failed"),
 

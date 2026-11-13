@@ -1,6 +1,7 @@
 package app.silhouette.benefits.ai
 
 import app.silhouette.benefits.core.ModelSchema
+import app.silhouette.benefits.core.Public
 import app.silhouette.benefits.core.SchemaDialect
 import kotlinx.serialization.json.JsonObject
 
@@ -20,12 +21,16 @@ class PointerRequestBuilder(private val prompts: PointerPrompts, private val poi
         val pointerSchema = pointerSchemas.getValue(request.docType.schemaFile)
         val cloudSchema = ModelSchema.toModelSchema(pointerSchema, requiredNullable = true, dialect = SchemaDialect.OPENAPI)
         val deviceSchema = ModelSchema.toModelSchema(pointerSchema, requiredNullable = true, dialect = SchemaDialect.JSONSCHEMA)
-        val user = prompt.fill(mapOf("docType" to request.docType.wire, "skeleton" to request.skeleton.text)) +
-            "\n\nJSON schema of the answer:\n" + deviceSchema.toString()
+        val user = CloudText.join(
+            listOf(
+                CloudText.fill(Public.of(prompt.user), mapOf("docType" to Public.of(request.docType.wire), "skeleton" to request.skeleton)),
+                CloudText.of(Public.of("JSON schema of the answer:\n$deviceSchema")),
+            ),
+        )
         return ModelCall(
             task = TASK,
             mode = mode,
-            system = prompt.system,
+            system = CloudText.of(Public.of(prompt.system)),
             user = user,
             payload = request.skeleton,
             schema = SchemaNode.fromModelSchema(cloudSchema),

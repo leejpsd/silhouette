@@ -40,6 +40,7 @@ class PhotoSource(val source: InferenceSource, val reason: String)
 fun errorKey(failure: app.silhouette.benefits.ai.ModelFailure): String {
     val reason = failure.reason
     return when {
+        reason == "quota-daily" -> "error.quotaDaily"
         reason.contains("Quota", ignoreCase = true) -> "error.quota"
         reason == "bad-output" || reason == "empty-response" || reason.contains("Serialization") -> "error.bad-output"
         reason.contains("ServiceDisabled") || reason.contains("APINotConfigured") -> "error.api-not-enabled"

@@ -13,6 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -22,6 +24,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.silhouette.benefits.core.ProgramVerdict
+import app.silhouette.benefits.data.OutboundLog
 import app.silhouette.benefits.core.Verdict
 import app.silhouette.benefits.i18n.Strings
 import app.silhouette.benefits.quickcheck.groupByVerdict
@@ -46,7 +49,9 @@ fun ResultsContent(app: AppController) {
     val t = app.strings
     val d = LocalDimens.current
     ScreenHeading(t("results.title"))
-    Lead(t("results.lead"))
+    val entries by app.outbound.entries.collectAsState()
+    // Once anything has left the device, the lead points at the list of what left.
+    Lead(t(if (entries.any { it.status != OutboundLog.Status.KEPT_ON_DEVICE }) "results.leadAfterSend" else "results.lead"))
     (app.answers[INCOME_STEP] as? AnswerValue.ExactIncome)?.takeIf { it.fromDocument }?.let {
         Panel(Modifier.testTag("income-from-document")) {
             Text(t("results.fromDocument", "amount" to t.decimal(it.amount)), style = MaterialTheme.typography.bodyLarge)

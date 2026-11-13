@@ -83,7 +83,7 @@ class DocumentFlowTest {
 
     private fun sampleKey() = SampleAnswerKeyExtractor(
         content.samples.map {
-            SampleAnswerKeyExtractor.Sample(it.id, it.language, skeletonize(it.text, content.allowlist(it.language)).skeleton, SampleAnswerKeyExtractor.POINTERS.getValue(it.id))
+            SampleAnswerKeyExtractor.Sample(it.id, it.language, skeletonize(it.text, content.allowlist(it.language)).skeleton, content.sampleAnswers.getValue(it.id))
         },
     )
 
@@ -94,10 +94,11 @@ class DocumentFlowTest {
         }
 
     @Test
-    fun `the sample answer key is the correct pointers of the rehydrate fixture`() {
+    fun `the sample answers loaded from shared match the rehydrate fixture`() {
         val fixture = Json.parseToJsonElement(File(TestContent.sharedDir, "fixtures/conformance/rehydrate.json").readText()) as JsonObject
         val cases = (fixture["cases"] as JsonArray).map { it as JsonObject }
-        for ((id, pointers) in SampleAnswerKeyExtractor.POINTERS) {
+        assertEquals(content.samples.map { it.id }.toSet(), content.sampleAnswers.keys)
+        for ((id, pointers) in content.sampleAnswers) {
             val case = cases.first { (it["id"] as JsonPrimitive).content == "$id-correct" }
             assertEquals(id, case["pointers"], pointers)
         }

@@ -35,9 +35,9 @@ class FirebaseModelPort(private val cloudModel: String = CLOUD_MODEL) : ModelPor
     private val models = ConcurrentHashMap<String, GenerativeModel>()
 
     override suspend fun generate(call: ModelCall): ModelReply {
-        val model = models.getOrPut("${call.task}|${call.mode}|${call.system.hashCode()}|${call.schema.hashCode()}") { create(call) }
+        val model = models.getOrPut("${call.task}|${call.mode}|${call.system.hashCode()}|${call.schema.hashCode()}|${call.maxOutputTokens}") { create(call) }
         val response = try {
-            model.generateContent(call.user)
+            model.generateContent(call.user.text)
         } catch (e: Exception) {
             throw FailureClassifier.classify(e)
         }
@@ -55,10 +55,11 @@ class FirebaseModelPort(private val cloudModel: String = CLOUD_MODEL) : ModelPor
                 responseSchema = toSchema(call.schema)
             }
         },
-        systemInstruction = content { text(call.system) },
+        systemInstruction = content { text(call.system.text) },
         onDeviceConfig = OnDeviceConfig(
             mode = when (call.mode) {
                 CallMode.PREFER_ON_DEVICE -> InferenceMode.PREFER_ON_DEVICE
+                CallMode.PREFER_IN_CLOUD -> InferenceMode.PREFER_IN_CLOUD
                 CallMode.ONLY_IN_CLOUD -> InferenceMode.ONLY_IN_CLOUD
                 CallMode.ONLY_ON_DEVICE -> InferenceMode.ONLY_ON_DEVICE
             },

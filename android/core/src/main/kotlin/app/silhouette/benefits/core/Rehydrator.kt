@@ -29,10 +29,28 @@ private const val TYPED_CURRENCIES = "$\u20AC\u00A3\u00A5\u20A9" // $ € £ ¥ 
  * for anything else, so it is refused instead of being misread (`28000.50` never becomes 2,800,050).
  */
 public fun parseTypedAmount(text: String): Double? {
-    var t = text.trim(::isTypedSpace)
-    if (t.isNotEmpty() && t[0] in TYPED_CURRENCIES) t = t.substring(1).trimStart(::isTypedSpace)
+    val t = typedAmountToken(text)
+    if (hasTooManyDecimals(t)) return null
     return parseNumber(t)
 }
+
+private fun typedAmountToken(text: String): String {
+    var t = text.trim(::isTypedSpace)
+    if (t.isNotEmpty() && t[0] in TYPED_CURRENCIES) t = t.substring(1).trimStart(::isTypedSpace)
+    return t
+}
+
+/**
+ * Rule 4 of SPEC.md section 5.1: at most two digits after the dot. `60.000` groups thousands in much
+ * of the world; reading it as 60 would be a thousandfold error.
+ */
+private fun hasTooManyDecimals(token: String): Boolean {
+    val dot = token.lastIndexOf('.')
+    return dot >= 0 && token.length - dot - 1 >= 3 && token.substring(dot + 1).all { it in '0'..'9' }
+}
+
+/** True when a typed amount is refused only because of rule 4 (for the `q.error.amountDecimals` message). */
+public fun typedAmountHasTooManyDecimals(text: String): Boolean = hasTooManyDecimals(typedAmountToken(text))
 
 private fun JsonElement?.stringOrNull(): String? = (this as? JsonPrimitive)?.takeIf { it.isString }?.content
 

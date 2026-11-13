@@ -1,31 +1,36 @@
 package app.silhouette.benefits.ai
 
-import app.silhouette.benefits.core.Skeleton
+import app.silhouette.benefits.core.CloudSafe
 
 // The narrow interface the tasks use to reach a model, so unit tests replace Firebase AI Logic with
 // fakes at this boundary. Production: FirebaseModelPort, wrapped in LoggedModelPort so that every
 // request is recorded in the outbound log before it is made.
 
 /** Where a call may run (shared/routing.json `mode`). */
-enum class CallMode { PREFER_ON_DEVICE, ONLY_IN_CLOUD, ONLY_ON_DEVICE }
+enum class CallMode { PREFER_ON_DEVICE, PREFER_IN_CLOUD, ONLY_IN_CLOUD, ONLY_ON_DEVICE }
 
 /**
- * One cloud-capable model call. The only document content it carries is [payload], a [Skeleton]:
- * a Raw value cannot be put here (shared/DATA_TYPES.md). [user] is built from the payload by
- * [PointerRequestBuilder]; [schema] constrains the cloud answer.
+ * One cloud-capable model call (shared/DATA_TYPES.md). Its text is [CloudText], which can only be
+ * made from bundled prompts and cloud-safe values, and [payload] — the content the outbound log
+ * records — is [CloudSafe]: a Raw value cannot be put into either. [fields] names what the request
+ * carries, for the outbound log (never values). [schema] constrains a structured cloud answer.
  */
 class ModelCall(
     val task: String,
     val mode: CallMode,
-    val system: String,
-    val user: String,
-    val payload: Skeleton,
+    val system: CloudText,
+    val user: CloudText,
+    val payload: CloudSafe,
     val schema: SchemaNode?,
     val maxOutputTokens: Int,
+    val fields: List<String> = listOf("document-silhouette"),
 ) {
     init {
         require(mode != CallMode.ONLY_ON_DEVICE) { "an on-device-only task does not use ModelCall" }
     }
+
+    /** The same request with another mode (the cloud retry of `onDeviceFailure`). */
+    fun withMode(next: CallMode): ModelCall = ModelCall(task, next, system, user, payload, schema, maxOutputTokens, fields)
 }
 
 /** A model's answer text and where it ran. */
@@ -52,3 +57,16 @@ enum class FailureKind {
 
 /** A failed model call, classified. [reason] is a short code for the outbound log. */
 class ModelFailure(val kind: FailureKind, val reason: String, cause: Throwable? = null) : Exception(reason, cause)
+
+/** Runs [prepare] (fetching Remote Config) once, before the first request any task makes. */
+class PreparedModelPort(private val inner: ModelPort, private val prepare: suspend () -> Unit) : ModelPort {
+    private var prepared = false
+
+    override suspend fun generate(call: ModelCall): ModelReply {
+        if (!prepared) {
+            prepared = true
+            runCatching { prepare() }
+        }
+        return inner.generate(call)
+    }
+}

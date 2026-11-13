@@ -23,7 +23,7 @@ import app.silhouette.benefits.ui.theme.LocalSilhouetteColors
  * reason from shared/routing.json). Shown on every model result.
  */
 @Composable
-fun InferenceBadge(t: Strings, source: InferenceSource, reason: String, modifier: Modifier = Modifier) {
+fun InferenceBadge(t: Strings, source: InferenceSource, reason: String, modifier: Modifier = Modifier, detail: String? = null) {
     val d = LocalDimens.current
     val c = LocalSilhouetteColors.current
     val badge = when (source) {
@@ -47,7 +47,7 @@ fun InferenceBadge(t: Strings, source: InferenceSource, reason: String, modifier
                 .padding(horizontal = d.sm, vertical = d.xxs),
         )
         Text(
-            t("reason.$reason"),
+            detail?.let { t("reason.$reason") + " · " + it } ?: t("reason.$reason"),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier

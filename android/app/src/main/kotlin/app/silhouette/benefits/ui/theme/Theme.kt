@@ -116,12 +116,25 @@ private fun silhouetteColors(p: DesignTokens.Palette) = SilhouetteColors(
     verdictUnlikely = p["verdictUnlikely"].color(),
 )
 
-private fun style(t: DesignTokens.TypeStyle) = TextStyle(
-    fontSize = t.size.sp,
-    lineHeight = t.lineHeight.sp,
-    fontWeight = FontWeight(t.weight),
-    letterSpacing = t.letterSpacing.sp,
-)
+/**
+ * A token type style as a Compose style. Sizes above [maxSize] are reduced to it, for screens that
+ * are not laid out for the design's largest headlines yet; the line height never falls below
+ * 1.15 × the size, so lines of a wrapped headline do not overlap.
+ */
+private fun style(t: DesignTokens.TypeStyle, maxSize: Double = Double.MAX_VALUE): TextStyle {
+    val size = minOf(t.size, maxSize)
+    val scale = size / t.size
+    return TextStyle(
+        fontSize = size.sp,
+        lineHeight = maxOf(t.lineHeight * scale, size * 1.15).sp,
+        fontWeight = FontWeight(t.weight.coerceIn(1, 1000)),
+        letterSpacing = (t.letterSpacing * scale).sp,
+    )
+}
+
+/** Headline sizes for the current phone layouts (screen titles and section headings). */
+private const val SCREEN_TITLE_MAX = 30.0
+private const val SECTION_HEADING_MAX = 22.0
 
 /** Material 3 type roles mapped onto the token scale (display, title, heading, body, small). */
 /**
@@ -133,10 +146,10 @@ private fun typography(tokens: DesignTokens, languageTag: String): Typography {
     // Phrase-based breaking keeps Korean words whole (like `word-break: keep-all` on the web);
     // it has no effect on Latin text.
     val lineBreak = LineBreak.Paragraph.copy(wordBreak = LineBreak.WordBreak.Phrase)
-    fun role(name: String) = style(tokens.typeStyle(name)).copy(localeList = locale, lineBreak = lineBreak)
-    val display = role("display")
-    val title = role("title")
-    val heading = role("heading")
+    fun role(name: String, maxSize: Double = Double.MAX_VALUE) = style(tokens.typeStyle(name), maxSize).copy(localeList = locale, lineBreak = lineBreak)
+    val display = role("display", SCREEN_TITLE_MAX)
+    val title = role("title", SCREEN_TITLE_MAX)
+    val heading = role("heading", SECTION_HEADING_MAX)
     val body = role("body")
     val bodyStrong = role("bodyStrong")
     val small = role("small")
@@ -149,11 +162,16 @@ private fun typography(tokens: DesignTokens, languageTag: String): Typography {
     )
 }
 
+private const val ANDROID_MIN_TAP = 48
+private const val ANDROID_COMFORTABLE_TAP = 56
+
 private fun dimens(t: DesignTokens) = Dimens(
     xxs = t.space("xxs").dp, xs = t.space("xs").dp, sm = t.space("sm").dp, md = t.space("md").dp,
     lg = t.space("lg").dp, xl = t.space("xl").dp, xxl = t.space("xxl").dp,
     radiusControl = t.radius.getValue("control").dp, radiusPanel = t.radius.getValue("panel").dp,
-    minTapTarget = t.size.getValue("minTapTarget").dp, comfortableTapTarget = t.size.getValue("comfortableTapTarget").dp,
+    // Android's accessibility minimum for touch targets is 48 dp; a smaller token value is raised to it.
+    minTapTarget = maxOf(t.size.getValue("minTapTarget"), ANDROID_MIN_TAP).dp,
+    comfortableTapTarget = maxOf(t.size.getValue("comfortableTapTarget"), ANDROID_COMFORTABLE_TAP).dp,
     readingWidth = t.size.getValue("readingWidth").dp, focusRing = t.size.getValue("focusRing").dp,
 )
 

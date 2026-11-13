@@ -5,6 +5,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.silhouette.benefits.ai.DeviceModel
+import app.silhouette.benefits.ai.ExplainSettings
+import app.silhouette.benefits.ai.PersonalTasks
+import app.silhouette.benefits.ai.TextTasks
+import app.silhouette.benefits.answers.AnswerSession
+import app.silhouette.benefits.answers.AnswersController
+import app.silhouette.benefits.answers.ProgramContext
+import app.silhouette.benefits.answers.Silhouette
 import app.silhouette.benefits.ai.DeviceModelState
 import app.silhouette.benefits.ai.DocType
 import app.silhouette.benefits.ai.ModelFailure
@@ -97,7 +104,26 @@ class AppController(
     /** The on-device model, or null where none is configured (tests). */
     val deviceModel: DeviceModel? = null,
     private val photoReader: PhotoReader? = null,
+    /** The general explanation and prepared questions, or null where no model is configured (tests). */
+    val textTasks: TextTasks? = null,
+    val personalTasks: PersonalTasks? = null,
+    private val explainSettings: ExplainSettings? = null,
 ) {
+    val programs: ProgramContext = ProgramContext(content)
+
+    /** Explanations and questions of this session (memory only). */
+    val requests: AnswersController = AnswersController(scope, AnswerSession(), textTasks)
+
+    /**
+     * Whether the person's own result can be explained, and typed questions answered: only by an
+     * on-device model, in a language it is validated for.
+     */
+    val personalAvailable: Boolean
+        get() = personalTasks != null && deviceModel?.state?.value == DeviceModelState.Available &&
+            strings.language.tag in (explainSettings?.onDeviceLocales ?: emptySet())
+
+    /** True once any request has left, or may have left, the device (results then say so). */
+    val anythingLeft: Boolean get() = outbound.leftDevice.isNotEmpty()
     val steps: List<Step> get() = content.steps
 
     var strings: Strings by mutableStateOf(content.strings(languageStore.current()))
@@ -121,6 +147,9 @@ class AppController(
 
     var review: ReviewState by mutableStateOf(ReviewState())
         private set
+
+    /** The profile silhouette of the current answers, or null when it cannot be built. */
+    val silhouette: Silhouette? by derivedStateOf { programs.silhouette(content.steps, answers) }
 
     val results: List<ProgramVerdict> by derivedStateOf {
         computeVerdicts(content.pack, content.bands, content.steps, answers)
@@ -405,6 +434,7 @@ class AppController(
     }
 
     fun deleteEverything(onDone: () -> Unit = {}) {
+        requests.clear()
         answers = QuickCheckAnswers()
         document = DocumentSession(language = strings.language.tag)
         review = ReviewState()

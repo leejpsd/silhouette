@@ -46,9 +46,11 @@ model can be reached (no network and no on-device model).
 | `ModelSchema.kt` | The schema a model accepts, derived from a pointer schema (`shared/schemas/MODEL_SCHEMA.md`) |
 | `Generalizer.kt` | Exact profile → profile silhouette and its canonical JSON (`shared/rulepacks/SPEC.md` section 6) |
 | `Evaluator.kt` | Strict, three-valued expression language (`shared/rulepacks/SPEC.md` section 3) |
-| `Verdicts.kt` | Rule pack model (questions, order, programs) and verdicts with income-band sample points (`shared/rulepacks/SPEC.md` sections 2, 4, 5) |
+| `Verdicts.kt` | Rule pack model (questions, order, programs), verdicts with income-band sample points, and the verdicts reached from a profile silhouette alone (`shared/rulepacks/SPEC.md` sections 2, 4, 5, 7) |
 | `JsonValues.kt` | JSON trees as engine values, with JavaScript number formatting so output is byte-identical across platforms |
-| `conformance/ConformanceSuite.kt` | Every case of the seven files in `shared/fixtures/conformance/` and of `shared/fixtures/canary/`, plus a check that the safe-character list and month names equal those of `shared/reference/silhouette.mjs`. The same suite runs on the JVM and on an Android runtime |
+| `OutputCheck.kt` | `modelTextIsBlocked()`: refuses a model answer that states a result (`shared/prompts/OUTPUT_CHECKS.md`, `output-checks.json`) |
+| `Reasons.kt` | "Why this result": each criterion's state with the limit it compares and the person's value, from the rule engine |
+| `conformance/ConformanceSuite.kt` | Every case of the nine files in `shared/fixtures/conformance/` and of `shared/fixtures/canary/`, plus a check that the safe-character list and month names equal those of `shared/reference/silhouette.mjs`. The same suite runs on the JVM and on an Android runtime |
 
 How the routing rule is enforced:
 
@@ -69,7 +71,9 @@ How the routing rule is enforced:
 | `quickcheck` | Pure flow logic: steps in the pack's `questionOrder`, validation, drafts, the conversion to engine answers, grouping by verdict, and the storage format. A typed income accepts only the document number format (`28,000.50`, `28000.5`) after removing spaces and a leading currency symbol, and the screen shows the amount as understood |
 | `document` | The document session, review rows and the conversion of confirmed values into validation input |
 | `ai` | `PointerExtractor` (input: `Skeleton`; output: pointers, inference source and routing reason). `ModelPointerExtractor` applies the routing rules over a `ModelPort`; `PointerRequestBuilder` builds the request (prompt version from Remote Config, model schema derived from the pointer schema); `LoggedModelPort` records every request in the outbound log before it is made; `SampleAnswerKeyExtractor` answers only for the exact silhouettes of the built-in samples |
-| `ai/firebase` | The only code that calls Firebase AI Logic: `FirebaseModelPort` (hybrid model, `responseSchema`, `inferenceSource`), `FirebaseDeviceModel` (check status, download, warm up) and `FirebasePhotoReader` (`ONLY_ON_DEVICE`) |
+| `ai` (explanations) | `CloudText`: the only text a cloud-capable `ModelCall` accepts, made from bundled prompts and cloud-safe values. `TextTasks`: the general explanation (`explain.short`, `explain.long`) and prepared questions, from the profile silhouette, the program's facts and the criterion states the silhouette alone reaches; one cloud retry when the device fails; the output check with one retry. `PersonalTasks`: the person's own result (`explain.personal`) and typed questions (`ask.freeText`), carried by `PersonalRequest`, which only the on-device-only adapter accepts |
+| `ai/firebase` | The only code that calls Firebase AI Logic: `FirebaseModelPort` (hybrid model, `responseSchema`, `inferenceSource`), `FirebaseDeviceModel` (check status, download, warm up), `FirebasePhotoReader` and `FirebaseOnDeviceText` (both `ONLY_ON_DEVICE`; a reply that did not run on the device is discarded) |
+| `answers` | `ProgramContext` (the silhouette of the current answers, program facts, "why" rows), `AnswerSession` (in-memory answers, consents and what reached the cloud) and `AnswersController` (the step before sending, loading, cancel, errors) |
 | `config` | Remote Config: every key in `shared/routing.json`, with in-app defaults read from `firebase/remoteconfig.template.json` (copied in by the build); fetched only right before the first model request |
 | `i18n` | Copy with per-key fallback: `shared/copy/{lang}` → `shared/rulepacks/{pack}/copy/{lang}` → app keys, then the same in English. English, Spanish and Korean |
 | `data` | `EncryptedStore` (AES-256-GCM, key in the Android Keystore), the answer and ledger repository, the language setting, `OutboundLog`, `PdfText` (the platform `PdfRenderer` text layer, Android 15 and later) and `PhotoDecoder` |
@@ -83,6 +87,24 @@ question can be skipped. Sensitive questions, and the exact-income field, say th
 never leaves the device. In a multi-choice question, ticking nothing is a valid answer ("none of
 these") and is different from skipping. From a program's detail, "Answer: …" opens the question it
 depends on and comes back.
+
+Program detail, below the result:
+
+- **Why this result**: every criterion with its state and, where the rules compare with a limit,
+  "limit …, yours …". It comes from the rules on the device, with no model. "Explain my result on
+  this device" (`explain.personal`, `ONLY_ON_DEVICE`) is offered only when the device has a model.
+- **About this program**: a general explanation (`explain.short` prefers the device when the
+  answer is short enough and the language is one the device model supports, by Remote Config;
+  `explain.long` prefers the cloud), "Tell me more", and prepared questions. These know only the
+  profile silhouette and the program's public facts, never the result.
+- **Your own question**: answered on the device only, and offered only when there is a model.
+- Nothing is requested until a tap. Before a request that may leave the device, the app shows
+  the silhouette lines and the exact request, with "Send" and "Keep everything on this device".
+  Agreement covers one silhouette and one destination (device first or cloud); once a silhouette
+  has reached the cloud, later answers say so. Every answer shows where it ran and why, and can be
+  cancelled; after 15 seconds the app says it is taking longer. Answers are kept in memory for the
+  session, keyed by language, silhouette, program and question, and "Delete everything" clears
+  them.
 
 App chrome:
 
@@ -145,7 +167,7 @@ is copied by hand.
 
 ```bash
 ./gradlew :core:test                 # conformance, canary, number format, data types, routing proof (JVM)
-./gradlew :app:testDebugUnitTest     # Quick Check, documents, model routing with fakes, Remote Config, routing rule (JVM)
+./gradlew :app:testDebugUnitTest     # Quick Check, documents, model routing and explanations with fakes, consent, Remote Config, routing rule (JVM)
 ./gradlew :app:assembleDebug         # app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :app:connectedDebugAndroidTest   # on a device or emulator, see below
 ```
@@ -176,6 +198,11 @@ is copied by hand.
 
 ## Known limits
 
+- Design tokens are read leniently: a value the app cannot use as a number is skipped. Headline
+  sizes are capped for phone screens (screen titles 30, section headings 22) and tap targets are
+  at least Android's 48 dp.
+- The exact request shown before sending is the app's rendering of what the SDK sends
+  (generation config, system instruction and contents); the SDK serializes the body itself.
 - The bundled typeface is the system font; the token font family (Atkinson Hyperlegible) is not
   shipped.
 - `Raw` resists accidental leaks (logging, string templates, serialization). Reflection can still

@@ -7,6 +7,7 @@ import app.silhouette.benefits.core.Raw
 import app.silhouette.benefits.core.RulePack
 import app.silhouette.benefits.core.Verdict
 import app.silhouette.benefits.core.parseTypedAmount
+import app.silhouette.benefits.core.typedAmountHasTooManyDecimals
 import app.silhouette.benefits.core.verdicts
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -67,6 +68,9 @@ enum class AnswerError(val copyKey: String) {
     INTEGER("q.error.integer"),
     CHOOSE("q.error.choose"),
     AMOUNT("q.error.amount"),
+
+    /** A typed amount with three or more digits after the dot (`60.000`). */
+    AMOUNT_DECIMALS("q.error.amountDecimals"),
 }
 
 /**
@@ -210,6 +214,10 @@ fun plainAmount(amount: Double): String =
  * turn into a hundredfold amount. Returns null when the text is not an amount.
  */
 fun parseIncomeAmount(text: String): Double? = parseTypedAmount(text)
+
+/** The error for a typed yearly amount that was refused: the decimals rule gets its own message. */
+fun incomeAmountError(text: String): AnswerError =
+    if (typedAmountHasTooManyDecimals(text)) AnswerError.AMOUNT_DECIMALS else AnswerError.AMOUNT
 
 /**
  * Turns a draft into an answer. Returns null when nothing was chosen. A value that does not parse

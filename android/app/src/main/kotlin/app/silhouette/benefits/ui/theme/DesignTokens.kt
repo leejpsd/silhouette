@@ -3,7 +3,6 @@ package app.silhouette.benefits.ui.theme
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.double
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -48,11 +47,15 @@ data class DesignTokens(
                 REQUIRED_COLORS.forEach { require(it in colors) { "tokens.json: $name.$it is missing" } }
                 return Palette(colors)
             }
-            fun ints(name: String): Map<String, Int> = root[name]!!.jsonObject.mapValues { (_, v) -> v.jsonPrimitive.int }
-            val scale = root["typography"]!!.jsonObject["scale"]!!.jsonObject.mapValues { (_, v) ->
-                val o = v.jsonObject
-                TypeStyle(o.num("size"), o.num("lineHeight"), o.num("weight").toInt(), o.num("letterSpacing"))
-            }
+            // Only plain numbers are read; entries that are arrays or descriptions are for other platforms.
+            fun ints(name: String): Map<String, Int> = root[name]!!.jsonObject.mapNotNull { (k, v) ->
+                (v as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toDoubleOrNull()?.let { k to it.toInt() }
+            }.toMap()
+            val scale = root["typography"]!!.jsonObject["scale"]!!.jsonObject.mapNotNull { (k, v) ->
+                val o = v as? JsonObject ?: return@mapNotNull null
+                val size = o.num("size") ?: return@mapNotNull null
+                k to TypeStyle(size, o.num("lineHeight") ?: size * 1.25, (o.num("weight") ?: 400.0).toInt(), o.num("letterSpacing") ?: 0.0)
+            }.toMap()
             val duration = root["motion"]!!.jsonObject["duration"]!!.jsonObject
             return DesignTokens(
                 light = palette("light"),
@@ -66,7 +69,8 @@ data class DesignTokens(
             )
         }
 
-        private fun JsonObject.num(key: String): Double = (this[key] as JsonPrimitive).double
+        /** A numeric field, or null when it is missing or written as a description. */
+        private fun JsonObject.num(key: String): Double? = (this[key] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toDoubleOrNull()
 
         /** `#RRGGBB` → opaque ARGB. */
         fun parseHex(hex: String): Long {

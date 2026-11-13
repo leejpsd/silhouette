@@ -19,6 +19,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             extraction = app.extraction,
             deviceModel = app.deviceModel,
             photoReader = app.photoReader,
+            textTasks = app.textTasks,
+            personalTasks = app.personalTasks,
+            explainSettings = app.remote.settings,
         )
     }
 

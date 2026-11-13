@@ -201,7 +201,10 @@ internal fun samplePoints(band: IncomeBand, literals: List<Double>): List<Double
  * [answers] is a JSON object `{annualIncome?, incomeBand?, ...answers by question id}`. Absent or
  * null answers are unanswered.
  */
-public fun verdicts(pack: RulePack, bands: Bands, answers: Raw<JsonObject>): List<ProgramVerdict> {
+/** The data expressions are evaluated against (section 4), shared by [verdicts] and [criterionReasons]. */
+internal class EngineData(val base: Map<String, Any?>, val unavailable: Set<String>, val exactIncome: Boolean, val band: IncomeBand?)
+
+internal fun engineData(pack: RulePack, bands: Bands, answers: Raw<JsonObject>): EngineData {
     val input = answers.reveal().toValue() as Map<*, *>
     val income = input["annualIncome"]
     val exactIncome = income != null
@@ -227,6 +230,15 @@ public fun verdicts(pack: RulePack, bands: Bands, answers: Raw<JsonObject>): Lis
         unavailable.add("householdSizeCapped")
     }
     if (exactIncome) base["annualIncome"] = max(income, 0.0) else if (band == null) unavailable.add("annualIncome")
+    return EngineData(base, unavailable, exactIncome, band)
+}
+
+public fun verdicts(pack: RulePack, bands: Bands, answers: Raw<JsonObject>): List<ProgramVerdict> {
+    val data = engineData(pack, bands, answers)
+    val base = data.base
+    val unavailable = data.unavailable
+    val exactIncome = data.exactIncome
+    val band = data.band
 
     // Evaluates a boolean expression once, or at every sample point when only a band is known.
     fun assess(logic: Any?, reads: MutableSet<String>): List<Any> {

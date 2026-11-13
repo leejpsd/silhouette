@@ -182,7 +182,7 @@ fun LeavingBar(strings: Strings, log: OutboundLog) {
                     .padding(horizontal = d.md, vertical = d.sm),
                 verticalArrangement = Arrangement.spacedBy(d.xs),
             ) {
-                Text(strings("leaving.body"), style = MaterialTheme.typography.bodyMedium)
+                Text(strings(if (left.isNotEmpty()) "leaving.bodySent" else "leaving.body"), style = MaterialTheme.typography.bodyMedium)
                 for (e in entries) {
                     var showPayload by rememberSaveable(e.id) { mutableStateOf(false) }
                     Column(Modifier.testTag("outbound-entry"), verticalArrangement = Arrangement.spacedBy(d.xxs)) {

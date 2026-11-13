@@ -25,6 +25,9 @@ object FailureClassifier {
                 else -> ModelFailure(FailureKind.DEVICE_FAILED, "device-${code ?: error.javaClass.simpleName}", error)
             }
         }
+        // The free daily limit does not recover in a minute; it gets its own reason (error.quotaDaily).
+        val daily = chain.any { it.javaClass.simpleName.contains("Quota") && Regex("per.?day|daily", RegexOption.IGNORE_CASE).containsMatchIn(it.message.orEmpty()) }
+        if (daily) return ModelFailure(FailureKind.CLOUD, "quota-daily", error)
         return ModelFailure(FailureKind.CLOUD, error.javaClass.simpleName.ifEmpty { "error" }, error)
     }
 
@@ -40,7 +43,7 @@ class LoggedModelPort(private val inner: ModelPort, private val log: app.silhoue
         val id = log.begin(
             channel = app.silhouette.benefits.data.OutboundLog.Channel.AI_CLOUD,
             destination = FirebaseModelPort.HOST,
-            fields = listOf("document-silhouette"),
+            fields = call.fields,
             payload = call.payload,
             path = FirebaseModelPort.pathFor(model),
             model = model,

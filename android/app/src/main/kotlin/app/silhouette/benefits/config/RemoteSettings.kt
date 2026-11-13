@@ -1,5 +1,6 @@
 package app.silhouette.benefits.config
 
+import app.silhouette.benefits.ai.ExplainSettings
 import app.silhouette.benefits.ai.ModelSettings
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -12,7 +13,9 @@ import kotlinx.serialization.json.JsonPrimitive
  * the app ([parseTemplate]). Values are read through [source]; before the first fetch, or offline,
  * the defaults apply.
  */
-class RemoteSettings(val defaults: Map<String, String>, private val source: (String) -> String?) : ModelSettings {
+class RemoteSettings(val defaults: Map<String, String>, private val source: (String) -> String?) : ModelSettings, ExplainSettings {
+
+    override val shortTextMaxWords: Int get() = string("route_short_text_max_words").trim().toIntOrNull() ?: 0
 
     fun string(key: String): String = source(key)?.takeIf { it.isNotEmpty() } ?: defaults[key].orEmpty()
 

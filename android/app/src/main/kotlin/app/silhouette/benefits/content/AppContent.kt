@@ -4,6 +4,7 @@ import app.silhouette.benefits.ai.PointerPrompts
 import app.silhouette.benefits.ai.PromptTemplate
 import app.silhouette.benefits.core.Allowlist
 import app.silhouette.benefits.core.Bands
+import app.silhouette.benefits.core.OutputChecks
 import app.silhouette.benefits.core.Raw
 import app.silhouette.benefits.core.RulePack
 import app.silhouette.benefits.i18n.AppLanguage
@@ -52,6 +53,12 @@ class AppContent(
     val pointerPrompts: PointerPrompts,
     /** shared/prompts/photo-read.v1.md. */
     val photoPrompt: PromptTemplate,
+    /** Pointer answers of the built-in samples by sample id (shared/samples/answers.json). */
+    val sampleAnswers: Map<String, JsonObject>,
+    /** Every bundled prompt file of shared/prompts/, by file name. */
+    val prompts: Map<String, String>,
+    /** shared/prompts/output-checks.json. */
+    val outputChecks: OutputChecks,
 ) {
     /** The allowlist for a document: its language ∪ `en` (shared/skeleton/SPEC.md section 4). */
     fun allowlist(language: String): Allowlist =
@@ -64,6 +71,9 @@ class AppContent(
 
     companion object {
         const val JURISDICTION: String = "zz-test"
+
+        /** Prompt files the explanation and question tasks use (shared/prompts/). */
+        val PROMPT_FILES: List<String> = listOf("explain.v3.md", "ask.v2.md", "explain-personal.v1.md", "ask-personal.v1.md")
         val DEMO_JURISDICTIONS: Set<String> = setOf("zz-test")
 
         fun load(source: ContentSource, jurisdiction: String = JURISDICTION): AppContent {
@@ -84,6 +94,10 @@ class AppContent(
                     PointerPrompts.BUNDLED.associateWith { v -> PromptTemplate.parse("pointer-extract.v$v", required("prompts/pointer-extract.v$v.md")) },
                 ),
                 photoPrompt = PromptTemplate.parse("photo-read.v1", required("prompts/photo-read.v1.md")),
+                sampleAnswers = ((Json.parseToJsonElement(required("samples/answers.json")) as JsonObject)["samples"] as JsonObject)
+                    .map { (file, v) -> file.removeSuffix(".txt") to ((v as JsonObject)["pointers"] as JsonObject) }.toMap(),
+                prompts = PROMPT_FILES.associateWith { required("prompts/$it") },
+                outputChecks = OutputChecks.parse(Json.parseToJsonElement(required("prompts/output-checks.json"))),
                 pack = pack,
                 bands = bands,
                 steps = buildSteps(pack, bands),

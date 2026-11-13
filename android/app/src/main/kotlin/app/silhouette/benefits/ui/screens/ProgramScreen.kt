@@ -1,9 +1,7 @@
 package app.silhouette.benefits.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import app.silhouette.benefits.core.CriterionState
 import app.silhouette.benefits.quickcheck.stepForVariable
 import app.silhouette.benefits.ui.AppController
 import app.silhouette.benefits.ui.BulletList
@@ -25,7 +22,6 @@ import app.silhouette.benefits.ui.ScreenHeading
 import app.silhouette.benefits.ui.SecondaryButton
 import app.silhouette.benefits.ui.SectionHeading
 import app.silhouette.benefits.ui.SilhouetteMark
-import app.silhouette.benefits.ui.StateIcon
 import app.silhouette.benefits.ui.theme.LocalDimens
 import app.silhouette.benefits.ui.theme.LocalSilhouetteColors
 
@@ -68,21 +64,8 @@ fun ProgramContent(app: AppController, route: Route.Program) {
         }
     }
 
-    SectionHeading(t("detail.criteria"))
-    Column(verticalArrangement = Arrangement.spacedBy(d.sm)) {
-        for (criterion in result.criteria) {
-            Row(
-                Modifier.testTag("criterion-${criterion.id}").semantics(mergeDescendants = true) {},
-                horizontalArrangement = Arrangement.spacedBy(d.sm),
-            ) {
-                StateIcon(criterion.state, stateColor(criterion.state), MaterialTheme.colorScheme.surface, Modifier.padding(top = 2.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(t("criterion.${info.id}.${criterion.id}"), style = MaterialTheme.typography.bodyLarge)
-                    Text(t("state.${criterion.state.wire}"), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
-                }
-            }
-        }
-    }
+    // The criteria with their states and limits, from the rules on this device.
+    WhySection(app, result)
 
     if (result.dependsOn.isNotEmpty()) {
         SectionHeading(t("detail.dependsOn"))
@@ -95,16 +78,9 @@ fun ProgramContent(app: AppController, route: Route.Program) {
         }
     }
 
+    AboutSection(app, result)
+    FreeTextQuestion(app, result)
+
     Meta(app.content.pack.verifiedOn?.let { t("rules.verifiedOn", "date" to it) } ?: t("detail.unverified"))
     QuietButton(t("detail.back"), onClick = { app.navigate(Route.Results) }, modifier = Modifier.testTag("detail-back"))
-}
-
-@Composable
-private fun stateColor(state: CriterionState) = with(LocalSilhouetteColors.current) {
-    when (state) {
-        CriterionState.PASS -> verdictLikely
-        CriterionState.FAIL -> verdictUnlikely
-        CriterionState.MIXED -> verdictMaybe
-        CriterionState.UNKNOWN -> verdictDepends
-    }
 }

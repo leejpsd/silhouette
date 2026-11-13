@@ -43,6 +43,7 @@ import app.silhouette.benefits.quickcheck.MAX_EXACT_INCOME
 import app.silhouette.benefits.quickcheck.parseIncomeAmount
 import app.silhouette.benefits.quickcheck.Step
 import app.silhouette.benefits.quickcheck.draftToValue
+import app.silhouette.benefits.quickcheck.incomeAmountError
 import app.silhouette.benefits.quickcheck.initialDraft
 import app.silhouette.benefits.quickcheck.stepCount
 import app.silhouette.benefits.quickcheck.validateAnswer
@@ -83,7 +84,9 @@ fun QuestionContent(app: AppController, route: Route.Question) {
             validateAnswer(step, value)
         }
         if (problem != null) {
-            errorText = if (step is Step.IntQuestion) t(problem.copyKey, "min" to step.min, "max" to step.max) else t(problem.copyKey)
+            // A refused typed income says which rule it broke.
+            val shown = if (problem == AnswerError.AMOUNT && step is Step.Income && choice == EXACT_CHOICE) incomeAmountError(text) else problem
+            errorText = if (step is Step.IntQuestion) t(shown.copyKey, "min" to step.min, "max" to step.max) else t(shown.copyKey)
             return
         }
         app.answer(step.id, value)

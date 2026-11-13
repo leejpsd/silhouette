@@ -119,8 +119,9 @@ abstract class SyncSharedContract : DefaultTask() {
             "skeleton/allowlist/*.json",
             "schemas/pointer.*.json",
             "samples/*.txt",
-            "prompts/pointer-extract.v*.md",
-            "prompts/photo-read.v*.md",
+            "prompts/*.md",
+            "prompts/output-checks.json",
+            "samples/answers.json",
         )
         val REQUIRED = listOf(
             "copy/en.json",
@@ -198,7 +199,7 @@ abstract class SyncConformanceFixtures : DefaultTask() {
     }
 
     companion object {
-        val INCLUDES = listOf("fixtures/**", "schemas/**", "skeleton/**", "rulepacks/**", "bands/**", "reference/silhouette.mjs")
+        val INCLUDES = listOf("fixtures/**", "schemas/**", "skeleton/**", "rulepacks/**", "bands/**", "reference/silhouette.mjs", "prompts/output-checks.json")
     }
 }
 

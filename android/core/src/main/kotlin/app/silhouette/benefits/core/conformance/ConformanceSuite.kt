@@ -30,6 +30,9 @@ import app.silhouette.benefits.core.parseTypedAmount
 import app.silhouette.benefits.core.rehydrate
 import app.silhouette.benefits.core.generalizedProfileFromJson
 import app.silhouette.benefits.core.silhouetteVerdicts
+import app.silhouette.benefits.core.OutputChecks
+import app.silhouette.benefits.core.OutputScope
+import app.silhouette.benefits.core.modelTextIsBlocked
 import app.silhouette.benefits.core.skeletonize
 import app.silhouette.benefits.core.toValue
 import app.silhouette.benefits.core.valueToJson
@@ -81,6 +84,7 @@ public object ConformanceSuite {
         "validate.json" to { c -> validateCases(c) },
         "model-schema.json" to { c -> modelSchemaCases(c) },
         "silhouette-verdict.json" to { c -> silhouetteVerdictCases(c) },
+        "output-check.json" to { c -> outputCheckCases(c) },
     )
 
     /** The conformance files this suite knows how to run. */
@@ -240,6 +244,19 @@ public object ConformanceSuite {
                     k.containsKey("expected") -> exact(k["expected"]!!, JsonArray(verdicts(pack, bands, answers).map { it.toJson() }))
                     else -> fail("case has neither expected nor expectedError")
                 }
+            }
+        })
+    }
+
+    // ---------- output-check.json ----------
+
+    private fun outputCheckCases(c: Context): List<ConformanceCase> {
+        val checks by lazy { OutputChecks.parse(json(c.source, c.fixture.str("checks"))) }
+        return nonEmpty(c, c.fixture.cases().map { k ->
+            ConformanceCase(c.file, k.str("id")) {
+                val scope = OutputScope.entries.find { it.wire == k.str("scope") } ?: fail("unknown scope")
+                val blocked = modelTextIsBlocked(k.str("text"), k.str("locale"), scope, checks)
+                equal((k["blocked"] as JsonPrimitive).content.toBoolean(), blocked, "blocked")
             }
         })
     }
