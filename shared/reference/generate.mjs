@@ -87,7 +87,7 @@ export function build() {
     },
     'output-check.json': {
       spec: 'prompts/OUTPUT_CHECKS.md', checks: 'prompts/output-checks.json',
-      cases: c.outputCheckCases.map((k) => ({ ...k, blocked: s.modelTextIsBlocked(k.text, k.locale, k.scope, c.readJson('../prompts/output-checks.json')) })),
+      cases: c.outputCheckCases.map((k) => ({ ...k, blocked: s.modelTextIsBlocked(k.text, k.locale, k.scope, c.readJson('../prompts/output-checks.json'), k.verdict) })),
     },
     'verdict.json': {
       spec: 'rulepacks/SPEC.md v1.2 section 5', pack: 'rulepacks/zz-test/pack.json', bands: 'bands/zz-test.json',

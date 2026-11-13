@@ -41,6 +41,7 @@
       "id": "en-may-is-fine-for-personal",
       "locale": "en",
       "scope": "personal",
+      "verdict": "maybe",
       "text": "You may qualify because your household is under the limit.",
       "blocked": false
     },
@@ -141,6 +142,134 @@
       "scope": "general",
       "text": "Como estos datos se comprobaron en tu dispositivo, los cambios en tu situación con respecto a ellos podrían cambiar este resultado.",
       "blocked": false
+    },
+    {
+      "id": "en-will-qualify",
+      "locale": "en",
+      "scope": "personal",
+      "verdict": "maybe",
+      "text": "You will qualify.",
+      "blocked": true
+    },
+    {
+      "id": "en-should-qualify",
+      "locale": "en",
+      "scope": "personal",
+      "verdict": "maybe",
+      "text": "You should qualify for this.",
+      "blocked": true
+    },
+    {
+      "id": "en-approved",
+      "locale": "en",
+      "scope": "general",
+      "text": "Congratulations, you're approved!",
+      "blocked": true
+    },
+    {
+      "id": "en-wont-qualify",
+      "locale": "en",
+      "scope": "personal",
+      "verdict": "unlikely",
+      "text": "You won't qualify.",
+      "blocked": true
+    },
+    {
+      "id": "en-soft-hyphen",
+      "locale": "en",
+      "scope": "general",
+      "text": "You may qua­lify for help.",
+      "blocked": true
+    },
+    {
+      "id": "en-zero-width-space",
+      "locale": "en",
+      "scope": "general",
+      "text": "You may​ qualify for help.",
+      "blocked": true
+    },
+    {
+      "id": "en-criterion-result-general",
+      "locale": "en",
+      "scope": "general",
+      "text": "The general facts show that your income is not under the limit for your household size.",
+      "blocked": true
+    },
+    {
+      "id": "en-criterion-result-personal-is-fine",
+      "locale": "en",
+      "scope": "personal",
+      "verdict": "unlikely",
+      "text": "Your income is not under the limit for your household size, so the result is probably not.",
+      "blocked": false
+    },
+    {
+      "id": "en-personal-hedge-against-unlikely",
+      "locale": "en",
+      "scope": "personal",
+      "verdict": "unlikely",
+      "text": "Based on this, you may qualify.",
+      "blocked": true
+    },
+    {
+      "id": "en-personal-hedge-with-likely",
+      "locale": "en",
+      "scope": "personal",
+      "verdict": "likely",
+      "text": "Based on this, you may qualify.",
+      "blocked": false
+    },
+    {
+      "id": "en-personal-negative-against-likely",
+      "locale": "en",
+      "scope": "personal",
+      "verdict": "likely",
+      "text": "You are probably not eligible.",
+      "blocked": true
+    },
+    {
+      "id": "en-personal-negative-with-unlikely",
+      "locale": "en",
+      "scope": "personal",
+      "verdict": "unlikely",
+      "text": "You are probably not eligible because of the income limit.",
+      "blocked": false
+    },
+    {
+      "id": "en-likely-to-need-is-fine",
+      "locale": "en",
+      "scope": "general",
+      "text": "You are likely to need identification and proof of income.",
+      "blocked": false
+    },
+    {
+      "id": "es-usted-califica",
+      "locale": "es",
+      "scope": "general",
+      "text": "Usted califica para esta ayuda.",
+      "blocked": true
+    },
+    {
+      "id": "es-quizas",
+      "locale": "es",
+      "scope": "general",
+      "text": "Quizás califiques para este programa.",
+      "blocked": true
+    },
+    {
+      "id": "es-upper",
+      "locale": "es",
+      "scope": "general",
+      "text": "ES POSIBLE QUE CALIFIQUES.",
+      "blocked": true
+    },
+    {
+      "id": "es-no-eres-elegible",
+      "locale": "es",
+      "scope": "personal",
+      "verdict": "maybe",
+      "text": "No eres elegible.",
+      "blocked": true
     },
     {
       "id": "unknown-locale-uses-english",

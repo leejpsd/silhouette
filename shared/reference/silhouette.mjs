@@ -485,14 +485,23 @@ export function silhouetteVerdicts(pack, bands, profile) {
  * Whether a model's text makes a claim only the rule engine may make (prompts/OUTPUT_CHECKS.md).
  * @param {string} text Model output
  * @param {string} locale 'en', 'es', ...
- * @param {'personal' | 'general'} scope 'general' for tasks that only know the silhouette
+ * @param {'personal' | 'general'} scope 'general' for tasks that know nothing about the person
  * @param {object} checks prompts/output-checks.json
+ * @param {string} [verdict] For scope 'personal': the verdict on screen ('likely', 'maybe', 'depends', 'unlikely')
  * @returns {boolean} true when the text must not be shown
  */
-export function modelTextIsBlocked(text, locale, scope, checks) {
+export function modelTextIsBlocked(text, locale, scope, checks, verdict) {
   const rules = Object.hasOwn(checks.locales, locale) ? checks.locales[locale] : checks.locales.en;
-  const haystack = text.normalize('NFC').toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ');
-  const phrases = scope === 'general' ? [...rules.definite, ...rules.overall] : rules.definite;
+  const haystack = text
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/[\u00AD\u200B-\u200D\u2060\uFEFF]/g, '')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/\s+/g, ' ');
+  const phrases = [...rules.definite];
+  if (scope === 'general') phrases.push(...rules.positive, ...rules.negative, ...rules.criterion);
+  else if (verdict === 'unlikely') phrases.push(...rules.positive);
+  else if (verdict === 'likely') phrases.push(...rules.negative);
   for (const phrase of phrases) {
     for (let at = haystack.indexOf(phrase); at !== -1; at = haystack.indexOf(phrase, at + 1)) {
       const before = haystack.slice(0, at);

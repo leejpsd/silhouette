@@ -1,5 +1,19 @@
 # Contract changelog
 
+## v1.15 — 2026-11-13
+
+From a third independent test of the Web app, with real replies.
+
+| Change | Why |
+|---|---|
+| **The general explanation and prepared questions are given nothing about the person** (`prompts/explain.v5.md`, `prompts/ask.v4.md`; `routing.json`: input `Public` only). No profile, no criterion states | Given "not met from the general facts", real replies told the person "your income is not under the limit": a model stating part of the result |
+| **Checks on model text, version 2** (`OUTPUT_CHECKS.md`, `output-checks.json`): wider lists (`you will qualify`, `you're approved`, `you won't qualify`…), a `criterion` list for claims about a single rule, invisible characters removed before matching, the answer language decides the list, and scope `personal` takes the verdict on screen so a hedge that contradicts it is blocked. 39 fixture cases | Replies such as "You will qualify." and text split by a soft hyphen were shown; Spanish replies were matched against the English list |
+| Rule packs may name a `numberFormat`; money is written the way the jurisdiction's paperwork writes it, in every interface language, always grouped | In Spanish the app showed `34.000 $` beside `3000 $` while asking people to type `60,000` |
+| 5 copy keys in en, es and ko: the request carries nothing about the person, the daily limit on a program page, a visible privacy sentence and an example label for the start screen | |
+| Remote Config: `prompt_explain_v` = 5, `prompt_ask_v` = 4 | |
+
+`explain.v3`, `explain.v4`, `ask.v2` and `ask.v3` remain in the folder for the record; apps bundle only versions that send nothing about the person (explain 5, ask 4).
+
 ## v1.14 — 2026-11-13
 
 From 36 real replies of the general explanation and the prepared questions, in English and Spanish (`web/eval/results/answers-v3.md`). No reply stated or hinted at a result, and the check on model text blocked nothing and missed nothing.

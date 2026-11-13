@@ -389,5 +389,10 @@
   "leaving.sdkNote": "No aparece aquí: la renovación de los tokens de seguridad del SDK de Firebase ni la actualización del modelo del dispositivo por parte del sistema. Ninguna lleva tus respuestas ni tus documentos.",
   "delete.erasedDevice": "Borrado: respuestas, documentos en curso, ajustes y el registro de lo enviado.",
   "review.moreValues": "Más valores ({count})",
-  "review.confirmAllCount": "Confirmar los {count} valores"
+  "review.confirmAllCount": "Confirmar los {count} valores",
+  "about.leadPublic": "Un modelo explica el programa en general. No se envía nada sobre ti: solo el nombre del programa, su información pública y la pregunta.",
+  "send.linePublic": "Nada sobre ti. Solo el programa, su información pública y la pregunta.",
+  "error.quotaDailyAnswers": "Se alcanzó el límite diario gratuito del servicio en la nube. Inténtalo mañana. Tu resultado de arriba no lo necesita.",
+  "start.promise": "Tus papeles se quedan en este dispositivo. Solo puede salir una silueta con los valores ocultos, y solo cuando tú lo decidas.",
+  "start.example": "Ejemplo"
 }

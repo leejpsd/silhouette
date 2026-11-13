@@ -389,5 +389,10 @@
   "leaving.sdkNote": "여기에 없는 것: Firebase SDK의 보안 토큰 갱신과 시스템의 기기 안 모델 업데이트. 둘 다 내 답이나 서류를 담지 않습니다.",
   "delete.erasedDevice": "삭제함: 답, 작성 중인 서류, 설정, 전송 기록.",
   "review.moreValues": "다른 값 ({count})",
-  "review.confirmAllCount": "값 {count}개 모두 확인"
+  "review.confirmAllCount": "값 {count}개 모두 확인",
+  "about.leadPublic": "모델이 제도를 일반적으로 설명합니다. 나에 대한 정보는 보내지 않습니다. 제도 이름, 공개 정보, 질문만 보냅니다.",
+  "send.linePublic": "나에 대한 정보는 없습니다. 제도, 공개 정보, 질문뿐입니다.",
+  "error.quotaDailyAnswers": "클라우드 서비스의 하루 무료 한도에 도달했습니다. 내일 다시 시도해 주세요. 위의 결과에는 필요하지 않습니다.",
+  "start.promise": "서류는 이 기기에 남습니다. 값이 가려진 실루엣만, 내가 허락할 때만 기기 밖으로 나갑니다.",
+  "start.example": "예시"
 }

@@ -83,6 +83,7 @@ export function lintPack(pack, bands) {
   if (pack.constants === null || typeof pack.constants !== 'object' || Array.isArray(pack.constants)) errors.push('pack: constants must be an object (use {} when there are none)');
   if (pack.jurisdiction !== bands.jurisdiction) errors.push('pack: jurisdiction differs from bands file');
   if (pack.currency !== undefined && !/^[A-Z]{3}$/.test(pack.currency)) errors.push('pack: currency must be a three-letter ISO 4217 code');
+  if (pack.numberFormat !== undefined && !/^[a-z]{2,3}(-[A-Z]{2})?$/.test(pack.numberFormat)) errors.push('pack: numberFormat must be a language tag such as en-US');
   const questionIds = new Set();
   for (const q of pack.questions ?? []) {
     if (!QUESTION_ID.test(q.id) || RESERVED.includes(q.id)) errors.push(`question "${q.id}": id is malformed or reserved`);

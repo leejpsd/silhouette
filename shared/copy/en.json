@@ -389,5 +389,10 @@
   "leaving.sdkNote": "Not listed here: the Firebase SDK renewing its own security tokens, and the system updating the on-device model. Neither carries your answers or documents.",
   "delete.erasedDevice": "Erased: answers, documents in progress, settings and the record of what was sent.",
   "review.moreValues": "More values ({count})",
-  "review.confirmAllCount": "Confirm all {count} values"
+  "review.confirmAllCount": "Confirm all {count} values",
+  "about.leadPublic": "A model explains the program in general. Nothing about you is sent: only the program's name, its public information and the question.",
+  "send.linePublic": "Nothing about you. Only the program, its public information and the question.",
+  "error.quotaDailyAnswers": "The cloud service's free daily limit has been reached. Try again tomorrow. Your result above does not need it.",
+  "start.promise": "Your paperwork stays on this device. Only a silhouette with the values hidden can leave, and only when you say so.",
+  "start.example": "Example"
 }

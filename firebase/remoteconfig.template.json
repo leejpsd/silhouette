@@ -58,7 +58,7 @@
     },
     "prompt_explain_v": {
       "defaultValue": {
-        "value": "4"
+        "value": "5"
       },
       "valueType": "NUMBER",
       "description": "shared/prompts/explain.v{n}.md"
@@ -72,7 +72,7 @@
     },
     "prompt_ask_v": {
       "defaultValue": {
-        "value": "3"
+        "value": "4"
       },
       "valueType": "NUMBER",
       "description": "Version of the prepared-question prompt (shared/prompts/ask.v{n}.md)"

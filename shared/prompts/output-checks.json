@@ -1,6 +1,6 @@
 {
- "version": 1,
- "note": "Phrases are lowercase. Matching is described in OUTPUT_CHECKS.md. 'definite' is checked for every task that shows model text about a program; 'overall' is checked in addition for tasks that only know the silhouette.",
+ "version": 2,
+ "note": "Phrases are lowercase. Matching is described in OUTPUT_CHECKS.md.",
  "locales": {
   "en": {
    "allowBefore": [
@@ -13,17 +13,26 @@
    ],
    "definite": [
     "you qualify",
+    "you will qualify",
+    "you'll qualify",
+    "you should qualify",
     "you are eligible",
     "you're eligible",
+    "you are approved",
+    "you're approved",
+    "you meet the requirements",
+    "you meet all the requirements",
     "you will receive",
     "you will get",
     "you do not qualify",
     "you don't qualify",
+    "you will not qualify",
+    "you won't qualify",
     "you are not eligible",
     "you aren't eligible",
     "you're not eligible"
    ],
-   "overall": [
+   "positive": [
     "you may qualify",
     "you might qualify",
     "you could qualify",
@@ -32,12 +41,42 @@
     "you may be eligible",
     "you might be eligible",
     "you could be eligible",
+    "you should be eligible",
+    "you are likely to qualify",
+    "you're likely to qualify",
+    "you are likely to get",
+    "you're likely to get",
+    "you are likely eligible",
+    "you are probably eligible",
+    "you're probably eligible"
+   ],
+   "negative": [
     "you may not qualify",
     "you might not qualify",
     "you probably do not qualify",
     "you probably don't qualify",
+    "you probably won't qualify",
     "you are unlikely to qualify",
-    "you're unlikely to qualify"
+    "you're unlikely to qualify",
+    "you are probably not eligible",
+    "you're probably not eligible",
+    "you may not be eligible",
+    "you might not be eligible"
+   ],
+   "criterion": [
+    "you meet the",
+    "you do not meet",
+    "you don't meet",
+    "your income is under",
+    "your income is not under",
+    "your income is over",
+    "your income is above",
+    "your income is below",
+    "your income is too high",
+    "that rule was not met",
+    "that rule was met",
+    "this rule was not met",
+    "this rule was met"
    ]
   },
   "es": {
@@ -49,24 +88,49 @@
    "definite": [
     "calificas",
     "usted califica",
+    "calificarás",
+    "vas a calificar",
     "eres elegible",
     "usted es elegible",
+    "estás aprobado",
+    "estás aprobada",
+    "cumples con los requisitos",
+    "cumples los requisitos",
     "recibirás",
     "vas a recibir",
     "no eres elegible"
    ],
-   "overall": [
+   "positive": [
     "puede que califiques",
     "podrías calificar",
+    "podría calificar",
+    "puedes calificar",
     "tal vez califiques",
     "quizá califiques",
     "quizás califiques",
     "es posible que califiques",
-    "probablemente califi",
-    "puedes calificar",
-    "podría calificar",
+    "es probable que califiques",
+    "probablemente califi"
+   ],
+   "negative": [
     "puede que no califiques",
-    "es poco probable que califiques"
+    "tal vez no califiques",
+    "quizá no califiques",
+    "quizás no califiques",
+    "es posible que no califiques",
+    "es poco probable que califiques",
+    "probablemente no califi"
+   ],
+   "criterion": [
+    "cumples con",
+    "no cumples",
+    "tu ingreso está por",
+    "tu ingreso no está por",
+    "tu ingreso es demasiado",
+    "esa regla no se cumpl",
+    "esa regla se cumpl",
+    "esta regla no se cumpl",
+    "esta regla se cumpl"
    ]
   },
   "ko": {
@@ -77,11 +141,14 @@
     "자격이 안 됩니다",
     "자격이 없습니다"
    ],
-   "overall": [
+   "positive": [
     "자격이 될 수 있습니다",
-    "해당될 수 있습니다",
+    "해당될 수 있습니다"
+   ],
+   "negative": [
     "해당되지 않을 수 있습니다"
-   ]
+   ],
+   "criterion": []
   }
  }
 }
