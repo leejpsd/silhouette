@@ -28,3 +28,19 @@ Apps bundle the fonts; nothing is fetched at run time.
 - Touch targets are at least 44 px (48 dp on Android).
 - Display type scales with the system text size up to 1.3×; interface text scales fully. When the block would cover more than 40 % of the screen it scrolls with the content.
 - Focus rings use `focus`, `blockFocus` or `leaveFocus` depending on the surface under them.
+
+## Wide screens
+
+From 960 px the app uses two columns (`layout.wide`): the screen's content on the left, at most 640 px wide, and the block on the right as a fixed panel with rounded corners. The block never becomes a bar across the whole window, and headlines keep their phone line lengths. Sheets (the outgoing record, language, demo rules, delete confirmation) open inside the block's column.
+
+## Reading the tokens
+
+`tokens.json` contains numbers, arrays and notes in plain words. A parser takes the keys it needs and skips the rest. Lengths are the same number in CSS px, Android dp and iOS pt; on Android, tap targets use `size.minTapTargetAndroid`.
+
+## What is shown as "what is sent"
+
+Where the app builds the request body itself (Web), the text shown is the bytes that are sent. Where an SDK serializes the body (Android, iOS), the app shows its own rendering of the same request object and says so; it is never called byte-exact.
+
+## Counting what left and what stayed
+
+The record counts requests that left the device (`leaving.sentCount`) and answers that were written on the device and so never left (`leaving.keptCount`). An answer written on the device is recorded like a request, with status `outbound.status.answeredShort`.

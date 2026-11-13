@@ -1,5 +1,15 @@
 # Contract changelog
 
+## v1.11 — 2026-11-13
+
+From applying the design on Web.
+
+| Change | Why |
+|---|---|
+| Rule packs may name a `currency` (ISO 4217); `zz-test` uses `USD` | Amounts and limits were shown as bare numbers |
+| `design/tokens.json` version 5: values the first implementation had to invent (counter, record sheet, stamp count, option word, control and small text, row heights, compact-height mode, inline spacing, scale cap and floors), the Android tap target, and a `layout.wide` section | Every value an app uses must come from the tokens |
+| `design/DESIGN.md`: wide-screen layout, how to read the tokens, what may be called "what is sent", and counting answers that stayed on the device | A parser crashed on non-numeric values; the wide layout and the "kept" count were left open |
+
 ## v1.10 — 2026-11-13
 
 | Change | Why |

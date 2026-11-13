@@ -30,6 +30,7 @@ Labels live in `rulepacks/{jurisdiction}/copy/{locale}.json` with these keys. Ev
 | Field | Meaning |
 |---|---|
 | `jurisdiction`, `version`, `verifiedOn` | Identity and sign-off date (`null` until verified) |
+| `currency` | Optional ISO 4217 code (`USD`). When present, amounts, limits and income ranges are shown as money in that currency, formatted for the app's language; when absent, as plain numbers |
 | `constants` | Named numbers and lookup tables used by the rules. Required; use `{}` when there are none |
 | `questions[]` | Questions the app asks. `type` is `int` (with integer `min` and `max`), `bool`, `enum` (one of `values`) or `multi` (a list drawn from `values`). Every question can be skipped. `sensitive: true` means the answer is `Raw`, is asked with the "never leaves your device" note, and never feeds the Generalizer |
 | `questionOrder` | Optional. Every question id plus the reserved step id `"income"`, in the order the app asks them. Default: `"income"` first, then `questions[]` order |

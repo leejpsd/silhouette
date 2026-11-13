@@ -1,6 +1,7 @@
 {
   "jurisdiction": "zz-test",
   "version": 2,
+  "currency": "USD",
   "verifiedOn": null,
   "note": "Synthetic rule pack for conformance tests only. Programs, thresholds and amounts are invented.",
   "constants": {
