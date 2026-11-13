@@ -383,5 +383,9 @@
   "review.noChange": "No result changed.",
   "placeholder.word": "hidden word",
   "placeholder.number": "hidden number",
-  "placeholder.date": "hidden date"
+  "placeholder.date": "hidden date",
+  "send.showRequest": "Show the request",
+  "send.requestAsBuilt": "This is the request as the app builds it. The Firebase SDK adds its own formatting and security headers when it sends it.",
+  "leaving.sdkNote": "Not listed here: the Firebase SDK renewing its own security tokens, and the system updating the on-device model. Neither carries your answers or documents.",
+  "delete.erasedDevice": "Erased: answers, documents in progress, settings and the record of what was sent."
 }

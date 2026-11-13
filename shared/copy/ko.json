@@ -383,5 +383,9 @@
   "review.noChange": "달라진 결과가 없습니다.",
   "placeholder.word": "가려진 단어",
   "placeholder.number": "가려진 숫자",
-  "placeholder.date": "가려진 날짜"
+  "placeholder.date": "가려진 날짜",
+  "send.showRequest": "요청 내용 보기",
+  "send.requestAsBuilt": "앱이 만든 요청 내용입니다. 보낼 때 Firebase SDK가 자체 형식과 보안 헤더를 덧붙입니다.",
+  "leaving.sdkNote": "여기에 없는 것: Firebase SDK의 보안 토큰 갱신과 시스템의 기기 안 모델 업데이트. 둘 다 내 답이나 서류를 담지 않습니다.",
+  "delete.erasedDevice": "삭제함: 답, 작성 중인 서류, 설정, 전송 기록."
 }

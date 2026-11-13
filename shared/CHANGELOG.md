@@ -1,5 +1,14 @@
 # Contract changelog
 
+## v1.12 — 2026-11-13
+
+From the iOS integration of Firebase AI Logic.
+
+| Change | Why |
+|---|---|
+| 4 copy keys in en, es and ko: a request shown as the app builds it, what the record cannot list, a platform-neutral "erased" line | On Android and iOS the SDK serializes the request and keeps its own token caches; the copy must not claim more than the app can show or erase |
+| `routing.json` `onDeviceLocales`: where the SDK cannot be asked for the device model's languages, the Remote Config list is the only check | iOS |
+
 ## v1.11 — 2026-11-13
 
 From applying the design on Web.

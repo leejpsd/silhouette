@@ -23,6 +23,7 @@
                        "note": "Never applies to ONLY_ON_DEVICE tasks. A PREFER_ON_DEVICE task has cloud-safe input by the rule above, so the retry sends nothing that the first attempt could not have sent." },
   "offlineSample": { "appliesTo": "bundled sample documents only", "when": "no network and no on-device model", "reason": "sample-answer-key",
                      "note": "The fields of a bundled sample are filled from its fixed answer key on the device. No model is used, nothing is sent, and the result is labelled as sample answers." },
+  "onDeviceLocales": { "note": "A task with a locale condition prefers the device only when the answer language is in route_ondevice_locales_{platform}. Where the SDK does not let the app ask the device model which languages it supports (iOS), this Remote Config list is the only check." },
   "remoteConfigKeys": ["route_short_text_max_words", "route_ondevice_locales_web", "route_ondevice_locales_android", "route_ondevice_locales_ios",
                        "feature_grounding_search", "feature_grounding_maps", "feature_tts", "prompt_pointer_extract_v", "prompt_explain_v", "skeleton_allowlist_v"]
 }
