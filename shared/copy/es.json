@@ -387,5 +387,7 @@
   "send.showRequest": "Mostrar la solicitud",
   "send.requestAsBuilt": "Esta es la solicitud tal como la arma la app. El SDK de Firebase agrega su propio formato y encabezados de seguridad al enviarla.",
   "leaving.sdkNote": "No aparece aquí: la renovación de los tokens de seguridad del SDK de Firebase ni la actualización del modelo del dispositivo por parte del sistema. Ninguna lleva tus respuestas ni tus documentos.",
-  "delete.erasedDevice": "Borrado: respuestas, documentos en curso, ajustes y el registro de lo enviado."
+  "delete.erasedDevice": "Borrado: respuestas, documentos en curso, ajustes y el registro de lo enviado.",
+  "review.moreValues": "Más valores ({count})",
+  "review.confirmAllCount": "Confirmar los {count} valores"
 }

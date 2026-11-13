@@ -1,5 +1,12 @@
 # Contract changelog
 
+## v1.13 — 2026-11-13
+
+| Change | Why |
+|---|---|
+| 2 copy keys in en, es and ko: `review.moreValues`, `review.confirmAllCount` | The review screen folds the values that do not decide the result |
+| `design/tokens.json` version 6: phone frame width and headline measure, the wide panel's top position, and the last structural sizes that were written in CSS (strong border, dot pattern, radio and checkbox, record time column) | Every value an app uses comes from the tokens |
+
 ## v1.12 — 2026-11-13
 
 From the iOS integration of Firebase AI Logic.
