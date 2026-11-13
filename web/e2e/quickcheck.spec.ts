@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { DEFAULT_ANSWERS, answerCurrent, completeQuickCheck, readStore, verdictOf } from './helpers';
-import { chooseLanguage } from './helpers';
+import { chooseLanguage, openDeleteEverything } from './helpers';
 
 const PROGRAMS = ['work-credit', 'food-help', 'utility-discount', 'phone-discount', 'senior-food'];
 
@@ -16,8 +16,8 @@ test.describe('Quick Check to first result', () => {
 
     await completeQuickCheck(page);
     for (const id of PROGRAMS) await expect(verdictOf(page, id)).toHaveAttribute('data-verdict', 'likely');
-    await expect(verdictOf(page, 'work-credit')).toContainText('About 3,000 a year');
-    await expect(verdictOf(page, 'senior-food')).toContainText('About 1,830 a year');
+    await expect(verdictOf(page, 'work-credit')).toContainText('About $3,000 a year');
+    await expect(verdictOf(page, 'senior-food')).toContainText('About $1,830 a year');
     await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
 
     const origin = new URL(baseURL!).origin;
@@ -38,7 +38,7 @@ test.describe('Quick Check to first result', () => {
     expect(await page.evaluate(() => navigator.onLine)).toBe(false);
 
     const started = Date.now();
-    await completeQuickCheck(page, { numChildren: '1', income: { band: '30,000 to 44,999' } });
+    await completeQuickCheck(page, { numChildren: '1', income: { band: '$30,000 to $44,999' } });
     // Band-only income: the engine returns `maybe` where a threshold falls inside the band.
     await expect(verdictOf(page, 'work-credit')).toHaveAttribute('data-verdict', 'maybe');
     await expect(verdictOf(page, 'utility-discount')).toHaveAttribute('data-verdict', 'likely');
@@ -114,9 +114,7 @@ test.describe('Quick Check to first result', () => {
     expect(before.bytes).not.toContain('householdSize');
     expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('silhouette.')))).toEqual(['silhouette.locale']);
 
-    await page.getByRole('button', { name: 'Delete everything' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Delete everything on this device?' });
-    await expect(dialog).toBeVisible();
+    const dialog = await openDeleteEverything(page);
     await dialog.getByRole('button', { name: 'Delete everything' }).click();
     await expect(page.getByText('Everything on this device was deleted.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start Quick Check' })).toBeVisible();
@@ -175,7 +173,7 @@ test.describe('Quick Check to first result', () => {
     await next();
 
     await expect(heading()).toHaveText(/earn in a year/);
-    await tabTo(/Less than 15,000/);
+    await tabTo(/Less than \$15,000/);
     await page.keyboard.press('Space'); // Band A: below every food-help limit, so only residency is open.
     await next();
 

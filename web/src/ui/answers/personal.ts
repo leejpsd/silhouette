@@ -8,7 +8,7 @@ import type { IncomeBand } from '../../core/generalize';
 import { Raw } from '../../core/types';
 import type { PersonalResult } from '../../ai/on-device';
 import { useApp } from '../context';
-import { dynamicKey, formatNumber, programName, type Locale, type Translate } from '../i18n';
+import { dynamicKey, formatMoney, formatNumber, programName, type Locale, type Translate } from '../i18n';
 import { BANDS, PACK } from '../pack';
 import { toEngineAnswers } from '../quickcheck';
 import { programFacts } from './facts';
@@ -23,21 +23,32 @@ export interface WhyRow {
 
 const isBand = (value: Comparison['yours']): value is IncomeBand => typeof value === 'object' && value !== null;
 
-/** A value as shown: a number, or an income band as its range. */
-function shown(locale: Locale, value: Comparison['yours'], none: string): string {
+/** Income is the one money variable of a rule pack (the reserved income step). */
+export const isMoneyVariable = (variable: string): boolean => variable === 'annualIncome';
+
+/** A value as shown: a number, or an income band as its range; money in the pack's currency when `money`. */
+export function shownValue(locale: Locale, value: Comparison['yours'], none: string, money = false): string {
+  const n = (v: number) => (money ? formatMoney(locale, v) : formatNumber(locale, v));
   if (value === null) return none;
-  if (isBand(value)) return value.max === null ? `${formatNumber(locale, value.min)}+` : `${formatNumber(locale, value.min)}–${formatNumber(locale, value.max)}`;
-  return formatNumber(locale, value);
+  if (isBand(value)) return value.max === null ? `${n(value.min)}+` : `${n(value.min)}–${n(value.max)}`;
+  return n(value);
 }
 
-export function whyRows(t: Translate, locale: Locale, program: Program, reasons: readonly CriterionReason[]): WhyRow[] {
+/**
+ * The reasons as lines. On screen (`money`, the default) income limits and answers are money in the
+ * pack's currency; the on-device prompt keeps plain numbers.
+ */
+export function whyRows(t: Translate, locale: Locale, program: Program, reasons: readonly CriterionReason[], money = true): WhyRow[] {
   return reasons.map((r) => ({
     id: r.id,
     label: t(dynamicKey(`criterion.${program.id}.${r.id}`)),
     state: r.state,
     limits: r.comparisons
       .filter((c) => c.limit !== null)
-      .map((c) => ({ limit: formatNumber(locale, c.limit as number), yours: shown(locale, c.yours, t('send.unanswered')) })),
+      .map((c) => {
+        const isMoney = money && isMoneyVariable(c.variable);
+        return { limit: shownValue(locale, c.limit as number, '', isMoney), yours: shownValue(locale, c.yours, t('send.unanswered'), isMoney) };
+      }),
   }));
 }
 
@@ -51,7 +62,7 @@ const PROMPT_STATE: Readonly<Record<CriterionState, string>> = {
 
 /** The person's result for the on-device prompts. */
 export function personalResult(t: Translate, locale: Locale, program: Program, verdict: Verdict, reasons: readonly CriterionReason[]): Raw<PersonalResult> {
-  const lines = whyRows(t, 'en', program, reasons).map((row) => {
+  const lines = whyRows(t, 'en', program, reasons, false).map((row) => {
     const limits = row.limits.map((l) => ` (limit ${l.limit}, yours ${l.yours})`).join('');
     return `- ${row.label}: ${PROMPT_STATE[row.state]}${limits}`;
   });

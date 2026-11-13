@@ -5,7 +5,7 @@ import { AppContext, type AppState } from './context';
 import { BANDS, PACK, isDemoPack } from './pack';
 import { buildSteps, computeVerdicts, sanitizeAnswers, type AnswerValue, type QuickCheckAnswers } from './quickcheck';
 import { navigate, useRoute } from './router';
-import { DemoBanner, Footer, Header, LeavingBar } from './Chrome';
+import { DemoBanner, Header, LeavingBar } from './Chrome';
 import { BlockProvider, BottomBlock } from './design/block';
 import { StartScreen } from './screens/Start';
 import { QuestionScreen } from './screens/Question';
@@ -159,12 +159,11 @@ export function App() {
         </a>
         <div className="app" data-route={route.name}>
           <Header onLocale={changeLocale} />
-          {isDemoPack(PACK) && <DemoBanner />}
+          {isDemoPack(PACK) && <DemoBanner onDelete={onDelete} />}
           <main id="main" tabIndex={-1} aria-busy={!loaded}>
             <Suspense fallback={null}>{screen}</Suspense>
-            <Footer onDelete={onDelete} />
           </main>
-          <BottomBlock count={<LeavingBar />} />
+          <BottomBlock count={<LeavingBar onDelete={onDelete} />} />
         </div>
         {/* The grain: one fixed layer over the whole screen. */}
         <div className="grain" aria-hidden="true" />

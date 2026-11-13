@@ -1,6 +1,6 @@
 // Start screen: the promise as a picture (what stays on this phone, what could leave), and the way in.
 import { useApp } from '../context';
-import { dynamicKey, formatNumber } from '../i18n';
+import { dynamicKey, formatMoney } from '../i18n';
 import { firstOpenStep } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
@@ -39,7 +39,7 @@ export function StartScreen({ notice }: { notice: string | null }) {
           <Paper>
             <Field label={t('field.paystub.employerName')} value="NORTHWIND STAFFING" />
             <Field label={t('field.paystub.grossPay')} value="1,271.88" />
-            <Field label={t('review.annualTitle')} value={formatNumber(locale, 29183)} />
+            <Field label={t('review.annualTitle')} value={formatMoney(locale, 29183)} />
             <Field label={t(dynamicKey('variable.householdSize'))} value="3" />
           </Paper>
         </div>
@@ -59,7 +59,7 @@ export function StartScreen({ notice }: { notice: string | null }) {
                 <Bar id="N12" label={t('placeholder.number')} width={62} delay={200} />
               </span>
             </div>
-            <Field label={t('review.annualTitle')} value={t('income.band.range', { min: formatNumber(locale, 15000), max: formatNumber(locale, 29999) })} />
+            <Field label={t('review.annualTitle')} value={t('income.band.range', { min: formatMoney(locale, 15000), max: formatMoney(locale, 29999) })} />
             <Field label={t(dynamicKey('variable.householdSize'))} value="3" />
           </Paper>
         </div>

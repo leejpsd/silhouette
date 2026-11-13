@@ -14,6 +14,7 @@ import { deviceAvailability, modelFor, sourceOf, type InferenceSource, type Usag
 import { SHARED_POINTER_SCHEMAS, pointerConfigFor, type DocType, type PointerConfig } from './pointer-config';
 import { appConfig } from '../data/remote-config';
 import { describeAiModel, describeAiRequests, expectRequestBody } from '../data/net-monitor';
+import { recordAnsweredOnDevice } from '../data/outbound';
 import outputChecks from '../../../shared/prompts/output-checks.json';
 import { modelTextIsBlocked, type OutputChecks, type OutputScope } from '../core/output-check';
 import { toModelSchema } from './model-schema';
@@ -201,6 +202,8 @@ export async function extractPointers(
     // Device-first, but answered in the cloud because this device has no model: the chip says so.
     const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
     const noModel = !options.forceCloud && r.source === 'IN_CLOUD' && (await deviceAvailability(createOptions)) !== 'available';
+    // Answered on this device: recorded as kept, never as sent.
+    if (r.source === 'ON_DEVICE') recordAnsweredOnDevice(['document-silhouette']);
     return { value: r.value, inferenceSource: r.source, reason, usage: r.usage, ranInCloudBecause: noModel ? 'no-device-model' : undefined };
   } catch (error) {
     if (options.forceCloud || !failedOnDevice(error)) throw classifyError(error);
@@ -463,7 +466,10 @@ async function runText(call: PlannedCall, options: RunOptions): Promise<TaskResu
       }
     }
   };
-  return checked(once, call.checks ?? 'general', call.route?.locale ?? 'en', (r) => r.value.text);
+  const result = await checked(once, call.checks ?? 'general', call.route?.locale ?? 'en', (r) => r.value.text);
+  // Answered on this device: recorded as kept, never as sent.
+  if (result.inferenceSource === 'ON_DEVICE') recordAnsweredOnDevice(call.fields);
+  return result;
 }
 
 /** Shows a model's text only when it passes the checks: one retry, then TaskError('blocked'). */

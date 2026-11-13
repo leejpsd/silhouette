@@ -1,5 +1,5 @@
 // Skeleton preview: exactly what could leave the device, before anything is sent.
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { placeholderCounts, buildReview, type SourceSegment } from '../../core/review';
 import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
@@ -230,6 +230,14 @@ export function DocumentPreviewScreen() {
 type T = (key: 'placeholder.word' | 'placeholder.number' | 'placeholder.date') => string;
 
 /** "What could leave": the skeleton with each placeholder as a bar with its id, visible words as buttons to hide. */
+/**
+ * A placeholder takes the same width in both views (the longer of its text and its id, in characters
+ * of the document font), so the two views wrap into the same lines and the cross-fade lines up.
+ */
+function tokenStyle(text: string, id: string, extra: CSSProperties = {}): CSSProperties {
+  return { '--chars': Math.max(text.length, id.length), ...extra } as CSSProperties;
+}
+
 function renderSkeleton(
   skeleton: Skeleton,
   original: ReadonlyMap<string, string>,
@@ -250,7 +258,7 @@ function renderSkeleton(
         <span
           key={i}
           className={`tok ph${mine ? ' tok-mine' : ''}`}
-          style={{ minInlineSize: `${Math.max(text.length, id.length) + 1}ch`, animationDelay: `${Math.min(n++, 20) * 60}ms` }}
+          style={tokenStyle(text, id, { animationDelay: `${Math.min(n++, 20) * 60}ms` })}
           aria-label={`${t(kind)} ${id}`}
         >
           {id}
@@ -275,7 +283,7 @@ function renderPhone(lines: readonly (readonly SourceSegment[])[], label: (word:
     <span key={i}>
       {line.map((seg, j) =>
         seg.ref ? (
-          <span key={j} className="tok tok-phone">
+          <span key={j} className="tok tok-phone" style={tokenStyle(seg.text, seg.ref)}>
             {seg.text}
           </span>
         ) : (

@@ -1,21 +1,21 @@
 // Extraction review: every field next to its highlighted source, confirm or change each one,
 // type what was not found, then deterministic checks and annualization (core/validate.ts).
 // Confirmed values feed an exact annualIncome into the verdict engine.
-import { useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Raw } from '../../core/types';
 import { parseNumber, readTypedAmount, type PointerSchema } from '../../core/skeleton';
 import type { ReviewField, SourceSegment } from '../../core/review';
 import { validatePaystubs, type Annualization, type PayFrequency, type PaystubValues, type ValidationResult } from '../../core/validate';
 import { POINTER_SCHEMAS } from '../../ai/tasks';
 import { useApp } from '../context';
-import { dynamicKey, formatAmount, formatNumber, programName, type Locale, type Translate } from '../i18n';
+import { dynamicKey, formatMoney, programName, type Locale, type Translate } from '../i18n';
 import { PACK } from '../pack';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
 import { emptyDocument, useDocument } from '../doc/state';
 import { BlockActions } from '../design/block';
-import { Alert, ArrowRight, Check, ChevronLeft } from '../design/icons';
+import { Alert, ArrowRight, Caret, Check, ChevronLeft } from '../design/icons';
 import { Marker, Paper, ActionLabel } from '../design/parts';
 import { computeVerdicts } from '../quickcheck';
 import { BANDS } from '../pack';
@@ -119,15 +119,31 @@ function Source({ lines, t, tilt = 'small-left' }: { lines: readonly (readonly S
   );
 }
 
-const money = (locale: Locale, cents: number) =>
-  new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cents / 100);
+const money = (locale: Locale, cents: number) => formatMoney(locale, cents / 100, { cents: true });
+
+/** Fields that are amounts of money (shown in the pack's currency). */
+const MONEY_FIELDS: ReadonlySet<string> = new Set(['grossPay', 'netPay', 'ytdGross', 'hourlyRate']);
+
+/** What decides the yearly income: shown first. The date is the pay date, or the period end without one. */
+const LEAD_FIELDS = ['grossPay', 'ytdGross', 'payDate', 'payFrequency'] as const;
+
+/** The values each check compares; a value a check flags is shown with the leading values. */
+const CHECK_FIELDS: Readonly<Record<string, readonly string[]>> = {
+  'net-sum': ['grossPay', 'netPay', 'deductions'],
+  'rate-hours': ['hoursWorked', 'hourlyRate', 'grossPay'],
+  'period-length': ['periodStart', 'periodEnd', 'payFrequency'],
+  'pay-date': ['payDate', 'periodEnd'],
+  'ytd-gross': ['ytdGross', 'grossPay'],
+  'ytd-periods': ['ytdGross', 'payDate', 'payFrequency'],
+  'dates-parsed': ['payDate', 'periodStart', 'periodEnd'],
+};
 
 /**
  * The "how this was worked out" line. Its figures reproduce the shown result: elapsed months get
  * as many decimals as needed (2 to 6), and several paystubs show their actual sum and count.
  */
 export function basisText(annual: Annualization, stubs: readonly PaystubValues[], locale: Locale, t: Translate): string {
-  const amount = formatNumber(locale, annual.annualIncome);
+  const amount = formatMoney(locale, annual.annualIncome);
   if (annual.method === 'ytd') {
     const ytd = (annual.basis.ytdCents ?? 0) / 100;
     const exact = (annual.basis.elapsedMonths?.numerator ?? 0) / (annual.basis.elapsedMonths?.denominator ?? 1);
@@ -187,6 +203,226 @@ export function DocumentReviewScreen() {
   const currentIndex = doc.confirmedStubs.length;
   const annual = result?.annualization ?? null;
 
+  // What decides the result first; everything else behind "More values", opened when it needs attention.
+  const flagged = new Set((result?.checks[currentIndex] ?? []).filter((c) => c.status === 'warn').flatMap((c) => CHECK_FIELDS[c.id] ?? []));
+  const dateField = rows.find((r) => r.name === 'payDate')?.text === '' ? 'periodEnd' : 'payDate';
+  const leadOrder = [...LEAD_FIELDS.map((n) => (n === 'payDate' ? dateField : n)), ...rows.map((r) => r.name).filter((n) => flagged.has(n))];
+  const leadNames = new Set<string>(leadOrder);
+  const leadRows = [...new Set(leadOrder)].flatMap((n) => rows.filter((r) => r.name === n));
+  const restRows = rows.filter((r) => !leadNames.has(r.name));
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [moreSeen, setMoreSeen] = useState(false);
+  const moreButton = useRef<HTMLButtonElement>(null);
+  const moreId = useId();
+  const pendingId = useId();
+  const restPending = restRows.some((r) => r.status === 'pending') || deductions.some((d) => d.status === 'pending');
+  const moreUnseen = restPending && !moreSeen;
+  const needsAttention = deductionProblem !== null || flagged.has('deductions') || (editing !== null && restRows.some((r) => r.name === editing));
+  useEffect(() => {
+    if (needsAttention) {
+      setMoreOpen(true);
+      setMoreSeen(true);
+    }
+  }, [needsAttention]);
+
+  const fieldItem = (row: Row, index: number) => {
+    const isEditing = editing === row.name;
+    const inputId = `field-${row.name}`;
+    const shownValue = () => {
+      if (row.text === '') return <span className="not-found">{t('review.notFound')}</span>;
+      if (row.kind === 'enum') return t(dynamicKey(`option.payFrequency.${row.text}`));
+      // A found value is shown as the document writes it (its currency is the document's).
+      return row.text;
+    };
+    return (
+      <li key={row.name} className={`field-row status-${row.status}`} data-testid={`field-${row.name}`} data-status={row.status}>
+        <div className="field-head">
+          <span className="field-label" id={`${inputId}-label`}>
+            {label(row.name)}
+          </span>
+          {row.status === 'confirmed' && <span className="confirmed">{t('review.confirmed')}</span>}
+        </div>
+        {isEditing ? (
+          <div className="field-edit">
+            {row.kind === 'enum' ? (
+              <select id={inputId} className="input" aria-labelledby={`${inputId}-label`} value={draft} onChange={(e) => setDraft(e.target.value)}>
+                <option value="">{t('option.none')}</option>
+                {row.options.map((o) => (
+                  <option key={o} value={o}>
+                    {t(dynamicKey(`option.payFrequency.${o}`))}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                id={inputId}
+                className="input"
+                aria-labelledby={`${inputId}-label`}
+                inputMode={row.kind === 'number' ? 'decimal' : 'text'}
+                autoComplete="off"
+                aria-invalid={invalid ? true : undefined}
+                value={draft}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  setInvalid(null);
+                }}
+              />
+            )}
+            {row.kind === 'number' && !invalid && (() => {
+              const read = readTypedAmount(draft);
+              return read.ok ? (
+                <p className="understood" aria-live="polite">
+                  <Check size={14} />
+                  {t('review.understood', { amount: MONEY_FIELDS.has(row.name) ? formatMoney(locale, read.value) : String(read.value) })}
+                </p>
+              ) : null;
+            })()}
+            {invalid && (
+              <p className="error" role="alert" data-testid="review-number-error">
+                <Alert />
+                {t(invalid)}
+              </p>
+            )}
+            <div className="button-row">
+              <button type="button" className="small-action" onClick={() => save(row)}>
+                {t('review.save')}
+              </button>
+              <button type="button" className="outline-button" onClick={() => setEditing(null)}>
+                {t('review.cancel')}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="field-body">
+              <Source lines={row.source} t={t} tilt={index % 2 === 0 ? 'small-left' : 'small-right'} />
+              <p className="field-value" data-testid={`value-${row.name}`}>
+                {shownValue()}
+                {row.status === 'confirmed' && <Check size={20} />}
+              </p>
+            </div>
+            <div className="button-row compact">
+              {row.status === 'pending' && (
+                <button
+                  type="button"
+                  className="outline-button small"
+                  aria-label={`${t('review.confirm')}: ${label(row.name)}`}
+                  onClick={() => setRow(row.name, { status: 'confirmed' })}
+                >
+                  {t('review.confirm')}
+                </button>
+              )}
+              <button
+                type="button"
+                className="text-link"
+                aria-label={`${t('review.edit')}: ${label(row.name)}`}
+                onClick={() => {
+                  setEditing(row.name);
+                  setDraft(row.text);
+                  setInvalid(null);
+                }}
+              >
+                {t('review.edit')}
+              </button>
+            </div>
+          </>
+        )}
+      </li>
+    );
+  };
+
+  const deductionsSection = (
+    <section className="deductions" aria-labelledby="deductions-title">
+      <h2 id="deductions-title" className="section-heading">
+        {label('deductions')}
+      </h2>
+      <ul className="fields">
+        {deductions.map((d, i) => (
+          <li key={i} className={`field-row status-${d.status}`} data-testid={`deduction-${i}`} data-status={d.status}>
+            <div className="deduction-edit">
+              <label>
+                <span>{t('field.deduction.amount')}</span>
+                <input
+                  className="input"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  value={d.amount}
+                  onChange={(e) => {
+                    const amount = e.target.value;
+                    setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, amount, status: 'pending', typed: true } : x)));
+                    setDeductionProblem(null);
+                    setResult(null);
+                  }}
+                />
+              </label>
+              <label>
+                <span>{t('field.deduction.kind')}</span>
+                <select
+                  className="input"
+                  value={d.kind}
+                  onChange={(e) => {
+                    const kind = e.target.value;
+                    setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, kind, status: 'pending' } : x)));
+                    setResult(null);
+                  }}
+                >
+                  <option value="">{t('option.none')}</option>
+                  {DEDUCTION_KINDS.map((k) => (
+                    <option key={k} value={k}>
+                      {t(dynamicKey(`option.deduction.${k}`))}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {deductionProblem?.index === i && (
+              <p className="error" role="alert" data-testid={`deduction-error-${i}`}>
+                {t(deductionProblem.key)}
+              </p>
+            )}
+            <Source lines={d.source} t={t} />
+            <div className="button-row compact">
+              {d.status === 'pending' && (
+                <button
+                  type="button"
+                  className="outline-button small"
+                  onClick={() => {
+                    const problem = d.typed ? typedProblem(d.amount) : toNumber(d.amount) === undefined ? 'review.invalidNumber' : null;
+                    if (problem !== null) return setDeductionProblem({ index: i, key: problem });
+                    setDeductionProblem(null);
+                    setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, status: 'confirmed' } : x)));
+                    setResult(null);
+                  }}
+                >
+                  {t('review.confirm')}
+                </button>
+              )}
+              {d.status === 'confirmed' && (
+                <span className="confirmed">
+                  <Check size={16} />
+                  {t('review.confirmed')}
+                </span>
+              )}
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => {
+                  setDeductions((ds) => ds.filter((_, j) => j !== i));
+                  setResult(null);
+                }}
+              >
+                {t('review.removeDeduction')}
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="text-link" onClick={() => setDeductions((ds) => [...ds, { amount: '', kind: '', status: 'pending', source: [] }])}>
+        {t('review.addDeduction')}
+      </button>
+    </section>
+  );
+
   if (nothingFound && !typeAnyway && doc.extraction) {
     return (
       <div className="screen doc-review" data-testid="not-a-document">
@@ -229,229 +465,56 @@ export function DocumentReviewScreen() {
       <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
 
       {!manual && pending > 0 && (
-        <button
-          type="button"
-          className="outline-button"
-          onClick={() => {
-            setRows((rs) => rs.map((r) => (r.status === 'pending' ? { ...r, status: 'confirmed' } : r)));
-            setDeductions((ds) => ds.map((d) => (d.status === 'pending' ? { ...d, status: 'confirmed' } : d)));
-            setResult(null);
-          }}
-        >
-          {t('review.confirmAll')}
-        </button>
+        <div className="confirm-all">
+          <button
+            type="button"
+            className="outline-button"
+            aria-describedby={pendingId}
+            onClick={() => {
+              // Nothing is confirmed unseen: the first press shows the values that were folded away.
+              if (!moreOpen && moreUnseen) {
+                setMoreOpen(true);
+                setMoreSeen(true);
+                requestAnimationFrame(() => moreButton.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+                return;
+              }
+              setRows((rs) => rs.map((r) => (r.status === 'pending' ? { ...r, status: 'confirmed' } : r)));
+              setDeductions((ds) => ds.map((d) => (d.status === 'pending' ? { ...d, status: 'confirmed' } : d)));
+              setResult(null);
+            }}
+          >
+            {t('review.confirmAllCount', { count: pending })}
+          </button>
+          <p className="small" id={pendingId} role="status">
+            {t('review.pending', { count: pending })}
+          </p>
+        </div>
       )}
 
-      <ul className="fields">
-        {rows.map((row) => {
-          const isEditing = editing === row.name;
-          const inputId = `field-${row.name}`;
-          return (
-            <li key={row.name} className={`field-row status-${row.status}`} data-testid={`field-${row.name}`} data-status={row.status}>
-              <div className="field-head">
-                <span className="field-label" id={`${inputId}-label`}>
-                  {label(row.name)}
-                </span>
-                {row.status === 'confirmed' && <span className="confirmed">{t('review.confirmed')}</span>}
-              </div>
-              {isEditing ? (
-                <div className="field-edit">
-                  {row.kind === 'enum' ? (
-                    <select id={inputId} className="input" aria-labelledby={`${inputId}-label`} value={draft} onChange={(e) => setDraft(e.target.value)}>
-                      <option value="">{t('option.none')}</option>
-                      {row.options.map((o) => (
-                        <option key={o} value={o}>
-                          {t(dynamicKey(`option.payFrequency.${o}`))}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      id={inputId}
-                      className="input"
-                      aria-labelledby={`${inputId}-label`}
-                      inputMode={row.kind === 'number' ? 'decimal' : 'text'}
-                      autoComplete="off"
-                      aria-invalid={invalid ? true : undefined}
-                      value={draft}
-                      onChange={(e) => {
-                        setDraft(e.target.value);
-                        setInvalid(null);
-                      }}
-                    />
-                  )}
-                  {row.kind === 'number' && !invalid && (() => {
-                    const read = readTypedAmount(draft);
-                    return read.ok ? (
-                      <p className="understood" aria-live="polite">
-                        <Check size={14} />
-                        {t('review.understood', { amount: formatAmount(locale, read.value) })}
-                      </p>
-                    ) : null;
-                  })()}
-                  {invalid && (
-                    <p className="error" role="alert" data-testid="review-number-error">
-                      <Alert />
-                      {t(invalid)}
-                    </p>
-                  )}
-                  <div className="button-row">
-                    <button type="button" className="small-action" onClick={() => save(row)}>
-                      {t('review.save')}
-                    </button>
-                    <button type="button" className="outline-button" onClick={() => setEditing(null)}>
-                      {t('review.cancel')}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="field-body">
-                    <Source lines={row.source} t={t} tilt={rows.indexOf(row) % 2 === 0 ? 'small-left' : 'small-right'} />
-                    <p className="field-value" data-testid={`value-${row.name}`}>
-                      {row.text === '' ? (
-                        <span className="not-found">{t('review.notFound')}</span>
-                      ) : row.kind === 'enum' ? (
-                        t(dynamicKey(`option.payFrequency.${row.text}`))
-                      ) : (
-                        row.text
-                      )}
-                      {row.status === 'confirmed' && <Check size={20} />}
-                    </p>
-                  </div>
-                  <div className="button-row compact">
-                    {row.status === 'pending' && (
-                      <button
-                        type="button"
-                        className="outline-button small"
-                        aria-label={`${t('review.confirm')}: ${label(row.name)}`}
-                        onClick={() => setRow(row.name, { status: 'confirmed' })}
-                      >
-                        {t('review.confirm')}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="text-link"
-                      aria-label={`${t('review.edit')}: ${label(row.name)}`}
-                      onClick={() => {
-                        setEditing(row.name);
-                        setDraft(row.text);
-                        setInvalid(null);
-                      }}
-                    >
-                      {t('review.edit')}
-                    </button>
-                  </div>
-                </>
-              )}
-            </li>
-          );
-        })}
+      <ul className="fields" data-testid="lead-fields">
+        {leadRows.map(fieldItem)}
       </ul>
-
-      <section className="deductions" aria-labelledby="deductions-title">
-        <h2 id="deductions-title" className="section-heading">
-          {label('deductions')}
-        </h2>
-        <ul className="fields">
-          {deductions.map((d, i) => (
-            <li key={i} className={`field-row status-${d.status}`} data-testid={`deduction-${i}`} data-status={d.status}>
-              <div className="deduction-edit">
-                <label>
-                  <span>{t('field.deduction.amount')}</span>
-                  <input
-                    className="input"
-                    inputMode="decimal"
-                    autoComplete="off"
-                    value={d.amount}
-                    onChange={(e) => {
-                      const amount = e.target.value;
-                      setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, amount, status: 'pending', typed: true } : x)));
-                      setDeductionProblem(null);
-                      setResult(null);
-                    }}
-                  />
-                </label>
-                <label>
-                  <span>{t('field.deduction.kind')}</span>
-                  <select
-                    className="input"
-                    value={d.kind}
-                    onChange={(e) => {
-                      const kind = e.target.value;
-                      setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, kind, status: 'pending' } : x)));
-                      setResult(null);
-                    }}
-                  >
-                    <option value="">{t('option.none')}</option>
-                    {DEDUCTION_KINDS.map((k) => (
-                      <option key={k} value={k}>
-                        {t(dynamicKey(`option.deduction.${k}`))}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              {deductionProblem?.index === i && (
-                <p className="error" role="alert" data-testid={`deduction-error-${i}`}>
-                  {t(deductionProblem.key)}
-                </p>
-              )}
-              <Source lines={d.source} t={t} />
-              <div className="button-row compact">
-                {d.status === 'pending' && (
-                  <button
-                    type="button"
-                    className="outline-button small"
-                    onClick={() => {
-                      const problem = d.typed ? typedProblem(d.amount) : toNumber(d.amount) === undefined ? 'review.invalidNumber' : null;
-                      if (problem !== null) return setDeductionProblem({ index: i, key: problem });
-                      setDeductionProblem(null);
-                      setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, status: 'confirmed' } : x)));
-                      setResult(null);
-                    }}
-                  >
-                    {t('review.confirm')}
-                  </button>
-                )}
-                {d.status === 'confirmed' && (
-                  <span className="confirmed">
-                    <Check size={16} />
-                    {t('review.confirmed')}
-                  </span>
-                )}
-                <button
-                  type="button"
-                  className="text-link"
-                  onClick={() => {
-                    setDeductions((ds) => ds.filter((_, j) => j !== i));
-                    setResult(null);
-                  }}
-                >
-                  {t('review.removeDeduction')}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <button
-          type="button"
-          className="text-link"
-          onClick={() => setDeductions((ds) => [...ds, { amount: '', kind: '', status: 'pending', source: [] }])}
-        >
-          {t('review.addDeduction')}
-        </button>
-      </section>
-
-      {pending > 0 && (
-        <p className="small" role="status">
-          {t('review.pending', { count: pending })}
-        </p>
-      )}
 
       {result && (
         <section className="validation" aria-labelledby="checks-title" data-testid="validation">
+          <h2 className="section-heading" id="annual-title">
+            {t('review.annualTitle')}
+          </h2>
+          {annual ? (
+            <>
+              <p className="annual" data-testid="annual-income" data-amount={annual.annualIncome}>
+                {formatMoney(locale, annual.annualIncome)}
+              </p>
+              <p className="basis">{basisText(annual, [...doc.confirmedStubs, toValues(rows, deductions)], locale, t)}</p>
+              <p className="small muted">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>
+              <Changes amount={annual.annualIncome} />
+            </>
+          ) : (
+            <p className="error" role="alert">
+              <Alert />
+              {t(dynamicKey(`review.failure.${result.failure ?? 'no-gross'}`))}
+            </p>
+          )}
           <h2 id="checks-title" className="section-heading">
             {t('review.checksTitle')}
           </h2>
@@ -466,24 +529,30 @@ export function DocumentReviewScreen() {
                 </li>
               ))}
           </ul>
-          <h2 className="section-heading">{t('review.annualTitle')}</h2>
-          {annual ? (
-            <>
-              <p className="annual" data-testid="annual-income" data-amount={annual.annualIncome}>
-                {formatNumber(locale, annual.annualIncome)}
-              </p>
-              <p className="basis">{basisText(annual, [...doc.confirmedStubs, toValues(rows, deductions)], locale, t)}</p>
-              <p className="small muted">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>
-              <Changes amount={annual.annualIncome} />
-            </>
-          ) : (
-            <p className="error" role="alert">
-              <Alert />
-              {t(dynamicKey(`review.failure.${result.failure ?? 'no-gross'}`))}
-            </p>
-          )}
         </section>
       )}
+
+      <div className="more-values">
+        <button
+          ref={moreButton}
+          type="button"
+          className="disclosure more-values-button"
+          aria-expanded={moreOpen}
+          aria-controls={moreId}
+          data-testid="more-values"
+          onClick={() => {
+            setMoreOpen(!moreOpen);
+            setMoreSeen(true);
+          }}
+        >
+          <Caret open={moreOpen} />
+          {t('review.moreValues', { count: restRows.length + deductions.length })}
+        </button>
+        <div id={moreId} hidden={!moreOpen}>
+          <ul className="fields">{restRows.map(fieldItem)}</ul>
+          {deductionsSection}
+        </div>
+      </div>
 
       <BlockActions>
         {annual ? (
@@ -498,7 +567,7 @@ export function DocumentReviewScreen() {
                 navigate({ name: 'results' });
               }}
             >
-              <ActionLabel>{t('review.useIncome', { amount: formatNumber(locale, annual.annualIncome) })}</ActionLabel>
+              <ActionLabel>{t('review.useIncome', { amount: formatMoney(locale, annual.annualIncome) })}</ActionLabel>
               <span className="action-arrow">
                 <ArrowRight />
               </span>
@@ -585,7 +654,7 @@ function ChangePreview({ amount }: { amount: number }) {
         </span>
       </p>
       {program && <p className="change-name">{programName(locale, program)}</p>}
-      {change.amount !== undefined && change.amount > 0 && <p className="amount pop">{formatNumber(locale, change.amount)}</p>}
+      {change.amount !== undefined && change.amount > 0 && <p className="amount pop">{formatMoney(locale, change.amount)}</p>}
     </div>
   );
 }

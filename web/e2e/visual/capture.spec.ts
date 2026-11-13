@@ -1,9 +1,10 @@
 // Captures every screen and state for design review (npm run capture): 390 px in light and dark;
-// Start, a question and Results also at 320 px and 1280 px in English and Spanish. Files go to
+// Start, a question and Results also at 320 px, and the wide layout at 960, 1280, 1440 and 1920 px,
+// in English and Spanish, light and dark. Files go to
 // visual-captures/ (git-ignored). The model, Remote Config and the device model are the app's own
 // test fakes, so nothing leaves the machine.
 import { test, type BrowserContext, type Page } from '@playwright/test';
-import { completeQuickCheck, type FlowAnswers } from '../helpers';
+import { chooseLanguage, completeQuickCheck, confirmAllValues, openDeleteEverything, type FlowAnswers } from '../helpers';
 import { fakeAnswerModels, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel, seedRemoteConfig } from '../model-fakes';
 
 const OUT = 'visual-captures';
@@ -72,7 +73,7 @@ for (const theme of ['light', 'dark'] as const) {
       await page.goto('/#/results');
       await shot(page, '08-results-before-answers', theme, false);
       await page.goto('/');
-      await completeQuickCheck(page, { income: { band: '30,000 to 44,999' } } as Partial<FlowAnswers>);
+      await completeQuickCheck(page, { income: { band: '$30,000 to $44,999' } } as Partial<FlowAnswers>);
       await shot(page, '09-results', theme);
       await context.setOffline(true);
       await page.evaluate(() => window.dispatchEvent(new Event('offline')));
@@ -83,7 +84,7 @@ for (const theme of ['light', 'dark'] as const) {
     test('results with nothing that fits', async ({ page, context }) => {
       await setup(page, context, theme);
       await page.goto('/');
-      await completeQuickCheck(page, { hasEarnedIncome: 'No', income: { band: '60,000 or more' }, housing: 'Something else', benefits: [], hasOlderMember: 'No', resident: 'No' } as Partial<FlowAnswers>);
+      await completeQuickCheck(page, { hasEarnedIncome: 'No', income: { band: '$60,000 or more' }, housing: 'Something else', benefits: [], hasOlderMember: 'No', resident: 'No' } as Partial<FlowAnswers>);
       await shot(page, '11-results-none', theme);
     });
 
@@ -201,7 +202,7 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByRole('button', { name: 'Send', exact: true }).click();
       await page.getByTestId('inference-badge').waitFor();
       await shot(page, '30-review', theme);
-      await page.getByRole('button', { name: 'Confirm all found values' }).click();
+      await confirmAllValues(page);
       await page.getByRole('button', { name: 'Check these values' }).click();
       await page.getByTestId('validation').waitFor();
       await shot(page, '31-review-checks', theme);
@@ -227,35 +228,85 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByRole('button', { name: 'More' }).click();
       await shot(page, '34-demo-rules', theme, false);
       await page.keyboard.press('Escape');
-      await page.getByRole('button', { name: 'Delete everything' }).click();
+      const dialog = await openDeleteEverything(page, 'demo');
       await shot(page, '35-delete', theme, false);
-      await page.getByRole('dialog').getByRole('button', { name: 'Delete everything' }).click();
+      await dialog.getByRole('button', { name: 'Delete everything' }).click();
       await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
       await shot(page, '36-record-deleted', theme, false);
     });
   });
 }
 
-for (const width of [320, 1280] as const) {
-  for (const lang of ['en', 'es'] as const) {
-    test(`${width} px, ${lang}: start, question, results`, async ({ page, context }) => {
-      await page.setViewportSize({ width, height: width === 320 ? 640 : 800 });
-      await setup(page, context, 'light');
-      await page.goto('/');
-      if (lang === 'es') {
+for (const width of [320, 960, 1280, 1440, 1920] as const) {
+  for (const theme of width === 320 ? (['light'] as const) : (['light', 'dark'] as const)) {
+    for (const lang of ['en', 'es'] as const) {
+      test(`${width} px, ${theme}, ${lang}: start, question, results`, async ({ page, context }) => {
+        await page.setViewportSize({ width, height: width === 320 ? 640 : width >= 1440 ? 900 : 800 });
+        await setup(page, context, theme);
+        await page.goto('/');
+        if (lang === 'es') await chooseLanguage(page, 'es');
+        await shot(page, `40-${width}-${lang}-start`, theme, false);
+        await page.goto('/#/q/income');
+        await page.getByRole('radio').first().check();
+        await shot(page, `41-${width}-${lang}-question`, theme, false);
+        await page.goto('/');
+        if (lang === 'es') await chooseLanguage(page, 'en');
+        await completeQuickCheck(page, { income: { band: '$30,000 to $44,999' } } as Partial<FlowAnswers>);
+        if (lang === 'es') await chooseLanguage(page, 'es');
+        await shot(page, `42-${width}-${lang}-results`, theme, false);
+        if (width === 320) return;
+        await program(page, 'work-credit');
+        await shot(page, `43-${width}-${lang}-program`, theme, false);
         await page.getByTestId('language-button').click();
-        await page.getByRole('radio', { name: 'Español' }).click();
-      }
-      await shot(page, `40-${width}-${lang}-start`, 'light', false);
-      await page.goto('/#/q/residentStatus');
-      await shot(page, `41-${width}-${lang}-question`, 'light', false);
-      await page.goto('/');
-      if (lang === 'en') await completeQuickCheck(page, { income: { band: '30,000 to 44,999' } } as Partial<FlowAnswers>);
-      else {
-        // Spanish: answer through the same flow by skipping every question, then open results.
-        await page.goto('/#/results');
-      }
-      await shot(page, `42-${width}-${lang}-results`, 'light', false);
+        await shot(page, `44-${width}-${lang}-language`, theme, false);
+        await page.keyboard.press('Escape');
+        await page.getByRole('button', { name: lang === 'es' ? 'Explicar este programa' : 'Explain this program' }).click();
+        await shot(page, `45-${width}-${lang}-send-step`, theme, false);
+        await page.getByTestId('bottom-block').getByRole('button', { name: /^(Details|Detalles)$/ }).click();
+        await shot(page, `46-${width}-${lang}-record`, theme, false);
+      });
+    }
+  }
+}
+
+for (const width of [960, 1440] as const) {
+  for (const theme of ['light', 'dark'] as const) {
+    test(`${width} px, ${theme}: documents`, async ({ page, context }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+      await noOnDeviceModel(context);
+      await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+      await page.goto('/#/doc');
+      await page.getByTestId('model-status').waitFor();
+      await shot(page, `47-${width}-add-document`, theme, false);
+      await page.getByRole('button', { name: 'English paystub (text)' }).click();
+      await page.getByTestId('skeleton-preview').waitFor();
+      await shot(page, `48-${width}-preview`, theme, false);
+      await page.getByRole('button', { name: 'Send', exact: true }).click();
+      await page.getByTestId('inference-badge').waitFor();
+      await shot(page, `49-${width}-review`, theme, false);
     });
   }
+}
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`kept on this device, and short screens (${theme})`, async ({ page, context }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+    await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Document type: paystub': JSON.stringify(fixturePointers('paystub-en-01-correct')) } });
+    await page.goto('/#/doc');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByTestId('inference-badge').waitFor();
+    await page.getByTestId('more-values').click();
+    await shot(page, '37-review-more-open', theme);
+    await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
+    await shot(page, '38-record-kept', theme, false);
+    await page.keyboard.press('Escape');
+    await page.setViewportSize({ width: 360, height: 640 });
+    await page.goto('/#/q/income');
+    await page.getByLabel('I know the exact amount').check();
+    await page.getByLabel('Yearly household income').fill('28000.50');
+    await shot(page, '39-income-exact-360x640', theme, false);
+  });
 }

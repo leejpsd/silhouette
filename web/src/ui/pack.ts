@@ -11,6 +11,8 @@ import type { RulePack } from '../core/rules';
 
 export const PACK: RulePack = packJson as RulePack;
 export const BANDS: Bands = bandsJson as Bands;
+/** The pack's currency (ISO 4217), when it names one: amounts, limits and ranges are then shown as money. */
+export const CURRENCY: string | undefined = (packJson as { currency?: string }).currency;
 export const PACK_COPY: Readonly<Record<'en' | 'es' | 'ko', Readonly<Record<string, string>>>> = {
   en: packEn,
   es: packEs,

@@ -3,26 +3,9 @@
    The few measures the tokens do not have are named once, below, and nowhere else. */
 
 :root {
-  /* Measures from the design that are not in tokens.json (reported; candidates for the tokens). */
-  --x-counter-size: 180px;
-  --x-counter-button: 72px;
-  --x-sheet-glimpse: 108px;
+  /* Scrolling something into view keeps it above the bottom block (measured in design/block.tsx). */
   /* On short screens (or 200 % zoom) a sheet leaves at least 40 % of the page in view. */
-  --sheet-top: max(var(--x-sheet-glimpse), 40vh);
-  --x-stamp-count: 40px;
-  --x-giant-total: 38px;
-  --x-control-text: 14px;
-  --x-tile-compact: 80px;
-  --x-giant-compact: 80px;
-  --x-action-compact: 54px;
-  --x-tile-word-compact: 44px;
-  --x-bar-pad: 6px;
-  --x-option-word: 30px;
-  --x-text-12: 12px;
-  --x-row-46: 46px;
-  --x-row-48: 48px;
-  --x-row-52: 52px;
-  --x-sheet-headline: 50px;
+  --sheet-top: max(var(--size-record-glimpse), 40vh);
 }
 
 *,
@@ -34,7 +17,8 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scroll-padding-bottom: 9rem;
+  /* Scrolling something into view keeps it above the bottom block (measured in design/block.tsx). */
+  scroll-padding-bottom: calc(var(--block-covers, 9rem) + var(--space-md));
 }
 
 body {
@@ -177,7 +161,7 @@ dialog.sheet :focus-visible {
   padding: 0;
   border: 0;
   background: none;
-  font-size: var(--x-control-text);
+  font-size: var(--type-control-size);
   font-weight: 700;
   text-align: right;
 }
@@ -202,7 +186,7 @@ main {
   width: 100%;
   max-width: calc(var(--size-reading-width) + 2 * var(--space-lg));
   margin: 0 auto;
-  padding: 6px var(--space-lg) var(--space-xl);
+  padding: var(--space-inline-1) var(--space-lg) var(--space-xl);
 }
 
 main:focus {
@@ -224,14 +208,17 @@ main:focus {
 .stack-10 {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-inline-2);
 }
 
-.footer {
-  margin-top: auto;
-  display: flex;
-  justify-content: center;
-  padding: var(--space-xxl) 0 var(--space-xs);
+.delete-entry {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--block-line);
+}
+
+.delete-entry > .outline-button {
+  width: 100%;
 }
 
 /* ---------- Type ---------- */
@@ -379,7 +366,7 @@ main h3.small {
   gap: var(--space-xs);
   width: 100%;
   min-height: var(--size-action-height);
-  padding: 0 10px 0 22px;
+  padding: 0 var(--space-inline-2) 0 var(--space-inline-5);
   border: 0;
   border-radius: var(--radius-action);
   background: var(--ground);
@@ -504,8 +491,8 @@ main h3.small {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--x-row-46);
-  padding: 0 18px;
+  min-height: var(--size-row-heights-1);
+  padding: 0 var(--space-inline-4);
   border: 0;
   border-radius: var(--radius-secondary);
   background: var(--ink);
@@ -562,7 +549,7 @@ main h3.small {
   border: 1.5px solid currentColor;
   border-radius: var(--radius-control);
   background: transparent;
-  font-size: var(--x-control-text);
+  font-size: var(--type-control-size);
   font-weight: 700;
   line-height: 1.2;
   text-align: left;
@@ -580,12 +567,12 @@ main h3.small {
 .disclosure {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-inline-1);
   min-height: var(--size-min-tap-target);
   padding: 0;
   border: 0;
   background: none;
-  font-size: var(--x-control-text);
+  font-size: var(--type-control-size);
   font-weight: 700;
   text-align: left;
 }
@@ -607,11 +594,11 @@ main h3.small {
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-inline-2);
   width: 100%;
   margin-top: auto;
   padding: var(--space-block-padding);
-  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--space-inline-2) + env(safe-area-inset-bottom));
   border-radius: var(--radius-block) var(--radius-block) 0 0;
   background: var(--block);
   color: var(--on-block);
@@ -628,11 +615,11 @@ main h3.small {
 }
 
 .block-decision {
-  gap: 10px;
+  gap: var(--space-inline-2);
 }
 
 .block[data-mode='compact'] {
-  padding: var(--space-sm) var(--space-sm) 10px var(--space-lg);
+  padding: var(--space-sm) var(--space-sm) var(--space-inline-2) var(--space-lg);
 }
 
 /* Taller than 40 % of the screen: the block scrolls with the content; the count row stays pinned. */
@@ -647,7 +634,7 @@ main h3.small {
   right: 0;
   bottom: 0;
   z-index: 10;
-  padding: var(--space-sm) var(--space-sm) calc(10px + env(safe-area-inset-bottom)) var(--space-lg);
+  padding: var(--space-sm) var(--space-sm) calc(var(--space-inline-2) + env(safe-area-inset-bottom)) var(--space-lg);
   border-radius: var(--radius-block) var(--radius-block) 0 0;
   background: var(--block);
 }
@@ -658,8 +645,8 @@ main h3.small {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--space-xxs) 14px;
-  padding-left: 10px;
+  gap: var(--space-xxs) var(--space-inline-3);
+  padding-left: var(--space-inline-2);
 }
 
 .action-row .action {
@@ -684,7 +671,7 @@ main h3.small {
 .block-note {
   padding: 0 var(--space-xs) var(--space-xs);
   color: var(--on-block-muted);
-  font-size: var(--x-text-12);
+  font-size: var(--type-caption-size);
   line-height: 1.35;
   text-align: center;
 }
@@ -698,16 +685,16 @@ main h3.small {
 .block-title {
   margin: 0;
   font-family: var(--font-text);
-  font-size: var(--x-control-text);
+  font-size: var(--type-control-size);
   font-weight: 700;
 }
 
 .routing-line {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--space-inline-2);
   padding: 0 var(--space-xs);
-  font-size: var(--x-control-text);
+  font-size: var(--type-control-size);
   line-height: 1.35;
 }
 
@@ -731,7 +718,7 @@ main h3.small {
 }
 
 .sample-grid .outline-button {
-  min-height: var(--x-row-52);
+  min-height: var(--size-row-heights-3);
   border-radius: var(--radius-secondary);
 }
 
@@ -772,7 +759,7 @@ main h3.small {
   background: var(--leave);
   color: var(--on-leave);
   font-family: var(--font-display);
-  font-size: var(--x-stamp-count);
+  font-size: var(--type-stamp-count-size);
   font-weight: 800;
   line-height: 1;
   transform: rotate(var(--rotate-stamp));
@@ -787,7 +774,7 @@ main h3.small {
 .stamp-pill {
   width: auto;
   min-width: var(--size-stamp);
-  padding: 0 10px;
+  padding: 0 var(--space-inline-2);
   border-radius: var(--radius-pill);
 }
 
@@ -799,7 +786,7 @@ main h3.small {
 }
 
 .count-title {
-  font-size: var(--x-control-text);
+  font-size: var(--type-control-size);
   font-weight: 700;
 }
 
@@ -818,7 +805,7 @@ main h3.small {
   border: 1.5px solid currentColor;
   border-radius: var(--radius-control);
   background: transparent;
-  font-size: var(--x-control-text);
+  font-size: var(--type-control-size);
   font-weight: 700;
   flex: none;
 }
@@ -879,7 +866,7 @@ dialog.sheet::backdrop {
 .sheet-label {
   margin: 0;
   font-family: var(--font-text);
-  font-size: var(--x-control-text);
+  font-size: var(--type-control-size);
   font-weight: 700;
   line-height: var(--type-label-line);
 }
@@ -893,7 +880,7 @@ dialog.sheet::backdrop {
 .sheet-headline {
   margin: 0;
   font-family: var(--font-display);
-  font-size: var(--x-sheet-headline);
+  font-size: var(--type-record-headline-size);
   font-weight: 800;
   line-height: var(--type-display-line);
   letter-spacing: var(--type-display-tracking);
@@ -914,7 +901,7 @@ dialog.sheet::backdrop {
 .sheet-foot {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-inline-2);
   margin-top: auto;
   padding-top: var(--space-xl);
 }
@@ -952,7 +939,7 @@ dialog.sheet .option-row[aria-checked='true'] {
   z-index: 30;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-inline-2);
   padding: var(--space-xs) var(--space-lg) calc(var(--space-lg) + env(safe-area-inset-bottom));
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -967,15 +954,15 @@ dialog.sheet .option-row[aria-checked='true'] {
 .record-headline {
   margin-top: var(--space-xxs);
   font-family: var(--font-display);
-  font-size: var(--type-display-size);
-  font-weight: 800;
-  line-height: 0.8;
+  font-size: var(--type-record-headline-size);
+  font-weight: var(--type-record-headline-weight);
+  line-height: var(--type-record-headline-line);
   letter-spacing: var(--type-display-tracking);
 }
 
 .leave-mark {
   display: inline-block;
-  padding: 0 10px 12px;
+  padding: 0 var(--space-inline-2) 12px;
   border-radius: 6px;
   background: var(--leave);
   color: var(--on-leave);
@@ -1047,7 +1034,7 @@ dialog.sheet .option-row[aria-checked='true'] {
   grid-column: 2;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-inline-1);
   font-size: var(--type-label-size);
   font-weight: 700;
 }
@@ -1062,7 +1049,7 @@ dialog.sheet .option-row[aria-checked='true'] {
   max-height: 40vh;
   overflow: auto;
   font-family: var(--font-mono);
-  font-size: var(--x-text-12);
+  font-size: var(--type-caption-size);
   line-height: 20px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -1074,7 +1061,7 @@ dialog.sheet .option-row[aria-checked='true'] {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
-  padding: 14px var(--space-sm);
+  padding: var(--space-inline-3) var(--space-sm);
   border-radius: var(--radius-paper);
   background: var(--paper);
   color: var(--on-paper);
@@ -1082,7 +1069,7 @@ dialog.sheet .option-row[aria-checked='true'] {
 }
 
 .paper-large {
-  padding: var(--space-lg) 18px;
+  padding: var(--space-lg) var(--space-inline-4);
   box-shadow: var(--shadow-paper-large);
 }
 
@@ -1119,7 +1106,7 @@ dialog.sheet .option-row[aria-checked='true'] {
 
 .paper-label {
   color: var(--on-paper-muted);
-  font-size: var(--x-text-12);
+  font-size: var(--type-caption-size);
   line-height: 15px;
 }
 
@@ -1132,7 +1119,7 @@ dialog.sheet .option-row[aria-checked='true'] {
 
 .paper-note {
   color: var(--on-paper-muted);
-  font-size: var(--x-text-12);
+  font-size: var(--type-caption-size);
   line-height: 15px;
 }
 
@@ -1147,7 +1134,7 @@ dialog.sheet .option-row[aria-checked='true'] {
   align-items: center;
   justify-content: center;
   height: var(--size-bar);
-  padding: 0 var(--x-bar-pad);
+  padding: 0 var(--space-inline-1);
   border-radius: var(--radius-bar);
   background: var(--leave);
   color: var(--on-leave);
@@ -1252,8 +1239,8 @@ main h2.marker-line {
 .start-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  padding: 22px 0 var(--space-lg);
+  gap: var(--space-inline-1);
+  padding: var(--space-inline-5) 0 var(--space-lg);
 }
 
 .start-card {
@@ -1271,7 +1258,7 @@ main h2.marker-line {
 
 .leave-label,
 .leave-tab {
-  padding: 0 6px;
+  padding: 0 var(--space-inline-1);
   border-radius: var(--radius-bar);
   background: var(--leave);
   color: var(--on-leave);
@@ -1288,8 +1275,8 @@ main h2.marker-line {
 .question-meta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-bottom: 6px;
+  gap: var(--space-inline-1);
+  padding-bottom: var(--space-inline-1);
 }
 
 .progress {
@@ -1308,11 +1295,11 @@ main h2.marker-line {
 .giant-n {
   font-size: var(--type-giant-number-size);
   line-height: 0.62;
-  padding-bottom: 22px;
+  padding-bottom: var(--space-inline-5);
 }
 
 .giant-total {
-  font-size: var(--x-giant-total);
+  font-size: var(--type-progress-total-size);
   line-height: 1;
   color: var(--ink-muted);
 }
@@ -1343,7 +1330,7 @@ fieldset {
 .tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-inline-2);
 }
 
 .tile {
@@ -1389,7 +1376,7 @@ fieldset {
 .option-rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-inline-2);
 }
 
 .option-row {
@@ -1409,7 +1396,7 @@ fieldset {
 
 .option-word {
   font-family: var(--font-display);
-  font-size: var(--x-option-word);
+  font-size: var(--type-option-word-size);
   font-weight: 800;
   line-height: 1;
   padding-bottom: var(--space-xxs);
@@ -1427,7 +1414,7 @@ fieldset {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-xs);
-  min-height: var(--x-row-48);
+  min-height: var(--size-row-heights-2);
   padding: var(--space-xxs) var(--space-sm);
   border: 1.5px solid var(--ink);
   border-radius: var(--radius-option);
@@ -1441,7 +1428,7 @@ fieldset {
 }
 
 .range-label {
-  font-size: var(--x-control-text);
+  font-size: var(--type-control-size);
   font-weight: 700;
   line-height: 1.2;
 }
@@ -1502,20 +1489,20 @@ fieldset {
 
 .counter {
   display: grid;
-  grid-template-columns: var(--x-counter-button) minmax(0, 1fr) var(--x-counter-button);
+  grid-template-columns: var(--size-counter-button) minmax(0, 1fr) var(--size-counter-button);
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-sm) 0;
 }
 
 .counter-button {
-  width: var(--x-counter-button);
-  height: var(--x-counter-button);
+  width: var(--size-counter-button);
+  height: var(--size-counter-button);
   border: 1.5px solid currentColor;
   border-radius: 50%;
   background: transparent;
   font-family: var(--font-display);
-  font-size: var(--x-stamp-count);
+  font-size: var(--type-stamp-count-size);
   font-weight: 800;
   line-height: 1;
   transition: transform var(--duration-press) ease;
@@ -1529,7 +1516,7 @@ fieldset {
   border-radius: var(--radius-control);
   background: transparent;
   font-family: var(--font-display);
-  font-size: var(--x-counter-size);
+  font-size: var(--size-counter);
   font-weight: 800;
   line-height: 1;
   text-align: center;
@@ -1549,7 +1536,7 @@ fieldset {
 .private {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-inline-2);
   font-size: var(--type-help-size);
   line-height: 1.3;
 }
@@ -1558,7 +1545,7 @@ fieldset {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xxs);
-  font-size: var(--x-text-12);
+  font-size: var(--type-caption-size);
 }
 
 .private-inline .icon {
@@ -1569,7 +1556,7 @@ fieldset {
 .error {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--space-inline-1);
   font-size: var(--type-small-size);
   font-weight: 700;
   line-height: var(--type-small-line);
@@ -1584,7 +1571,7 @@ fieldset {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-inline-1);
 }
 
 .field label,
@@ -1631,7 +1618,7 @@ fieldset {
 .understood {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-inline-1);
   min-height: 1.35em;
   font-size: var(--type-small-size);
   font-weight: 700;
@@ -1679,7 +1666,7 @@ fieldset {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-xs);
-  min-height: var(--x-row-46);
+  min-height: var(--size-row-heights-1);
   text-decoration: none;
 }
 
@@ -1712,7 +1699,7 @@ fieldset {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  min-height: var(--x-row-46);
+  min-height: var(--size-row-heights-1);
   font-family: var(--font-display);
   font-size: var(--type-list-item-size);
   font-weight: 800;
@@ -1724,7 +1711,7 @@ fieldset {
   display: flex;
   flex-direction: column;
   gap: var(--space-xxs);
-  padding: var(--space-md) 18px;
+  padding: var(--space-md) var(--space-inline-4);
   border-radius: var(--radius-panel);
   background: var(--block);
   color: var(--on-block);
@@ -1750,7 +1737,7 @@ fieldset {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-sm);
-  padding-top: 10px;
+  padding-top: var(--space-inline-2);
 }
 
 .card-actions .small {
@@ -1802,13 +1789,13 @@ fieldset {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: var(--space-xs) 0 10px;
+  padding: var(--space-xs) 0 var(--space-inline-2);
   font-size: var(--type-small-size);
   font-weight: 700;
 }
 
 .dashed-note {
-  padding: var(--space-sm) 14px;
+  padding: var(--space-sm) var(--space-inline-3);
   border: 1.5px dashed currentColor;
   border-radius: var(--radius-control);
   font-size: var(--type-small-size);
@@ -1845,7 +1832,7 @@ fieldset {
 }
 
 .criterion {
-  padding: 10px 0;
+  padding: var(--space-inline-2) 0;
   border-top: 1px solid var(--line);
 }
 
@@ -2025,13 +2012,13 @@ fieldset {
 .detail {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--x-text-12);
+  font-size: var(--type-caption-size);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
 .free-text {
-  gap: 6px;
+  gap: var(--space-inline-1);
 }
 
 .free-text > label {
@@ -2053,8 +2040,8 @@ fieldset {
 .send-panel {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: var(--space-md) 18px;
+  gap: var(--space-inline-2);
+  padding: var(--space-md) var(--space-inline-4);
   border-radius: var(--radius-panel);
   background: var(--block);
   color: var(--on-block);
@@ -2083,7 +2070,7 @@ fieldset {
 .send-lines {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-inline-1);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -2139,8 +2126,8 @@ progress {
 .source-card {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  padding: 14px var(--space-md);
+  gap: var(--space-inline-3);
+  padding: var(--space-inline-3) var(--space-md);
   border: 1.5px solid currentColor;
   border-radius: var(--radius-tile);
 }
@@ -2164,7 +2151,7 @@ progress {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--space-inline-1);
   flex: 1;
   min-width: 0;
 }
@@ -2208,13 +2195,14 @@ main h2.source-title {
 }
 
 .doc {
-  margin: 10px 2px 0;
+  margin: var(--space-inline-2) 2px 0;
   font-family: var(--font-mono);
   font-size: var(--type-mono-document-size);
   line-height: var(--type-mono-document-line);
-  /* A document keeps its columns: it scrolls sideways inside the paper rather than re-wrapping. */
-  white-space: pre;
-  overflow-x: auto;
+  /* Long lines wrap inside the paper (breaking anywhere when they must); the characters are the
+     ones that would be sent. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   display: block;
   transition: transform var(--duration-doc-tilt) var(--ease-standard);
 }
@@ -2229,18 +2217,30 @@ main h2.source-title {
 
 .tok {
   display: inline-block;
+  /* Same box in both views: the width of --chars document characters, one bar height. */
+  inline-size: calc(var(--chars, 1) * 1ch);
+  max-inline-size: 100%;
+  box-sizing: content-box;
   padding: 0 var(--space-xxs);
   border-radius: var(--radius-bar);
-  line-height: var(--type-placeholder-id-line);
+  line-height: calc(var(--type-placeholder-id-line) * var(--type-placeholder-id-size));
+  vertical-align: top;
+  margin-block-start: calc((var(--type-mono-document-line) * 1em - var(--type-placeholder-id-line) * var(--type-placeholder-id-size)) / 2);
+  overflow: hidden;
+  white-space: pre;
 }
 
 .doc[data-mode='leave'] .tok {
   background-color: var(--leave);
   color: var(--on-leave);
-  font-size: var(--type-placeholder-id-size);
-  font-weight: var(--type-placeholder-id-weight);
+  font-size: inherit;
   text-align: center;
   animation: token-in var(--duration-token-fade) var(--ease-fade) both;
+}
+
+.doc[data-mode='leave'] .tok::first-line {
+  font-size: var(--type-placeholder-id-size);
+  font-weight: var(--type-placeholder-id-weight);
 }
 
 .doc[data-mode='leave'] .tok-mine {
@@ -2296,7 +2296,7 @@ main h2.source-title {
 .field-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-inline-1);
 }
 
 .field-head {
@@ -2311,7 +2311,7 @@ main h2.source-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-inline-2);
 }
 
 .field-body .source {
@@ -2409,7 +2409,7 @@ main h2.source-title {
   font-size: var(--type-count-size);
   font-weight: 800;
   line-height: 0.7;
-  padding-bottom: 10px;
+  padding-bottom: var(--space-inline-2);
 }
 
 .basis {
@@ -2434,7 +2434,7 @@ main h2.source-title {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-inline-2);
   font-size: var(--type-label-size);
 }
 
@@ -2559,21 +2559,21 @@ main h2.source-title {
 
 @media (max-height: 699px) {
   .giant-n {
-    font-size: var(--x-giant-compact);
-    padding-bottom: 10px;
+    font-size: var(--size-compact-question-number);
+    padding-bottom: var(--space-inline-2);
   }
 
   .tile {
-    height: var(--x-tile-compact);
+    height: var(--size-compact-option-tile-height);
   }
 
   .tile-word {
-    font-size: var(--x-tile-word-compact);
+    font-size: var(--size-compact-tile-word);
   }
 
   .action,
   .send-button {
-    min-height: var(--x-action-compact);
+    min-height: var(--size-compact-action-height);
   }
 
   .count-sub {
@@ -2581,23 +2581,96 @@ main h2.source-title {
   }
 }
 
-/* ---------- Desktop: the block docks with side margins ---------- */
+/* ---------- Wide screens (layout.wide): content on the left, the block as a panel on the right ---------- */
 
-@media (min-width: 1024px) {
-  .block {
-    width: auto;
-    margin-inline: 40px;
+/* The width of a headline line on a 390 px phone (the design frame less two gutters), in px. Wide
+   screens keep that measure in em, so headlines break into the same lines as on a phone. */
+:root {
+  --phone-measure: 350;
+}
+
+@media (min-width: 960px) {
+  :root {
+    --wide-frame: min(var(--wide-content-max), 100% - 2 * var(--space-gutter));
+    --wide-top: calc(var(--size-header-height) + var(--size-demo-line-height) + var(--space-md));
+    --wide-right: max(var(--space-gutter), (100% - var(--wide-content-max)) / 2);
   }
 
-  .block-actions,
-  .count-row {
-    width: 100%;
-    max-width: calc(var(--size-reading-width) + 2 * var(--space-lg));
+  .header,
+  .demo-line {
+    width: var(--wide-frame);
     margin-inline: auto;
+    padding-inline: 0;
   }
 
-  .block[data-mode='compact'] .count-row {
+  main {
+    width: var(--wide-frame);
     max-width: none;
+    margin-inline: auto;
+    padding: var(--space-md) calc(var(--wide-block-width) + var(--wide-gap)) var(--space-xxl) 0;
+  }
+
+  /* One content column on every screen: nothing moves sideways between screens. */
+  main > * {
+    width: 100%;
+    max-width: var(--wide-column-max);
+  }
+
+  .display {
+    max-inline-size: calc(var(--phone-measure) * 1em / var(--design, 56));
+  }
+
+  /* The block: a fixed panel in the right column, rounded on all corners, never a full-width bar. */
+  .block,
+  .block[data-tall='true'] {
+    position: fixed;
+    top: var(--wide-top);
+    right: var(--wide-right);
+    bottom: auto;
+    width: var(--wide-block-width);
+    max-height: calc(100dvh - var(--wide-top) - var(--space-gutter));
+    margin: 0;
+    padding: var(--space-block-padding);
+    border-radius: var(--radius-block);
+    overflow: hidden;
+  }
+
+  .block-actions {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .block[data-tall='true'] .count-row {
+    position: static;
+    padding: var(--space-xs) 0 0 var(--space-xs);
+    border-radius: 0;
+    background: none;
+  }
+
+  .block[data-mode='compact'] {
+    padding: var(--space-sm) var(--space-sm) var(--space-inline-2) var(--space-lg);
+  }
+
+  /* Sheets open inside the block's column. */
+  dialog.sheet {
+    inset: var(--wide-top) var(--wide-right) var(--space-gutter) auto;
+    width: var(--wide-block-width);
+    border-radius: var(--radius-block);
+  }
+
+  .sheet-body {
+    padding-inline: var(--space-lg);
+  }
+
+  .sheet-glimpse {
+    display: none;
+  }
+
+  .record-sheet {
+    inset: var(--wide-top) var(--wide-right) var(--space-gutter) auto;
+    width: var(--wide-block-width);
+    border-radius: var(--radius-block);
   }
 }
 
@@ -2640,4 +2713,51 @@ main h2.source-title {
 .action.centered .action-label {
   flex: none;
   text-align: center;
+}
+
+/* ---------- Review: what decides the result first, the rest folded ---------- */
+
+.confirm-all {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.confirm-all .outline-button {
+  min-height: var(--size-row-heights-1);
+}
+
+.more-values {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--line);
+}
+
+.more-values-button {
+  font-family: var(--font-display);
+  font-size: var(--type-heading-size);
+  font-weight: var(--type-heading-weight);
+  line-height: var(--type-heading-line);
+}
+
+.more-values > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.more-values > div[hidden] {
+  display: none;
+}
+
+/* The amount as understood keeps its line, so bringing the field into view includes it. */
+.exact-field .understood:empty {
+  min-height: 1.35em;
+}
+
+/* The record headline: "3 sent," on pink, then what stayed on the device. */
+.kept-mark {
+  white-space: nowrap;
 }

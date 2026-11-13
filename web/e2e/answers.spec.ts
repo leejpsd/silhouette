@@ -28,7 +28,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     const panel = page.getByTestId('send-panel');
     await expect(panel.getByRole('heading', { name: 'Leaving your device' })).toBeFocused();
     const lines = page.getByTestId('send-lines');
-    await expect(lines).toContainText('Income range: 30,000 to 44,999 (C)');
+    await expect(lines).toContainText('Income range: $30,000 to $44,999 (C)');
     await expect(lines).toContainText('Housing: I rent (renter)');
     await expect(lines).toContainText('It never carries your result.');
     await panel.getByText('Show the exact request').click();
@@ -143,7 +143,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     await openProgram(page, 'food-help');
     await expect(page.getByTestId('verdict-card')).toHaveAttribute('data-verdict', 'unlikely');
     const why = page.getByTestId('why-section');
-    await expect(why.getByTestId('why-income-limit').getByTestId('why-limit')).toContainText(/Limit\s*34,000\s*You\s*30,524/);
+    await expect(why.getByTestId('why-income-limit').getByTestId('why-limit')).toContainText(/Limit\s*\$34,000\s*You\s*\$30,524/);
     await expect(why.getByTestId('why-residency')).toHaveAttribute('data-state', 'fail');
     await expect(why.getByTestId('why-unavailable')).toContainText('needs a model on this device');
 
@@ -302,7 +302,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     await page.getByRole('button', { name: 'Explicar este programa' }).click();
     const lines = page.getByTestId('send-lines');
     await expect(lines).toContainText('Vivienda: Rento (renter)');
-    await expect(lines).toContainText('Rango de ingresos: De 30.000 a 44.999 (C)');
+    await expect(lines).toContainText('Rango de ingresos: De 30.000 $ a 44.999 $ (C)');
   });
 
   test('with the flags off every page is complete: official information and the way back, no dead buttons', async ({ page, context }) => {

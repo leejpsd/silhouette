@@ -113,3 +113,32 @@ export async function chooseLanguage(page: Page, locale: keyof typeof LANGUAGE_N
   await page.getByTestId('language-button').click();
   await page.getByRole('radio', { name: LANGUAGE_NAMES[locale] }).click();
 }
+
+/**
+ * Opens "Delete everything" from where people find it: the record of what left this device (or, with
+ * `from: 'demo'`, the demo-rules sheet). Returns the confirmation dialog.
+ */
+export async function openDeleteEverything(page: Page, from: 'record' | 'demo' = 'record') {
+  if (from === 'demo') {
+    await page.getByTestId('demo-banner').getByRole('button', { name: 'More' }).click();
+    await page.getByTestId('demo-sheet').getByRole('button', { name: 'Delete everything' }).click();
+  } else {
+    const bar = page.getByTestId('leaving-bar');
+    if ((await bar.getAttribute('data-open')) !== 'true') await bar.getByRole('button', { name: 'Details' }).click();
+    await bar.getByRole('button', { name: 'Delete everything' }).click();
+  }
+  const dialog = page.getByRole('dialog', { name: 'Delete everything on this device?' });
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
+
+/**
+ * Presses "Confirm all N values". When some of them are folded under "More values" and were never
+ * shown, the first press only opens them, so a second press is needed.
+ */
+export async function confirmAllValues(page: Page): Promise<void> {
+  const button = page.getByRole('button', { name: /^Confirm all \d+ values$/ });
+  await button.click();
+  if (await button.isVisible()) await button.click();
+  await expect(button).toHaveCount(0);
+}

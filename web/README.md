@@ -22,8 +22,8 @@ This folder is the web app: TypeScript, React and Vite, with Firebase AI Logic f
 | About this program | `src/ui/answers/`, `src/ai/tasks.ts` | Only on a tap. A model that only knows the silhouette explains the program in general and answers prepared questions; it is never given or asked for a result (`explain.v3`, `ask.v2`), and its text is checked before it is shown (`shared/prompts/OUTPUT_CHECKS.md`: one retry, then a plain notice instead of the text). Before a request leaves, a step lists what it carries and shows the exact request body; that string is the body sent and the one kept in the record. Agreeing to a device-first request does not cover a cloud-first one. Requests can be cancelled and say when they are slow. Answers are cached for the session |
 | Typed questions | `src/ai/on-device.ts` | Answered only by the on-device model (`ask.freeText`), with the person's own result as context; never sent |
 | Current information, other help, places, read aloud | `src/ui/answers/`, `src/ai/tasks.ts` | Behind Remote Config flags, off by default. Current information searches for every program of the rule pack in one request, so it says nothing about the person. Other help is listed separately as "Leads — not verified". Places are found near the county's center point, never the device's position. With a flag off, each page still shows the rule pack's official information |
-| Leaving your device | `src/data/net-monitor.ts`, `src/data/outbound.ts` | Every request to another host is recorded before it is sent ("attempted"), then marked "sent" with its HTTP status or "failed" with the reason. The record is kept in the encrypted store and listed in the persistent bar at the bottom of the app, with the complete body of every model request. Credentials are never recorded |
-| Delete everything | `src/data/store.ts` | Erases every IndexedDB database of the app's origin (the encrypted store and its key, and the Firebase SDK's App Check, heartbeat and installation databases), and the app's and the SDK's localStorage and sessionStorage entries. Only the time of the deletion is kept, so the bar can say that the record was deleted. The service worker's cache of the app's own files is kept |
+| Leaving your device | `src/data/net-monitor.ts`, `src/data/outbound.ts` | Every request to another host is recorded before it is sent ("attempted"), then marked "sent" with its HTTP status or "failed" with the reason. The record is kept in the encrypted store and listed in the persistent bar at the bottom of the app, with the complete body of every model request. Credentials are never recorded. An answer written by the on-device model is listed too, as "Answered on this device", with no destination and no body; the record counts it as kept, and the count in the bar stays the number of requests that left |
+| Delete everything | `src/data/store.ts` | Reached from the record of what left and from the demo-rules sheet. Erases every IndexedDB database of the app's origin (the encrypted store and its key, and the Firebase SDK's App Check, heartbeat and installation databases), and the app's and the SDK's localStorage and sessionStorage entries. Only the time of the deletion is kept, so the bar can say that the record was deleted. The service worker's cache of the app's own files is kept |
 
 ### Data types decide where a value may go
 
@@ -64,16 +64,16 @@ Task ids, modes and reasons come from `shared/routing.json`. Every model result 
 
 ## Look and feel
 
-The visual design is "Duplicator" (`shared/design/DESIGN.md`, values in `shared/design/tokens.json`): one ground and one ink colour, the inverted bottom block that carries the screen's main action and the "Leaving your device" count, paper slips for the person's data, and pink only for what can leave. Results are told apart by marker shape, never by colour.
+The visual design is "Duplicator" (`shared/design/DESIGN.md`, values in `shared/design/tokens.json`): one ground and one ink colour, the inverted bottom block that carries the screen's main action and the "Leaving your device" count, paper slips for the person's data, and pink only for what can leave. Results are told apart by marker shape, never by colour. Amounts are money in the rule pack's currency, formatted for the app's language. From 960 px wide the app uses two columns: the screen on the left in one fixed-width column, and the block as a 400 px panel on the right, where the sheets open too.
 
 | Where | What |
 |---|---|
 | `src/ui/tokens.ts` | Turns the tokens into CSS custom properties (design role names only), the grain tile and the checkbox tick |
-| `src/ui/styles.css` | All styling, from those properties; the few measures the tokens lack are named once at the top |
+| `src/ui/styles.css` | All styling, from those properties (a unit test checks that every property it uses is defined) |
 | `src/ui/design/` | Shared components: the bottom block and its modes, sheets, paper, placeholder bars, verdict markers, the stamped count, the size-step rule for display type, icons |
 | `public/fonts/` | Darker Grotesque, Hanken Grotesk and DM Mono (SIL OFL 1.1, licences beside them), Latin and Latin Extended subsets, copied from `@fontsource` by `npm run fonts:copy`. Nothing is fetched from a font host |
 
-`npm run capture` writes screenshots of every screen and state (390 px light and dark; Start, a question and Results at 320 and 1280 px in English and Spanish) to `visual-captures/`, using the same fakes as the end-to-end tests.
+`npm run capture` writes screenshots of every screen and state (390 px light and dark; Start, a question and Results at 320 px, and the wide layout at 960, 1280, 1440 and 1920 px, in English and Spanish) to `visual-captures/`, using the same fakes as the end-to-end tests.
 
 ## Run it
 

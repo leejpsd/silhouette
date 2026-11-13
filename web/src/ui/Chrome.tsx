@@ -1,11 +1,11 @@
 // Persistent chrome: the header with the wordmark and the language control, the one-line demo
 // notice, the "Leaving your device" count row with its record, and "Delete everything".
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
-import { outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
+import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
 import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, type Locale } from './i18n';
 import { useApp } from './context';
 import { Count, Paper, Sheet, ActionLabel } from './design/parts';
-import { Caret, Check, Close, CrossCircle, Trash } from './design/icons';
+import { Caret, Check, Close, CrossCircle, Phone, Trash } from './design/icons';
 
 const SHORT_NAMES: Record<Locale, string> = { en: 'EN', es: 'ES', ko: '한국어' };
 
@@ -60,7 +60,7 @@ export function Header({ onLocale }: { onLocale: (locale: Locale) => void }) {
 }
 
 /** The one-line demo notice, with "More" opening the demo-rules sheet. */
-export function DemoBanner() {
+export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
   const { t } = useApp();
   const [open, setOpen] = useState(false);
   const more = useRef<HTMLButtonElement>(null);
@@ -92,6 +92,7 @@ export function DemoBanner() {
         </h2>
         <p className="sheet-text">{t('demo.body')}</p>
         <p className="sheet-note">{t('promise.line3')}</p>
+        <DeleteEverything onDelete={onDelete} onDone={() => setOpen(false)} />
       </Sheet>
     </aside>
   );
@@ -100,7 +101,7 @@ export function DemoBanner() {
 const time = (locale: Locale, at: number) => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit', hourCycle: 'h23' }).format(at);
 
 /** The count row of the bottom block; "Details" opens the record of everything that left this device. */
-export function LeavingBar() {
+export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   const { t, locale } = useApp();
   const { entries, clearedAt } = useSyncExternalStore(subscribeOutbound, outboundState, outboundState);
   const [open, setOpen] = useState(false);
@@ -111,20 +112,23 @@ export function LeavingBar() {
     const key = `outbound.field.${f}`;
     return lookup('en', key) === undefined ? f : t(dynamicKey(key));
   };
-  const kinds = [...new Set(entries.flatMap((e) => e.fields))].map(fieldName);
+  const left = leftDevice(entries);
+  const kept = entries.length - left.length;
+  const kinds = [...new Set(left.flatMap((e) => e.fields))].map(fieldName);
   const date = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(clearedAt);
   const shortDate = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(clearedAt);
-  const sent = entries.filter((e) => e.status === 'sent').length;
-  const carriesProfile = entries.some((e) => e.fields.includes('profile-silhouette') || e.fields.includes('county-area'));
+  const carriesProfile = left.some((e) => e.fields.includes('profile-silhouette') || e.fields.includes('county-area'));
   const statusLine = (e: OutboundEntry) =>
-    e.status === 'attempted'
-      ? t('outbound.status.attempted')
-      : e.status === 'sent'
-        ? t('outbound.status.sent', { status: e.httpStatus ?? '' })
-        : t('outbound.status.failed', { reason: e.error ?? '' });
+    e.status === 'answered'
+      ? t('outbound.status.answeredShort')
+      : e.status === 'attempted'
+        ? t('outbound.status.attempted')
+        : e.status === 'sent'
+          ? t('outbound.status.sent', { status: e.httpStatus ?? '' })
+          : t('outbound.status.failed', { reason: e.error ?? '' });
   const summary =
-    entries.length > 0
-      ? t('outbound.count', { count: entries.length, list: kinds.join(', ') })
+    left.length > 0
+      ? t('outbound.count', { count: left.length, list: kinds.join(', ') })
       : clearedAt !== null
         ? t('leaving.clearedShort', { date })
         : t('leaving.none');
@@ -150,7 +154,8 @@ export function LeavingBar() {
       className="leaving"
       aria-labelledby="leaving-title"
       data-testid="leaving-bar"
-      data-outbound-count={entries.length}
+      data-outbound-count={left.length}
+      data-kept-count={kept}
       data-cleared={clearedAt !== null ? 'true' : 'false'}
       data-open={open}
     >
@@ -167,8 +172,8 @@ export function LeavingBar() {
               </button>
             </div>
             {entries.length > 0 ? (
-              <p className="record-headline">
-                <span className="leave-mark">{t('leaving.sentCount', { count: sent || entries.length })}</span>
+              <p className="record-headline" data-testid="record-headline">
+                <span className="leave-mark">{t('leaving.sentCount', { count: left.length })}</span> <span className="kept-mark">{t('leaving.keptCount', { count: kept })}</span>
               </p>
             ) : (
               <p className="record-zero" aria-hidden="true">
@@ -177,7 +182,7 @@ export function LeavingBar() {
             )}
             {entries.length === 0 && clearedAt !== null && <p className="record-deleted">{t('leaving.recordDeleted', { date: shortDate })}</p>}
             {entries.length > 0 ? <p>{t('leaving.bodySent')}</p> : clearedAt !== null ? <p>{t('leaving.cleared', { date })}</p> : <p>{t('leaving.body')}</p>}
-            {entries.length > 0 && !carriesProfile && <p>{t('leaving.noValues')}</p>}
+            {left.length > 0 && !carriesProfile && <p>{t('leaving.noValues')}</p>}
             {entries.length > 0 && clearedAt !== null && <p className="record-note">{t('leaving.cleared', { date })}</p>}
             <p className="record-note">{t('leaving.network')}</p>
             {entries.length > 0 && (
@@ -187,11 +192,12 @@ export function LeavingBar() {
                 ))}
               </ol>
             )}
+            <DeleteEverything onDelete={onDelete} />
           </div>
         </>
       )}
       <div className="count-row">
-        <Count value={entries.length} />
+        <Count value={left.length} />
         <p className="count-text">
           <span id="leaving-title" className="count-title">
             {t('leaving.title')}
@@ -217,7 +223,7 @@ function OutboundItem({ entry: e, title, status, at }: { entry: OutboundEntry; t
       <span className="outbound-time">{at}</span>
       <div className="outbound-main">
         <span className="outbound-what">{title}</span>
-        <span className="outbound-where">{t('outbound.requestTo', { destination: e.destination, path: e.path })}</span>
+        {e.status !== 'answered' && <span className="outbound-where">{t('outbound.requestTo', { destination: e.destination, path: e.path })}</span>}
         {e.model && <span className="outbound-where">{t('outbound.model', { model: e.model })}</span>}
         {e.body !== undefined && (
           <>
@@ -236,22 +242,26 @@ function OutboundItem({ entry: e, title, status, at }: { entry: OutboundEntry; t
         )}
       </div>
       <span className={`outbound-status status-${e.status}`} data-testid="outbound-status">
-        {e.status === 'attempted' ? <span className="marker marker-loading" aria-hidden="true" /> : e.status === 'sent' ? <Check size={14} /> : <CrossCircle />}
+        {e.status === 'answered' ? <Phone /> : e.status === 'attempted' ? <span className="marker marker-loading" aria-hidden="true" /> : e.status === 'sent' ? <Check size={14} /> : <CrossCircle />}
         <span>{status}</span>
       </span>
     </li>
   );
 }
 
-export function Footer({ onDelete }: { onDelete: () => Promise<void> }) {
+/**
+ * "Delete everything": an entry in the record of what left and in the demo-rules sheet, with its
+ * confirmation sheet.
+ */
+export function DeleteEverything({ onDelete, onDone }: { onDelete: () => Promise<void>; onDone?: () => void }) {
   const { t } = useApp();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const headline = useId();
   return (
-    <footer className="footer">
-      <button ref={button} type="button" className="outline-button small" aria-haspopup="dialog" onClick={() => setOpen(true)}>
+    <div className="delete-entry">
+      <button ref={button} type="button" className="outline-button" aria-haspopup="dialog" onClick={() => setOpen(true)}>
         <Trash />
         {t('delete.all')}
       </button>
@@ -276,6 +286,7 @@ export function Footer({ onDelete }: { onDelete: () => Promise<void> }) {
                 } finally {
                   setBusy(false);
                   setOpen(false);
+                  onDone?.();
                 }
               }}
             >
@@ -295,6 +306,6 @@ export function Footer({ onDelete }: { onDelete: () => Promise<void> }) {
           {t('delete.body')}
         </p>
       </Sheet>
-    </footer>
+    </div>
   );
 }

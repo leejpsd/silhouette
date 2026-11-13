@@ -5,6 +5,7 @@
 // the content and only the count row stays pinned.
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { WIDE_FROM } from '../tokens';
 
 export type BlockMode = 'compact' | 'standard' | 'decision';
 
@@ -61,11 +62,18 @@ export function BottomBlock({ count }: { count: ReactNode }) {
     const el = ref.current;
     if (!el) return;
     const measure = () => {
+      // Wide screens: the block is a panel beside the content and never covers it.
+      const wide = window.innerWidth >= WIDE_FROM;
       // The block's height as if pinned: the actions and the count row, measured the same way whether
       // or not the count row is currently pinned on its own (so the decision cannot flip back and forth).
       const actions = (el.querySelector('.block-actions') as HTMLElement | null)?.offsetHeight ?? 0;
       const count = (el.querySelector('.count-row') as HTMLElement | null)?.offsetHeight ?? 0;
-      setTall(actions + count + 34 > window.innerHeight * 0.4);
+      const tall = !wide && actions + count + 34 > window.innerHeight * 0.4;
+      setTall(tall);
+      // What the block covers at the bottom of the screen, so that scrolling a field into view (and
+      // focus moving to it) keeps it above the block.
+      const covers = wide ? 0 : tall ? count + 24 : el.offsetHeight;
+      document.documentElement.style.setProperty('--block-covers', `${covers}px`);
     };
     const observer = new ResizeObserver(measure);
     observer.observe(el);

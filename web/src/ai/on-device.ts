@@ -11,6 +11,7 @@ import { ASK_CREATE_OPTIONS, PHOTO_CREATE_OPTIONS } from './device-model';
 import { ASK_PERSONAL_V1, EXPLAIN_PERSONAL_V1, PHOTO_READ, fill, type PromptTemplate } from './prompts';
 import { checked, languageName, type DocType, type RoutingReason, type TaskResult } from './tasks';
 import { ASK_WORDS } from '../core/explain';
+import { recordAnsweredOnDevice } from '../data/outbound';
 
 const PHOTO_TASK = routing.tasks['document.photo.read'];
 const FREE_TEXT_TASK = routing.tasks['ask.freeText'];
@@ -46,6 +47,7 @@ export async function readPhoto(photo: Raw<Blob>, docType: DocType, language: st
     ]);
     const source = sourceOf(response, 'ON_DEVICE');
     if (source !== 'ON_DEVICE') throw new TaskError('on-device-unavailable', 'photo task did not run on device');
+    recordAnsweredOnDevice(['inline-file']);
     return { value: Raw.of(response.text()), inferenceSource: source, reason: PHOTO_TASK.reason as RoutingReason };
   } catch (error) {
     throw classifyError(error);
@@ -95,7 +97,9 @@ async function runPersonal(
       throw classifyError(error);
     }
   };
-  return checked(once, 'personal', locale, (r) => r.value);
+  const result = await checked(once, 'personal', locale, (r) => r.value);
+  recordAnsweredOnDevice(['model-request']);
+  return result;
 }
 
 function personalValues(result: PersonalResult): Record<string, string> {

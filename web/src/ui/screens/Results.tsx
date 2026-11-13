@@ -1,11 +1,12 @@
 // Results: programs grouped by verdict, each marked by shape and linking to its detail. The
 // "possible" group sits in the inverted card with what would make it clearer.
 import { useMemo, useSyncExternalStore } from 'react';
-import { outboundState, subscribeOutbound } from '../../data/outbound';
+import { leftDevice, outboundState, subscribeOutbound } from '../../data/outbound';
 import { criterionReasons, type ProgramVerdict } from '../../core/rules';
 import { Raw } from '../../core/types';
 import { useApp } from '../context';
-import { dynamicKey, formatNumber, programName } from '../i18n';
+import { dynamicKey, formatMoney, programName } from '../i18n';
+import { shownValue } from '../answers/personal';
 import { BANDS, PACK } from '../pack';
 import { groupByVerdict, toEngineAnswers } from '../quickcheck';
 import { navigate, routeHref } from '../router';
@@ -13,6 +14,7 @@ import { ScreenHeading } from '../Heading';
 import { MoreHelpLinks } from '../answers/MoreHelpLinks';
 import { BlockActions } from '../design/block';
 import { ArrowRight, ChevronRight, Minus } from '../design/icons';
+import { LABEL_FLOOR } from '../tokens';
 import { FitText, Marker, ActionLabel } from '../design/parts';
 import { useOnline } from '../design/online';
 
@@ -20,7 +22,7 @@ export function ResultsScreen() {
   const { t, locale, steps, answers, results } = useApp();
   const groups = groupByVerdict(results);
   // Once anything has left the device, the lead must not say that nothing was sent.
-  const sentSomething = useSyncExternalStore(subscribeOutbound, () => outboundState().entries.length > 0, () => false);
+  const sentSomething = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length > 0, () => false);
   const online = useOnline();
   const answered = Object.keys(answers).length > 0;
   const nothingFits = answered && results.length > 0 && results.every((r) => r.verdict === 'unlikely');
@@ -145,14 +147,14 @@ function ProgramRow({ result: r, name }: { result: ProgramVerdict; name: string 
     <li data-testid={`program-${r.programId}`} data-verdict={r.verdict}>
       <a href={routeHref({ name: 'program', id: r.programId })} className="program-link">
         <span className="program-text">
-          <FitText className="program-name" size={32} maxLines={2} step={2} floor={0.66}>
+          <FitText className="program-name" size={32} maxLines={2} step={2} floor={LABEL_FLOOR}>
             {name}
           </FitText>
           {r.dependsOn.length > 0 && (
             <span className="program-note">{t('results.dependsOn', { list: r.dependsOn.map((v) => t(dynamicKey(`variable.${v}`))).join(', ') })}</span>
           )}
           {r.estimatedAmount !== undefined && r.estimatedAmount > 0 && (
-            <span className="program-note">{t('results.estimate', { amount: formatNumber(locale, r.estimatedAmount) })}</span>
+            <span className="program-note">{t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}</span>
           )}
         </span>
         <ChevronRight />
@@ -165,19 +167,12 @@ function ProgramRow({ result: r, name }: { result: ProgramVerdict; name: string 
 function Featured({ result: r, name, reasons }: { result: ProgramVerdict; name: string; reasons: ReturnType<typeof criterionReasons> }) {
   const { t, locale } = useApp();
   const comparison = reasons.flatMap((c) => c.comparisons).find((c) => c.variable === 'annualIncome' && c.limit !== null);
-  const yours =
-    comparison?.yours === null || comparison?.yours === undefined
-      ? null
-      : typeof comparison.yours === 'number'
-        ? formatNumber(locale, comparison.yours)
-        : comparison.yours.max === null
-          ? `${formatNumber(locale, comparison.yours.min)}+`
-          : `${formatNumber(locale, comparison.yours.min)} – ${formatNumber(locale, comparison.yours.max)}`;
+  const yours = comparison?.yours === null || comparison?.yours === undefined ? null : shownValue(locale, comparison.yours, '', true);
   const mixed = r.criteria.some((c) => c.state === 'mixed');
   return (
     <li className="featured" data-testid={`program-${r.programId}`} data-verdict={r.verdict}>
       <a href={routeHref({ name: 'program', id: r.programId })} className="featured-link">
-        <FitText className="featured-name" size={32} maxLines={2} step={2} floor={0.66}>
+        <FitText className="featured-name" size={32} maxLines={2} step={2} floor={LABEL_FLOOR}>
           {name}
         </FitText>
       </a>
@@ -185,7 +180,7 @@ function Featured({ result: r, name, reasons }: { result: ProgramVerdict; name: 
         <dl className="limit-rows">
           <div>
             <dt>{t('detail.limitFamily')}</dt>
-            <dd>{formatNumber(locale, comparison.limit as number)}</dd>
+            <dd>{formatMoney(locale, comparison.limit as number)}</dd>
           </div>
           {yours && (
             <div>

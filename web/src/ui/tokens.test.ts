@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 // WCAG 2.2 AA contrast for the colour pairs the UI uses (1.4.3 text 4.5:1, 1.4.11 controls and focus
 // 3:1), by design role, and the rule that pink is a fill that needs an inner border where it is weak.
 import { describe, expect, it } from 'vitest';
@@ -67,6 +68,26 @@ describe('design tokens (roles)', () => {
     const css = tokensCss();
     for (const role of COLOR_ROLES) expect(css).toContain(`--${role.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}:`);
     for (const alias of ['background', 'surface', 'text-muted', 'primary', 'verdict-likely', 'danger']) expect(css).not.toContain(`--color-${alias}:`);
-    expect(COLOR_ROLES[0]).toBe('ground');
+    expect(COLOR_ROLES).toContain('ground');
+    expect(COLOR_ROLES).toContain('focus');
+  });
+
+  it('every value the stylesheet uses comes from the tokens, and none is emitted broken', () => {
+    const css = tokensCss();
+    expect(css).not.toMatch(/undefined|NaN|\[object Object\]/);
+    const styles = readFileSync(new URL('./styles.css', import.meta.url), 'utf8');
+    const defined = new Set([...css.matchAll(/(--[a-z0-9-]+):/g)].map((m) => m[1]));
+    // Custom properties the stylesheet defines itself, or that are set at run time.
+    for (const m of styles.matchAll(/(--[a-z0-9-]+):/g)) defined.add(m[1]);
+    for (const own of ['--block-covers', '--chars', '--design']) defined.add(own);
+    const used = new Set([...styles.matchAll(/var\((--[a-z0-9-]+)/g)].map((m) => m[1]));
+    for (const name of used) expect(defined.has(name), name).toBe(true);
+  });
+
+  it('the wide layout starts where layout.wide says, and compact height where size.compact says', () => {
+    const styles = readFileSync(new URL('./styles.css', import.meta.url), 'utf8');
+    expect(styles).toContain(`@media (min-width: ${tokens.layout.wide.from}px)`);
+    const under = Number(/under (\d+) px tall/.exec(tokens.size.compact.note)?.[1]);
+    expect(styles).toContain(`@media (max-height: ${under - 1}px)`);
   });
 });

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { makeTextPdf } from '../scripts/text-pdf.mjs';
-import { completeQuickCheck, verdictOf } from './helpers';
+import { completeQuickCheck, confirmAllValues, verdictOf } from './helpers';
 import { readFileSync } from 'node:fs';
 import { AI_HOST, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel, placeholderFor, recordRequests, sharedText } from './model-fakes';
 
@@ -9,7 +9,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await noOnDeviceModel(context);
     const cloud = await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
     await page.goto('/');
-    await completeQuickCheck(page, { numChildren: '1', income: { band: '30,000 to 44,999' } });
+    await completeQuickCheck(page, { numChildren: '1', income: { band: '$30,000 to $44,999' } });
     await expect(verdictOf(page, 'work-credit')).toHaveAttribute('data-verdict', 'maybe');
 
     await page.getByRole('link', { name: 'Add a paystub' }).click();
@@ -50,16 +50,16 @@ test.describe('Document silhouette and pointer extraction', () => {
     // Confirm one field by itself, then the rest, then check.
     await gross.getByRole('button', { name: 'Confirm: Gross pay this period' }).click();
     await expect(gross).toHaveAttribute('data-status', 'confirmed');
-    await page.getByRole('button', { name: 'Confirm all found values' }).click();
+    await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
     await expect(page.getByTestId('validation').locator('[data-check="net-sum"]')).toHaveAttribute('data-status', 'ok');
     await expect(page.getByTestId('validation').locator('[data-check="rate-hours"]')).toHaveAttribute('data-status', 'warn');
     await expect(page.getByTestId('annual-income')).toHaveAttribute('data-amount', '29233');
-    await page.getByRole('button', { name: 'Use 29,233 as my yearly income' }).click();
+    await page.getByRole('button', { name: 'Use $29,233 as my yearly income' }).click();
 
     await expect(page.getByRole('heading', { level: 1, name: 'Your results' })).toBeVisible();
     await expect(verdictOf(page, 'work-credit')).toHaveAttribute('data-verdict', 'likely');
-    await expect(verdictOf(page, 'work-credit')).toContainText('About 2,923 a year');
+    await expect(verdictOf(page, 'work-credit')).toContainText('About $2,923 a year');
   });
 
   test('canary: no canary string appears in any outgoing request URL, header or body', async ({ page, context }) => {
@@ -93,7 +93,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(page.getByTestId('inference-badge')).toBeVisible();
     // The canary document's own values are on screen (on device), which proves the flow processed it.
     await expect(page.getByTestId('value-grossPay')).toHaveText('1,487.50');
-    await page.getByRole('button', { name: 'Confirm all found values' }).click();
+    await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
     await page.getByRole('button', { name: /^Use .* as my yearly income$/ }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Your results' })).toBeVisible();
@@ -166,7 +166,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.getByRole('button', { name: 'Send', exact: true }).click();
     await expect(page.getByTestId('value-grossPay')).toHaveText('2,485,000');
     expect(cloud.bodies[0]).not.toContain('2,485,000');
-    await page.getByRole('button', { name: 'Confirm all found values' }).click();
+    await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
     await expect(page.getByText('Choose how often you are paid to work out a yearly income.')).toBeVisible();
     await page.getByRole('button', { name: 'Change: How often you are paid' }).click();

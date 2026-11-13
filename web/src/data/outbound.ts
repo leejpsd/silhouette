@@ -2,9 +2,11 @@
 // Entries are created by the network monitor (./net-monitor.ts) from the requests the app actually
 // makes: "attempted" before a request goes out, then "sent" when a response arrives or "failed".
 // The ledger is persisted in the encrypted store (./outbound-store.ts) so it survives reloads.
+// Answers written by the on-device model are recorded too, with status "answered": they never left,
+// carry no destination and no body, and are never counted as sent.
 
-export type OutboundChannel = 'ai-cloud' | 'app-check' | 'firestore' | 'remote-config' | 'analytics' | 'other';
-export type OutboundStatus = 'attempted' | 'sent' | 'failed';
+export type OutboundChannel = 'ai-cloud' | 'app-check' | 'firestore' | 'remote-config' | 'analytics' | 'other' | 'on-device';
+export type OutboundStatus = 'attempted' | 'sent' | 'failed' | 'answered';
 
 export interface OutboundEntry {
   readonly id: string;
@@ -64,6 +66,17 @@ export function recordAttempt(entry: Omit<OutboundEntry, 'id' | 'status'>): stri
   set({ ...state, entries: [...state.entries, { ...entry, id, status: 'attempted' }] });
   return id;
 }
+
+/** Records an answer the on-device model wrote: nothing left the device. `fields` names what it used. */
+export function recordAnsweredOnDevice(fields: readonly string[], at: number = Date.now()): string {
+  const id = `${at}-${++counter}`;
+  const entry: OutboundEntry = { id, channel: 'on-device', at, destination: '', path: '', fields, bytes: 0, status: 'answered' };
+  set({ ...state, entries: [...state.entries, entry] });
+  return id;
+}
+
+/** Entries for requests that left the device (everything but answers written on the device). */
+export const leftDevice = (entries: readonly OutboundEntry[]): readonly OutboundEntry[] => entries.filter((e) => e.status !== 'answered');
 
 function update(id: string, patch: Partial<OutboundEntry>): void {
   set({ ...state, entries: state.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)) });

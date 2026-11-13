@@ -1,8 +1,8 @@
 // Quick Check question: one question per screen. Every question can be skipped; sensitive ones say
 // that the answer never leaves the device.
-import { useId, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useApp } from '../context';
-import { dynamicKey, formatAmount, formatNumber, lookup, type CopyKey, type Translate, type Locale } from '../i18n';
+import { dynamicKey, formatMoney, lookup, type CopyKey, type Translate, type Locale } from '../i18n';
 import { isIncomeAnswer, validateAnswer, type AnswerValue, type IncomeAnswer, type Step } from '../quickcheck';
 import { parseTypedAmount, readTypedAmount } from '../../core/skeleton';
 import { navigate, type Route } from '../router';
@@ -14,8 +14,10 @@ import { Alert, ArrowRight, Check, ChevronLeft, Lock } from '../design/icons';
 
 type QuestionRoute = Extract<Route, { name: 'question' }>;
 
+const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
 export function bandLabel(t: Translate, locale: Locale, band: IncomeBand): string {
-  const n = (v: number) => formatNumber(locale, v);
+  const n = (v: number) => formatMoney(locale, v);
   if (band.max === null) return t('income.band.top', { amount: n(band.min) });
   if (band.min === 0) return t('income.band.under', { amount: n(band.max + 1) });
   return t('income.band.range', { min: n(band.min), max: n(band.max) });
@@ -126,14 +128,32 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
     setError(null);
   };
 
+  // The exact amount field and the amount as understood are brought fully into view above the block
+  // when that choice is made, and again while typing (the keyboard shrinks the screen).
+  const exactField = useRef<HTMLDivElement>(null);
+  const exactChosen = step.kind === 'income' && draft.choice === 'exact';
+  const revealExact = (smooth = false) => {
+    requestAnimationFrame(() => exactField.current?.scrollIntoView({ block: 'nearest', behavior: smooth && !reducedMotion() ? 'smooth' : 'auto' }));
+  };
+  const wasExact = useRef(exactChosen);
+  useEffect(() => {
+    if (exactChosen && !wasExact.current) revealExact(true);
+    wasExact.current = exactChosen;
+  }, [exactChosen]);
+
   const formId = `${headingId}-form`;
   const choices = choicesFor(step, t, locale);
   // Two short answers are tiles; longer lists are rows; income ranges are a two-column grid.
   const asTiles = (step.kind === 'bool' || step.kind === 'enum') && choices.length === 2;
   const amountText = (() => {
     const amount = parseTypedAmount(draft.text);
-    return draft.text.trim() === '' || amount === undefined ? '' : t('q.amountUnderstood', { amount: formatAmount(locale, amount) });
+    return draft.text.trim() === '' || amount === undefined ? '' : t('q.amountUnderstood', { amount: formatMoney(locale, amount) });
   })();
+  // While typing, the block above the keyboard changes size: keep the understood amount in view.
+  useEffect(() => {
+    if (exactChosen && document.activeElement?.id === `${step.id}-exact`) revealExact();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amountText]);
   const [noteLead, noteRest] = splitFirstSentence(t('sensitive.note'));
 
   return (
@@ -244,7 +264,7 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
                 <input type="radio" className="radio" name={step.id} value="exact" checked={draft.choice === 'exact'} onChange={() => choose('exact')} />
               </label>
               {draft.choice === 'exact' && (
-                <div className="field">
+                <div className="field exact-field" ref={exactField} data-testid="exact-field">
                   <div className="field-label-row">
                     <label htmlFor={`${step.id}-exact`}>{t('income.exact.label')}</label>
                     <span id={privateId} className="private-inline">
@@ -260,6 +280,7 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
                     aria-describedby={[`${step.id}-understood`, privateId, error ? errorId : ''].filter(Boolean).join(' ')}
                     aria-invalid={error ? true : undefined}
                     value={draft.text}
+                    onFocus={() => revealExact()}
                     onChange={(e) => {
                       setDraft({ ...draft, text: e.target.value });
                       setError(null);

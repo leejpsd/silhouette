@@ -3,6 +3,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, type ReactNode, type RefObject } from 'react';
 import type { Verdict } from '../../core/rules';
 import { Close } from './icons';
+import { DISPLAY_SCALE_CAP, HEADLINE_FLOOR, LABEL_FLOOR, WIDE_FROM } from '../tokens';
 
 /** Results are told apart by shape: solid = may qualify, dotted = possible, dashed = depends, hollow = probably not. */
 export function Marker({ verdict }: { verdict: Verdict | 'unanswered' }) {
@@ -121,14 +122,22 @@ export function Sheet({
  * word overflows and the text fits `maxLines`; never below `floor` of the design size. Runs again when
  * the width or the text changes, and when the web fonts arrive.
  */
-export function useFit(ref: RefObject<HTMLElement | null>, design: number, { maxLines = 4, step = 4, floor = 0.6 }: { maxLines?: number; step?: number; floor?: number } = {}, deps: readonly unknown[] = []) {
+export function useFit(
+  ref: RefObject<HTMLElement | null>,
+  design: number,
+  { maxLines = 4, step = 4, floor = HEADLINE_FLOOR, wide = false }: { maxLines?: number; step?: number; floor?: number; wide?: boolean } = {},
+  deps: readonly unknown[] = [],
+) {
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     const fit = () => {
-      // Display type scales with the text size up to 1.3x (root font size relative to 16 px).
+      // Display type scales with the text size up to the cap (root font size relative to 16 px).
+      // Headlines on wide screens start at the cap and keep their phone measure (see .display), so
+      // they break into the same lines as on a phone.
       const root = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
-      const start = design * Math.min(Math.max(root, 1), 1.3);
+      const isWide = wide && window.innerWidth >= WIDE_FROM;
+      const start = design * (isWide ? DISPLAY_SCALE_CAP : Math.min(Math.max(root, 1), DISPLAY_SCALE_CAP));
       const min = start * floor;
       let size = start;
       el.style.fontSize = `${size}px`;
@@ -148,11 +157,11 @@ export function useFit(ref: RefObject<HTMLElement | null>, design: number, { max
     void document.fonts?.ready.then(fit);
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [design, maxLines, step, floor, ...deps]);
+  }, [design, maxLines, step, floor, wide, ...deps]);
 }
 
 /** Display text that steps down to fit (for program names, amounts and similar). */
-export function FitText({ as: Tag = 'span', size, maxLines = 2, step = 4, floor = 0.6, className, children, ...rest }: {
+export function FitText({ as: Tag = 'span', size, maxLines = 2, step = 4, floor = HEADLINE_FLOOR, className, children, ...rest }: {
   as?: 'span' | 'h1' | 'h2' | 'p' | 'div';
   size: number;
   maxLines?: number;
@@ -173,7 +182,7 @@ export function FitText({ as: Tag = 'span', size, maxLines = 2, step = 4, floor 
 /** The label of a main action: steps down 2 px at a time (to 66 %), then wraps to two lines. */
 export function ActionLabel({ children, size = 30 }: { children: ReactNode; size?: number }) {
   return (
-    <FitText className="action-label" size={size} maxLines={2} step={2} floor={0.66}>
+    <FitText className="action-label" size={size} maxLines={2} step={2} floor={LABEL_FLOOR}>
       {children}
     </FitText>
   );

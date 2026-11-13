@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { completeQuickCheck } from './helpers';
+import { completeQuickCheck, confirmAllValues, openDeleteEverything } from './helpers';
 import { fakeAnswerModels, fakeCloudModel, fixturePointers, noOnDeviceModel, seedRemoteConfig } from './model-fakes';
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -31,11 +31,11 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await scan('question (multi)');
     // Nothing was submitted above, so the start screen offers a fresh Quick Check.
     await page.goto('/');
-    await completeQuickCheck(page, { householdSize: '2', numChildren: '1', income: { band: '30,000 to 44,999' }, housing: 'I own', resident: 'skip' });
+    await completeQuickCheck(page, { householdSize: '2', numChildren: '1', income: { band: '$30,000 to $44,999' }, housing: 'I own', resident: 'skip' });
     await scan('results');
     await page.getByTestId('program-food-help').getByRole('link').click();
     await scan('verdict card');
-    await page.getByRole('button', { name: 'Delete everything' }).click();
+    await openDeleteEverything(page);
     await scan('delete dialog');
   });
 }
@@ -62,7 +62,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.getByRole('button', { name: 'Change: Gross pay this period' }).click();
     await scan('review, editing a field');
     await page.getByRole('button', { name: 'Cancel' }).click();
-    await page.getByRole('button', { name: 'Confirm all found values' }).click();
+    await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
     await page.getByTestId('validation').waitFor();
     await scan('review, checks and yearly income');

@@ -1,7 +1,7 @@
 // Regression tests for problems found by testing the app in a real browser.
 import { expect, test, type Page } from '@playwright/test';
 import { DEFAULT_ANSWERS, answerCurrent, completeQuickCheck, verdictOf } from './helpers';
-import { chooseLanguage } from './helpers';
+import { chooseLanguage, openDeleteEverything } from './helpers';
 import { AI_HOST, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel } from './model-fakes';
 
 async function sendSample(page: Page) {
@@ -110,13 +110,13 @@ test.describe('regressions', () => {
     await page.getByRole('button', { name: 'Next' }).click();
     await expect(page.getByRole('alert')).toContainText('32,000.50');
     await field.fill('28000.50');
-    await expect(page.getByTestId('amount-understood')).toHaveText('Understood as 28,000.50 a year.');
+    await expect(page.getByTestId('amount-understood')).toHaveText('Understood as $28,000.50 a year.');
     await field.fill('$28,000.5');
-    await expect(page.getByTestId('amount-understood')).toHaveText('Understood as 28,000.50 a year.');
+    await expect(page.getByTestId('amount-understood')).toHaveText('Understood as $28,000.50 a year.');
     await page.getByRole('button', { name: 'Next' }).click();
     for (let i = 0; i < 4; i++) await answerCurrent(page, DEFAULT_ANSWERS);
     // work-credit amount = min(3000, 0.1 × 28,000.50) = 2,800.05 → 2,800 (not 280,005 or 2,800,050)
-    await expect(verdictOf(page, 'work-credit')).toContainText('About 2,800 a year');
+    await expect(verdictOf(page, 'work-credit')).toContainText('About $2,800 a year');
   });
 
   test('the ledger survives a reload, shows status and the whole request, and says when it was deleted', async ({ page, context }) => {
@@ -144,10 +144,8 @@ test.describe('regressions', () => {
     expect(body).toContain('"maxOutputTokens":1024');
     expect(body).not.toMatch(/appCheck|x-goog|Authorization/i);
 
-    // The record covers the lower screen like a sheet: close it first.
-    await bar.getByRole('button', { name: 'Hide details' }).click();
-    await page.getByRole('button', { name: 'Delete everything' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete everything' }).click();
+    // "Delete everything" sits below the record.
+    await (await openDeleteEverything(page)).getByRole('button', { name: 'Delete everything' }).click();
     await expect(bar).toHaveAttribute('data-outbound-count', '0');
     await expect(bar).toHaveAttribute('data-cleared', 'true');
     await expect(bar).toContainText('Record deleted on');
@@ -162,8 +160,7 @@ test.describe('regressions', () => {
     await sendSample(page);
     const before = await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name).sort());
     expect(before.some((n) => n?.startsWith('firebase'))).toBe(true);
-    await page.getByRole('button', { name: 'Delete everything' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete everything' }).click();
+    await (await openDeleteEverything(page, 'demo')).getByRole('button', { name: 'Delete everything' }).click();
     await expect(page.getByText(/Erased: answers, documents in progress/)).toBeVisible();
     await expect.poll(() => page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name))).toEqual([]);
     expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('firebase')))).toEqual([]);
@@ -254,7 +251,7 @@ test.describe('regressions', () => {
     await page.setViewportSize({ width: 360, height: 640 });
     await page.goto('/');
     await completeQuickCheck(page);
-    const last = page.getByRole('button', { name: 'Delete everything' });
+    const last = page.locator('main').locator('a[href], button:not([disabled])').last();
     await last.focus();
     const [box, bar] = await Promise.all([last.boundingBox(), page.getByTestId('bottom-block').boundingBox()]);
     expect(box!.y + box!.height).toBeLessThanOrEqual(bar!.y);

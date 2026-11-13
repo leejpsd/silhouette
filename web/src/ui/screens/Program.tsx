@@ -2,7 +2,7 @@
 // things to know and official information, then the model-written parts. The count block is compact.
 import { lazy, Suspense } from 'react';
 import { useApp } from '../context';
-import { dynamicKey, formatNumber, programName } from '../i18n';
+import { dynamicKey, formatMoney, programName } from '../i18n';
 import { PACK } from '../pack';
 import { stepForVariable } from '../quickcheck';
 import { navigate, routeHref } from '../router';
@@ -10,6 +10,7 @@ import { ScreenHeading } from '../Heading';
 import { OfficialInfo } from '../answers/parts';
 import { MoreHelpLinks } from '../answers/MoreHelpLinks';
 import { ChevronLeft } from '../design/icons';
+import { LABEL_FLOOR } from '../tokens';
 import { FitText, Marker } from '../design/parts';
 
 // Loaded on demand (and kept in the offline cache): the reasons and answer sections.
@@ -49,10 +50,10 @@ export function ProgramScreen({ id }: { id: string }) {
 
       {result.estimatedAmount !== undefined && result.estimatedAmount > 0 && (
         <div className="amount-block">
-          <FitText className="amount pop" size={110} maxLines={1} step={2} floor={0.66} aria-hidden="true">
-            {formatNumber(locale, result.estimatedAmount)}
+          <FitText className="amount pop" size={110} maxLines={1} step={2} floor={LABEL_FLOOR} aria-hidden="true">
+            {formatMoney(locale, result.estimatedAmount)}
           </FitText>
-          <p className="small">{t('detail.amount', { amount: formatNumber(locale, result.estimatedAmount) })}</p>
+          <p className="small">{t('detail.amount', { amount: formatMoney(locale, result.estimatedAmount) })}</p>
         </div>
       )}
 
