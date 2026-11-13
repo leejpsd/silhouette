@@ -1,0 +1,1629 @@
+{
+  "date": "2026-11-13T08:58:43.912Z",
+  "profiles": {
+    "A": {
+      "label": "household of 4, two children, renter, $14,000; private answer \"not a resident\" (on screen: Probably not)",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "onScreen": "unlikely"
+    },
+    "B": {
+      "label": "household of 2, owner, $22,000",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "onScreen": null
+    },
+    "C": {
+      "label": "one person, other housing, $9,000, older member not answered",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "onScreen": null
+    }
+  },
+  "modelCalls": 36,
+  "rows": [
+    {
+      "id": "A-en-short",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Test Food Help\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): You meet the residency rule\nWrite 60 words or fewer.",
+        "text": "The Test Food Help program checks:\n- Your income is under the limit for your household size. (We checked this from your general facts, and it was met.)\n- You meet the residency rule. (The app checks this on your device.)",
+        "latencyMs": 2268
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The Test Food Help program checks:\n- Your income is under the limit for your household size. (We checked this from your general facts, and it was met.)\n- You meet the residency rule. (The app checks this on your device.)",
+          "usage": {
+            "promptTokenCount": 287,
+            "candidatesTokenCount": 51,
+            "totalTokenCount": 338,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 287
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Test Food Help\\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): You meet the residency rule\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-en-long",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "long",
+      "out": {
+        "ok": true,
+        "taskId": "explain.long",
+        "reason": "long-or-unsupported-locale",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Test Food Help\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): You meet the residency rule\nWrite 180 words or fewer.",
+        "text": "The Test Food Help program is here to help you get food. \n\nThe app checks two main rules for this program on your device:\n1. Your income is under the limit for your household size. The app checks this rule using your general facts. \n2. You meet the residency rule. The app checks this rule directly on your device. \n\nBecause the app checks these things on your device, you do not need to share or send that information. \n\nThis program does not give legal or tax advice.",
+        "latencyMs": 1917
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The Test Food Help program is here to help you get food. \n\nThe app checks two main rules for this program on your device:\n1. Your income is under the limit for your household size. The app checks this rule using your general facts. \n2. You meet the residency rule. The app checks this rule directly on your device. \n\nBecause the app checks these things on your device, you do not need to share or send that information. \n\nThis program does not give legal or tax advice.",
+          "usage": {
+            "promptTokenCount": 288,
+            "candidatesTokenCount": 107,
+            "totalTokenCount": 395,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 288
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":720},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Test Food Help\\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): You meet the residency rule\\nWrite 180 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-en-apply",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "chip",
+      "question": "How do I apply?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Test Food Help\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): You meet the residency rule\nQuestion: How do I apply?\nWrite 80 words or fewer.",
+        "text": "The app checks on your device that you meet the residency rule. \n\nThe provided facts do not tell you how to apply for Test Food Help. Please visit the program's official website or contact their local office to learn how to apply.",
+        "latencyMs": 1932
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The app checks on your device that you meet the residency rule. \n\nThe provided facts do not tell you how to apply for Test Food Help. Please visit the program's official website or contact their local office to learn how to apply.",
+          "usage": {
+            "promptTokenCount": 321,
+            "candidatesTokenCount": 49,
+            "totalTokenCount": 370,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 321
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Test Food Help\\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): You meet the residency rule\\nQuestion: How do I apply?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-en-documents",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What papers might I need?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Test Food Help\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): You meet the residency rule\nQuestion: What papers might I need?\nWrite 80 words or fewer.",
+        "text": "The app checks on your device if you meet the residency rule. The provided facts do not list what papers you might need. Please visit the program's official website or office to ask about required papers.",
+        "latencyMs": 2072
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The app checks on your device if you meet the residency rule. The provided facts do not list what papers you might need. Please visit the program's official website or office to ask about required papers.",
+          "usage": {
+            "promptTokenCount": 322,
+            "candidatesTokenCount": 41,
+            "totalTokenCount": 363,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 322
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Test Food Help\\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): You meet the residency rule\\nQuestion: What papers might I need?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-en-change",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What could change this result?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Test Food Help\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): You meet the residency rule\nQuestion: What could change this result?\nWrite 80 words or fewer.",
+        "text": "To change this result, you would need to change the things the program looks at. The app checks on your device whether you meet the residency rule. Your income being under the limit for your household size was already checked from the general facts. If you want to know more, please visit the program's official website or office.",
+        "latencyMs": 1870
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "To change this result, you would need to change the things the program looks at. The app checks on your device whether you meet the residency rule. Your income being under the limit for your household size was already checked from the general facts. If you want to know more, please visit the program's official website or office.",
+          "usage": {
+            "promptTokenCount": 322,
+            "candidatesTokenCount": 66,
+            "totalTokenCount": 388,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 322
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Test Food Help\\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): You meet the residency rule\\nQuestion: What could change this result?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-en-offer",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What does this program offer?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Test Food Help\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): You meet the residency rule\nQuestion: What does this program offer?\nWrite 80 words or fewer.",
+        "text": "The facts given for Test Food Help do not state what the program offers. \n\nTo learn more about what this program offers, please visit the program's official website or office.",
+        "latencyMs": 1749
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The facts given for Test Food Help do not state what the program offers. \n\nTo learn more about what this program offers, please visit the program's official website or office.",
+          "usage": {
+            "promptTokenCount": 322,
+            "candidatesTokenCount": 37,
+            "totalTokenCount": 359,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 322
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Test Food Help\\nProgram facts: This program checks: Your income is under the limit for your household size; You meet the residency rule.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): You meet the residency rule\\nQuestion: What does this program offer?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-es-short",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "es",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Ayuda de alimentos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): Cumples la regla de residencia\nWrite 60 words or fewer.",
+        "text": "Este programa de Ayuda de alimentos (prueba) revisa dos cosas: \n\nPrimero, si tu ingreso está por debajo del límite para el tamaño de tu hogar (esto ya se comprobó). \n\nSegundo, la regla de residencia, la cual la aplicación revisa en tu dispositivo.",
+        "latencyMs": 1656
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Este programa de Ayuda de alimentos (prueba) revisa dos cosas: \n\nPrimero, si tu ingreso está por debajo del límite para el tamaño de tu hogar (esto ya se comprobó). \n\nSegundo, la regla de residencia, la cual la aplicación revisa en tu dispositivo.",
+          "usage": {
+            "promptTokenCount": 300,
+            "candidatesTokenCount": 59,
+            "totalTokenCount": 359,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 300
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Ayuda de alimentos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): Cumples la regla de residencia\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-es-long",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "es",
+      "kind": "long",
+      "out": {
+        "ok": true,
+        "taskId": "explain.long",
+        "reason": "long-or-unsupported-locale",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Ayuda de alimentos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): Cumples la regla de residencia\nWrite 180 words or fewer.",
+        "text": "El programa Ayuda de alimentos (prueba) revisa ciertos puntos para ver si puedes recibir beneficios. \n\nEsto es lo que revisa el programa:\n\n* Tu ingreso está por debajo del límite para el tamaño de tu hogar.\n* Cumples la regla de residencia.\n\nLa aplicación del dispositivo revisa por ti si cumples la regla de residencia. No tienes que compartir esa información.",
+        "latencyMs": 2103
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "El programa Ayuda de alimentos (prueba) revisa ciertos puntos para ver si puedes recibir beneficios. \n\nEsto es lo que revisa el programa:\n\n* Tu ingreso está por debajo del límite para el tamaño de tu hogar.\n* Cumples la regla de residencia.\n\nLa aplicación del dispositivo revisa por ti si cumples la regla de residencia. No tienes que compartir esa información.",
+          "usage": {
+            "promptTokenCount": 301,
+            "candidatesTokenCount": 80,
+            "totalTokenCount": 381,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 301
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":720},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Ayuda de alimentos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): Cumples la regla de residencia\\nWrite 180 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-es-apply",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Cómo solicito?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Ayuda de alimentos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): Cumples la regla de residencia\nQuestion: ¿Cómo solicito?\nWrite 80 words or fewer.",
+        "text": "La aplicación revisa en tu dispositivo si cumples la regla de residencia. Para saber cómo solicitar el programa Ayuda de alimentos (prueba), visita su sitio web oficial o comunícate con su oficina.",
+        "latencyMs": 1941
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "La aplicación revisa en tu dispositivo si cumples la regla de residencia. Para saber cómo solicitar el programa Ayuda de alimentos (prueba), visita su sitio web oficial o comunícate con su oficina.",
+          "usage": {
+            "promptTokenCount": 334,
+            "candidatesTokenCount": 41,
+            "totalTokenCount": 375,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 334
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Ayuda de alimentos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): Cumples la regla de residencia\\nQuestion: ¿Cómo solicito?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-es-documents",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué papeles podría necesitar?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Ayuda de alimentos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): Cumples la regla de residencia\nQuestion: ¿Qué papeles podría necesitar?\nWrite 80 words or fewer.",
+        "text": "La aplicación comprueba en tu dispositivo si cumples la regla de residencia. Los hechos del programa también indican que tu ingreso está por debajo del límite para el tamaño de tu hogar. \n\nLa información proporcionada no dice qué papeles podrías necesitar. Para saber qué documentos necesitas, visita el sitio web oficial del programa o comunícate con su oficina.",
+        "latencyMs": 1867
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "La aplicación comprueba en tu dispositivo si cumples la regla de residencia. Los hechos del programa también indican que tu ingreso está por debajo del límite para el tamaño de tu hogar. \n\nLa información proporcionada no dice qué papeles podrías necesitar. Para saber qué documentos necesitas, visita el sitio web oficial del programa o comunícate con su oficina.",
+          "usage": {
+            "promptTokenCount": 335,
+            "candidatesTokenCount": 71,
+            "totalTokenCount": 406,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 335
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Ayuda de alimentos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): Cumples la regla de residencia\\nQuestion: ¿Qué papeles podría necesitar?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-es-change",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué podría cambiar este resultado?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Ayuda de alimentos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): Cumples la regla de residencia\nQuestion: ¿Qué podría cambiar este resultado?\nWrite 80 words or fewer.",
+        "text": "La aplicación revisa en tu dispositivo si cumples la regla de residencia. Si quieres saber más sobre este programa, te sugerimos visitar su sitio web oficial o comunicarte con su oficina.",
+        "latencyMs": 2605
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "La aplicación revisa en tu dispositivo si cumples la regla de residencia. Si quieres saber más sobre este programa, te sugerimos visitar su sitio web oficial o comunicarte con su oficina.",
+          "usage": {
+            "promptTokenCount": 336,
+            "candidatesTokenCount": 38,
+            "totalTokenCount": 374,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 336
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Ayuda de alimentos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): Cumples la regla de residencia\\nQuestion: ¿Qué podría cambiar este resultado?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-es-offer",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 14000,
+        "householdSize": 4,
+        "childAges": [
+          4,
+          9
+        ],
+        "housing": "renter"
+      },
+      "programId": "food-help",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué ofrece este programa?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "depends",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":4,\"childAgeBands\":[\"0-5\",\"6-17\"],\"county\":null,\"housing\":\"renter\"}\nProgram: Ayuda de alimentos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): Cumples la regla de residencia\nQuestion: ¿Qué ofrece este programa?\nWrite 80 words or fewer.",
+        "text": "Los hechos de este programa no indican qué ofrece. Para saber más, visita el sitio web oficial o la oficina del programa.",
+        "latencyMs": 1656
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Los hechos de este programa no indican qué ofrece. Para saber más, visita el sitio web oficial o la oficina del programa.",
+          "usage": {
+            "promptTokenCount": 335,
+            "candidatesTokenCount": 25,
+            "totalTokenCount": 360,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 335
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":4,\\\"childAgeBands\\\":[\\\"0-5\\\",\\\"6-17\\\"],\\\"county\\\":null,\\\"housing\\\":\\\"renter\\\"}\\nProgram: Ayuda de alimentos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\\nMet from the general facts: Tu ingreso está por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): Cumples la regla de residencia\\nQuestion: ¿Qué ofrece este programa?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-en-short",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nMet from the general facts: Your income is under the limit; You rent or own your home\nNot met from the general facts: none\nChecked on the device (not known here): none\nWrite 60 words or fewer.",
+        "text": "The Test Utility Discount helps people lower their utility costs. \n\nBased on your profile, the app checked if your income is under the limit. It also checked that you rent or own your home. \n\nCheck the screen above to see your result for this program.",
+        "latencyMs": 2195
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The Test Utility Discount helps people lower their utility costs. \n\nBased on your profile, the app checked if your income is under the limit. It also checked that you rent or own your home. \n\nCheck the screen above to see your result for this program.",
+          "usage": {
+            "promptTokenCount": 275,
+            "candidatesTokenCount": 54,
+            "totalTokenCount": 329,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 275
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Test Utility Discount\\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\\nMet from the general facts: Your income is under the limit; You rent or own your home\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-en-long",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "long",
+      "out": {
+        "ok": true,
+        "taskId": "explain.long",
+        "reason": "long-or-unsupported-locale",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nMet from the general facts: Your income is under the limit; You rent or own your home\nNot met from the general facts: none\nChecked on the device (not known here): none\nWrite 180 words or fewer.",
+        "text": "The Test Utility Discount helps people lower their utility bills. \n\nThe app checks if your income is under the limit. The app also checks if you rent or own your home. \n\nThis program does not provide legal or tax advice.",
+        "latencyMs": 1960
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The Test Utility Discount helps people lower their utility bills. \n\nThe app checks if your income is under the limit. The app also checks if you rent or own your home. \n\nThis program does not provide legal or tax advice.",
+          "usage": {
+            "promptTokenCount": 276,
+            "candidatesTokenCount": 48,
+            "totalTokenCount": 324,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 276
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":720},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Test Utility Discount\\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\\nMet from the general facts: Your income is under the limit; You rent or own your home\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nWrite 180 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-en-apply",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "chip",
+      "question": "How do I apply?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nMet from the general facts: Your income is under the limit; You rent or own your home\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: How do I apply?\nWrite 80 words or fewer.",
+        "text": "The facts do not tell you how to apply. Please check the program's official website or office for application steps.",
+        "latencyMs": 1459
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The facts do not tell you how to apply. Please check the program's official website or office for application steps.",
+          "usage": {
+            "promptTokenCount": 309,
+            "candidatesTokenCount": 24,
+            "totalTokenCount": 333,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 309
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Test Utility Discount\\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\\nMet from the general facts: Your income is under the limit; You rent or own your home\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: How do I apply?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-en-documents",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What papers might I need?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nMet from the general facts: Your income is under the limit; You rent or own your home\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: What papers might I need?\nWrite 80 words or fewer.",
+        "text": "The program facts do not list the papers you might need. Please check the program's official website or office to find out what papers are required.",
+        "latencyMs": 1622
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The program facts do not list the papers you might need. Please check the program's official website or office to find out what papers are required.",
+          "usage": {
+            "promptTokenCount": 310,
+            "candidatesTokenCount": 30,
+            "totalTokenCount": 340,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 310
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Test Utility Discount\\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\\nMet from the general facts: Your income is under the limit; You rent or own your home\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: What papers might I need?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-en-change",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What could change this result?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nMet from the general facts: Your income is under the limit; You rent or own your home\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: What could change this result?\nWrite 80 words or fewer.",
+        "text": "To see what could change this result, please check the official program website or office.",
+        "latencyMs": 1825
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "To see what could change this result, please check the official program website or office.",
+          "usage": {
+            "promptTokenCount": 310,
+            "candidatesTokenCount": 17,
+            "totalTokenCount": 327,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 310
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Test Utility Discount\\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\\nMet from the general facts: Your income is under the limit; You rent or own your home\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: What could change this result?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-en-offer",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What does this program offer?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Test Utility Discount\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\nMet from the general facts: Your income is under the limit; You rent or own your home\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: What does this program offer?\nWrite 80 words or fewer.",
+        "text": "The Test Utility Discount program helps people who rent or own their home and have an income under the limit. The facts given here do not tell us what the program offers. To find out what the program offers, please visit the program's official website or office.",
+        "latencyMs": 1257
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The Test Utility Discount program helps people who rent or own their home and have an income under the limit. The facts given here do not tell us what the program offers. To find out what the program offers, please visit the program's official website or office.",
+          "usage": {
+            "promptTokenCount": 310,
+            "candidatesTokenCount": 53,
+            "totalTokenCount": 363,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 310
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Test Utility Discount\\nProgram facts: This program checks: Your income is under the limit; You rent or own your home.\\nMet from the general facts: Your income is under the limit; You rent or own your home\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: What does this program offer?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-es-short",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "es",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Descuento de servicios públicos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\nNot met from the general facts: none\nChecked on the device (not known here): none\nWrite 60 words or fewer.",
+        "text": "Este programa revisa si tu ingreso está por debajo del límite y si rentas o eres dueño de tu vivienda. La aplicación ya revisó esta información en tu dispositivo para ver si cumples con las reglas del programa Descuento de servicios públicos (prueba).",
+        "latencyMs": 1876
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Este programa revisa si tu ingreso está por debajo del límite y si rentas o eres dueño de tu vivienda. La aplicación ya revisó esta información en tu dispositivo para ver si cumples con las reglas del programa Descuento de servicios públicos (prueba).",
+          "usage": {
+            "promptTokenCount": 288,
+            "candidatesTokenCount": 52,
+            "totalTokenCount": 340,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 288
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Descuento de servicios públicos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-es-long",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "es",
+      "kind": "long",
+      "out": {
+        "ok": true,
+        "taskId": "explain.long",
+        "reason": "long-or-unsupported-locale",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Descuento de servicios públicos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\nNot met from the general facts: none\nChecked on the device (not known here): none\nWrite 180 words or fewer.",
+        "text": "El programa Descuento de servicios públicos (prueba) ayuda con los pagos de los servicios. \n\nLa aplicación móvil revisa tus datos en tu dispositivo. Este programa revisa dos cosas: que tu ingreso esté por debajo del límite y que rentes o seas dueño de tu vivienda. \n\nLa aplicación ya revisó esa información en tu dispositivo. No necesitas compartir esos datos con nadie más. \n\nRevisa la parte de arriba de esta pantalla para ver lo que decidió la aplicación sobre tu caso. Este mensaje es solo informativo y no es consejo legal ni de impuestos.",
+        "latencyMs": 2445
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "El programa Descuento de servicios públicos (prueba) ayuda con los pagos de los servicios. \n\nLa aplicación móvil revisa tus datos en tu dispositivo. Este programa revisa dos cosas: que tu ingreso esté por debajo del límite y que rentes o seas dueño de tu vivienda. \n\nLa aplicación ya revisó esa información en tu dispositivo. No necesitas compartir esos datos con nadie más. \n\nRevisa la parte de arriba de esta pantalla para ver lo que decidió la aplicación sobre tu caso. Este mensaje es solo informativo y no es consejo legal ni de impuestos.",
+          "usage": {
+            "promptTokenCount": 289,
+            "candidatesTokenCount": 116,
+            "totalTokenCount": 405,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 289
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":720},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Descuento de servicios públicos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nWrite 180 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-es-apply",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Cómo solicito?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Descuento de servicios públicos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: ¿Cómo solicito?\nWrite 80 words or fewer.",
+        "text": "Los hechos del programa no dicen cómo solicitar. Para saber cómo solicitar, visita el sitio web oficial del programa o comunícate con su oficina.",
+        "latencyMs": 1993
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Los hechos del programa no dicen cómo solicitar. Para saber cómo solicitar, visita el sitio web oficial del programa o comunícate con su oficina.",
+          "usage": {
+            "promptTokenCount": 322,
+            "candidatesTokenCount": 29,
+            "totalTokenCount": 351,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 322
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Descuento de servicios públicos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: ¿Cómo solicito?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-es-documents",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué papeles podría necesitar?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Descuento de servicios públicos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: ¿Qué papeles podría necesitar?\nWrite 80 words or fewer.",
+        "text": "Los hechos del programa no dicen qué papeles podrías necesitar. \n\nPara saber qué documentos se requieren, visita el sitio web oficial del programa o comunícate con su oficina.",
+        "latencyMs": 1624
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Los hechos del programa no dicen qué papeles podrías necesitar. \n\nPara saber qué documentos se requieren, visita el sitio web oficial del programa o comunícate con su oficina.",
+          "usage": {
+            "promptTokenCount": 323,
+            "candidatesTokenCount": 36,
+            "totalTokenCount": 359,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 323
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Descuento de servicios públicos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: ¿Qué papeles podría necesitar?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-es-change",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué podría cambiar este resultado?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Descuento de servicios públicos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: ¿Qué podría cambiar este resultado?\nWrite 80 words or fewer.",
+        "text": "Este programa revisa si tu ingreso está por debajo del límite y si rentas o eres dueño de tu vivienda. La aplicación móvil revisó estos puntos. Como estos datos se comprobaron en tu dispositivo, los cambios en tu situación con respecto a ellos podrían cambiar este resultado. \n\nPara más información, visita el sitio web oficial del programa o comunícate con su oficina.",
+        "latencyMs": 1934
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Este programa revisa si tu ingreso está por debajo del límite y si rentas o eres dueño de tu vivienda. La aplicación móvil revisó estos puntos. Como estos datos se comprobaron en tu dispositivo, los cambios en tu situación con respecto a ellos podrían cambiar este resultado. \n\nPara más información, visita el sitio web oficial del programa o comunícate con su oficina.",
+          "usage": {
+            "promptTokenCount": 324,
+            "candidatesTokenCount": 76,
+            "totalTokenCount": 400,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 324
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Descuento de servicios públicos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: ¿Qué podría cambiar este resultado?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-es-offer",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 22000,
+        "householdSize": 2,
+        "housing": "owner"
+      },
+      "programId": "utility-discount",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué ofrece este programa?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"B\",\"householdSize\":2,\"childAgeBands\":null,\"county\":null,\"housing\":\"owner\"}\nProgram: Descuento de servicios públicos (prueba)\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: ¿Qué ofrece este programa?\nWrite 80 words or fewer.",
+        "text": "Este programa ofrece un descuento en los servicios públicos. Los requisitos generales son que tu ingreso esté por debajo del límite y que rentes o seas dueño de tu vivienda. Si tienes preguntas sobre lo que ofrece el programa, por favor visita el sitio web oficial o comunícate con la oficina del programa.",
+        "latencyMs": 1955
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Este programa ofrece un descuento en los servicios públicos. Los requisitos generales son que tu ingreso esté por debajo del límite y que rentes o seas dueño de tu vivienda. Si tienes preguntas sobre lo que ofrece el programa, por favor visita el sitio web oficial o comunícate con la oficina del programa.",
+          "usage": {
+            "promptTokenCount": 323,
+            "candidatesTokenCount": 60,
+            "totalTokenCount": 383,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 323
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"B\\\",\\\"householdSize\\\":2,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"owner\\\"}\\nProgram: Descuento de servicios públicos (prueba)\\nProgram facts: Este programa revisa: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda.\\nMet from the general facts: Tu ingreso está por debajo del límite; Rentas o eres dueño de tu vivienda\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: ¿Qué ofrece este programa?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-en-short",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "en",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Test Senior Food Path\nProgram facts: This program checks: Your income is under the limit for your household size.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): none\nWrite 60 words or fewer.",
+        "text": "The Test Senior Food Path program helps pay for food. The app checks if your income is under the limit for your household size using general facts on your device.",
+        "latencyMs": 2037
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The Test Senior Food Path program helps pay for food. The app checks if your income is under the limit for your household size using general facts on your device.",
+          "usage": {
+            "promptTokenCount": 270,
+            "candidatesTokenCount": 32,
+            "totalTokenCount": 302,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 270
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Test Senior Food Path\\nProgram facts: This program checks: Your income is under the limit for your household size.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-en-long",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "en",
+      "kind": "long",
+      "out": {
+        "ok": true,
+        "taskId": "explain.long",
+        "reason": "long-or-unsupported-locale",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Test Senior Food Path\nProgram facts: This program checks: Your income is under the limit for your household size.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): none\nWrite 180 words or fewer.",
+        "text": "Test Senior Food Path helps people get food. \n\nThe app checks if your income is under the limit for your household size on your device.",
+        "latencyMs": 1749
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Test Senior Food Path helps people get food. \n\nThe app checks if your income is under the limit for your household size on your device.",
+          "usage": {
+            "promptTokenCount": 271,
+            "candidatesTokenCount": 29,
+            "totalTokenCount": 300,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 271
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":720},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Test Senior Food Path\\nProgram facts: This program checks: Your income is under the limit for your household size.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nWrite 180 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-en-apply",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "en",
+      "kind": "chip",
+      "question": "How do I apply?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Test Senior Food Path\nProgram facts: This program checks: Your income is under the limit for your household size.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: How do I apply?\nWrite 80 words or fewer.",
+        "text": "To apply for Test Senior Food Path, please visit the program's official website or office to get an application and learn the next steps.",
+        "latencyMs": 1629
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "To apply for Test Senior Food Path, please visit the program's official website or office to get an application and learn the next steps.",
+          "usage": {
+            "promptTokenCount": 304,
+            "candidatesTokenCount": 28,
+            "totalTokenCount": 332,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 304
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Test Senior Food Path\\nProgram facts: This program checks: Your income is under the limit for your household size.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: How do I apply?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-en-documents",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What papers might I need?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Test Senior Food Path\nProgram facts: This program checks: Your income is under the limit for your household size.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: What papers might I need?\nWrite 80 words or fewer.",
+        "text": "The program facts do not list the papers you might need. Please check the program's official website or office to find out what papers are required.",
+        "latencyMs": 1397
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The program facts do not list the papers you might need. Please check the program's official website or office to find out what papers are required.",
+          "usage": {
+            "promptTokenCount": 305,
+            "candidatesTokenCount": 30,
+            "totalTokenCount": 335,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 305
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Test Senior Food Path\\nProgram facts: This program checks: Your income is under the limit for your household size.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: What papers might I need?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-en-change",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What could change this result?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Test Senior Food Path\nProgram facts: This program checks: Your income is under the limit for your household size.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: What could change this result?\nWrite 80 words or fewer.",
+        "text": "To see what could change this result, you can check the program's official website or office.",
+        "latencyMs": 1669
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "To see what could change this result, you can check the program's official website or office.",
+          "usage": {
+            "promptTokenCount": 305,
+            "candidatesTokenCount": 20,
+            "totalTokenCount": 325,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 305
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Test Senior Food Path\\nProgram facts: This program checks: Your income is under the limit for your household size.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: What could change this result?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-en-offer",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What does this program offer?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Test Senior Food Path\nProgram facts: This program checks: Your income is under the limit for your household size.\nMet from the general facts: Your income is under the limit for your household size\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: What does this program offer?\nWrite 80 words or fewer.",
+        "text": "The facts for the Test Senior Food Path program do not say what it offers. \n\nTo find out what this program offers, please check the program's official website or office.",
+        "latencyMs": 1951
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The facts for the Test Senior Food Path program do not say what it offers. \n\nTo find out what this program offers, please check the program's official website or office.",
+          "usage": {
+            "promptTokenCount": 305,
+            "candidatesTokenCount": 37,
+            "totalTokenCount": 342,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 305
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Test Senior Food Path\\nProgram facts: This program checks: Your income is under the limit for your household size.\\nMet from the general facts: Your income is under the limit for your household size\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: What does this program offer?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-es-short",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "es",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Ruta de alimentos para mayores (prueba)\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): none\nWrite 60 words or fewer.",
+        "text": "Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar. La aplicación ya revisó esto en tu dispositivo usando tus datos generales. No tienes que compartir esa información con nadie.",
+        "latencyMs": 1893
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar. La aplicación ya revisó esto en tu dispositivo usando tus datos generales. No tienes que compartir esa información con nadie.",
+          "usage": {
+            "promptTokenCount": 281,
+            "candidatesTokenCount": 42,
+            "totalTokenCount": 323,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 281
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Ruta de alimentos para mayores (prueba)\\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-es-long",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "es",
+      "kind": "long",
+      "out": {
+        "ok": true,
+        "taskId": "explain.long",
+        "reason": "long-or-unsupported-locale",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Ruta de alimentos para mayores (prueba)\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): none\nWrite 180 words or fewer.",
+        "text": "El programa Ruta de alimentos para mayores (prueba) revisa el siguiente punto: Tus ingresos están por debajo del límite para el tamaño de tu hogar.",
+        "latencyMs": 1765
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "El programa Ruta de alimentos para mayores (prueba) revisa el siguiente punto: Tus ingresos están por debajo del límite para el tamaño de tu hogar.",
+          "usage": {
+            "promptTokenCount": 282,
+            "candidatesTokenCount": 30,
+            "totalTokenCount": 312,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 282
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":720},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Ruta de alimentos para mayores (prueba)\\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nWrite 180 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-es-apply",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Cómo solicito?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Ruta de alimentos para mayores (prueba)\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: ¿Cómo solicito?\nWrite 80 words or fewer.",
+        "text": "Los hechos dados no dicen cómo solicitar. Para saber cómo hacerlo, por favor visita el sitio web oficial del programa o comunícate con su oficina.",
+        "latencyMs": 1772
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Los hechos dados no dicen cómo solicitar. Para saber cómo hacerlo, por favor visita el sitio web oficial del programa o comunícate con su oficina.",
+          "usage": {
+            "promptTokenCount": 315,
+            "candidatesTokenCount": 30,
+            "totalTokenCount": 345,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 315
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Ruta de alimentos para mayores (prueba)\\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: ¿Cómo solicito?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-es-documents",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué papeles podría necesitar?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Ruta de alimentos para mayores (prueba)\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: ¿Qué papeles podría necesitar?\nWrite 80 words or fewer.",
+        "text": "Los datos del programa no dicen qué papeles podrías necesitar. \n\nPara saber más, te sugerimos visitar el sitio web oficial del programa o comunicarte con su oficina.",
+        "latencyMs": 1553
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Los datos del programa no dicen qué papeles podrías necesitar. \n\nPara saber más, te sugerimos visitar el sitio web oficial del programa o comunicarte con su oficina.",
+          "usage": {
+            "promptTokenCount": 316,
+            "candidatesTokenCount": 35,
+            "totalTokenCount": 351,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 316
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Ruta de alimentos para mayores (prueba)\\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: ¿Qué papeles podría necesitar?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-es-change",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué podría cambiar este resultado?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Ruta de alimentos para mayores (prueba)\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: ¿Qué podría cambiar este resultado?\nWrite 80 words or fewer.",
+        "text": "Este programa revisa que tus ingresos estén por debajo del límite para el tamaño de tu hogar. \n\nLa aplicación móvil ya ha revisado esta regla en tu dispositivo. No tenemos más información aquí sobre qué podría cambiar tu resultado. \n\nPara saber más, visita el sitio web oficial del programa o acude a su oficina.",
+        "latencyMs": 1833
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Este programa revisa que tus ingresos estén por debajo del límite para el tamaño de tu hogar. \n\nLa aplicación móvil ya ha revisado esta regla en tu dispositivo. No tenemos más información aquí sobre qué podría cambiar tu resultado. \n\nPara saber más, visita el sitio web oficial del programa o acude a su oficina.",
+          "usage": {
+            "promptTokenCount": 317,
+            "candidatesTokenCount": 66,
+            "totalTokenCount": 383,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 317
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Ruta de alimentos para mayores (prueba)\\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: ¿Qué podría cambiar este resultado?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "C-es-offer",
+      "pid": "C",
+      "profile": {
+        "jurisdiction": "zz-test",
+        "annualIncome": 9000,
+        "householdSize": 1,
+        "housing": "other"
+      },
+      "programId": "senior-food",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué ofrece este programa?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "verdict": "likely",
+        "prompt": "Profile: {\"jurisdiction\":\"zz-test\",\"incomeBand\":\"A\",\"householdSize\":1,\"childAgeBands\":null,\"county\":null,\"housing\":\"other\"}\nProgram: Ruta de alimentos para mayores (prueba)\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\nNot met from the general facts: none\nChecked on the device (not known here): none\nQuestion: ¿Qué ofrece este programa?\nWrite 80 words or fewer.",
+        "text": "Este programa ofrece una ruta de alimentos para personas mayores. Para saber más, visita el sitio web oficial del programa o comunícate con su oficina.",
+        "latencyMs": 1979
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Este programa ofrece una ruta de alimentos para personas mayores. Para saber más, visita el sitio web oficial del programa o comunícate con su oficina.",
+          "usage": {
+            "promptTokenCount": 316,
+            "candidatesTokenCount": 30,
+            "totalTokenCount": 346,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 316
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the program facts given to you. Do not state amounts, thresholds or deadlines that are not in the input.\\nIf the facts do not answer the question, say so and suggest the program's official website or office.\\nThe app has already decided the person's result with rules on their device, and shows it above your text. You do not know that result.\\nNever say whether the person qualifies, may qualify, is eligible or is not eligible. Do not guess the result.\\nThe criteria below were checked from general facts only. For the ones listed as checked on the device, say that the app checks them on the device; never ask the person to share or send that information, and never say they skipped it.\\nDo not give legal or tax advice. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Profile: {\\\"jurisdiction\\\":\\\"zz-test\\\",\\\"incomeBand\\\":\\\"A\\\",\\\"householdSize\\\":1,\\\"childAgeBands\\\":null,\\\"county\\\":null,\\\"housing\\\":\\\"other\\\"}\\nProgram: Ruta de alimentos para mayores (prueba)\\nProgram facts: Este programa revisa: Tus ingresos están por debajo del límite para el tamaño de tu hogar.\\nMet from the general facts: Tus ingresos están por debajo del límite para el tamaño de tu hogar\\nNot met from the general facts: none\\nChecked on the device (not known here): none\\nQuestion: ¿Qué ofrece este programa?\\nWrite 80 words or fewer.\"}]}]}"
+    }
+  ]
+}
