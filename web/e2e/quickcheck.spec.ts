@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { DEFAULT_ANSWERS, answerCurrent, completeQuickCheck, readStore, verdictOf } from './helpers';
+import { chooseLanguage } from './helpers';
 
 const PROGRAMS = ['work-credit', 'food-help', 'utility-discount', 'phone-discount', 'senior-food'];
 
@@ -9,7 +10,7 @@ test.describe('Quick Check to first result', () => {
     page.on('request', (r) => requests.push({ url: r.url(), method: r.method() }));
 
     await page.goto('/');
-    await expect(page.getByText('Demo rules — not real programs')).toBeVisible();
+    await expect(page.getByTestId('demo-banner')).toContainText('Demo rules: not real programs.');
     await expect(page.getByTestId('leaving-bar')).toContainText('Nothing has left this device.');
     expect(await readStore(page)).toMatchObject({ records: 0 });
 
@@ -103,8 +104,8 @@ test.describe('Quick Check to first result', () => {
     await page.getByRole('button', { name: 'Start Quick Check' }).click();
     const answers = { ...DEFAULT_ANSWERS, householdSize: '4', income: { exact: '87654' } };
     for (let i = 0; i < 4; i++) await answerCurrent(page, answers);
-    await page.getByLabel('Language').selectOption('es');
-    await page.getByLabel('Idioma').selectOption('en');
+    await chooseLanguage(page, 'es');
+    await chooseLanguage(page, 'en');
 
     await expect.poll(async () => (await readStore(page)).records).toBe(1);
     const before = await readStore(page);
@@ -210,10 +211,10 @@ test.describe('Quick Check to first result', () => {
 
   test('language switch shows es and ko copy and persists', async ({ page }) => {
     await page.goto('/');
-    await page.getByLabel('Language').selectOption('es');
+    await chooseLanguage(page, 'es');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Encuentra ayudas públicas para las que podrías calificar');
     await expect(page.locator('html')).toHaveAttribute('lang', 'es');
-    await page.getByLabel('Idioma').selectOption('ko');
+    await chooseLanguage(page, 'ko');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('받을 수 있을지도 모르는 공공 지원을 찾아보세요');
     await expect(page.getByText('기기 밖으로 나가는 정보')).toBeVisible();
     await page.reload();

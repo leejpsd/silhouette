@@ -275,6 +275,13 @@ describe('program.currentStatus (Search grounding)', () => {
     expect(result.value.grounding.sources).toEqual([{ uri: 'https://example.org/food', title: 'example.org' }]);
   });
 
+  it('search text that states a result is asked for again, then refused', async () => {
+    fake(() => ({ text: () => '[food-help] You qualify for this program.', candidates: [{ groundingMetadata }] }));
+    await expect(programCurrentStatus(statusInput)).rejects.toMatchObject({ kind: 'blocked' });
+    fake(() => ({ text: () => '- City Fan Program: you may qualify for free fans.', candidates: [{ groundingMetadata }] }));
+    await expect(discoverLeads({ profile, known: asPublic([]), locale: 'en' })).rejects.toMatchObject({ kind: 'blocked' });
+  });
+
   it('a billing or permission error is classified, not swallowed', async () => {
     fake(() => Object.assign(new Error('Grounding requires a billing account'), { customErrorData: { status: 403 } }));
     await expect(programCurrentStatus(statusInput)).rejects.toMatchObject({ kind: 'permission' });

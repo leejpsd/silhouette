@@ -1,18 +1,20 @@
-// Verdict card: criteria with their state, what the result depends on, estimated amount,
-// and the rule pack's verification status.
+// Program detail: the result by shape, the program's name and estimated amount, why (from the rules),
+// things to know and official information, then the model-written parts. The count block is compact.
+import { lazy, Suspense } from 'react';
 import { useApp } from '../context';
 import { dynamicKey, formatNumber, programName } from '../i18n';
 import { PACK } from '../pack';
 import { stepForVariable } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
-import { SilhouetteMark } from '../SilhouetteMark';
-import { lazy, Suspense } from 'react';
-
-// Loaded on demand (and kept in the offline cache): the answer sections are not needed for the result.
-const ProgramAnswers = lazy(() => import('../answers/ProgramAnswers').then((m) => ({ default: m.ProgramAnswers })));
 import { OfficialInfo } from '../answers/parts';
 import { MoreHelpLinks } from '../answers/MoreHelpLinks';
+import { ChevronLeft } from '../design/icons';
+import { FitText, Marker } from '../design/parts';
+
+// Loaded on demand (and kept in the offline cache): the reasons and answer sections.
+const ProgramWhy = lazy(() => import('../answers/ProgramAnswers').then((m) => ({ default: m.ProgramWhy })));
+const ProgramAnswers = lazy(() => import('../answers/ProgramAnswers').then((m) => ({ default: m.ProgramAnswers })));
 
 export function ProgramScreen({ id }: { id: string }) {
   const { t, locale, results } = useApp();
@@ -23,7 +25,8 @@ export function ProgramScreen({ id }: { id: string }) {
     return (
       <div className="screen">
         <ScreenHeading>{t('results.title')}</ScreenHeading>
-        <a className="button secondary" href={routeHref({ name: 'results' })}>
+        <a className="text-link back-link" href={routeHref({ name: 'results' })}>
+          <ChevronLeft />
           {t('detail.back')}
         </a>
       </div>
@@ -32,38 +35,43 @@ export function ProgramScreen({ id }: { id: string }) {
 
   return (
     <article className={`screen program verdict-${result.verdict}`} data-testid="verdict-card" data-verdict={result.verdict}>
-      <ScreenHeading>{programName(locale, program)}</ScreenHeading>
-      <p className="verdict-line">
-        <SilhouetteMark verdict={result.verdict} size={48} />
+      <a className="text-link back-link" href={routeHref({ name: 'results' })}>
+        <ChevronLeft />
+        {t('detail.back')}
+      </a>
+      <p className="marker-line verdict-line">
+        <Marker verdict={result.verdict} />
         <span>{t(dynamicKey(`verdict.${result.verdict}`))}</span>
       </p>
+      <ScreenHeading size={60} maxLines={2}>
+        {programName(locale, program)}
+      </ScreenHeading>
 
       {result.estimatedAmount !== undefined && result.estimatedAmount > 0 && (
-        <p className="amount">{t('detail.amount', { amount: formatNumber(locale, result.estimatedAmount) })}</p>
+        <div className="amount-block">
+          <FitText className="amount pop" size={110} maxLines={1} step={2} floor={0.66} aria-hidden="true">
+            {formatNumber(locale, result.estimatedAmount)}
+          </FitText>
+          <p className="small">{t('detail.amount', { amount: formatNumber(locale, result.estimatedAmount) })}</p>
+        </div>
       )}
 
-      {program.period && <p className="meta">{t('detail.period', { period: program.period })}</p>}
-
-      {program.caveats && program.caveats.length > 0 && (
-        <ul className="caveats" aria-label={t('detail.caveats')}>
-          {program.caveats.map((key) => (
-            <li key={key}>{t(dynamicKey(`caveat.${key}`))}</li>
-          ))}
-        </ul>
-      )}
+      <Suspense fallback={null}>
+        <ProgramWhy program={program} verdict={result.verdict} />
+      </Suspense>
 
       {result.dependsOn.length > 0 && (
         <section className="depends" aria-labelledby="depends-title">
-          <h2 id="depends-title">{t('detail.dependsOn')}</h2>
-          <ul>
+          <h2 id="depends-title" className="small strong">
+            {t('detail.dependsOn')}
+          </h2>
+          <ul className="chip-list">
             {result.dependsOn.map((variable) => (
               <li key={variable}>
                 <button
                   type="button"
-                  className="button secondary"
-                  onClick={() =>
-                    navigate({ name: 'question', id: stepForVariable(variable), then: { name: 'program', id: program.id } })
-                  }
+                  className="chip-button"
+                  onClick={() => navigate({ name: 'question', id: stepForVariable(variable), then: { name: 'program', id: program.id } })}
                 >
                   {t('detail.answer', { question: t(dynamicKey(`variable.${variable}`)) })}
                 </button>
@@ -73,18 +81,28 @@ export function ProgramScreen({ id }: { id: string }) {
         </section>
       )}
 
-      <p className="meta">
-        {PACK.verifiedOn ? t('rules.verifiedOn', { date: PACK.verifiedOn }) : t('detail.unverified')}
-      </p>
+      {program.period && <p className="small">{t('detail.period', { period: program.period })}</p>}
+
+      <section className="things" aria-labelledby="things-title">
+        <h2 id="things-title" className="section-heading">
+          {t('detail.caveats')}
+        </h2>
+        {program.caveats && program.caveats.length > 0 && (
+          <ul className="caveats">
+            {program.caveats.map((key) => (
+              <li key={key}>{t(dynamicKey(`caveat.${key}`))}</li>
+            ))}
+          </ul>
+        )}
+        <p className="small">{PACK.verifiedOn ? t('rules.verifiedOn', { date: PACK.verifiedOn }) : t('detail.unverified')}</p>
+      </section>
+
+      <OfficialInfo programs={[program]} />
 
       <Suspense fallback={null}>
         <ProgramAnswers program={program} verdict={result.verdict} />
       </Suspense>
-      <OfficialInfo programs={[program]} />
       <MoreHelpLinks />
-      <a className="button quiet back" href={routeHref({ name: 'results' })}>
-        {t('detail.back')}
-      </a>
     </article>
   );
 }

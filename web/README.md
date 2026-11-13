@@ -60,7 +60,20 @@ Task ids, modes and reasons come from `shared/routing.json`. Every model result 
 
 ### Remote Config
 
-`src/data/remote-config.ts` holds the values the app reads, with bundled defaults: grounding and read aloud off, pointer prompt v4, explanation prompt v3. Settings are never fetched on start. The first fetch follows the first request the person chose to send to the cloud, so nothing leaves the device while everything runs on it. The settings request appears under "Leaving your device" like any other.
+`src/data/remote-config.ts` holds the values the app reads, with bundled defaults: grounding and read aloud off, pointer prompt 4 (`prompt_pointer_extract_v`) and explanation prompt 3 (`prompt_explain_v`). Settings are never fetched on start. The first fetch follows the first request the person chose to send to the cloud, so nothing leaves the device while everything runs on it. The settings request appears under "Leaving your device" like any other.
+
+## Look and feel
+
+The visual design is "Duplicator" (`shared/design/DESIGN.md`, values in `shared/design/tokens.json`): one ground and one ink colour, the inverted bottom block that carries the screen's main action and the "Leaving your device" count, paper slips for the person's data, and pink only for what can leave. Results are told apart by marker shape, never by colour.
+
+| Where | What |
+|---|---|
+| `src/ui/tokens.ts` | Turns the tokens into CSS custom properties (design role names only), the grain tile and the checkbox tick |
+| `src/ui/styles.css` | All styling, from those properties; the few measures the tokens lack are named once at the top |
+| `src/ui/design/` | Shared components: the bottom block and its modes, sheets, paper, placeholder bars, verdict markers, the stamped count, the size-step rule for display type, icons |
+| `public/fonts/` | Darker Grotesque, Hanken Grotesk and DM Mono (SIL OFL 1.1, licences beside them), Latin and Latin Extended subsets, copied from `@fontsource` by `npm run fonts:copy`. Nothing is fetched from a font host |
+
+`npm run capture` writes screenshots of every screen and state (390 px light and dark; Start, a question and Results at 320 and 1280 px in English and Spanish) to `visual-captures/`, using the same fakes as the end-to-end tests.
 
 ## Run it
 
@@ -107,7 +120,7 @@ The end-to-end tests cover:
 
 `eval/` measures pointer extraction against a synthetic dataset with known answers:
 
-- 30 English paystubs in 10 layouts;
+- 38 English paystubs: 30 in ten layouts, plus 8 in a layout with names that contain label words, month-name dates and pay frequencies in words;
 - 6 Korean payslips in 3 layouts;
 - 4 leases.
 

@@ -1,6 +1,7 @@
 // Regression tests for problems found by testing the app in a real browser.
 import { expect, test, type Page } from '@playwright/test';
 import { DEFAULT_ANSWERS, answerCurrent, completeQuickCheck, verdictOf } from './helpers';
+import { chooseLanguage } from './helpers';
 import { AI_HOST, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel } from './model-fakes';
 
 async function sendSample(page: Page) {
@@ -14,6 +15,43 @@ async function sendSample(page: Page) {
 const noOverflow = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 
 test.describe('regressions', () => {
+  test('a bundled sample with no network and no device model is filled from its answer key, labelled, and nothing is sent', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    const cloud = await fakeCloudModel(page, { pointers: {} });
+    await page.goto('/#/doc');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await page.getByTestId('skeleton-preview').waitFor();
+    // Load the review screen's code while online, then come back to the preview.
+    await page.goto('/#/doc/review');
+    await page.getByRole('heading', { level: 1 }).waitFor();
+    await page.goBack();
+    await page.getByTestId('skeleton-preview').waitFor();
+    await context.setOffline(true);
+    await page.getByRole('button', { name: 'Fill in the sample answers' }).click();
+    const badge = page.getByTestId('inference-badge');
+    await expect(badge).toHaveAttribute('data-source', 'SAMPLE_KEY');
+    await expect(badge).toHaveAttribute('data-reason', 'sample-answer-key');
+    await expect(badge).toContainText('Sample answers, no AI');
+    await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
+    expect(cloud.bodies).toHaveLength(0);
+    await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
+    await context.setOffline(false);
+  });
+
+  test('the first silhouette of a session is shown being made; reduced motion shows the end state at once', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.goto('/#/doc');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    const preview = page.getByTestId('skeleton-preview');
+    await expect(preview).toHaveAttribute('data-mode', 'phone');
+    await expect(preview).toHaveAttribute('data-mode', 'leave');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.reload();
+    await page.goto('/#/doc');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await expect(preview).toHaveAttribute('data-mode', 'leave');
+  });
+
   test('a dot followed by three digits is refused with the accepted form, in English and Spanish', async ({ page }) => {
     await page.goto('/#/q/income');
     await page.getByLabel('I know the exact amount').check();
@@ -24,7 +62,7 @@ test.describe('regressions', () => {
       await page.getByRole('button', { name: /^(Next|See results)$/ }).click();
       await expect(page.getByRole('alert')).toHaveText('Use a comma for thousands and a dot for cents, like 60,000 or 60,000.50.');
     }
-    await page.getByLabel('Language').selectOption('es');
+    await chooseLanguage(page, 'es');
     await page.getByLabel('Sé la cantidad exacta').check();
     await page.getByLabel('Ingreso anual del hogar').fill('60.000');
     await page.getByRole('button', { name: /^(Siguiente|Ver resultados)$/ }).click();
@@ -106,6 +144,8 @@ test.describe('regressions', () => {
     expect(body).toContain('"maxOutputTokens":1024');
     expect(body).not.toMatch(/appCheck|x-goog|Authorization/i);
 
+    // The record covers the lower screen like a sheet: close it first.
+    await bar.getByRole('button', { name: 'Hide details' }).click();
     await page.getByRole('button', { name: 'Delete everything' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Delete everything' }).click();
     await expect(bar).toHaveAttribute('data-outbound-count', '0');
@@ -214,19 +254,24 @@ test.describe('regressions', () => {
     await page.setViewportSize({ width: 360, height: 640 });
     await page.goto('/');
     await completeQuickCheck(page);
-    const last = page.getByRole('link', { name: 'Add a paystub' });
+    const last = page.getByRole('button', { name: 'Delete everything' });
     await last.focus();
-    const [box, bar] = await Promise.all([last.boundingBox(), page.getByTestId('leaving-bar').boundingBox()]);
+    const [box, bar] = await Promise.all([last.boundingBox(), page.getByTestId('bottom-block').boundingBox()]);
     expect(box!.y + box!.height).toBeLessThanOrEqual(bar!.y);
   });
 
-  test('the demo banner is compact after the start screen, and the start button says what it does', async ({ page }) => {
+  test('the demo notice is one line with "More" for the rules, and the start button says what it does', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByTestId('demo-banner')).toHaveAttribute('data-compact', 'false');
+    const banner = page.getByTestId('demo-banner');
+    await expect(banner).toContainText('Demo rules: not real programs.');
+    expect((await banner.boundingBox())!.height).toBeLessThan(60);
+    await banner.getByRole('button', { name: 'More' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Demo rules — not real programs' });
+    await expect(sheet).toContainText('invented for testing');
+    await sheet.getByRole('button', { name: 'Close' }).first().click();
+    await expect(sheet).toBeHidden();
     await page.getByRole('button', { name: 'Start Quick Check' }).click();
-    await expect(page.getByTestId('demo-banner')).toHaveAttribute('data-compact', 'true');
-    const banner = await page.getByTestId('demo-banner').boundingBox();
-    expect(banner!.height).toBeLessThan(60);
+    expect((await banner.boundingBox())!.height).toBeLessThan(60);
     await answerCurrent(page, DEFAULT_ANSWERS);
     await page.goto('/#/');
     await page.getByRole('button', { name: 'Continue Quick Check' }).click();

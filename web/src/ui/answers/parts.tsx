@@ -9,7 +9,9 @@ import { planReadAloud, readAloud, requestBody, type ModelAnswer, type PlannedCa
 import type { Program } from '../../core/rules';
 import { useApp } from '../context';
 import { InferenceBadge } from '../InferenceBadge';
-import type { CopyKey } from '../i18n';
+import { dynamicKey, type CopyKey } from '../i18n';
+import { Alert, ArrowUp, Caret, Cloud, Phone, Retry } from '../design/icons';
+import { Paper, ActionLabel } from '../design/parts';
 import { useConfig } from './config';
 import { answerKey, cachedAnswer, giveConsent, markSent, needsConsent, storeAnswer, useSession, wasSent, type Destination } from './session';
 
@@ -127,6 +129,12 @@ export function useRequest<T>(cacheKey: string | null, content: string, focusAft
 
 // ---------- Leaving your device (before sending) ----------
 
+/** "Income range: 30,000 to 44,999 (C)" → label and value, for the paper slip. */
+function splitLine(line: string): [string, string] {
+  const i = line.indexOf(': ');
+  return i === -1 ? ['', line] : [line.slice(0, i), line.slice(i + 2)];
+}
+
 export function SendPanel({
   plan,
   lines,
@@ -144,34 +152,62 @@ export function SendPanel({
   const { t } = useApp();
   const heading = useRef<HTMLHeadingElement>(null);
   const id = useId();
+  const [showBody, setShowBody] = useState(false);
   useEffect(() => heading.current?.focus(), []);
+  const cloud = destinationOf(plan) === 'cloud';
   return (
     <section className="send-panel" aria-labelledby={`${id}-title`} data-testid="send-panel" data-task={plan.taskId} data-destination={destinationOf(plan)}>
-      <h3 id={`${id}-title`} ref={heading} tabIndex={-1}>
+      <h3 id={`${id}-title`} ref={heading} tabIndex={-1} className="sheet-label">
         {t('send.title')}
       </h3>
-      <p>{destinationOf(plan) === 'cloud' ? t('send.leadCloud') : t('send.lead')}</p>
-      <ul className="send-lines" data-testid="send-lines">
-        {lines.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
-        {notListed && <li>{t('send.notListed')}</li>}
-        <li>{t('outbound.model', { model: plan.model })}</li>
-      </ul>
-      <p className="meta">{t('send.notSent')}</p>
-      <p className="meta">{t('leaving.network')}</p>
-      <details>
-        <summary>{t('send.showJson')}</summary>
-        <pre className="payload" data-testid="send-payload" tabIndex={0} aria-label={t('send.showJson')}>
-          {requestBody(plan)}
-        </pre>
-      </details>
-      <div className="actions">
-        <button type="button" className="button primary" onClick={onSend}>
-          {t('send.send')}
-        </button>
-        <button type="button" className="button secondary" onClick={onSkip}>
+      <p className="small">{cloud ? t('send.leadCloud') : t('send.lead')}</p>
+      <div className="send-slip">
+        <span className="leave-tab">{t('preview.couldLeave')}</span>
+        <Paper tilt="small-left">
+          <ul className="send-lines" data-testid="send-lines">
+            {lines.map((line) => {
+              const [label, value] = splitLine(line);
+              return (
+                <li key={line}>
+                  {label && <span className="paper-label">{label}: </span>}
+                  <span className="paper-value">{value}</span>
+                </li>
+              );
+            })}
+            {notListed && <li className="paper-note">{t('send.notListed')}</li>}
+            <li>
+              <span className="paper-label">{t('outbound.model', { model: '' }).replace(/[:\s]+$/, '')}: </span>
+              <span className="paper-value">{plan.model}</span>
+            </li>
+          </ul>
+        </Paper>
+      </div>
+      <p className="small">{t('send.notSent')}</p>
+      <p className="small muted-on-block">{t('leaving.network')}</p>
+      <button type="button" className="disclosure" aria-expanded={showBody} aria-controls={`${id}-body`} onClick={() => setShowBody(!showBody)}>
+        <Caret open={showBody} />
+        {t('send.showJson')}
+      </button>
+      {showBody && (
+        <Paper tilt="none" className="payload-slip" id={`${id}-body`}>
+          <pre className="payload" data-testid="send-payload" tabIndex={0} aria-label={t('send.showJson')}>
+            {requestBody(plan)}
+          </pre>
+        </Paper>
+      )}
+      <p className="routing-line">
+        {cloud ? <Cloud size={22} /> : <Phone size={22} />}
+        <span>
+          <strong>{cloud ? t('badge.cloud') : t('badge.onDevice')}.</strong> {t(dynamicKey(`reason.${plan.reason}`))}
+        </span>
+      </p>
+      <div className="decision">
+        <button type="button" className="outline-button tall" onClick={onSkip}>
           {t('send.skip')}
+        </button>
+        <button type="button" className="send-button" onClick={onSend}>
+          <ArrowUp />
+          <ActionLabel>{t('send.send')}</ActionLabel>
         </button>
       </div>
     </section>
@@ -180,17 +216,36 @@ export function SendPanel({
 
 // ---------- Answers ----------
 
+/** "Not yet": three marching dotted lines while an answer is written. */
+export function Loading() {
+  return (
+    <div className="loading-lines" aria-hidden="true">
+      <span />
+      <span />
+      <span />
+    </div>
+  );
+}
+
 export function AnswerText({ result, readable }: { result: TaskResult<ModelAnswer | string>; readable?: ModelAnswer | undefined }) {
   const text = typeof result.value === 'string' ? result.value : result.value.text;
   return (
     <div className="answer" data-testid="answer">
-      {text.split(/\n{2,}/).map((para, i) => (
-        <p key={i}>{para}</p>
-      ))}
       <InferenceBadge source={result.inferenceSource} reason={result.reason} route={result.route} ranInCloudBecause={result.ranInCloudBecause} />
+      {result.reason === 'on-device-failed' && <Retried />}
+      {text.split(/\n{2,}/).map((para, i) => (
+        <p key={i} className="answer-text">
+          {para}
+        </p>
+      ))}
       {readable && <ReadAloud answer={readable} />}
     </div>
   );
+}
+
+function Retried() {
+  const { t } = useApp();
+  return <p className="small">{t('answers.retried')}</p>;
 }
 
 /** The message for a failed request, by kind. */
@@ -209,15 +264,19 @@ export function AnswerError({ error, onRetry }: { error: TaskError; onRetry?: ((
   const retry = onRetry && error.kind !== 'quota-daily' && error.kind !== 'blocked' ? onRetry : undefined;
   return (
     <div className="task-error" data-testid="answer-error" data-kind={error.kind}>
-      <p>{t(errorCopy(error))}</p>
+      <p className="alert-line">
+        <Alert />
+        <span>{t(errorCopy(error))}</span>
+      </p>
       {error.kind !== 'blocked' && (
-        <details>
+        <details className="error-detail">
           <summary>{t('error.detail')}</summary>
           <pre className="detail">{error.detail}</pre>
         </details>
       )}
       {retry && (
-        <button type="button" className="button secondary" onClick={retry}>
+        <button type="button" className="outline-button" onClick={retry}>
+          <Retry />
           {t('answers.retry')}
         </button>
       )}
@@ -239,12 +298,9 @@ export function RequestRegion<T>({
   onCancel,
   onRetry,
   testId,
-  doneStatus,
 }: {
   state: RequestState<T>;
   render: (result: T) => ReactNode;
-  /** What the status line says when the answer has arrived. */
-  doneStatus?: (result: T) => string;
   lines: readonly string[];
   notListed?: boolean;
   onSend: () => void;
@@ -259,21 +315,22 @@ export function RequestRegion<T>({
   else if (state.status === 'cancelled') status = t('answers.cancelled');
   else if (state.status === 'skipped') status = t('send.skipped');
   else if (state.status === 'error') status = t(errorCopy(state.error));
-  else if (state.status === 'done') status = doneStatus ? doneStatus(state.result) : '';
+  else if (state.status === 'done') status = t('answers.ready');
   return (
     <div className="request" data-testid={testId} data-status={state.status} aria-busy={state.status === 'loading'}>
       {state.status === 'confirm' && <SendPanel plan={state.plan} lines={lines} notListed={notListed ?? false} onSend={onSend} onSkip={onSkip} />}
+      {state.status === 'loading' && <Loading />}
       <p className={state.status === 'done' || state.status === 'error' ? 'visually-hidden' : 'status-line'} role="status" data-testid="request-status">
         {status}
       </p>
       {state.status === 'loading' && (
-        <button type="button" className="button quiet" onClick={onCancel}>
+        <button type="button" className="text-link" onClick={onCancel}>
           {t('answers.cancel')}
         </button>
       )}
       {state.status === 'error' && <AnswerError error={state.error} onRetry={onRetry} />}
       {state.status === 'done' && state.sentBefore && (
-        <p className="meta" data-testid="send-once">
+        <p className="small muted" data-testid="send-once">
           {t('send.once')}
         </p>
       )}
@@ -344,13 +401,13 @@ export function ReadAloud({ answer }: { answer: ModelAnswer }) {
   return (
     <div className="read-aloud">
       {playing ? (
-        <button type="button" className="button secondary" onClick={() => { stop(); setMessage(t('aloud.stopped')); }}>
+        <button type="button" className="outline-button" onClick={() => { stop(); setMessage(t('aloud.stopped')); }}>
           {t('aloud.stop')}
         </button>
       ) : (
         <button
           type="button"
-          className="button secondary"
+          className="outline-button"
           aria-disabled={state.status === 'loading'}
           onClick={() => {
             if (state.status === 'loading') return;
@@ -363,16 +420,16 @@ export function ReadAloud({ answer }: { answer: ModelAnswer }) {
           {t('aloud.play')}
         </button>
       )}
-      <span className="meta" role="status">
+      <span className="small muted" role="status">
         {message}
       </span>
       {state.status === 'confirm' && <SendPanel plan={state.plan} lines={[t('send.line.answer')]} onSend={request.send} onSkip={request.skip} />}
       {state.status === 'loading' && (
-        <button type="button" className="button quiet" onClick={request.cancel}>
+        <button type="button" className="text-link" onClick={request.cancel}>
           {t('answers.cancel')}
         </button>
       )}
-      {state.status === 'error' && <p className="meta" role="alert">{t('aloud.error')}</p>}
+      {state.status === 'error' && <p className="small muted" role="alert">{t('aloud.error')}</p>}
       {state.status === 'done' && <InferenceBadge source={state.result.inferenceSource} reason={state.result.reason} />}
     </div>
   );
@@ -446,14 +503,14 @@ export function OfficialInfo({ programs, headingLevel = 2 }: { programs: readonl
   return (
     <section className="official" aria-label={t('official.title')} data-testid="official-info">
       <H>{t('official.title')}</H>
-      {!any && <p className="meta">{t('official.none')}</p>}
+      {!any && <p className="small muted">{t('official.none')}</p>}
       {items.map(({ program, sources, apply }) =>
         sources.length === 0 && apply === null && (program.docsRequired ?? []).length === 0 ? null : (
           <div key={program.id} className="official-program">
             {programs.length > 1 && <p className="official-name">{program.name}</p>}
             {apply && (
               <p>
-                <a className="button secondary" href={apply} target="_blank" rel="noopener noreferrer">
+                <a className="outline-button" href={apply} target="_blank" rel="noopener noreferrer">
                   {t('official.apply')}
                 </a>
               </p>
@@ -465,7 +522,7 @@ export function OfficialInfo({ programs, headingLevel = 2 }: { programs: readonl
                     <a href={s.url} target="_blank" rel="noopener noreferrer">
                       {s.title}
                     </a>
-                    {s.checkedAt && <span className="meta"> · {t('official.checked', { date: s.checkedAt })}</span>}
+                    {s.checkedAt && <span className="small muted"> · {t('official.checked', { date: s.checkedAt })}</span>}
                   </li>
                 ))}
               </ul>

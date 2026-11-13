@@ -12,7 +12,8 @@ export type SourceKind = 'pdf' | 'paste' | 'photo' | 'sample' | 'manual';
 
 export interface Extraction {
   readonly review: readonly ReviewField[];
-  readonly inferenceSource: InferenceSource;
+  /** SAMPLE_KEY: a bundled sample filled from its answer key on this device, with no model. */
+  readonly inferenceSource: InferenceSource | 'SAMPLE_KEY';
   readonly reason: RoutingReason;
   readonly ranInCloudBecause?: 'no-device-model' | undefined;
 }

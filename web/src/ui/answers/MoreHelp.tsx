@@ -4,11 +4,12 @@
 // information, with no button that cannot work.
 
 import { useId, useRef } from 'react';
-import './answers.css';
 import { asPublic } from '../../core/types';
 import { discoverLeads, nearbyHelp, planDiscover, planNearby, type Leads, type NearbyHelp, type TaskResult } from '../../ai/tasks';
 import { useApp } from '../context';
 import { ScreenHeading } from '../Heading';
+import { ChevronLeft, ChevronRight, Pin, Search } from '../design/icons';
+import { Marker } from '../design/parts';
 import { InferenceBadge } from '../InferenceBadge';
 import { dynamicKey, programName } from '../i18n';
 import { PACK } from '../pack';
@@ -26,19 +27,32 @@ function BackToResults() {
   const id = useId();
   return (
     <nav className="back-nav" aria-labelledby={`${id}-title`} data-testid="back-nav">
-      <h2 id={`${id}-title`}>{t('results.title')}</h2>
-      <ul>
+      <h2 id={`${id}-title`} className="section-heading">
+        {t('results.title')}
+      </h2>
+      <ul className="program-rows">
         {PACK.programs.map((p) => {
           const verdict = results.find((r) => r.programId === p.id)?.verdict;
           return (
             <li key={p.id}>
-              <a href={routeHref({ name: 'program', id: p.id })}>{programName(locale, p)}</a>
-              {verdict && <span className="meta"> · {t(dynamicKey(`verdict.${verdict}`))}</span>}
+              <a href={routeHref({ name: 'program', id: p.id })} className="program-link">
+                <span className="program-text">
+                  <span className="program-name">{programName(locale, p)}</span>
+                  {verdict && (
+                    <span className="program-note marker-line">
+                      <Marker verdict={verdict} />
+                      {t(dynamicKey(`verdict.${verdict}`))}
+                    </span>
+                  )}
+                </span>
+                <ChevronRight />
+              </a>
             </li>
           );
         })}
       </ul>
-      <a className="button quiet back" href={routeHref({ name: 'results' })}>
+      <a className="text-link back-link" href={routeHref({ name: 'results' })}>
+        <ChevronLeft />
         {t('detail.back')}
       </a>
     </nav>
@@ -55,8 +69,17 @@ export function DiscoverScreen() {
   if (!config.groundingSearch || !silhouette) {
     return (
       <div className="screen discover" data-testid="discover-screen" data-enabled="false">
-        <ScreenHeading>{t('discover.heading')}</ScreenHeading>
-        <p className="lead">{t('discover.off')}</p>
+        <a className="text-link back-link" href={routeHref({ name: 'results' })}>
+          <ChevronLeft />
+          {t('detail.back')}
+        </a>
+        <ScreenHeading size={50} maxLines={3}>
+          {t('discover.heading')}
+        </ScreenHeading>
+        <div className="off-placeholder" aria-hidden="true">
+          <Search />
+        </div>
+        <p className="small">{t('discover.off')}</p>
         <OfficialInfo programs={PACK.programs} />
         <BackToResults />
       </div>
@@ -66,10 +89,16 @@ export function DiscoverScreen() {
   const find = () => request.start(planDiscover(input), (signal) => discoverLeads(input, { signal }));
   return (
     <div className="screen discover" data-testid="discover-screen" data-enabled="true">
-      <ScreenHeading headingRef={heading}>{t('discover.heading')}</ScreenHeading>
-      <p className="lead">{t('discover.lead')}</p>
+      <a className="text-link back-link" href={routeHref({ name: 'results' })}>
+        <ChevronLeft />
+        {t('detail.back')}
+      </a>
+      <ScreenHeading headingRef={heading} size={50} maxLines={3}>
+        {t('discover.heading')}
+      </ScreenHeading>
+      <p className="small">{t('discover.lead')}</p>
       {['idle', 'skipped', 'cancelled'].includes(request.state.status) && (
-        <button type="button" className="button primary" onClick={find}>
+        <button type="button" className="outline-button" onClick={find}>
           {t('discover.find')}
         </button>
       )}
@@ -84,7 +113,7 @@ export function DiscoverScreen() {
         render={(result) => (
           <section className="leads" aria-labelledby={`${id}-leads`} data-testid="leads">
             <h2 id={`${id}-leads`}>{t('discover.title')}</h2>
-            <p className="note">{t('discover.leadsNote')}</p>
+            <p className="dashed-note">{t('discover.leadsNote')}</p>
             {result.value.leads.length === 0 ? (
               <p>{t('discover.empty')}</p>
             ) : (
@@ -119,8 +148,17 @@ export function NearbyScreen() {
   if (!config.groundingMaps || !silhouette) {
     return (
       <div className="screen nearby" data-testid="nearby-screen" data-enabled="false">
-        <ScreenHeading>{t('nearby.title')}</ScreenHeading>
-        <p className="lead">{t('nearby.off')}</p>
+        <a className="text-link back-link" href={routeHref({ name: 'results' })}>
+          <ChevronLeft />
+          {t('detail.back')}
+        </a>
+        <ScreenHeading size={50} maxLines={3}>
+          {t('nearby.title')}
+        </ScreenHeading>
+        <div className="off-placeholder" aria-hidden="true">
+          <Pin />
+        </div>
+        <p className="small">{t('nearby.off')}</p>
         <OfficialInfo programs={PACK.programs} />
         <BackToResults />
       </div>
@@ -134,8 +172,14 @@ export function NearbyScreen() {
   };
   return (
     <div className="screen nearby" data-testid="nearby-screen" data-enabled="true">
-      <ScreenHeading headingRef={heading}>{t('nearby.title')}</ScreenHeading>
-      <p className="lead">{t('nearby.lead')}</p>
+      <a className="text-link back-link" href={routeHref({ name: 'results' })}>
+        <ChevronLeft />
+        {t('detail.back')}
+      </a>
+      <ScreenHeading headingRef={heading} size={50} maxLines={3}>
+        {t('nearby.title')}
+      </ScreenHeading>
+      <p className="small">{t('nearby.lead')}</p>
       {counties.length === 0 ? (
         <p>{t('nearby.noCounties')}</p>
       ) : (
@@ -152,7 +196,7 @@ export function NearbyScreen() {
         </div>
       )}
       {chosen && ['idle', 'skipped', 'cancelled'].includes(request.state.status) && (
-        <button type="button" className="button primary" onClick={find}>
+        <button type="button" className="outline-button" onClick={find}>
           {t('nearby.find')}
         </button>
       )}
@@ -176,7 +220,7 @@ export function NearbyScreen() {
                       <a href={p.uri} target="_blank" rel="noopener noreferrer">
                         {p.title}
                       </a>
-                      {p.text && <p className="meta">{p.text}</p>}
+                      {p.text && <p className="small muted">{p.text}</p>}
                     </li>
                   ))}
                   {result.value.places.length === 0 && result.value.lines.map((line) => <li key={line}>{line}</li>)}

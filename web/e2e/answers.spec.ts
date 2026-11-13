@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { completeQuickCheck } from './helpers';
+import { chooseLanguage } from './helpers';
 import { fakeAnswerModels, fakeOnDeviceModel, noOnDeviceModel, seedRemoteConfig } from './model-fakes';
 
 const ALL_ON = { feature_grounding_search: 'true', feature_grounding_maps: 'true', feature_tts: 'true' };
@@ -44,7 +45,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     await expect(badge).toHaveAttribute('data-reason', 'short-text');
     // Why it ran in the cloud: the preference was device-first, but there is no model on this device.
     await expect(badge).toContainText('no model on this device');
-    await expect(badge.locator('.visually-hidden')).toHaveText('Cloud: short text, no model on this device.');
+    await expect(badge.locator('.visually-hidden')).toHaveText('Written in the cloud: short text, no model on this device');
 
     // Shown before sending = sent = recorded, byte for byte.
     expect(cloud.bodies).toHaveLength(1);
@@ -142,7 +143,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     await openProgram(page, 'food-help');
     await expect(page.getByTestId('verdict-card')).toHaveAttribute('data-verdict', 'unlikely');
     const why = page.getByTestId('why-section');
-    await expect(why.getByTestId('why-income-limit')).toContainText('limit 34,000, yours 30,524');
+    await expect(why.getByTestId('why-income-limit').getByTestId('why-limit')).toContainText(/Limit\s*34,000\s*You\s*30,524/);
     await expect(why.getByTestId('why-residency')).toHaveAttribute('data-state', 'fail');
     await expect(why.getByTestId('why-unavailable')).toContainText('needs a model on this device');
 
@@ -280,7 +281,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     await explainButton(page).click();
     await page.getByRole('button', { name: 'Send' }).click();
     await expect(shortAnswer(page)).toBeVisible();
-    await page.getByLabel('Language').selectOption('es');
+    await chooseLanguage(page, 'es');
     await expect(page.getByRole('heading', { name: 'Sobre este programa' })).toBeVisible();
     await expect(shortAnswer(page)).toHaveCount(0);
     await page.getByRole('button', { name: 'Explicar este programa' }).click();
@@ -296,7 +297,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     await fakeAnswerModels(page);
     await page.goto('/');
     await completeQuickCheck(page);
-    await page.getByLabel('Language').selectOption('es');
+    await chooseLanguage(page, 'es');
     await openProgram(page, 'utility-discount');
     await page.getByRole('button', { name: 'Explicar este programa' }).click();
     const lines = page.getByTestId('send-lines');

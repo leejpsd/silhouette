@@ -8,6 +8,9 @@ import { parseTypedAmount, readTypedAmount } from '../../core/skeleton';
 import { navigate, type Route } from '../router';
 import { ScreenHeading } from '../Heading';
 import type { IncomeBand } from '../../core/generalize';
+import { BlockActions } from '../design/block';
+import { ActionLabel } from '../design/parts';
+import { Alert, ArrowRight, Check, ChevronLeft, Lock } from '../design/icons';
 
 type QuestionRoute = Extract<Route, { name: 'question' }>;
 
@@ -123,34 +126,52 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
     setError(null);
   };
 
+  const formId = `${headingId}-form`;
+  const choices = choicesFor(step, t, locale);
+  // Two short answers are tiles; longer lists are rows; income ranges are a two-column grid.
+  const asTiles = (step.kind === 'bool' || step.kind === 'enum') && choices.length === 2;
+  const amountText = (() => {
+    const amount = parseTypedAmount(draft.text);
+    return draft.text.trim() === '' || amount === undefined ? '' : t('q.amountUnderstood', { amount: formatAmount(locale, amount) });
+  })();
+  const [noteLead, noteRest] = splitFirstSentence(t('sensitive.note'));
+
   return (
-    <form className="screen question" onSubmit={submit} noValidate aria-labelledby={headingId}>
-      <p className="progress">
-        {t('q.progress', { n: index + 1, total: steps.length })}
-        <span className="progress-track" aria-hidden="true">
-          {steps.map((s, i) => (
-            <span key={s.id} className={i <= index ? 'on' : ''} />
-          ))}
-        </span>
-      </p>
-      <ScreenHeading id={headingId}>{t(dynamicKey(`question.${step.id}.label`))}</ScreenHeading>
-      {hasHelp && (
-        <p id={helpId} className="help">
-          {t(dynamicKey(helpKey))}
+    <form id={formId} className="screen question" onSubmit={submit} noValidate aria-labelledby={headingId}>
+      <div className="question-top">
+        <div className="question-meta">
+          <button type="button" className="text-link back-link" onClick={back}>
+            <ChevronLeft />
+            {t('q.back')}
+          </button>
+          <p className="progress">{t('q.progress', { n: index + 1, total: steps.length })}</p>
+        </div>
+        <p className="giant-number" aria-hidden="true">
+          <span className="giant-n">{index + 1}</span>
+          <span className="giant-total">/{steps.length}</span>
         </p>
-      )}
-      {step.sensitive && (
-        <p id={privateId} className="private">
-          <LockIcon />
-          <span>{t('sensitive.note')}</span>
-        </p>
-      )}
+      </div>
+      <div className="progress-track" aria-hidden="true" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+        {steps.map((s, i) => (
+          <span key={s.id} className={i <= index ? 'on' : ''} />
+        ))}
+      </div>
+      <div className="stack-10">
+        <ScreenHeading id={headingId} size={56} maxLines={4}>
+          {t(dynamicKey(`question.${step.id}.label`))}
+        </ScreenHeading>
+        {hasHelp && (
+          <p id={helpId} className="help">
+            {t(dynamicKey(helpKey))}
+          </p>
+        )}
+      </div>
 
       {step.kind === 'int' && (
-        <div className="stepper">
+        <div className="counter">
           <button
             type="button"
-            className="button step"
+            className="counter-button"
             aria-label={t('q.decrease')}
             onClick={() => {
               const n = Number.parseInt(draft.text, 10);
@@ -162,13 +183,14 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
           </button>
           <input
             ref={inputRef}
-            className="input number"
+            className="counter-value"
             inputMode="numeric"
             autoComplete="off"
             aria-labelledby={headingId}
-            aria-describedby={describedBy}
+            aria-describedby={[describedBy, `${headingId}-range`].filter(Boolean).join(' ')}
             aria-invalid={error ? true : undefined}
             value={draft.text}
+            placeholder="–"
             onChange={(e) => {
               setDraft({ ...draft, text: e.target.value });
               setError(null);
@@ -176,7 +198,7 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
           />
           <button
             type="button"
-            className="button step"
+            className="counter-button"
             aria-label={t('q.increase')}
             onClick={() => {
               const n = Number.parseInt(draft.text, 10);
@@ -186,36 +208,85 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
           >
             +
           </button>
+          <p id={`${headingId}-range`} className="counter-hint">
+            {t('q.error.integer', { min: step.min, max: step.max })}
+          </p>
         </div>
       )}
 
       {(step.kind === 'enum' || step.kind === 'bool' || step.kind === 'income') && (
-        <fieldset className="choices" aria-labelledby={headingId} aria-describedby={describedBy}>
-          {choicesFor(step, t, locale).map((c, i) => (
-            <label key={c.value} className={`choice${draft.choice === c.value ? ' selected' : ''}`}>
-              <input
-                ref={i === 0 ? inputRef : undefined}
-                type="radio"
-                name={step.id}
-                value={c.value}
-                checked={draft.choice === c.value}
-                onChange={() => choose(c.value)}
-              />
-              <span>{c.label}</span>
-            </label>
-          ))}
+        <fieldset
+          className={asTiles ? 'tiles' : step.kind === 'income' ? 'ranges' : 'option-rows'}
+          aria-labelledby={headingId}
+          aria-describedby={describedBy}
+          data-error={error ? 'true' : undefined}
+        >
+          {choices.map((c, i) =>
+            c.value === 'exact' ? null : (
+              <label key={c.value} className={`${asTiles ? 'tile' : step.kind === 'income' ? 'range' : 'option-row'}${draft.choice === c.value ? ' selected' : ''}`}>
+                <input
+                  ref={i === 0 ? inputRef : undefined}
+                  type="radio"
+                  className="radio"
+                  name={step.id}
+                  value={c.value}
+                  checked={draft.choice === c.value}
+                  onChange={() => choose(c.value)}
+                />
+                <span className={asTiles ? 'tile-word' : step.kind === 'income' ? 'range-label' : 'option-word'}>{c.label}</span>
+              </label>
+            ),
+          )}
+          {step.kind === 'income' && (
+            <div className={`exact-row${draft.choice === 'exact' ? ' selected' : ''}`}>
+              <label className="exact-option">
+                <span className="option-word">{t('income.exact.option')}</span>
+                <input type="radio" className="radio" name={step.id} value="exact" checked={draft.choice === 'exact'} onChange={() => choose('exact')} />
+              </label>
+              {draft.choice === 'exact' && (
+                <div className="field">
+                  <div className="field-label-row">
+                    <label htmlFor={`${step.id}-exact`}>{t('income.exact.label')}</label>
+                    <span id={privateId} className="private-inline">
+                      <Lock />
+                      {t('q.private')}
+                    </span>
+                  </div>
+                  <input
+                    id={`${step.id}-exact`}
+                    className="input mono"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    aria-describedby={[`${step.id}-understood`, privateId, error ? errorId : ''].filter(Boolean).join(' ')}
+                    aria-invalid={error ? true : undefined}
+                    value={draft.text}
+                    onChange={(e) => {
+                      setDraft({ ...draft, text: e.target.value });
+                      setError(null);
+                    }}
+                  />
+                  <p id={`${step.id}-understood`} className="understood" aria-live="polite" data-testid="amount-understood">
+                    {amountText !== '' && <Check size={14} />}
+                    {amountText}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </fieldset>
       )}
 
       {step.kind === 'multi' && (
-        <fieldset className="choices" aria-labelledby={headingId} aria-describedby={describedBy}>
+        <fieldset className="option-rows" aria-labelledby={headingId} aria-describedby={describedBy} data-error={error ? 'true' : undefined}>
           {step.values.map((value, i) => {
             const checked = draft.picked.includes(value);
             return (
-              <label key={value} className={`choice${checked ? ' selected' : ''}`}>
+              <label key={value} className={`option-row${checked ? ' selected' : ''}`}>
+                <span className="option-word">{t(dynamicKey(`option.${step.id}.${value}`))}</span>
                 <input
                   ref={i === 0 ? inputRef : undefined}
                   type="checkbox"
+                  className="checkbox"
                   name={step.id}
                   value={value}
                   checked={checked}
@@ -224,61 +295,49 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
                     setError(null);
                   }}
                 />
-                <span>{t(dynamicKey(`option.${step.id}.${value}`))}</span>
               </label>
             );
           })}
         </fieldset>
       )}
 
-      {step.kind === 'income' && draft.choice === 'exact' && (
-        <div className="field">
-          <label htmlFor={`${step.id}-exact`}>{t('income.exact.label')}</label>
-          <input
-            id={`${step.id}-exact`}
-            className="input"
-            inputMode="numeric"
-            autoComplete="off"
-            aria-describedby={[`${step.id}-understood`, privateId, error ? errorId : ''].filter(Boolean).join(' ')}
-            aria-invalid={error ? true : undefined}
-            value={draft.text}
-            onChange={(e) => {
-              setDraft({ ...draft, text: e.target.value });
-              setError(null);
-            }}
-          />
-          <p id={`${step.id}-understood`} className="understood" aria-live="polite" data-testid="amount-understood">
-            {(() => {
-              const amount = parseTypedAmount(draft.text);
-              return draft.text.trim() === '' || amount === undefined
-                ? ''
-                : t('q.amountUnderstood', { amount: formatAmount(locale, amount) });
-            })()}
-          </p>
-          <p id={privateId} className="private">
-            <LockIcon />
-            <span>{t('q.private')}</span>
-          </p>
-        </div>
+      {step.sensitive && (
+        <p id={privateId} className="private">
+          <Lock />
+          <span>
+            <strong>{noteLead}</strong>
+            {noteRest ? ` ${noteRest}` : ''}
+          </span>
+        </p>
       )}
 
       <p id={errorId} className="error" role="alert">
+        {error && <Alert />}
         {error}
       </p>
 
-      <div className="actions">
-        <button type="submit" className="button primary">
-          {isLast ? t('q.finish') : t('q.next')}
-        </button>
-        <button type="button" className="button secondary" onClick={skip}>
-          {t('q.skip')}
-        </button>
-      </div>
-      <button type="button" className="button quiet back" onClick={back}>
-        {t('q.back')}
-      </button>
+      <BlockActions>
+        {/* The action first; beside it the skip link, or under it when the label needs the width. */}
+        <div className="action-row">
+          <button type="submit" form={formId} className="action grow">
+            <ActionLabel>{isLast ? t('q.finish') : t('q.next')}</ActionLabel>
+            <span className="action-arrow">
+              <ArrowRight />
+            </span>
+          </button>
+          <button type="button" className="text-link on-block" onClick={skip}>
+            {t('q.skip')}
+          </button>
+        </div>
+      </BlockActions>
     </form>
   );
+}
+
+/** "This answer never leaves your device." and the rest, so the first sentence can be set in bold. */
+function splitFirstSentence(text: string): [string, string] {
+  const m = /^(.+?[.。!?])\s+(.+)$/s.exec(text);
+  return m ? [m[1] as string, m[2] as string] : [text, ''];
 }
 
 function choicesFor(step: Step, t: Translate, locale: Locale): { value: string; label: string }[] {
@@ -296,13 +355,4 @@ function choicesFor(step: Step, t: Translate, locale: Locale): { value: string; 
     ];
   }
   return [];
-}
-
-function LockIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-      <rect x="4" y="9" width="12" height="8.5" rx="2" fill="currentColor" />
-      <path d="M6.75 9V6.5a3.25 3.25 0 0 1 6.5 0V9" fill="none" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
 }

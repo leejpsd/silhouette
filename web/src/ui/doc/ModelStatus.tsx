@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ON_DEVICE_LANGUAGES } from '../../ai/tasks';
 import { downloadDeviceModel, pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
 import { useApp } from '../context';
+import { Alert, Cloud, Phone } from '../design/icons';
 
 export function ModelStatus({ language, onStatus }: { language: string; onStatus?: (status: DeviceStatus) => void }) {
   const { t } = useApp();
@@ -40,19 +41,34 @@ export function ModelStatus({ language, onStatus }: { language: string; onStatus
 
   if (status === null) return null;
   const percent = Math.round(progress * 100);
+  const text = !supported
+    ? t('model.languageUnsupported')
+    : status === 'available'
+      ? t('model.available')
+      : status === 'unavailable'
+        ? t('model.unavailable')
+        : status === 'downloadable'
+          ? t('model.downloadable')
+          : '';
   return (
     <section className="model-status" aria-labelledby="model-status-title" data-testid="model-status" data-status={status}>
-      <h2 id="model-status-title">{t('model.title')}</h2>
-      {!supported && <p>{t('model.languageUnsupported')}</p>}
-      {supported && status === 'available' && <p>{t('model.available')}</p>}
-      {supported && status === 'unavailable' && <p>{t('model.unavailable')}</p>}
+      <h2 id="model-status-title" className="visually-hidden">
+        {t('model.title')}
+      </h2>
+      {text && (
+        <p className="provenance">
+          <span className="provenance-visible">
+            {supported && status === 'available' ? <Phone /> : <Cloud />}
+            <span>
+              <strong>{supported && status === 'available' ? t('badge.onDevice') : t('model.title')}</strong> · {text}
+            </span>
+          </span>
+        </p>
+      )}
       {supported && status === 'downloadable' && (
-        <>
-          <p>{t('model.downloadable')}</p>
-          <button type="button" className="button secondary" onClick={() => void download()}>
-            {t('model.download')}
-          </button>
-        </>
+        <button type="button" className="outline-button" onClick={() => void download()}>
+          {t('model.download')}
+        </button>
       )}
       {supported && status === 'downloading' && (
         <div className="progress-block">
@@ -60,7 +76,12 @@ export function ModelStatus({ language, onStatus }: { language: string; onStatus
           <progress id="model-progress" max={100} value={percent} />
         </div>
       )}
-      {failed && <p role="alert">{t('model.downloadFailed')}</p>}
+      {failed && (
+        <p role="alert" className="alert-line">
+          <Alert />
+          <span>{t('model.downloadFailed')}</span>
+        </p>
+      )}
     </section>
   );
 }

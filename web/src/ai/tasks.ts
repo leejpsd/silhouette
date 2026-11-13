@@ -558,7 +558,8 @@ export interface CurrentStatus {
  */
 export async function programCurrentStatus(input: StatusInput, options: RunOptions = {}): Promise<TaskResult<CurrentStatus>> {
   const call = planCurrentStatus(input);
-  const { response, source } = await runGrounded(call, options);
+  // Grounded text is checked like an explanation (scope general): it must not state a result.
+  const { response, source } = await checked(() => runGrounded(call, options), 'general', input.locale, (r) => r.response.text());
   const statuses = parseStatusLines(response.text(), input.programs.map((p) => p.id));
   return { value: { statuses, grounding: searchGrounding(response) }, inferenceSource: source, reason: call.reason };
 }
@@ -593,7 +594,7 @@ export interface Leads {
 /** Task `discover.leads`: ONLY_IN_CLOUD with Google Search, reason `needs-current-info`. Never verified. */
 export async function discoverLeads(input: DiscoverInput, options: RunOptions = {}): Promise<TaskResult<Leads>> {
   const call = planDiscover(input);
-  const { response, source } = await runGrounded(call, options);
+  const { response, source } = await checked(() => runGrounded(call, options), 'general', input.locale, (r) => r.response.text());
   return { value: { leads: parseListLines(response.text(), 5), grounding: searchGrounding(response) }, inferenceSource: source, reason: call.reason };
 }
 

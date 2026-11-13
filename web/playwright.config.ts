@@ -4,6 +4,8 @@ const PORT = 4173;
 
 export default defineConfig({
   testDir: './e2e',
+  // Screen captures for design review run on their own (npm run capture).
+  testIgnore: ['visual/**'],
   fullyParallel: true,
   reporter: [['list']],
   timeout: 60_000,

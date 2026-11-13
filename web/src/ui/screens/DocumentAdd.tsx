@@ -12,8 +12,11 @@ import { classifyError, type TaskError } from '../../ai/errors';
 import { extractPdfText } from '../../data/pdf-text';
 import { useApp } from '../context';
 import { LOCALES, LOCALE_NAMES, isLocale, type Locale } from '../i18n';
-import { navigate } from '../router';
+import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
+import { BlockActions } from '../design/block';
+import { Alert, Camera, ChevronLeft, Clipboard, Doc, Keyboard } from '../design/icons';
+import { Loading } from '../answers/parts';
 import { ModelStatus } from '../doc/ModelStatus';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { useDocument, type SourceKind } from '../doc/state';
@@ -91,16 +94,26 @@ export function DocumentAddScreen() {
     }
   };
 
+  const [pasteOpen, setPasteOpen] = useState(false);
+
   return (
     <div className="screen doc-add">
-      <ScreenHeading>{t('doc.title')}</ScreenHeading>
-      <p className="lead">{t('doc.lead')}</p>
+      <a className="text-link back-link" href={routeHref({ name: 'results' })}>
+        <ChevronLeft />
+        {t('detail.back')}
+      </a>
+      <div className="stack-8">
+        <ScreenHeading size={50} maxLines={3}>
+          {t('doc.title')}
+        </ScreenHeading>
+        <p className="lead">{t('doc.lead')}</p>
+      </div>
 
       <div className="field">
         <label htmlFor={languageId}>{t('doc.language')}</label>
         <select
           id={languageId}
-          className="input"
+          className="input select"
           value={doc.language}
           onChange={(e) => isLocale(e.target.value) && update({ language: e.target.value })}
         >
@@ -114,106 +127,148 @@ export function DocumentAddScreen() {
 
       <ModelStatus language={doc.language} />
 
-      <div role="status" className="busy">
+      {busy && <Loading />}
+      <div role="status" className="status-line">
         {busy}
       </div>
 
-      <section className="option" aria-labelledby="opt-pdf">
-        <h2 id="opt-pdf">{t('doc.pdf')}</h2>
-        <p className="help">{t('doc.pdf.help')}</p>
-        <input
-          type="file"
-          accept="application/pdf,.pdf"
-          aria-labelledby="opt-pdf"
-          className="file"
-          disabled={busy !== null}
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (file) await fromPdf(await file.arrayBuffer(), 'pdf');
-            e.target.value = '';
-          }}
-        />
-        {pdfError && (
-          <p className="error" role="alert">
-            {t('doc.pdf.error')}
-          </p>
-        )}
+      <section
+        className={`source-card${photoStatus === 'available' ? '' : ' unavailable'}`}
+        aria-labelledby="opt-photo"
+        data-testid="photo-option"
+        data-status={photoStatus ?? 'checking'}
+      >
+        <span className="source-icon">
+          <Camera />
+        </span>
+        <div className="source-text">
+          <h2 id="opt-photo" className="source-title">
+            {t('doc.photo')}
+          </h2>
+          {photoStatus === 'available' ? (
+            <>
+              <p className="small">{t('doc.photo.help')}</p>
+              <input
+                type="file"
+                accept="image/jpeg,image/png"
+                capture="environment"
+                aria-labelledby="opt-photo"
+                className="file"
+                disabled={busy !== null}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void fromPhoto(file);
+                  e.target.value = '';
+                }}
+              />
+            </>
+          ) : (
+            <p className="small">{t('doc.photo.unavailable')}</p>
+          )}
+          {photoError && <TaskErrorNotice error={photoError} />}
+        </div>
       </section>
 
-      <section className="option" aria-labelledby="opt-paste">
-        <h2 id="opt-paste">{t('doc.paste')}</h2>
-        <label htmlFor={pasteId} className="visually-hidden">
-          {t('doc.paste.label')}
-        </label>
-        <textarea id={pasteId} className="input textarea" rows={6} value={pasted} onChange={(e) => setPasted(e.target.value)} />
-        <button
-          type="button"
-          className="button secondary"
-          disabled={pasted.trim() === ''}
-          onClick={() => acceptText(Raw.of(pasted), 'paste')}
-        >
-          {t('doc.paste.continue')}
-        </button>
+      <section className="source-card" aria-labelledby="opt-pdf">
+        <span className="source-icon">
+          <Doc />
+        </span>
+        <div className="source-text">
+          <h2 id="opt-pdf" className="source-title">
+            {t('doc.pdf')}
+          </h2>
+          <p className="small">{t('doc.pdf.help')}</p>
+          <input
+            type="file"
+            accept="application/pdf,.pdf"
+            aria-labelledby="opt-pdf"
+            className="file"
+            disabled={busy !== null}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file) await fromPdf(await file.arrayBuffer(), 'pdf');
+              e.target.value = '';
+            }}
+          />
+          {pdfError && (
+            <p className="error" role="alert">
+              <Alert />
+              {t('doc.pdf.error')}
+            </p>
+          )}
+        </div>
       </section>
 
-      <section className="option" aria-labelledby="opt-photo" data-testid="photo-option" data-status={photoStatus ?? 'checking'}>
-        <h2 id="opt-photo">{t('doc.photo')}</h2>
-        {photoStatus === 'available' ? (
-          <>
-            <p className="help">{t('doc.photo.help')}</p>
-            <input
-              type="file"
-              accept="image/jpeg,image/png"
-              capture="environment"
-              aria-labelledby="opt-photo"
-              className="file"
-              disabled={busy !== null}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void fromPhoto(file);
-                e.target.value = '';
-              }}
-            />
-          </>
-        ) : (
-          <p className="help">{t('doc.photo.unavailable')}</p>
-        )}
-        {photoError && <TaskErrorNotice error={photoError} />}
-      </section>
-
-      <section className="option" aria-labelledby="opt-manual">
-        <h2 id="opt-manual">{t('doc.manual')}</h2>
-        <button
-          type="button"
-          className="button secondary"
-          onClick={() => {
-            reset(true);
-            update({ sourceKind: 'manual' });
-            navigate({ name: 'doc-review' });
-          }}
-        >
-          {t('doc.manual')}
-        </button>
-      </section>
-
-      <section className="option samples" aria-labelledby="opt-samples">
-        <h2 id="opt-samples">{t('doc.samples')}</h2>
-        <p className="help">{t('doc.samples.help')}</p>
-        <div className="actions">
-          <button type="button" className="button secondary" disabled={busy !== null} onClick={() => void sample('en', 'pdf')}>
-            {t('doc.sample.enPdf')}
-          </button>
-          <button type="button" className="button secondary" disabled={busy !== null} onClick={() => void sample('en', 'text')}>
-            {t('doc.sample.enText')}
-          </button>
-          <button type="button" className="button secondary" disabled={busy !== null} onClick={() => void sample('ko', 'pdf')}>
-            {t('doc.sample.koPdf')}
-          </button>
-          <button type="button" className="button secondary" disabled={busy !== null} onClick={() => void sample('ko', 'text')}>
-            {t('doc.sample.koText')}
+      <section className="source-card" aria-labelledby="opt-paste">
+        <span className="source-icon">
+          <Clipboard />
+        </span>
+        <div className="source-text">
+          <h2 id="opt-paste" className="source-title">
+            {t('doc.paste')}
+          </h2>
+          <p className="small">{t('doc.pdf.help').split('. ')[0]}.</p>
+          <label htmlFor={pasteId} className="visually-hidden">
+            {t('doc.paste.label')}
+          </label>
+          <textarea
+            id={pasteId}
+            className="input textarea mono"
+            rows={pasteOpen || pasted !== '' ? 6 : 2}
+            value={pasted}
+            onFocus={() => setPasteOpen(true)}
+            onChange={(e) => setPasted(e.target.value)}
+          />
+          <button type="button" className="outline-button" disabled={pasted.trim() === ''} onClick={() => acceptText(Raw.of(pasted), 'paste')}>
+            {t('doc.paste.continue')}
           </button>
         </div>
       </section>
+
+      <section className="source-card" aria-labelledby="opt-manual">
+        <span className="source-icon">
+          <Keyboard />
+        </span>
+        <div className="source-text">
+          <h2 id="opt-manual" className="source-title">
+            {t('doc.manual')}
+          </h2>
+          <button
+            type="button"
+            className="outline-button"
+            onClick={() => {
+              reset(true);
+              update({ sourceKind: 'manual' });
+              navigate({ name: 'doc-review' });
+            }}
+          >
+            {t('doc.manual')}
+          </button>
+        </div>
+      </section>
+
+      <BlockActions>
+        <section className="samples" aria-labelledby="opt-samples">
+          <h2 id="opt-samples" className="block-title">
+            {t('doc.samples')}
+          </h2>
+          <p className="block-note left">{t('doc.samples.help')}</p>
+          <div className="sample-grid">
+            <button type="button" className="outline-button on-block" disabled={busy !== null} onClick={() => void sample('en', 'text')}>
+              {t('doc.sample.enText')}
+            </button>
+            <button type="button" className="outline-button on-block" disabled={busy !== null} onClick={() => void sample('en', 'pdf')}>
+              {t('doc.sample.enPdf')}
+            </button>
+            <button type="button" className="outline-button on-block" disabled={busy !== null} onClick={() => void sample('ko', 'text')}>
+              {t('doc.sample.koText')}
+            </button>
+            <button type="button" className="outline-button on-block" disabled={busy !== null} onClick={() => void sample('ko', 'pdf')}>
+              {t('doc.sample.koPdf')}
+            </button>
+          </div>
+        </section>
+      </BlockActions>
     </div>
   );
 }

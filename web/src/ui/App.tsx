@@ -6,6 +6,7 @@ import { BANDS, PACK, isDemoPack } from './pack';
 import { buildSteps, computeVerdicts, sanitizeAnswers, type AnswerValue, type QuickCheckAnswers } from './quickcheck';
 import { navigate, useRoute } from './router';
 import { DemoBanner, Footer, Header, LeavingBar } from './Chrome';
+import { BlockProvider, BottomBlock } from './design/block';
 import { StartScreen } from './screens/Start';
 import { QuestionScreen } from './screens/Question';
 import { ResultsScreen } from './screens/Results';
@@ -149,19 +150,25 @@ export function App() {
   return (
     <AppContext.Provider value={state}>
       <DocumentContext.Provider value={docContext}>
-      <a className="skip" href="#main" onClick={(e) => {
-        e.preventDefault();
-        document.getElementById('main')?.focus();
-      }}>
-        {t('app.skipToContent')}
-      </a>
-      <Header onLocale={changeLocale} />
-      {isDemoPack(PACK) && <DemoBanner compact={route.name !== 'start'} />}
-      <main id="main" tabIndex={-1} aria-busy={!loaded}>
-        <Suspense fallback={null}>{screen}</Suspense>
-      </main>
-      <Footer onDelete={onDelete} />
-      <LeavingBar />
+      <BlockProvider>
+        <a className="skip" href="#main" onClick={(e) => {
+          e.preventDefault();
+          document.getElementById('main')?.focus();
+        }}>
+          {t('app.skipToContent')}
+        </a>
+        <div className="app" data-route={route.name}>
+          <Header onLocale={changeLocale} />
+          {isDemoPack(PACK) && <DemoBanner />}
+          <main id="main" tabIndex={-1} aria-busy={!loaded}>
+            <Suspense fallback={null}>{screen}</Suspense>
+            <Footer onDelete={onDelete} />
+          </main>
+          <BottomBlock count={<LeavingBar />} />
+        </div>
+        {/* The grain: one fixed layer over the whole screen. */}
+        <div className="grain" aria-hidden="true" />
+      </BlockProvider>
       </DocumentContext.Provider>
     </AppContext.Provider>
   );

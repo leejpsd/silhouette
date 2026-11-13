@@ -1,70 +1,209 @@
-// Results: programs grouped by verdict, each linking to its verdict card.
-import { useSyncExternalStore } from 'react';
+// Results: programs grouped by verdict, each marked by shape and linking to its detail. The
+// "possible" group sits in the inverted card with what would make it clearer.
+import { useMemo, useSyncExternalStore } from 'react';
 import { outboundState, subscribeOutbound } from '../../data/outbound';
+import { criterionReasons, type ProgramVerdict } from '../../core/rules';
+import { Raw } from '../../core/types';
 import { useApp } from '../context';
 import { dynamicKey, formatNumber, programName } from '../i18n';
-import { PACK } from '../pack';
-import { groupByVerdict } from '../quickcheck';
+import { BANDS, PACK } from '../pack';
+import { groupByVerdict, toEngineAnswers } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
-import { SilhouetteMark } from '../SilhouetteMark';
 import { MoreHelpLinks } from '../answers/MoreHelpLinks';
+import { BlockActions } from '../design/block';
+import { ArrowRight, ChevronRight, Minus } from '../design/icons';
+import { FitText, Marker, ActionLabel } from '../design/parts';
+import { useOnline } from '../design/online';
 
 export function ResultsScreen() {
-  const { t, locale, steps, results } = useApp();
+  const { t, locale, steps, answers, results } = useApp();
   const groups = groupByVerdict(results);
   // Once anything has left the device, the lead must not say that nothing was sent.
   const sentSomething = useSyncExternalStore(subscribeOutbound, () => outboundState().entries.length > 0, () => false);
-  const hasMaybe = results.some((r) => r.verdict === 'maybe');
+  const online = useOnline();
+  const answered = Object.keys(answers).length > 0;
+  const nothingFits = answered && results.length > 0 && results.every((r) => r.verdict === 'unlikely');
   const nameOf = (id: string) => {
     const program = PACK.programs.find((p) => p.id === id);
     return program ? programName(locale, program) : id;
   };
+  const engine = useMemo(() => Raw.of(toEngineAnswers(steps, answers)), [steps, answers]);
+
+  const addPaystub = (
+    <a className="secondary-action" href={routeHref({ name: 'doc' })}>
+      {t('results.addDocument')}
+    </a>
+  );
+  const editAnswers = (
+    <button type="button" className="text-link" onClick={() => navigate({ name: 'question', id: steps[0]?.id ?? 'income', then: null })}>
+      {t('results.edit')}
+    </button>
+  );
+
+  if (!answered) {
+    return (
+      <div className="screen results">
+        <ScreenHeading size={62} maxLines={2}>
+          {t('results.title')}
+        </ScreenHeading>
+        <p className="marker-line">
+          <Marker verdict="unanswered" />
+          {t('results.notAnswered')}
+        </p>
+        <p className="big-note">{t('results.empty')}</p>
+        <ul className="program-rows faded">
+          {PACK.programs.map((p) => (
+            <li key={p.id}>
+              <Marker verdict="unanswered" />
+              <span>{programName(locale, p)}</span>
+            </li>
+          ))}
+        </ul>
+        <BlockActions>
+          <button type="button" className="action" onClick={() => navigate({ name: 'question', id: steps[0]?.id ?? 'income', then: null })}>
+            <ActionLabel>{t('start.begin')}</ActionLabel>
+            <span className="action-arrow">
+              <ArrowRight />
+            </span>
+          </button>
+        </BlockActions>
+      </div>
+    );
+  }
 
   return (
     <div className="screen results">
-      <ScreenHeading>{t('results.title')}</ScreenHeading>
-      <p className="lead" data-testid="results-lead">
-        {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
-      </p>
-      {groups.map((group) => (
-        <section key={group.verdict} className={`group verdict-${group.verdict}`} aria-labelledby={`group-${group.verdict}`}>
-          <h2 id={`group-${group.verdict}`} className="group-title">
-            <SilhouetteMark verdict={group.verdict} size={36} />
-            <span>{t(dynamicKey(`verdict.${group.verdict}`))}</span>
-          </h2>
-          <ul className="programs">
-            {group.programs.map((r) => (
-              <li key={r.programId} data-testid={`program-${r.programId}`} data-verdict={r.verdict}>
-                <a href={routeHref({ name: 'program', id: r.programId })} className="program-link">
-                  <span className="program-name">{nameOf(r.programId)}</span>
-                  {r.dependsOn.length > 0 && (
-                    <span className="program-note">
-                      {t('results.dependsOn', {
-                        list: r.dependsOn.map((v) => t(dynamicKey(`variable.${v}`))).join(', '),
-                      })}
-                    </span>
-                  )}
-                  {r.estimatedAmount !== undefined && r.estimatedAmount > 0 && (
-                    <span className="program-note">{t('results.estimate', { amount: formatNumber(locale, r.estimatedAmount) })}</span>
-                  )}
-                  <span className="program-open">{t('results.open')}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-      <p className="hint">{hasMaybe ? t('results.maybeHint') : ''}</p>
-      <MoreHelpLinks />
-      <div className="actions">
-        <a className="button primary" href={routeHref({ name: 'doc' })}>
-          {t('results.addDocument')}
-        </a>
-        <button type="button" className="button secondary" onClick={() => navigate({ name: 'question', id: steps[0]?.id ?? 'income', then: null })}>
-          {t('results.edit')}
-        </button>
+      <div className="stack-8 inset">
+        <ScreenHeading size={62} maxLines={2} leading="tight">
+          {t('results.title')}
+        </ScreenHeading>
+        <p className="small muted" data-testid="results-lead">
+          {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
+        </p>
       </div>
+      {!online && (
+        <p className="dashed-note" role="status">
+          {t('state.offline')}
+        </p>
+      )}
+      {nothingFits && (
+        <section className="inverted-card" aria-label={t('results.none')}>
+          <p className="card-headline">{t('results.none')}</p>
+          <p className="small">{t('results.noneHelp')}</p>
+          <div className="card-actions">
+            {editAnswers}
+            {addPaystub}
+          </div>
+        </section>
+      )}
+      {groups.map((group) =>
+        group.verdict === 'maybe' && !nothingFits ? (
+          <section key={group.verdict} className="inverted-card group verdict-maybe" aria-labelledby="group-maybe">
+            <h2 id="group-maybe" className="marker-line">
+              <Marker verdict="maybe" />
+              <span>{t('verdict.maybe')}</span>
+            </h2>
+            <ul className="programs">
+              {group.programs.map((r, i) =>
+                i === 0 ? (
+                  <Featured key={r.programId} result={r} name={nameOf(r.programId)} reasons={criterionReasons(PACK, BANDS, engine, r.programId)} />
+                ) : (
+                  <ProgramRow key={r.programId} result={r} name={nameOf(r.programId)} />
+                ),
+              )}
+            </ul>
+            <div className="card-actions">
+              <p className="small">{t('results.maybeHint')}</p>
+              {addPaystub}
+            </div>
+          </section>
+        ) : (
+          <section key={group.verdict} className={`group verdict-${group.verdict}`} aria-labelledby={`group-${group.verdict}`}>
+            <h2 id={`group-${group.verdict}`} className={`marker-line${group.verdict === 'depends' || group.verdict === 'unlikely' ? ' muted' : ''}`}>
+              <Marker verdict={group.verdict} />
+              <span>{t(dynamicKey(`verdict.${group.verdict}`))}</span>
+            </h2>
+            <ul className="programs">
+              {group.programs.map((r) => (
+                <ProgramRow key={r.programId} result={r} name={nameOf(r.programId)} />
+              ))}
+            </ul>
+          </section>
+        ),
+      )}
+      {!nothingFits && !groups.some((g) => g.verdict === 'maybe') && <div className="results-actions">{addPaystub}</div>}
+      <div className="results-actions">{editAnswers}</div>
+      <MoreHelpLinks />
     </div>
+  );
+}
+
+function ProgramRow({ result: r, name }: { result: ProgramVerdict; name: string }) {
+  const { t, locale } = useApp();
+  return (
+    <li data-testid={`program-${r.programId}`} data-verdict={r.verdict}>
+      <a href={routeHref({ name: 'program', id: r.programId })} className="program-link">
+        <span className="program-text">
+          <FitText className="program-name" size={32} maxLines={2} step={2} floor={0.66}>
+            {name}
+          </FitText>
+          {r.dependsOn.length > 0 && (
+            <span className="program-note">{t('results.dependsOn', { list: r.dependsOn.map((v) => t(dynamicKey(`variable.${v}`))).join(', ') })}</span>
+          )}
+          {r.estimatedAmount !== undefined && r.estimatedAmount > 0 && (
+            <span className="program-note">{t('results.estimate', { amount: formatNumber(locale, r.estimatedAmount) })}</span>
+          )}
+        </span>
+        <ChevronRight />
+      </a>
+    </li>
+  );
+}
+
+/** The first "possible" program, with the limit and the person's answer that keep it open. */
+function Featured({ result: r, name, reasons }: { result: ProgramVerdict; name: string; reasons: ReturnType<typeof criterionReasons> }) {
+  const { t, locale } = useApp();
+  const comparison = reasons.flatMap((c) => c.comparisons).find((c) => c.variable === 'annualIncome' && c.limit !== null);
+  const yours =
+    comparison?.yours === null || comparison?.yours === undefined
+      ? null
+      : typeof comparison.yours === 'number'
+        ? formatNumber(locale, comparison.yours)
+        : comparison.yours.max === null
+          ? `${formatNumber(locale, comparison.yours.min)}+`
+          : `${formatNumber(locale, comparison.yours.min)} – ${formatNumber(locale, comparison.yours.max)}`;
+  const mixed = r.criteria.some((c) => c.state === 'mixed');
+  return (
+    <li className="featured" data-testid={`program-${r.programId}`} data-verdict={r.verdict}>
+      <a href={routeHref({ name: 'program', id: r.programId })} className="featured-link">
+        <FitText className="featured-name" size={32} maxLines={2} step={2} floor={0.66}>
+          {name}
+        </FitText>
+      </a>
+      {comparison && (
+        <dl className="limit-rows">
+          <div>
+            <dt>{t('detail.limitFamily')}</dt>
+            <dd>{formatNumber(locale, comparison.limit as number)}</dd>
+          </div>
+          {yours && (
+            <div>
+              <dt>{t('detail.yourAnswer')}</dt>
+              <dd>{yours}</dd>
+            </div>
+          )}
+        </dl>
+      )}
+      {mixed && (
+        <p className="mixed-line">
+          <Minus />
+          {t('state.mixed')}
+        </p>
+      )}
+      {r.dependsOn.length > 0 && (
+        <span className="program-note">{t('results.dependsOn', { list: r.dependsOn.map((v) => t(dynamicKey(`variable.${v}`))).join(', ') })}</span>
+      )}
+    </li>
   );
 }

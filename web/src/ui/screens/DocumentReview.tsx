@@ -8,12 +8,17 @@ import type { ReviewField, SourceSegment } from '../../core/review';
 import { validatePaystubs, type Annualization, type PayFrequency, type PaystubValues, type ValidationResult } from '../../core/validate';
 import { POINTER_SCHEMAS } from '../../ai/tasks';
 import { useApp } from '../context';
-import { dynamicKey, formatNumber, type Locale, type Translate } from '../i18n';
+import { dynamicKey, formatAmount, formatNumber, programName, type Locale, type Translate } from '../i18n';
 import { PACK } from '../pack';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
 import { emptyDocument, useDocument } from '../doc/state';
+import { BlockActions } from '../design/block';
+import { Alert, ArrowRight, Check, ChevronLeft } from '../design/icons';
+import { Marker, Paper, ActionLabel } from '../design/parts';
+import { computeVerdicts } from '../quickcheck';
+import { BANDS } from '../pack';
 
 type Kind = ReviewField['kind'];
 type Status = 'pending' | 'confirmed' | 'empty';
@@ -99,17 +104,18 @@ function toValues(rows: readonly Row[], deductions: readonly DeductionRow[]): Pa
   return out as PaystubValues;
 }
 
-function Source({ lines, t }: { lines: readonly (readonly SourceSegment[])[]; t: Translate }) {
+/** Where a value came from: its document line on a paper slip, the value circled. */
+function Source({ lines, t, tilt = 'small-left' }: { lines: readonly (readonly SourceSegment[])[]; t: Translate; tilt?: 'small-left' | 'small-right' }) {
   if (lines.length === 0) return null;
   return (
-    <div className="source">
-      <span className="source-label">{t('review.source')}</span>
+    <Paper size="small" tilt={tilt} className="source">
+      <span className="paper-label source-label">{t('review.source')}</span>
       {lines.map((line, i) => (
         <pre key={i} className="source-line">
           {line.map((s, j) => (s.highlight ? <mark key={j}>{s.text}</mark> : <span key={j}>{s.text}</span>))}
         </pre>
       ))}
-    </div>
+    </Paper>
   );
 }
 
@@ -184,31 +190,48 @@ export function DocumentReviewScreen() {
   if (nothingFound && !typeAnyway && doc.extraction) {
     return (
       <div className="screen doc-review" data-testid="not-a-document">
-        <ScreenHeading>{t('review.notDocument.title')}</ScreenHeading>
+        <ScreenHeading size={50} maxLines={4}>
+          {t('review.notDocument.title')}
+        </ScreenHeading>
         <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
         <p className="lead">{t('review.notDocument.body')}</p>
-        <div className="actions">
-          <button type="button" className="button primary" onClick={() => setTypeAnyway(true)}>
-            {t('review.notDocument.typeIn')}
+        <BlockActions>
+          <button type="button" className="action" onClick={() => setTypeAnyway(true)}>
+            <ActionLabel>{t('review.notDocument.typeIn')}</ActionLabel>
+            <span className="action-arrow">
+              <ArrowRight />
+            </span>
           </button>
-          <a className="button secondary" href={routeHref({ name: 'doc' })}>
-            {t('review.notDocument.another')}
-          </a>
-        </div>
+          <div className="block-links">
+            <a className="text-link" href={routeHref({ name: 'doc' })}>
+              {t('review.notDocument.another')}
+            </a>
+          </div>
+        </BlockActions>
       </div>
     );
   }
 
   return (
     <div className="screen doc-review">
-      <ScreenHeading>{t('review.title')}</ScreenHeading>
-      {doc.extraction && <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} />}
-      <p className="lead">{manual ? t('review.manualLead') : t('review.lead')}</p>
+      <a className="text-link back-link" href={routeHref({ name: doc.skeleton ? 'doc-preview' : 'doc' })}>
+        <ChevronLeft />
+        {t('q.back')}
+      </a>
+      <div className="stack-8">
+        <ScreenHeading size={50} maxLines={3}>
+          {t('review.title')}
+        </ScreenHeading>
+        {doc.extraction && (
+          <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
+        )}
+      </div>
+      <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
 
       {!manual && pending > 0 && (
         <button
           type="button"
-          className="button secondary"
+          className="outline-button"
           onClick={() => {
             setRows((rs) => rs.map((r) => (r.status === 'pending' ? { ...r, status: 'confirmed' } : r)));
             setDeductions((ds) => ds.map((d) => (d.status === 'pending' ? { ...d, status: 'confirmed' } : d)));
@@ -229,7 +252,7 @@ export function DocumentReviewScreen() {
                 <span className="field-label" id={`${inputId}-label`}>
                   {label(row.name)}
                 </span>
-                {row.status === 'confirmed' && <span className="confirmed">✓ {t('review.confirmed')}</span>}
+                {row.status === 'confirmed' && <span className="confirmed">{t('review.confirmed')}</span>}
               </div>
               {isEditing ? (
                 <div className="field-edit">
@@ -257,37 +280,50 @@ export function DocumentReviewScreen() {
                       }}
                     />
                   )}
+                  {row.kind === 'number' && !invalid && (() => {
+                    const read = readTypedAmount(draft);
+                    return read.ok ? (
+                      <p className="understood" aria-live="polite">
+                        <Check size={14} />
+                        {t('review.understood', { amount: formatAmount(locale, read.value) })}
+                      </p>
+                    ) : null;
+                  })()}
                   {invalid && (
                     <p className="error" role="alert" data-testid="review-number-error">
+                      <Alert />
                       {t(invalid)}
                     </p>
                   )}
-                  <div className="actions">
-                    <button type="button" className="button primary" onClick={() => save(row)}>
+                  <div className="button-row">
+                    <button type="button" className="small-action" onClick={() => save(row)}>
                       {t('review.save')}
                     </button>
-                    <button type="button" className="button secondary" onClick={() => setEditing(null)}>
+                    <button type="button" className="outline-button" onClick={() => setEditing(null)}>
                       {t('review.cancel')}
                     </button>
                   </div>
                 </div>
               ) : (
                 <>
-                  <p className="field-value" data-testid={`value-${row.name}`}>
-                    {row.text === '' ? (
-                      <span className="not-found">{t('review.notFound')}</span>
-                    ) : row.kind === 'enum' ? (
-                      t(dynamicKey(`option.payFrequency.${row.text}`))
-                    ) : (
-                      row.text
-                    )}
-                  </p>
-                  <Source lines={row.source} t={t} />
-                  <div className="actions compact">
+                  <div className="field-body">
+                    <Source lines={row.source} t={t} tilt={rows.indexOf(row) % 2 === 0 ? 'small-left' : 'small-right'} />
+                    <p className="field-value" data-testid={`value-${row.name}`}>
+                      {row.text === '' ? (
+                        <span className="not-found">{t('review.notFound')}</span>
+                      ) : row.kind === 'enum' ? (
+                        t(dynamicKey(`option.payFrequency.${row.text}`))
+                      ) : (
+                        row.text
+                      )}
+                      {row.status === 'confirmed' && <Check size={20} />}
+                    </p>
+                  </div>
+                  <div className="button-row compact">
                     {row.status === 'pending' && (
                       <button
                         type="button"
-                        className="button secondary"
+                        className="outline-button small"
                         aria-label={`${t('review.confirm')}: ${label(row.name)}`}
                         onClick={() => setRow(row.name, { status: 'confirmed' })}
                       >
@@ -296,7 +332,7 @@ export function DocumentReviewScreen() {
                     )}
                     <button
                       type="button"
-                      className="button quiet"
+                      className="text-link"
                       aria-label={`${t('review.edit')}: ${label(row.name)}`}
                       onClick={() => {
                         setEditing(row.name);
@@ -315,7 +351,9 @@ export function DocumentReviewScreen() {
       </ul>
 
       <section className="deductions" aria-labelledby="deductions-title">
-        <h2 id="deductions-title">{label('deductions')}</h2>
+        <h2 id="deductions-title" className="section-heading">
+          {label('deductions')}
+        </h2>
         <ul className="fields">
           {deductions.map((d, i) => (
             <li key={i} className={`field-row status-${d.status}`} data-testid={`deduction-${i}`} data-status={d.status}>
@@ -361,11 +399,11 @@ export function DocumentReviewScreen() {
                 </p>
               )}
               <Source lines={d.source} t={t} />
-              <div className="actions compact">
+              <div className="button-row compact">
                 {d.status === 'pending' && (
                   <button
                     type="button"
-                    className="button secondary"
+                    className="outline-button small"
                     onClick={() => {
                       const problem = d.typed ? typedProblem(d.amount) : toNumber(d.amount) === undefined ? 'review.invalidNumber' : null;
                       if (problem !== null) return setDeductionProblem({ index: i, key: problem });
@@ -377,10 +415,15 @@ export function DocumentReviewScreen() {
                     {t('review.confirm')}
                   </button>
                 )}
-                {d.status === 'confirmed' && <span className="confirmed">✓ {t('review.confirmed')}</span>}
+                {d.status === 'confirmed' && (
+                  <span className="confirmed">
+                    <Check size={16} />
+                    {t('review.confirmed')}
+                  </span>
+                )}
                 <button
                   type="button"
-                  className="button quiet"
+                  className="text-link"
                   onClick={() => {
                     setDeductions((ds) => ds.filter((_, j) => j !== i));
                     setResult(null);
@@ -394,78 +437,155 @@ export function DocumentReviewScreen() {
         </ul>
         <button
           type="button"
-          className="button quiet"
+          className="text-link"
           onClick={() => setDeductions((ds) => [...ds, { amount: '', kind: '', status: 'pending', source: [] }])}
         >
           {t('review.addDeduction')}
         </button>
       </section>
 
-      {pending > 0 && <p className="meta" role="status">{t('review.pending', { count: pending })}</p>}
-      <div className="actions">
-        <button type="button" className="button primary" disabled={pending > 0} onClick={check}>
-          {t('review.continue')}
-        </button>
-      </div>
+      {pending > 0 && (
+        <p className="small" role="status">
+          {t('review.pending', { count: pending })}
+        </p>
+      )}
 
       {result && (
         <section className="validation" aria-labelledby="checks-title" data-testid="validation">
-          <h2 id="checks-title">{t('review.checksTitle')}</h2>
+          <h2 id="checks-title" className="section-heading">
+            {t('review.checksTitle')}
+          </h2>
           <ul className="checks">
             {(result.checks[currentIndex] ?? [])
               .filter((c) => c.status !== 'skipped')
               .map((c) => (
                 <li key={c.id} className={`check check-${c.status}`} data-check={c.id} data-status={c.status}>
-                  <span className="check-status">{t(c.status === 'ok' ? 'check.status.ok' : 'check.status.warn')}</span>
+                  {c.status === 'ok' ? <Check size={16} /> : <Alert />}
                   <span>{t(dynamicKey(`check.${c.id}`))}</span>
+                  <span className="check-status">{t(c.status === 'ok' ? 'check.status.ok' : 'check.status.warn')}</span>
                 </li>
               ))}
           </ul>
-          <h2>{t('review.annualTitle')}</h2>
+          <h2 className="section-heading">{t('review.annualTitle')}</h2>
           {annual ? (
             <>
               <p className="annual" data-testid="annual-income" data-amount={annual.annualIncome}>
                 {formatNumber(locale, annual.annualIncome)}
               </p>
-              <p className="meta">
-                {basisText(annual, [...doc.confirmedStubs, toValues(rows, deductions)], locale, t)}
-              </p>
-              <p className="meta">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>
-              <div className="actions">
-                <button
-                  type="button"
-                  className="button primary"
-                  onClick={() => {
-                    setAnswer('income', { kind: 'exact', amount: annual.annualIncome });
-                    reset(false);
-                    navigate({ name: 'results' });
-                  }}
-                >
-                  {t('review.useIncome', { amount: formatNumber(locale, annual.annualIncome) })}
-                </button>
-                <button
-                  type="button"
-                  className="button secondary"
-                  onClick={() => {
-                    update({ ...emptyDocument(doc.language, [...doc.confirmedStubs, toValues(rows, deductions)]) });
-                    navigate({ name: 'doc' });
-                  }}
-                >
-                  {t('review.addAnother')}
-                </button>
-              </div>
+              <p className="basis">{basisText(annual, [...doc.confirmedStubs, toValues(rows, deductions)], locale, t)}</p>
+              <p className="small muted">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>
+              <Changes amount={annual.annualIncome} />
             </>
           ) : (
             <p className="error" role="alert">
+              <Alert />
               {t(dynamicKey(`review.failure.${result.failure ?? 'no-gross'}`))}
             </p>
           )}
         </section>
       )}
 
-      <a className="button quiet back" href={routeHref({ name: doc.skeleton ? 'doc-preview' : 'doc' })}>
-        {t('q.back')}
-      </a>
+      <BlockActions>
+        {annual ? (
+          <>
+            <ChangePreview amount={annual.annualIncome} />
+            <button
+              type="button"
+              className="action"
+              onClick={() => {
+                setAnswer('income', { kind: 'exact', amount: annual.annualIncome });
+                reset(false);
+                navigate({ name: 'results' });
+              }}
+            >
+              <ActionLabel>{t('review.useIncome', { amount: formatNumber(locale, annual.annualIncome) })}</ActionLabel>
+              <span className="action-arrow">
+                <ArrowRight />
+              </span>
+            </button>
+            <div className="block-links">
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => {
+                  update({ ...emptyDocument(doc.language, [...doc.confirmedStubs, toValues(rows, deductions)]) });
+                  navigate({ name: 'doc' });
+                }}
+              >
+                {t('review.addAnother')}
+              </button>
+            </div>
+          </>
+        ) : (
+          <button type="button" className="action" disabled={pending > 0} onClick={check}>
+            <ActionLabel>{t('review.continue')}</ActionLabel>
+            <span className="action-arrow">
+              <ArrowRight />
+            </span>
+          </button>
+        )}
+      </BlockActions>
+
+    </div>
+  );
+}
+
+/** Results that would change if this yearly income were used. */
+function useChanges(amount: number) {
+  const { steps, answers, results } = useApp();
+  return useMemo(() => {
+    const after = computeVerdicts(PACK, BANDS, steps, { ...answers, income: { kind: 'exact', amount } });
+    return after.flatMap((a) => {
+      const before = results.find((r) => r.programId === a.programId);
+      return before && before.verdict !== a.verdict ? [{ programId: a.programId, before: before.verdict, after: a.verdict, amount: a.estimatedAmount }] : [];
+    });
+  }, [steps, answers, results, amount]);
+}
+
+function Changes({ amount }: { amount: number }) {
+  const { t, locale } = useApp();
+  const changes = useChanges(amount);
+  const name = (id: string) => {
+    const p = PACK.programs.find((x) => x.id === id);
+    return p ? programName(locale, p) : id;
+  };
+  return (
+    <section className="changes" aria-labelledby="changes-title">
+      <h3 id="changes-title" className="small strong">
+        {t('review.changesTitle')}
+      </h3>
+      {changes.length === 0 ? (
+        <p className="small">{t('review.noChange')}</p>
+      ) : (
+        <ul className="change-list">
+          {changes.map((c) => (
+            <li key={c.programId} className="small">
+              {t('review.change', { program: name(c.programId), before: t(dynamicKey(`verdict.${c.before}`)), after: t(dynamicKey(`verdict.${c.after}`)) })}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** In the block: the first result this income would change, before and after. */
+function ChangePreview({ amount }: { amount: number }) {
+  const { t, locale } = useApp();
+  const change = useChanges(amount)[0];
+  if (!change) return null;
+  const program = PACK.programs.find((p) => p.id === change.programId);
+  return (
+    <div className="change-preview" aria-hidden="true">
+      <p className="change-line">
+        <span className="struck">{t('review.before', { verdict: t(dynamicKey(`verdict.${change.before}`)) })}</span>
+        <span className="marker-line">
+          <Marker verdict={change.after} />
+          {t(dynamicKey(`verdict.${change.after}`))}
+        </span>
+      </p>
+      {program && <p className="change-name">{programName(locale, program)}</p>}
+      {change.amount !== undefined && change.amount > 0 && <p className="amount pop">{formatNumber(locale, change.amount)}</p>}
     </div>
   );
 }

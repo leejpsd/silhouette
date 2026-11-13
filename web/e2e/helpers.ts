@@ -105,3 +105,11 @@ export async function readStore(page: Page): Promise<{ exists: boolean; records:
     return { exists: true, records: records.length, keys: keys.length, bytes };
   });
 }
+
+const LANGUAGE_NAMES = { en: 'English', es: 'Español', ko: '한국어' } as const;
+
+/** Changes the app language through the header's language sheet. */
+export async function chooseLanguage(page: Page, locale: keyof typeof LANGUAGE_NAMES): Promise<void> {
+  await page.getByTestId('language-button').click();
+  await page.getByRole('radio', { name: LANGUAGE_NAMES[locale] }).click();
+}

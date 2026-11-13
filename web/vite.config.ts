@@ -15,7 +15,9 @@ function serviceWorker(): Plugin {
     // After vite:build-html, so index.html is in the bundle.
     enforce: 'post',
     generateBundle(_options, bundle) {
-      const publicFiles = readdirSync(here('./public'), { recursive: true, encoding: 'utf8' }).filter((f) => !f.startsWith('.'));
+      const publicFiles = readdirSync(here('./public'), { recursive: true, withFileTypes: true })
+        .filter((d) => d.isFile() && !d.name.startsWith('.'))
+        .map((d) => `${d.parentPath.slice(here('./public').length).replace(/^\/+/, '')}${d.parentPath.length > here('./public').length ? '/' : ''}${d.name}`);
       const files = [...Object.keys(bundle), ...publicFiles].filter((f) => f !== 'sw.js' && !f.endsWith('.map'));
       const hash = createHash('sha256');
       for (const name of [...files].sort()) {

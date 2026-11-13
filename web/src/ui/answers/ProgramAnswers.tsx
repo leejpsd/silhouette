@@ -8,7 +8,6 @@
 // Nothing here is requested until the person taps.
 
 import { useEffect, useId, useRef, useState } from 'react';
-import './answers.css';
 import { Raw, asPublic } from '../../core/types';
 import type { CriterionState, Program, Verdict } from '../../core/rules';
 import { askDeviceStatus, type DeviceStatus } from '../../ai/device-model';
@@ -27,11 +26,12 @@ import {
   type TaskResult,
 } from '../../ai/tasks';
 import { useApp } from '../context';
-import { InferenceBadge, provenanceSentence } from '../InferenceBadge';
+import { InferenceBadge } from '../InferenceBadge';
+import { Check, CrossCircle, Minus, Phone } from '../design/icons';
 import { dynamicKey, programName, type CopyKey } from '../i18n';
 import { PACK } from '../pack';
 import { useConfig } from './config';
-import { AnswerError, AnswerText, RequestRegion, SearchSuggestions, SourceList, useRequest } from './parts';
+import { AnswerError, AnswerText, Loading, RequestRegion, SearchSuggestions, SourceList, useRequest } from './parts';
 import { personalResult, useReasons, whyRows } from './personal';
 import { answerKey } from './session';
 import { allProgramNames, explainInput, programFacts, silhouetteLines, useSilhouette, type Silhouette } from './silhouette';
@@ -58,6 +58,13 @@ function useDeviceStatus(): DeviceStatus | 'checking' {
   return status;
 }
 
+/** "Why this result", from the rules on this device (first on the page, under the result). */
+export function ProgramWhy({ program, verdict }: { program: Program; verdict: Verdict }) {
+  const device = useDeviceStatus();
+  return <WhySection program={program} verdict={verdict} device={device} />;
+}
+
+/** The model-written parts: about the program, prepared and typed questions, current information. */
 export function ProgramAnswers({ program, verdict }: { program: Program; verdict: Verdict }) {
   const { t, locale } = useApp();
   const silhouette = useSilhouette();
@@ -66,7 +73,6 @@ export function ProgramAnswers({ program, verdict }: { program: Program; verdict
   const input = silhouette ? explainInput(silhouette, programFacts(t, locale, program), locale) : null;
   return (
     <>
-      <WhySection program={program} verdict={verdict} device={device} />
       {silhouette && input && <AboutSection silhouette={silhouette} input={input} programName={programName(locale, program)} />}
       <FreeTextQuestion program={program} verdict={verdict} device={device} />
       {config.groundingSearch && <CurrentStatusSection programId={program.id} />}
@@ -74,34 +80,12 @@ export function ProgramAnswers({ program, verdict }: { program: Program; verdict
   );
 }
 
+/** The state of a criterion as an icon next to its text: check, cross, minus (depends) or a dotted ring. */
 const StateIcon = ({ state }: { state: CriterionState }) => {
-  const common = { width: 24, height: 24, viewBox: '0 0 24 24', 'aria-hidden': true, focusable: false } as const;
-  if (state === 'pass')
-    return (
-      <svg {...common} className="state-icon">
-        <circle cx="12" cy="12" r="10" fill="currentColor" />
-        <path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="var(--color-surface)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  if (state === 'fail')
-    return (
-      <svg {...common} className="state-icon">
-        <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" strokeWidth="2" />
-        <path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  if (state === 'mixed')
-    return (
-      <svg {...common} className="state-icon">
-        <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" strokeWidth="2" />
-        <path d="M12 2.5a9.5 9.5 0 0 0 0 19z" fill="currentColor" />
-      </svg>
-    );
-  return (
-    <svg {...common} className="state-icon">
-      <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="3.2 2.6" />
-    </svg>
-  );
+  if (state === 'pass') return <Check size={16} />;
+  if (state === 'fail') return <CrossCircle />;
+  if (state === 'mixed') return <Minus />;
+  return <span className="marker marker-loading-static" aria-hidden="true" />;
 };
 
 /** "Why this result": always there, from the rules on this device. */
@@ -130,36 +114,52 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
   };
   return (
     <section className="why" aria-labelledby={`${id}-title`} data-testid="why-section">
-      <h2 id={`${id}-title`} ref={heading} tabIndex={-1}>
+      <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className="section-heading">
         {t('why.title')}
       </h2>
-      <p className="meta">{t('why.lead')}</p>
+      <p className="small muted">{t('why.lead')}</p>
       <ul className="criteria">
         {rows.map((row) => (
           <li key={row.id} className={`criterion state-${row.state}`} data-state={row.state} data-testid={`why-${row.id}`}>
-            <StateIcon state={row.state} />
-            <span className="criterion-text">
-              {row.label}
-              {row.limits.map((l) => (
-                <span key={l.limit} className="criterion-limit" data-testid="why-limit">
-                  {t('why.limitYours', { limit: l.limit, value: l.yours })}
-                </span>
-              ))}
-            </span>
-            <span className="criterion-state">{t(dynamicKey(`state.${row.state}`))}</span>
+            <p className="criterion-label">{row.label}</p>
+            {row.limits.length > 0 ? (
+              row.limits.map((l) => (
+                <dl key={l.limit} className="limit-rows" data-testid="why-limit">
+                  <div>
+                    <dt>{t('detail.limit')}</dt>
+                    <dd>{l.limit}</dd>
+                  </div>
+                  <div>
+                    <dt>{t('detail.you')}</dt>
+                    <dd>
+                      {l.yours}
+                      <StateIcon state={row.state} />
+                    </dd>
+                  </div>
+                </dl>
+              ))
+            ) : (
+              <p className="criterion-state">
+                <span>{t(dynamicKey(`state.${row.state}`))}</span>
+                <StateIcon state={row.state} />
+              </p>
+            )}
+            {row.limits.length > 0 && <p className="visually-hidden">{t(dynamicKey(`state.${row.state}`))}</p>}
           </li>
         ))}
       </ul>
       {device === 'available' ? (
         <>
           {(personal.status === 'idle' || personal.status === 'error') && (
-            <button type="button" className="button secondary" onClick={() => void explain()}>
+            <button type="button" className="outline-button" onClick={() => void explain()}>
+              <Phone />
               {t('why.explain')}
             </button>
           )}
           <p className="status-line" role="status" data-testid="why-status">
-            {personal.status === 'loading' ? t('answers.loading') : personal.status === 'done' ? provenanceSentence(t, personal.result) : ''}
+            {personal.status === 'loading' ? t('answers.loading') : personal.status === 'done' ? t('answers.ready') : ''}
           </p>
+          {personal.status === 'loading' && <Loading />}
           {personal.status === 'error' && <AnswerError error={personal.error} />}
           {personal.status === 'done' && (
             <div data-testid="why-answer">
@@ -168,7 +168,7 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
           )}
         </>
       ) : device === 'checking' ? null : (
-        <p className="meta" data-testid="why-unavailable">
+        <p className="dashed-note" data-testid="why-unavailable">
           {t('why.unavailable')}
         </p>
       )}
@@ -195,14 +195,14 @@ function AboutSection({ silhouette, input, programName: name }: { silhouette: Si
   const again = (status: string) => status === 'idle' || status === 'skipped' || status === 'cancelled';
   return (
     <section className="answers" aria-labelledby={`${id}-title`} data-testid="explain-section">
-      <h2 id={`${id}-title`} ref={heading} tabIndex={-1}>
+      <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className="section-heading">
         {t('about.title')}
       </h2>
-      <p className="meta" data-testid="about-lead">
+      <p className="small muted" data-testid="about-lead">
         {t('about.lead')}
       </p>
       {again(short.state.status) && (
-        <button type="button" className="button secondary" onClick={() => ask('short')}>
+        <button type="button" className="outline-button" onClick={() => ask('short')}>
           {t('about.explain')}
         </button>
       )}
@@ -215,12 +215,11 @@ function AboutSection({ silhouette, input, programName: name }: { silhouette: Si
         onCancel={short.cancel}
         onRetry={() => ask('short')}
         testId="explain-short"
-        doneStatus={(r) => provenanceSentence(t, r)}
         render={(result) => (
           <>
             <AnswerText result={result} readable={result.value} />
             {again(long.state.status) && (
-              <button type="button" className="button quiet" onClick={() => ask('long')}>
+              <button type="button" className="text-link" onClick={() => ask('long')}>
                 {t('answers.explainLong')}
               </button>
             )}
@@ -237,11 +236,10 @@ function AboutSection({ silhouette, input, programName: name }: { silhouette: Si
           onCancel={long.cancel}
           onRetry={() => ask('long')}
           testId="explain-long"
-          doneStatus={(r) => provenanceSentence(t, r)}
           render={(result) => <AnswerText result={result} readable={result.value} />}
         />
       )}
-      <h3>{t('ask.chips')}</h3>
+      <h3 className="small strong">{t('ask.chips')}</h3>
       <ul className="chips">
         {CHIPS.map((chip) => (
           <ChipQuestion key={chip.id} chipId={chip.id} question={t(chip.key)} silhouette={silhouette} input={input} programName={name} />
@@ -265,7 +263,7 @@ function ChipQuestion({ chipId, question, silhouette, input, programName: name }
   return (
     <li className="chip-question" data-testid={`chip-${chipId}`}>
       {/* Never disabled while loading, so focus stays on it; a second press does nothing. */}
-      <button ref={button} type="button" className="button chip-button" aria-expanded={request.state.status !== 'idle'} aria-disabled={busy} onClick={ask}>
+      <button ref={button} type="button" className="chip-button" aria-expanded={request.state.status !== 'idle'} aria-disabled={busy} onClick={ask}>
         {question}
       </button>
       {request.state.status !== 'idle' && (
@@ -277,7 +275,6 @@ function ChipQuestion({ chipId, question, silhouette, input, programName: name }
           onSkip={request.skip}
           onCancel={request.cancel}
           onRetry={ask}
-          doneStatus={(r) => provenanceSentence(t, r)}
           render={(result) => <AnswerText result={result} readable={result.value} />}
         />
       )}
@@ -299,7 +296,7 @@ function FreeTextQuestion({ program, verdict, device }: { program: Program; verd
   if (device !== 'available') {
     return (
       <section className="ask" aria-label={t('ask.free.label')}>
-        <p className="meta" data-testid="free-text-unavailable">
+        <p className="dashed-note" data-testid="free-text-unavailable">
           {t('ask.free.unavailable')}
         </p>
       </section>
@@ -345,7 +342,7 @@ function FreeTextQuestion({ program, verdict, device }: { program: Program; verd
           {t('ask.free.empty')}
         </p>
       )}
-      <button type="button" className="button secondary" aria-disabled={busy} onClick={() => !busy && void submit()}>
+      <button type="button" className="outline-button" aria-disabled={busy} onClick={() => !busy && void submit()}>
         {t('ask.free.send')}
       </button>
       <p className="status-line" role="status">
@@ -384,12 +381,12 @@ function CurrentStatusSection({ programId }: { programId: string }) {
   const again = ['idle', 'skipped', 'cancelled'].includes(request.state.status);
   return (
     <section className="current" aria-labelledby={`${id}-title`} data-testid="current-section">
-      <h2 id={`${id}-title`} ref={heading} tabIndex={-1}>
+      <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className="section-heading">
         {t('current.title')}
       </h2>
-      <p className="meta">{t('current.lead')}</p>
+      <p className="small muted">{t('current.lead')}</p>
       {again && (
-        <button type="button" className="button secondary" onClick={check}>
+        <button type="button" className="outline-button" onClick={check}>
           {t('current.check', { count: names.length })}
         </button>
       )}
@@ -401,13 +398,12 @@ function CurrentStatusSection({ programId }: { programId: string }) {
         onCancel={request.cancel}
         onRetry={check}
         testId="current-status"
-        doneStatus={(r) => provenanceSentence(t, r)}
         render={(result) => {
           const line = result.value.statuses.get(programId);
           return (
             <div className="answer">
               <p data-testid="current-line">{line ?? t('current.none')}</p>
-              <p className="meta">{t('current.notVerified')}</p>
+              <p className="small muted">{t('current.notVerified')}</p>
               <InferenceBadge source={result.inferenceSource} reason={result.reason} />
               <SourceList sources={result.value.grounding.sources} />
               {result.value.grounding.searchEntryPoint && <SearchSuggestions html={result.value.grounding.searchEntryPoint} />}

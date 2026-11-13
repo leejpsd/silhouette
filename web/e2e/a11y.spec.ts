@@ -10,12 +10,13 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme });
     const scan = async (label: string) => {
       const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
-      expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help}`)).toEqual([]);
+      expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help} ${v.nodes.map((n) => n.html.slice(0, 120)).join(' | ')}`)).toEqual([]);
     };
     await page.goto('/');
     await scan('start');
     await page.getByRole('button', { name: 'Details' }).click();
     await scan('start, leaving panel open');
+    await page.getByRole('button', { name: 'Hide details' }).click();
     await page.getByRole('button', { name: 'Start Quick Check' }).click();
     await scan('question (int)');
     await page.getByRole('button', { name: 'Next' }).click();
@@ -47,7 +48,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme });
     const scan = async (label: string) => {
       const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
-      expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help}`)).toEqual([]);
+      expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help} ${v.nodes.map((n) => n.html.slice(0, 120)).join(' | ')}`)).toEqual([]);
     };
     await page.goto('/#/doc');
     await page.getByTestId('model-status').waitFor();
@@ -80,7 +81,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme });
     const scan = async (label: string) => {
       const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
-      expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help}`)).toEqual([]);
+      expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help} ${v.nodes.map((n) => n.html.slice(0, 120)).join(' | ')}`)).toEqual([]);
     };
     await page.goto('/');
     await completeQuickCheck(page);
