@@ -12,8 +12,10 @@ import { InferenceBadge } from '../InferenceBadge';
 import { dynamicKey, type CopyKey } from '../i18n';
 import { Alert, ArrowUp, Caret, Cloud, Phone, Retry } from '../design/icons';
 import { Paper, ActionLabel } from '../design/parts';
+import { BlockActions } from '../design/block';
 import { useConfig } from './config';
-import { answerKey, cachedAnswer, giveConsent, markSent, needsConsent, storeAnswer, useSession, wasSent, type Destination } from './session';
+import { programCopy } from './facts';
+import { answerKey, cachedAnswer, giveConsent, markSent, needsConsent, storeAnswer, useSession, type Destination } from './session';
 
 // ---------- Request lifecycle ----------
 
@@ -97,7 +99,8 @@ export function useRequest<T>(cacheKey: string | null, content: string, focusAft
         pending.current = { run, key, plan };
         return setState({ status: 'confirm', plan });
       }
-      void execute(run, key, wasSent(content));
+      // The step is skipped (agreed or sent before in this session): the answer says so.
+      void execute(run, key, true);
     },
     [cacheKey, content, execute],
   );
@@ -135,17 +138,18 @@ function splitLine(line: string): [string, string] {
   return i === -1 ? ['', line] : [line.slice(0, i), line.slice(i + 2)];
 }
 
+/**
+ * The step before a request leaves: what it carries on a paper slip and the exact body, in the page;
+ * where it goes and the decision (keep or send) in the bottom block, as the screen's main action.
+ */
 export function SendPanel({
   plan,
   lines,
-  notListed,
   onSend,
   onSkip,
 }: {
   plan: PlannedCall;
   lines: readonly string[];
-  /** The body also carries something the lines do not name (the silhouette's criterion states). */
-  notListed?: boolean;
   onSend: () => void;
   onSkip: () => void;
 }) {
@@ -156,7 +160,7 @@ export function SendPanel({
   useEffect(() => heading.current?.focus(), []);
   const cloud = destinationOf(plan) === 'cloud';
   return (
-    <section className="send-panel" aria-labelledby={`${id}-title`} data-testid="send-panel" data-task={plan.taskId} data-destination={destinationOf(plan)}>
+    <div className="send-panel" role="group" aria-labelledby={`${id}-title`} data-testid="send-panel" data-task={plan.taskId} data-destination={destinationOf(plan)}>
       <h3 id={`${id}-title`} ref={heading} tabIndex={-1} className="sheet-label">
         {t('send.title')}
       </h3>
@@ -174,7 +178,6 @@ export function SendPanel({
                 </li>
               );
             })}
-            {notListed && <li className="paper-note">{t('send.notListed')}</li>}
             <li>
               <span className="paper-label">{t('outbound.model', { model: '' }).replace(/[:\s]+$/, '')}: </span>
               <span className="paper-value">{plan.model}</span>
@@ -195,22 +198,24 @@ export function SendPanel({
           </pre>
         </Paper>
       )}
-      <p className="routing-line">
-        {cloud ? <Cloud size={22} /> : <Phone size={22} />}
-        <span>
-          <strong>{cloud ? t('badge.cloud') : t('badge.onDevice')}.</strong> {t(dynamicKey(`reason.${plan.reason}`))}
-        </span>
-      </p>
-      <div className="decision">
-        <button type="button" className="outline-button tall" onClick={onSkip}>
-          {t('send.skip')}
-        </button>
-        <button type="button" className="send-button" onClick={onSend}>
-          <ArrowUp />
-          <ActionLabel>{t('send.send')}</ActionLabel>
-        </button>
-      </div>
-    </section>
+      <BlockActions mode="decision">
+        <p className="routing-line">
+          {cloud ? <Cloud size={22} /> : <Phone size={22} />}
+          <span>
+            <strong>{cloud ? t('badge.cloud') : t('badge.onDevice')}.</strong> {t(dynamicKey(`reason.${plan.reason}`))}
+          </span>
+        </p>
+        <div className="decision" data-testid="send-decision">
+          <button type="button" className="outline-button tall" onClick={onSkip}>
+            {t('send.skip')}
+          </button>
+          <button type="button" className="send-button" onClick={onSend}>
+            <ArrowUp />
+            <ActionLabel>{t('send.send')}</ActionLabel>
+          </button>
+        </div>
+      </BlockActions>
+    </div>
   );
 }
 
@@ -248,9 +253,9 @@ function Retried() {
   return <p className="small">{t('answers.retried')}</p>;
 }
 
-/** The message for a failed request, by kind. */
+/** The message for a failed request on a program or help page, by kind (typing numbers does not apply here). */
 export function errorCopy(error: TaskError): CopyKey {
-  if (error.kind === 'quota-daily') return 'error.quotaDaily';
+  if (error.kind === 'quota-daily') return 'error.quotaDailyAnswers';
   if (error.kind === 'quota') return 'error.quota';
   if (error.kind === 'blocked') return 'answers.blocked';
   if (error.kind === 'network') return 'error.network';
@@ -292,7 +297,7 @@ export function RequestRegion<T>({
   state,
   render,
   lines,
-  notListed,
+  publicOnly,
   onSend,
   onSkip,
   onCancel,
@@ -302,7 +307,8 @@ export function RequestRegion<T>({
   state: RequestState<T>;
   render: (result: T) => ReactNode;
   lines: readonly string[];
-  notListed?: boolean;
+  /** The request carries only public information: the "sent before" notice says so. */
+  publicOnly?: boolean;
   onSend: () => void;
   onSkip: () => void;
   onCancel: () => void;
@@ -318,7 +324,7 @@ export function RequestRegion<T>({
   else if (state.status === 'done') status = t('answers.ready');
   return (
     <div className="request" data-testid={testId} data-status={state.status} aria-busy={state.status === 'loading'}>
-      {state.status === 'confirm' && <SendPanel plan={state.plan} lines={lines} notListed={notListed ?? false} onSend={onSend} onSkip={onSkip} />}
+      {state.status === 'confirm' && <SendPanel plan={state.plan} lines={lines} onSend={onSend} onSkip={onSkip} />}
       {state.status === 'loading' && <Loading />}
       <p className={state.status === 'done' || state.status === 'error' ? 'visually-hidden' : 'status-line'} role="status" data-testid="request-status">
         {status}
@@ -331,7 +337,7 @@ export function RequestRegion<T>({
       {state.status === 'error' && <AnswerError error={state.error} onRetry={onRetry} />}
       {state.status === 'done' && state.sentBefore && (
         <p className="small muted" data-testid="send-once">
-          {t('send.once')}
+          {publicOnly ? t('send.linePublic') : t('send.once')}
         </p>
       )}
       {state.status === 'done' && render(state.result)}
@@ -495,14 +501,28 @@ function packSources(program: Program): PackSource[] {
   });
 }
 
-export function OfficialInfo({ programs, headingLevel = 2 }: { programs: readonly Program[]; headingLevel?: 2 | 3 }) {
-  const { t } = useApp();
+export function OfficialInfo({ programs, headingLevel = 2, withCopy = false }: { programs: readonly Program[]; headingLevel?: 2 | 3; withCopy?: boolean }) {
+  const { t, locale } = useApp();
   const H = headingLevel === 2 ? 'h2' : 'h3';
   const items = programs.map((p) => ({ program: p, sources: packSources(p), apply: p.applyUrl && /^https:\/\//.test(p.applyUrl) ? p.applyUrl : null }));
   const any = items.some((i) => i.sources.length > 0 || i.apply !== null || (i.program.docsRequired ?? []).length > 0);
+  // On a program's own screen: how to apply, the usual papers and the office, from the pack's copy.
+  const copy = withCopy && programs.length === 1 && programs[0] ? programCopy(locale, programs[0]) : {};
   return (
     <section className="official" aria-label={t('official.title')} data-testid="official-info">
       <H>{t('official.title')}</H>
+      {(copy.apply || copy.documents || copy.office) && (
+        <div className="program-copy" data-testid="program-copy-official">
+          {copy.apply && <p>{copy.apply}</p>}
+          {copy.documents && (
+            <>
+              <p className="small strong">{t('official.docs')}</p>
+              <p>{copy.documents}</p>
+            </>
+          )}
+          {copy.office && <p className="strong">{copy.office}</p>}
+        </div>
+      )}
       {!any && <p className="small muted">{t('official.none')}</p>}
       {items.map(({ program, sources, apply }) =>
         sources.length === 0 && apply === null && (program.docsRequired ?? []).length === 0 ? null : (

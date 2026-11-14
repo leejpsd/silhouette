@@ -19,6 +19,8 @@ export interface AppConfig {
   readonly promptPointerExtractV: number;
   /** shared/prompts/explain.v{n}.md */
   readonly promptExplainV: number;
+  /** shared/prompts/ask.v{n}.md */
+  readonly promptAskV: number;
 }
 
 /** Bundled defaults (shared/CHANGELOG.md). Paid features (grounding, read aloud) are off until Remote Config turns them on. */
@@ -29,7 +31,8 @@ export const CONFIG_DEFAULTS: AppConfig = {
   groundingMaps: false,
   tts: false,
   promptPointerExtractV: 4,
-  promptExplainV: 3,
+  promptExplainV: 5,
+  promptAskV: 4,
 };
 
 /** Remote Config parameter names and the defaults in the form the SDK takes. */
@@ -41,6 +44,7 @@ export const RC_DEFAULTS: Readonly<Record<string, string | number | boolean>> = 
   feature_tts: CONFIG_DEFAULTS.tts,
   prompt_pointer_extract_v: CONFIG_DEFAULTS.promptPointerExtractV,
   prompt_explain_v: CONFIG_DEFAULTS.promptExplainV,
+  prompt_ask_v: CONFIG_DEFAULTS.promptAskV,
 };
 
 export const CONFIG_STORAGE_KEY = `${PREF_PREFIX}remote-config`;
@@ -83,6 +87,7 @@ export function parseConfig(values: Readonly<Record<string, string>>): AppConfig
     tts: bool(values['feature_tts'], d.tts),
     promptPointerExtractV: int(values['prompt_pointer_extract_v'], d.promptPointerExtractV, 1, 1000),
     promptExplainV: int(values['prompt_explain_v'], d.promptExplainV, 1, 1000),
+    promptAskV: int(values['prompt_ask_v'], d.promptAskV, 1, 1000),
   };
 }
 

@@ -1,9 +1,9 @@
 // Type-level proof of the routing rule (shared/DATA_TYPES.md).
-// Checked by `npm run typecheck` (tsconfig.test.json). Never executed: every line marked
-// @ts-expect-error MUST fail to compile, otherwise tsc reports "Unused '@ts-expect-error'
-// directive" and the typecheck fails.
+// Checked by `npm run typecheck` (tsconfig.test.json). Never executed: every line under an
+// expect-error directive MUST fail to compile, otherwise tsc reports the directive as unused and
+// the typecheck fails.
 
-import { asPublic, mapRaw, reveal, type CloudSafe, type Generalized, type Public, type Raw, type Skeleton } from '../core/types';
+import { asPublic, mapRaw, reveal, type CloudSafe, type Public, type Raw, type Skeleton } from '../core/types';
 import { rehydrate, skeletonize, type PlaceholderMap, type PointerSchema } from '../core/skeleton';
 import { canonical, generalize, silhouetteVerdicts, type Bands, type ExactProfile, type GeneralizedProfile, type SilhouetteVerdict } from '../core/generalize';
 import type { RulePack } from '../core/rules';
@@ -35,7 +35,8 @@ export function routingTypeTests(): void {
 
   const profile = generalize(rawProfile, bands);
   const verdict = silhouetteVerdicts(pack, bands, profile)[0]!;
-  const input = { profile, verdict, program: programText, locale: 'en' };
+  // The general explanation and prepared questions take Public input only (routing.json v1.15).
+  const input = asPublic({ program: { programId: 'p', name: 'Test', facts: 'Information.' }, locale: 'en' });
   void explainProgram(planExplain(input, 'short')).then((answer) => readAloud(answer.value, 'en'));
   void askChip(planAskChip(input, chip)).then((answer) => readAloud(answer.value, 'en'));
   void discoverLeads({ profile, known: asPublic(['Test Food Help']), locale: 'en' });
@@ -54,7 +55,13 @@ export function routingTypeTests(): void {
   // @ts-expect-error Raw profile cannot reach a cloud-capable task.
   void planExplain({ ...input, profile: rawProfile }, 'short');
   // @ts-expect-error Rehydrated fields are Raw.
-  void planExplain({ ...input, profile: rehydrate(schema, {}, rawMap) }, 'short');
+  void planExplain(rehydrate(schema, {}, rawMap), 'short');
+  // @ts-expect-error Nothing about the person reaches the general explanation, not even the silhouette.
+  void planExplain({ profile, verdict, program: programText, locale: 'en' }, 'short');
+  // @ts-expect-error Nor a prepared question: a Generalized profile is not Public.
+  void planAskChip({ profile, program: programText, locale: 'en' }, chip);
+  // @ts-expect-error A silhouette verdict is Generalized, not Public.
+  void planExplain(verdict, 'short');
   // @ts-expect-error Raw profile cannot reach the search for leads.
   void discoverLeads({ profile: rawProfile, known: asPublic([]), locale: 'en' });
   // The person's own result is Raw: it only goes to ONLY_ON_DEVICE tasks, and their answers are plain
@@ -68,10 +75,10 @@ export function routingTypeTests(): void {
     void readAloud(answer.value, 'en');
   });
   // @ts-expect-error The person's own result cannot be a program's public facts.
-  void planExplain({ ...input, program: rawResult }, 'short');
+  void planExplain({ program: rawResult, locale: 'en' }, 'short');
   // @ts-expect-error The on-device explanation takes the result as Raw, never plain.
   void explainPersonal(plainResult);
-  // @ts-expect-error Nor the silhouette input of the general explanation.
+  // @ts-expect-error Nor the public input of the general explanation.
   void explainPersonal(input);
   // @ts-expect-error A typed question cannot be a prepared chip.
   void planAskChip(input, { id: 'x', question: rawText });
@@ -86,16 +93,16 @@ export function routingTypeTests(): void {
   void extractPointers(reveal(rawText), 'paystub', 'en');
   // @ts-expect-error A plain string is not a Skeleton.
   void extractPointers(plainString, 'paystub', 'en');
-  // @ts-expect-error A hand-built profile is not Generalized; only generalize() makes one.
-  void planExplain({ ...input, profile: plainProfile }, 'short');
-  // @ts-expect-error A revealed exact profile is not Generalized.
-  void planExplain({ ...input, profile: reveal(rawProfile) }, 'short');
-  // @ts-expect-error Public is not Generalized.
-  void planExplain({ ...input, profile: programText }, 'short');
+  // @ts-expect-error A hand-built object is not Public; only asPublic() on static content makes one.
+  void planExplain({ program: { programId: 'p', name: 'Test', facts: 'x' }, locale: 'en' }, 'short');
+  // @ts-expect-error A revealed exact profile is not Public.
+  void planExplain(reveal(rawProfile), 'short');
   // @ts-expect-error Generalized is not Public.
-  void planExplain({ ...input, program: profile }, 'short');
-  // @ts-expect-error A verdict computed from exact values is not Generalized; only silhouetteVerdicts() makes one.
-  void planExplain({ ...input, verdict: plainVerdict }, 'short');
+  void planExplain(profile, 'short');
+  // @ts-expect-error A hand-built profile is not Generalized either (for the search for leads).
+  void discoverLeads({ profile: plainProfile, known: asPublic([]), locale: 'en' });
+  void plainVerdict;
+  void programText;
   // @ts-expect-error A plain string is not a model answer.
   void readAloud({ text: plainString }, 'en');
   // @ts-expect-error The centroid is static app data (Public), never a plain position.

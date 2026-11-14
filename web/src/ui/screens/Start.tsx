@@ -4,7 +4,7 @@ import { dynamicKey, formatMoney } from '../i18n';
 import { firstOpenStep } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
-import { BlockActions } from '../design/block';
+import { BlockActions, useWide } from '../design/block';
 import { ArrowRight } from '../design/icons';
 import { Bar, Paper, ActionLabel } from '../design/parts';
 
@@ -14,26 +14,15 @@ export function StartScreen({ notice }: { notice: string | null }) {
   const open = firstOpenStep(steps, answers);
   const firstStep = steps[0]?.id ?? 'income';
 
-  const begin = () => {
-    if (!started) return navigate({ name: 'question', id: firstStep, then: null });
-    const next = steps[open];
-    if (next) navigate({ name: 'question', id: next.id, then: null });
-    else navigate({ name: 'results' });
-  };
-
-  return (
-    <div className="screen start">
-      <div role="status" className="notice-slot">
-        {notice && <p className="notice">{notice}</p>}
-      </div>
-      <div className="stack-8">
-        <ScreenHeading size={60} maxLines={4}>
-          {t('start.title')}
-        </ScreenHeading>
-        <p className="lead">{t('start.lead')}</p>
-      </div>
-      {/* The promise as a picture: the same paystub, kept on the phone and as it could leave. */}
-      <div className="start-cards" role="img" aria-label={`${t('promise.line1')} ${t('promise.line2')}`}>
+  const wide = useWide();
+  const example = (
+    <>
+      <p className="start-promise" data-testid="start-promise">
+        {t('start.promise')}
+      </p>
+      <figure className="start-example" data-testid="start-example">
+        <figcaption className="example-tag">{t('start.example')}</figcaption>
+        <div className="start-cards" aria-hidden="true">
         <div className="start-card tilt-left" aria-hidden="true">
           <span className="card-label">{t('preview.onPhone')}</span>
           <Paper>
@@ -63,7 +52,30 @@ export function StartScreen({ notice }: { notice: string | null }) {
             <Field label={t(dynamicKey('variable.householdSize'))} value="3" />
           </Paper>
         </div>
+        </div>
+      </figure>
+    </>
+  );
+
+  const begin = () => {
+    if (!started) return navigate({ name: 'question', id: firstStep, then: null });
+    const next = steps[open];
+    if (next) navigate({ name: 'question', id: next.id, then: null });
+    else navigate({ name: 'results' });
+  };
+
+  return (
+    <div className="screen start">
+      <div role="status" className="notice-slot">
+        {notice && <p className="notice">{notice}</p>}
       </div>
+      <div className="stack-8">
+        <ScreenHeading size={60} maxLines={4}>
+          {t('start.title')}
+        </ScreenHeading>
+        <p className="lead">{t('start.lead')}</p>
+      </div>
+      {!wide && example}
       <BlockActions>
         <button type="button" className="action" onClick={begin}>
           <ActionLabel>{!started ? t('start.begin') : open < steps.length ? t('start.resume') : t('start.continue')}</ActionLabel>
@@ -89,6 +101,8 @@ export function StartScreen({ notice }: { notice: string | null }) {
           )}
         </div>
         <p className="block-note">{t('promise.line3')}</p>
+        {/* On wide screens the panel beside the headline carries the example. */}
+        {wide && <div className="block-example">{example}</div>}
       </BlockActions>
     </div>
   );

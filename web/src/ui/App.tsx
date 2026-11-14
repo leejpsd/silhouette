@@ -163,7 +163,7 @@ export function App() {
           <main id="main" tabIndex={-1} aria-busy={!loaded}>
             <Suspense fallback={null}>{screen}</Suspense>
           </main>
-          <BottomBlock count={<LeavingBar onDelete={onDelete} />} />
+          <BottomBlock label={t('leaving.title')} count={<LeavingBar onDelete={onDelete} />} />
         </div>
         {/* The grain: one fixed layer over the whole screen. */}
         <div className="grain" aria-hidden="true" />

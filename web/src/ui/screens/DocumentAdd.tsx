@@ -15,7 +15,8 @@ import { LOCALES, LOCALE_NAMES, isLocale, type Locale } from '../i18n';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { BlockActions } from '../design/block';
-import { Alert, Camera, ChevronLeft, Clipboard, Doc, Keyboard } from '../design/icons';
+import { Alert, ArrowRight, Camera, ChevronLeft, Clipboard, Doc, Keyboard } from '../design/icons';
+import { ActionLabel } from '../design/parts';
 import { Loading } from '../answers/parts';
 import { ModelStatus } from '../doc/ModelStatus';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
@@ -253,10 +254,14 @@ export function DocumentAddScreen() {
             {t('doc.samples')}
           </h2>
           <p className="block-note left">{t('doc.samples.help')}</p>
+          {/* The screen's main action: the quickest way to see a silhouette made. */}
+          <button type="button" className="action" disabled={busy !== null} onClick={() => void sample('en', 'text')}>
+            <ActionLabel>{t('doc.sample.enText')}</ActionLabel>
+            <span className="action-arrow">
+              <ArrowRight />
+            </span>
+          </button>
           <div className="sample-grid">
-            <button type="button" className="outline-button on-block" disabled={busy !== null} onClick={() => void sample('en', 'text')}>
-              {t('doc.sample.enText')}
-            </button>
             <button type="button" className="outline-button on-block" disabled={busy !== null} onClick={() => void sample('en', 'pdf')}>
               {t('doc.sample.enPdf')}
             </button>

@@ -147,3 +147,60 @@ test('confirming values is still possible from the keyboard after the fold opens
   await confirmAllValues(page);
   await expect(page.getByRole('button', { name: 'Check these values' })).toBeEnabled();
 });
+
+test.describe('first impression and sheets', () => {
+  test('the start screen says the promise in words, labels the example, and keeps the main action above the fold at 320 x 568', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto('/');
+    await expect(page.getByTestId('start-promise')).toBeVisible();
+    await expect(page.getByTestId('start-example')).toContainText('Example');
+    const action = await page.getByRole('button', { name: 'Start Quick Check' }).boundingBox();
+    expect(action!.y + action!.height).toBeLessThanOrEqual(568);
+  });
+
+  test('the ground colour of both themes is in the document head, so nothing flashes white', async ({ request }) => {
+    const html = await (await request.get('/')).text();
+    expect(html).toMatch(/<style>html\{color-scheme:light dark;background:#[0-9A-Fa-f]{6}\}@media \(prefers-color-scheme: dark\)\{html\{background:#[0-9A-Fa-f]{6}\}\}<\/style>/);
+  });
+
+  test('the count stays in view in every sheet; the record traps focus and returns it', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('language-button').click();
+    await expect(page.getByTestId('language-sheet').getByTestId('sheet-count')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await page.getByTestId('demo-banner').getByRole('button', { name: 'More' }).click();
+    await expect(page.getByTestId('demo-sheet').getByTestId('sheet-count').last()).toBeInViewport();
+    await page.keyboard.press('Escape');
+    const details = page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' });
+    await details.click();
+    const record = page.getByTestId('record-sheet');
+    await expect(record).toBeVisible();
+    for (let i = 0; i < 6; i++) {
+      await page.keyboard.press('Tab');
+      // A modal sheet: focus never reaches the page behind it (it may pass to the browser's own controls).
+      expect(await page.evaluate(() => {
+        const a = document.activeElement;
+        return a === null || a === document.body || a.closest('[data-testid="record-sheet"]') !== null;
+      })).toBe(true);
+    }
+    await page.keyboard.press('Escape');
+    await expect(details).toBeFocused();
+  });
+
+  test('selection is ink, not pink, and "0 sent" is not pink', async ({ page }) => {
+    await page.goto('/#/q/income');
+    await page.getByLabel('$15,000 to $29,999', { exact: true }).check();
+    const radio = page.getByLabel('$15,000 to $29,999', { exact: true });
+    const [bg, leave] = await radio.evaluate((el) => [getComputedStyle(el).backgroundColor, getComputedStyle(document.documentElement).getPropertyValue('--leave')]);
+    expect(bg).not.toBe(leave);
+    expect(bg).not.toMatch(/rgb\(2[0-9]{2}, 1[0-9]{2}, 2[0-9]{2}\)/);
+  });
+});
+
+test('at 768 px the column is centred and the block floats, not a full-width bar', async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.goto('/');
+  const block = (await page.getByTestId('bottom-block').boundingBox())!;
+  expect(block.width).toBeLessThanOrEqual(640);
+  expect(Math.round(block.x)).toBe(Math.round((768 - block.width) / 2));
+});

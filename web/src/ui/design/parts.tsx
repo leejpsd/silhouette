@@ -62,6 +62,7 @@ export function Sheet({
   footer,
   testId,
   returnFocus,
+  count,
 }: {
   open: boolean;
   /** The small title at the top of the sheet. */
@@ -74,6 +75,8 @@ export function Sheet({
   footer?: ReactNode;
   testId?: string;
   returnFocus?: RefObject<HTMLElement | null>;
+  /** The "Leaving your device" count, kept in view at the foot of the sheet. */
+  count?: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const id = useId();
@@ -112,6 +115,7 @@ export function Sheet({
         </div>
         <div className="sheet-content">{children}</div>
         {footer && <div className="sheet-foot">{footer}</div>}
+        {count}
       </div>
     </dialog>
   );
@@ -151,11 +155,28 @@ export function useFit(
         el.style.fontSize = `${size}px`;
       }
     };
-    fit();
+    // Until the display face has arrived, the step chosen with the fallback face could change a moment
+    // later (a visible snap): the text waits, hidden, for the face (at most a second), then fits once.
+    const style = getComputedStyle(el);
+    const face = `${style.fontWeight} 16px ${style.fontFamily.split(',')[0]?.trim() ?? ''}`;
+    const waiting = document.fonts !== undefined && !document.fonts.check(face);
+    let live = true;
+    if (waiting) {
+      el.style.visibility = 'hidden';
+      void Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1000))]).then(() => {
+        if (!live) return;
+        fit();
+        el.style.visibility = '';
+      });
+    } else fit();
     const observer = new ResizeObserver(() => fit());
     observer.observe(el.parentElement ?? el);
-    void document.fonts?.ready.then(fit);
-    return () => observer.disconnect();
+    if (!waiting) void document.fonts?.ready.then(() => live && fit());
+    return () => {
+      live = false;
+      el.style.visibility = '';
+      observer.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [design, maxLines, step, floor, wide, ...deps]);
 }

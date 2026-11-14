@@ -73,7 +73,8 @@ export function tokensCss(): string {
     })
     .join('');
   const wide = t.layout.wide;
-  const layout = `--wide-content-max:${wide.contentMax}px;--wide-column-max:${wide.startHeadlineMaxWidth}px;--wide-block-width:${wide.blockWidth}px;--wide-gap:${wide.gap}px;`;
+  // The phone headline measure is unitless: wide screens keep it in em at each headline's design size.
+  const layout = `--wide-content-max:${wide.contentMax}px;--wide-column-max:${wide.startHeadlineMaxWidth}px;--wide-block-width:${wide.blockWidth}px;--wide-gap:${wide.gap}px;--phone-measure:${t.layout.phone.headlineMeasure};`;
   const shadow = Object.entries(t.shadow)
     .filter(([k]) => k !== 'note')
     .map(([k, v]) => `--shadow-${kebab(k)}:${v};`)
@@ -85,13 +86,14 @@ export function tokensCss(): string {
   const easing = Object.entries(t.motion.easing).map(([k, v]) => `--ease-${kebab(k)}:${bezier(v)};`).join('');
   const delay = Object.entries(t.motion.delay).map(([k, v]) => `--delay-${kebab(k)}:${v}ms;`).join('');
   const grain = `--grain-image:${grainTile()};--grain-opacity:${t.grain.opacity};`;
-  // The checkbox tick, drawn in onLeave on the pink fill (an SVG cannot read custom properties).
-  const tick = encodeURIComponent(t.color.light.onLeave);
-  const check = `--check-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 12.5l3.5 3.5 7.5-8' fill='none' stroke='${tick}' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");`;
+  // The checkbox tick, drawn in the block colour on the selected row's text colour (an SVG cannot read
+  // custom properties, so light and dark each get their own image).
+  const check = (scheme: 'light' | 'dark') =>
+    `--check-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 12.5l3.5 3.5 7.5-8' fill='none' stroke='${encodeURIComponent(t.color[scheme].block)}' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");`;
   return (
-    `:root{color-scheme:light dark;${fonts}${scale}${fit}${space}${inline}${blockPadding}${layout}${radius}${size}${shadow}${rotation}${duration}${easing}${delay}${grain}${check}` +
+    `:root{color-scheme:light dark;${fonts}${scale}${fit}${space}${inline}${blockPadding}${layout}${radius}${size}${shadow}${rotation}${duration}${easing}${delay}${grain}${check('light')}` +
     `--grain-blend:${t.grain.blend.light};${colorVars(t.color.light)}}` +
-    `@media (prefers-color-scheme: dark){:root{--grain-blend:${t.grain.blend.dark};${colorVars(t.color.dark)}}}`
+    `@media (prefers-color-scheme: dark){:root{--grain-blend:${t.grain.blend.dark};${check('dark')}${colorVars(t.color.dark)}}}`
   );
 }
 

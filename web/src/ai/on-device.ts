@@ -11,6 +11,7 @@ import { ASK_CREATE_OPTIONS, PHOTO_CREATE_OPTIONS } from './device-model';
 import { ASK_PERSONAL_V1, EXPLAIN_PERSONAL_V1, PHOTO_READ, fill, type PromptTemplate } from './prompts';
 import { checked, languageName, type DocType, type RoutingReason, type TaskResult } from './tasks';
 import { ASK_WORDS } from '../core/explain';
+import type { ShownVerdict } from '../core/output-check';
 import { recordAnsweredOnDevice } from '../data/outbound';
 
 const PHOTO_TASK = routing.tasks['document.photo.read'];
@@ -47,7 +48,7 @@ export async function readPhoto(photo: Raw<Blob>, docType: DocType, language: st
     ]);
     const source = sourceOf(response, 'ON_DEVICE');
     if (source !== 'ON_DEVICE') throw new TaskError('on-device-unavailable', 'photo task did not run on device');
-    recordAnsweredOnDevice(['inline-file']);
+    recordAnsweredOnDevice('photo');
     return { value: Raw.of(response.text()), inferenceSource: source, reason: PHOTO_TASK.reason as RoutingReason };
   } catch (error) {
     throw classifyError(error);
@@ -66,6 +67,8 @@ export interface PersonalResult {
   readonly programName: string;
   readonly facts: string;
   readonly verdictLabel: string;
+  /** The verdict on screen: a hedge that contradicts it is blocked (OUTPUT_CHECKS.md, scope personal). */
+  readonly verdict: ShownVerdict;
   /** `- {label}: {state}` lines, with ` (limit {limit}, yours {value})` where the rules compare with a limit. */
   readonly criteriaLines: string;
 }
@@ -78,6 +81,7 @@ async function runPersonal(
   prompt: PromptTemplate,
   values: Record<string, string>,
   locale: string,
+  verdict: ShownVerdict,
   reason: RoutingReason,
   signal: AbortSignal | undefined,
 ): Promise<TaskResult<string>> {
@@ -97,8 +101,8 @@ async function runPersonal(
       throw classifyError(error);
     }
   };
-  const result = await checked(once, 'personal', locale, (r) => r.value);
-  recordAnsweredOnDevice(['model-request']);
+  const result = await checked(once, 'personal', locale, (r) => r.value, verdict);
+  recordAnsweredOnDevice(taskKey === 'ask.freeText' ? 'own-question' : 'why');
   return result;
 }
 
@@ -120,7 +124,7 @@ function personalValues(result: PersonalResult): Record<string, string> {
 export async function explainPersonal(result: Raw<PersonalResult>, options: { signal?: AbortSignal } = {}): Promise<TaskResult<string>> {
   if (PERSONAL_TASK.mode !== 'ONLY_ON_DEVICE') throw new Error('routing.json changed: explain.personal mode');
   const r = reveal(result);
-  return runPersonal('explain.personal', EXPLAIN_PERSONAL_V1, personalValues(r), r.locale, PERSONAL_TASK.reason as RoutingReason, options.signal);
+  return runPersonal('explain.personal', EXPLAIN_PERSONAL_V1, personalValues(r), r.locale, r.verdict, PERSONAL_TASK.reason as RoutingReason, options.signal);
 }
 
 /**
@@ -133,5 +137,5 @@ export async function askFreeText(question: Raw<string>, result: Raw<PersonalRes
   if (FREE_TEXT_TASK.mode !== 'ONLY_ON_DEVICE') throw new Error('routing.json changed: ask.freeText mode');
   const r = reveal(result);
   const values = { ...personalValues(r), question: reveal(question).trim().slice(0, 500), maxWords: String(Math.min(ASK_WORDS, PERSONAL_WORDS)) };
-  return runPersonal('ask.freeText', ASK_PERSONAL_V1, values, r.locale, FREE_TEXT_TASK.reason as RoutingReason, options.signal);
+  return runPersonal('ask.freeText', ASK_PERSONAL_V1, values, r.locale, r.verdict, FREE_TEXT_TASK.reason as RoutingReason, options.signal);
 }

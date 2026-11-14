@@ -4,8 +4,8 @@
 // take Raw input live in ./on-device.ts, the single ai/ file the routing check lets unwrap Raw.
 
 import { InferenceMode, type HybridParams } from 'firebase/ai';
-import type { Generalized, Public, Skeleton } from '../core/types';
-import type { GeneralizedProfile, SilhouetteVerdict } from '../core/generalize';
+import { asPublic, type Generalized, type Public, type Skeleton } from '../core/types';
+import type { GeneralizedProfile } from '../core/generalize';
 import { ASK_WORDS, EXPLAIN_WORDS, explainRoute, parseListLines, parseStatusLines, safeSources, type ExplainLength, type ExplainRoute, type Source } from '../core/explain';
 import type { PointerSchema } from '../core/skeleton';
 import routing from '../../../shared/routing.json';
@@ -16,9 +16,9 @@ import { appConfig } from '../data/remote-config';
 import { describeAiModel, describeAiRequests, expectRequestBody } from '../data/net-monitor';
 import { recordAnsweredOnDevice } from '../data/outbound';
 import outputChecks from '../../../shared/prompts/output-checks.json';
-import { modelTextIsBlocked, type OutputChecks, type OutputScope } from '../core/output-check';
+import { modelTextIsBlocked, type OutputChecks, type OutputScope, type ShownVerdict } from '../core/output-check';
 import { toModelSchema } from './model-schema';
-import { ASK_V2, CURRENT_STATUS_V1, DISCOVER_V1, NEARBY_V1, READ_ALOUD_V1, explainPromptFor, fill, type PromptTemplate } from './prompts';
+import { CURRENT_STATUS_V1, DISCOVER_V1, NEARBY_V1, READ_ALOUD_V1, askPromptFor, explainPromptFor, fill, type PromptTemplate } from './prompts';
 import type { ModelResponse } from './model-port';
 
 export { TaskError } from './errors';
@@ -203,7 +203,7 @@ export async function extractPointers(
     const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
     const noModel = !options.forceCloud && r.source === 'IN_CLOUD' && (await deviceAvailability(createOptions)) !== 'available';
     // Answered on this device: recorded as kept, never as sent.
-    if (r.source === 'ON_DEVICE') recordAnsweredOnDevice(['document-silhouette']);
+    if (r.source === 'ON_DEVICE') recordAnsweredOnDevice('document');
     return { value: r.value, inferenceSource: r.source, reason, usage: r.usage, ranInCloudBecause: noModel ? 'no-device-model' : undefined };
   } catch (error) {
     if (options.forceCloud || !failedOnDevice(error)) throw classifyError(error);
@@ -220,31 +220,28 @@ export async function extractPointers(
 
 // ---------- Explanations and questions ----------
 
-/** Program facts from the rule pack and its copy, in the UI language. Static app content. */
+/** A program's public information from the rule pack and its copy, in the answer language. */
 export type ProgramFacts = {
   readonly programId: string;
   readonly name: string;
-  /** What the program checks, its period and caveats, as sentences. */
+  /** `{programFacts}`, built as shared/rulepacks/SPEC.md section 2.1 says: one item per line. */
   readonly facts: string;
-  /** Criterion labels by criterion id. */
-  readonly criteria: Readonly<Record<string, string>>;
 };
 
 /** A prepared question chip. Static app content. */
 export type QuestionChip = { readonly id: string; readonly question: string };
 
 /**
- * What the general explanation and prepared questions are given: the profile silhouette, the
- * criterion states the engine reaches from that silhouette alone (shared/rulepacks/SPEC.md section 7),
- * and the program's facts. Never a verdict, exact values or answers to sensitive questions.
+ * What the general explanation and prepared questions are given (shared/prompts/explain.v5.md,
+ * ask.v4.md): the program's public information and the answer language. Nothing about the person:
+ * routing.json types these tasks as `Public` only, so a `Generalized` profile or verdict (or anything
+ * Raw) does not type-check here.
  */
-export interface ExplainInput {
-  readonly profile: Generalized<GeneralizedProfile>;
-  readonly verdict: Generalized<SilhouetteVerdict>;
-  readonly program: Public<ProgramFacts>;
-  /** UI language code (en, es, ko). */
+export type ExplainInput = Public<{
+  readonly program: ProgramFacts;
+  /** Answer language code (en, es, ko). */
   readonly locale: string;
-}
+}>;
 
 const answerBrand: unique symbol = Symbol('model-answer');
 
@@ -268,41 +265,15 @@ const MODES = {
 } as const;
 type RoutingMode = keyof typeof MODES;
 
-/**
- * Placeholder values of explain.v3 and ask.v2: criteria in state `pass` and `fail` go to the first two
- * lists, `unknown` and `mixed` to the third; an empty list is written as `none`.
- */
-export function explainValues(input: ExplainInput, maxWords: number, question?: string): Record<string, string> {
-  const { program, verdict } = input;
-  const label = (id: string) => program.criteria[id] ?? id;
-  const list = (states: readonly string[]) => {
-    const labels = verdict.criteria.filter((c) => states.includes(c.state)).map((c) => label(c.id));
-    return labels.length > 0 ? labels.join('; ') : 'none';
-  };
+/** Placeholder values of explain.v5 and ask.v4: the program's name and information, the question. */
+export function explainValues(input: ExplainInput, maxWords: number, question?: Public<string>): Record<string, string> {
   const values: Record<string, string> = {
-    generalizedProfileCanonicalJson: canonicalJson(input.profile),
-    programName: program.name,
-    programSummaryFromRulePack: program.facts,
-    passedCriteriaLabels: list(['pass']),
-    failedCriteriaLabels: list(['fail']),
-    unknownCriteriaLabels: list(['unknown', 'mixed']),
+    programName: input.program.name,
+    programFacts: input.program.facts,
     maxWords: String(maxWords),
   };
   if (question !== undefined) values['question'] = question;
   return values;
-}
-
-function canonicalJson(profile: Generalized<GeneralizedProfile>): string {
-  // Same key order and form as core/generalize.ts canonical(); repeated here because ai/ must not
-  // depend on more of core than the types it receives.
-  return JSON.stringify({
-    jurisdiction: profile.jurisdiction,
-    incomeBand: profile.incomeBand,
-    householdSize: profile.householdSize,
-    childAgeBands: profile.childAgeBands === null ? null : [...profile.childAgeBands],
-    county: profile.county,
-    housing: profile.housing,
-  });
 }
 
 /** Everything that fixes one model call: shown in the "Leaving your device" step before it is made. */
@@ -317,6 +288,8 @@ export interface PlannedCall {
   readonly tools?: readonly Record<string, unknown>[] | undefined;
   readonly toolConfig?: Readonly<Record<string, unknown>> | undefined;
   readonly route?: ExplainRoute | undefined;
+  /** The answer language: it selects the list of the check on model text (OUTPUT_CHECKS.md). */
+  readonly locale?: string | undefined;
   /** What the request carries, for the record of outgoing requests (never values). */
   readonly fields: readonly string[];
   /** Model output checks (shared/prompts/OUTPUT_CHECKS.md) for tasks that show text about a program. */
@@ -365,7 +338,8 @@ function textCall(
     // Room for the words asked for, in any of the app's languages.
     generationConfig: { maxOutputTokens: Math.max(256, maxWords * 4) },
     route,
-    fields: taskId === 'ask.chip' ? ['profile-silhouette', 'program-facts', 'prepared-question'] : ['profile-silhouette', 'program-facts'],
+    locale,
+    fields: taskId === 'ask.chip' ? ['program-facts', 'prepared-question'] : ['program-facts'],
     checks: 'general',
     deviceOptions: {
       expectedInputs: [{ type: 'text', languages: ['en', locale] }],
@@ -388,7 +362,8 @@ export function planExplain(input: ExplainInput, length: ExplainLength): Planned
 }
 
 export function planAskChip(input: ExplainInput, chip: Public<QuestionChip>): PlannedCall {
-  return textCall('ask.chip', ASK_V2, explainValues(input, ASK_WORDS, chip.question), input.locale, ASK_WORDS);
+  const prompt = askPromptFor(appConfig().promptAskV);
+  return textCall('ask.chip', prompt, explainValues(input, ASK_WORDS, asPublic(chip.question)), input.locale, ASK_WORDS);
 }
 
 function hybridParams(call: PlannedCall, forceCloud: boolean): HybridParams {
@@ -466,18 +441,18 @@ async function runText(call: PlannedCall, options: RunOptions): Promise<TaskResu
       }
     }
   };
-  const result = await checked(once, call.checks ?? 'general', call.route?.locale ?? 'en', (r) => r.value.text);
+  const result = await checked(once, call.checks ?? 'general', call.locale ?? 'en', (r) => r.value.text);
   // Answered on this device: recorded as kept, never as sent.
-  if (result.inferenceSource === 'ON_DEVICE') recordAnsweredOnDevice(call.fields);
+  if (result.inferenceSource === 'ON_DEVICE') recordAnsweredOnDevice(call.taskId === 'ask.chip' ? 'ask' : 'about');
   return result;
 }
 
 /** Shows a model's text only when it passes the checks: one retry, then TaskError('blocked'). */
-export async function checked<T>(run: () => Promise<T>, scope: OutputScope, locale: string, text: (result: T) => string): Promise<T> {
+export async function checked<T>(run: () => Promise<T>, scope: OutputScope, locale: string, text: (result: T) => string, verdict?: ShownVerdict): Promise<T> {
   const first = await run();
-  if (!modelTextIsBlocked(text(first), locale, scope, OUTPUT_CHECKS)) return first;
+  if (!modelTextIsBlocked(text(first), locale, scope, OUTPUT_CHECKS, verdict)) return first;
   const second = await run();
-  if (!modelTextIsBlocked(text(second), locale, scope, OUTPUT_CHECKS)) return second;
+  if (!modelTextIsBlocked(text(second), locale, scope, OUTPUT_CHECKS, verdict)) return second;
   throw new TaskError('blocked', 'the reply stated a result twice');
 }
 
@@ -568,6 +543,19 @@ export async function programCurrentStatus(input: StatusInput, options: RunOptio
   const { response, source } = await checked(() => runGrounded(call, options), 'general', input.locale, (r) => r.response.text());
   const statuses = parseStatusLines(response.text(), input.programs.map((p) => p.id));
   return { value: { statuses, grounding: searchGrounding(response) }, inferenceSource: source, reason: call.reason };
+}
+
+function canonicalJson(profile: Generalized<GeneralizedProfile>): string {
+  // Same key order and form as core/generalize.ts canonical(); repeated here because ai/ must not
+  // depend on more of core than the types it receives.
+  return JSON.stringify({
+    jurisdiction: profile.jurisdiction,
+    incomeBand: profile.incomeBand,
+    householdSize: profile.householdSize,
+    childAgeBands: profile.childAgeBands === null ? null : [...profile.childAgeBands],
+    county: profile.county,
+    housing: profile.housing,
+  });
 }
 
 export interface DiscoverInput {

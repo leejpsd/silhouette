@@ -64,7 +64,7 @@ svg {
 .block .icon-check .icon-check-mark,
 .inverted-card .icon-check .icon-check-mark,
 .send-panel .icon-check .icon-check-mark,
-.record-sheet .icon-check .icon-check-mark {
+.sheet .icon-check .icon-check-mark {
   stroke: var(--block);
 }
 
@@ -82,7 +82,6 @@ svg {
 .block :focus-visible,
 .inverted-card :focus-visible,
 .send-panel :focus-visible,
-.record-sheet :focus-visible,
 dialog.sheet :focus-visible {
   outline-color: var(--block-focus);
 }
@@ -95,6 +94,33 @@ dialog.sheet :focus-visible {
 .send-button:focus-visible,
 .toggle-leave[aria-pressed='true']:focus-visible {
   outline-color: var(--leave-focus);
+}
+
+/* In dark mode the pink toggle sits on the dark ground: its ring is the ground's focus colour. */
+@media (prefers-color-scheme: dark) {
+  .toggle-leave[aria-pressed='true']:focus-visible {
+    outline-color: var(--focus);
+  }
+}
+
+/* Answer tiles and rows show focus on the whole tile, not only on the small radio inside. */
+.tile:has(:focus-visible),
+.range:has(:focus-visible),
+.option-row:has(input:focus-visible),
+.exact-option:has(:focus-visible) {
+  outline: var(--size-focus-ring) solid var(--focus);
+  outline-offset: var(--size-focus-offset);
+}
+
+.exact-row.selected .exact-option:has(:focus-visible) {
+  outline-color: var(--block-focus);
+}
+
+.tile :focus-visible,
+.range :focus-visible,
+.option-row input:focus-visible,
+.exact-option :focus-visible {
+  outline: none;
 }
 
 [tabindex='-1']:focus {
@@ -151,7 +177,7 @@ dialog.sheet :focus-visible {
   font-weight: var(--type-wordmark-weight);
   line-height: var(--type-wordmark-line);
   letter-spacing: var(--type-wordmark-tracking);
-  padding-bottom: 5px;
+  padding-bottom: var(--size-display-descender-pad);
   text-decoration: none;
 }
 
@@ -230,9 +256,11 @@ main:focus {
   font-weight: var(--type-title-weight);
   line-height: var(--type-display-line);
   letter-spacing: var(--type-display-tracking);
-  padding-bottom: 4px;
+  padding-bottom: var(--space-xxs);
   overflow-wrap: break-word;
   hyphens: manual;
+  /* Balanced lines: no single word left alone on the last line. */
+  text-wrap: balance;
 }
 
 .display.tight {
@@ -318,7 +346,7 @@ main h3.small {
 
 .notice {
   padding: var(--space-sm) var(--space-md);
-  border: 1.5px dashed currentColor;
+  border: var(--size-border-strong) dashed currentColor;
   border-radius: var(--radius-control);
   font-weight: 700;
 }
@@ -336,14 +364,14 @@ main h3.small {
   font-size: var(--type-button-size);
   font-weight: 700;
   text-decoration: underline;
-  text-underline-offset: 4px;
+  text-underline-offset: var(--space-xxs);
 }
 
 .text-link.inline {
   display: inline-block;
   min-height: 0;
-  padding: 12px 0;
-  margin: -12px 0;
+  padding: var(--space-sm) 0;
+  margin: calc(-1 * var(--space-sm)) 0;
   font-size: inherit;
   font-weight: inherit;
 }
@@ -390,7 +418,7 @@ main h3.small {
   display: block;
   flex: 1;
   min-width: 0;
-  padding-bottom: 5px;
+  padding-bottom: var(--size-display-descender-pad);
   overflow-wrap: break-word;
   hyphens: manual;
 }
@@ -425,7 +453,7 @@ main h3.small {
 /* Not yet: disabled actions are dashed, not faded, so they keep their contrast. */
 .action:disabled,
 .action[aria-disabled='true'] {
-  border: 1.5px dashed var(--on-block);
+  border: var(--size-border-strong) dashed var(--on-block);
   background: transparent;
   color: var(--on-block);
   cursor: not-allowed;
@@ -455,7 +483,7 @@ main h3.small {
 
 .send-button:disabled {
   background: transparent;
-  border: 1.5px dashed currentColor;
+  border: var(--size-border-strong) dashed currentColor;
   color: var(--on-block);
 }
 
@@ -466,7 +494,7 @@ main h3.small {
   gap: var(--space-xs);
   min-height: var(--size-min-tap-target);
   padding: var(--space-xxs) var(--space-md);
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
   border-radius: var(--radius-control);
   background: transparent;
   font-size: var(--type-button-size);
@@ -515,7 +543,7 @@ main h3.small {
   justify-content: center;
   width: var(--size-min-tap-target);
   height: var(--size-min-tap-target);
-  margin-right: -12px;
+  margin-right: calc(-1 * var(--space-sm));
   padding: 0;
   border: 0;
   background: none;
@@ -546,7 +574,7 @@ main h3.small {
 .chip-button {
   min-height: var(--size-min-tap-target);
   padding: var(--space-xxs) var(--space-md);
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
   border-radius: var(--radius-control);
   background: transparent;
   font-size: var(--type-control-size);
@@ -625,7 +653,7 @@ main h3.small {
 /* Taller than 40 % of the screen: the block scrolls with the content; the count row stays pinned. */
 .block[data-tall='true'] {
   position: relative;
-  padding-bottom: 96px;
+  padding-bottom: var(--size-pinned-count-padding);
 }
 
 .block[data-tall='true'] .count-row {
@@ -802,7 +830,7 @@ main h3.small {
   align-items: center;
   min-height: var(--size-details-height);
   padding: 0 var(--space-md);
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
   border-radius: var(--radius-control);
   background: transparent;
   font-size: var(--type-control-size);
@@ -810,9 +838,6 @@ main h3.small {
   flex: none;
 }
 
-.details-button[hidden] {
-  display: none;
-}
 
 /* While typing on a touch screen, the count row shrinks to the number. */
 .block[data-typing='true'] .count-text,
@@ -884,7 +909,7 @@ dialog.sheet::backdrop {
   font-weight: 800;
   line-height: var(--type-display-line);
   letter-spacing: var(--type-display-tracking);
-  padding-bottom: 5px;
+  padding-bottom: var(--size-display-descender-pad);
 }
 
 .sheet-text {
@@ -923,36 +948,37 @@ dialog.sheet .option-row[aria-checked='true'] {
   color: var(--ink);
 }
 
-/* The record of what left: the block grown over the lower screen, with a dimmed glimpse above. */
-.sheet-glimpse {
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: var(--sheet-top);
-  z-index: 30;
-  background: var(--ground);
-  opacity: 0.6;
-}
-
-.record-sheet {
-  position: fixed;
-  inset: var(--sheet-top) 0 0 0;
-  z-index: 30;
+.record {
   display: flex;
   flex-direction: column;
   gap: var(--space-inline-2);
-  padding: var(--space-xs) var(--space-lg) calc(var(--space-lg) + env(safe-area-inset-bottom));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  border-radius: var(--radius-block) var(--radius-block) 0 0;
-  background: var(--block);
-  color: var(--on-block);
   font-size: var(--type-button-size);
   line-height: 1.35;
-  animation: sheet-up var(--duration-sheet-up) var(--ease-standard) both;
+}
+
+/* The count stays in view at the foot of every sheet. */
+.sheet-count {
+  position: sticky;
+  bottom: calc(-1 * (var(--space-lg) + env(safe-area-inset-bottom)));
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: var(--space-md) calc(-1 * var(--space-lg)) calc(-1 * (var(--space-lg) + env(safe-area-inset-bottom)));
+  padding: var(--space-xs) var(--space-lg) calc(var(--space-sm) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--block-line);
+  background: var(--block);
+}
+
+.record-incomplete {
+  font-weight: 700;
+}
+
+.zero-mark {
+  padding: 0 0 var(--space-sm);
 }
 
 .record-headline {
-  margin-top: var(--space-xxs);
+  margin: var(--space-xxs) 0 0;
   font-family: var(--font-display);
   font-size: var(--type-record-headline-size);
   font-weight: var(--type-record-headline-weight);
@@ -970,6 +996,7 @@ dialog.sheet .option-row[aria-checked='true'] {
 }
 
 .record-zero {
+  margin: 0;
   font-family: var(--font-display);
   font-size: var(--type-giant-number-size);
   font-weight: 800;
@@ -999,7 +1026,7 @@ dialog.sheet .option-row[aria-checked='true'] {
 
 .outbound-list li {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-columns: var(--size-record-time-column) minmax(0, 1fr);
   align-items: baseline;
   gap: var(--space-sm);
   padding: var(--space-sm) 0;
@@ -1107,7 +1134,7 @@ dialog.sheet .option-row[aria-checked='true'] {
 .paper-label {
   color: var(--on-paper-muted);
   font-size: var(--type-caption-size);
-  line-height: 15px;
+  line-height: var(--type-caption-line);
 }
 
 .paper-value {
@@ -1120,7 +1147,7 @@ dialog.sheet .option-row[aria-checked='true'] {
 .paper-note {
   color: var(--on-paper-muted);
   font-size: var(--type-caption-size);
-  line-height: 15px;
+  line-height: var(--type-caption-line);
 }
 
 .bars {
@@ -1163,28 +1190,28 @@ dialog.sheet .option-row[aria-checked='true'] {
 }
 
 .marker-maybe {
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
   background-image: radial-gradient(currentColor 1.1px, transparent 1.4px);
-  background-size: 4px 4px;
+  background-size: var(--size-dot-pattern) var(--size-dot-pattern);
 }
 
 .marker-depends {
-  border: 1.5px dashed currentColor;
+  border: var(--size-border-strong) dashed currentColor;
 }
 
 .marker-unlikely {
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
 }
 
 .marker-unanswered,
 .marker-loading-static {
   background-image: radial-gradient(currentColor 1.1px, transparent 1.4px);
-  background-size: 4px 4px;
+  background-size: var(--size-dot-pattern) var(--size-dot-pattern);
 }
 
 .marker-loading {
   background-image: radial-gradient(currentColor 1.1px, transparent 1.4px);
-  background-size: 4px 4px;
+  background-size: var(--size-dot-pattern) var(--size-dot-pattern);
   animation: march var(--duration-march) linear infinite;
 }
 
@@ -1210,17 +1237,18 @@ main h2.marker-line {
   color: var(--ink-muted);
 }
 
-/* Pink beside butter, paper or the dark theme's cream block gets the 1.5 px onLeave inner border. */
+/* Pink beside butter, paper or the dark theme's cream block gets the 1.5 px onLeave inner border:
+   labels and toggles on the ground, and every bar on paper (paper is cream in both themes). */
 .leave-label,
-.toggle-leave[aria-pressed='true'] {
-  box-shadow: inset 0 0 0 1.5px var(--leave-focus);
+.toggle-leave[aria-pressed='true'],
+.paper .bar:not(.bar-mine),
+.doc[data-mode='leave'] .tok:not(.tok-mine),
+.leave-tab {
+  box-shadow: inset 0 0 0 var(--size-border-strong) var(--leave-focus);
 }
 
 @media (prefers-color-scheme: dark) {
-  .leave-label {
-    box-shadow: none;
-  }
-
+  .leave-label,
   .toggle-leave[aria-pressed='true'] {
     box-shadow: none;
   }
@@ -1229,18 +1257,43 @@ main h2.marker-line {
   .block .send-button,
   .send-panel .send-button,
   .send-panel .leave-tab,
-  .record-sheet .leave-mark {
-    box-shadow: inset 0 0 0 1.5px var(--leave-focus);
+  .sheet .leave-mark {
+    box-shadow: inset 0 0 0 var(--size-border-strong) var(--leave-focus);
   }
 }
 
 /* ---------- Start ---------- */
 
+.start-promise {
+  font-size: var(--type-body-size);
+  font-weight: 700;
+  line-height: var(--type-body-line);
+}
+
+.start-example {
+  position: relative;
+  margin: 0;
+  padding-top: var(--space-xs);
+  border-top: 1px dashed var(--line);
+}
+
+/* The cards are an example, not the person's data: labelled as such. */
+.example-tag {
+  display: inline-block;
+  padding: 0 var(--space-inline-1);
+  border: var(--size-border-strong) solid var(--ink);
+  border-radius: var(--radius-bar);
+  font-size: var(--type-label-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .start-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-inline-1);
-  padding: var(--space-inline-5) 0 var(--space-lg);
+  padding: var(--space-inline-3) 0 var(--space-lg);
 }
 
 .start-card {
@@ -1313,7 +1366,7 @@ main h2.marker-line {
   height: var(--space-xs);
   border-radius: var(--radius-marker);
   background-image: radial-gradient(currentColor 1.1px, transparent 1.4px);
-  background-size: 4px 4px;
+  background-size: var(--size-dot-pattern) var(--size-dot-pattern);
 }
 
 .progress-track span.on {
@@ -1339,7 +1392,7 @@ fieldset {
   justify-content: space-between;
   height: var(--size-option-tile-height);
   padding: var(--space-sm) var(--space-md);
-  border: 1.5px solid var(--ink);
+  border: var(--size-border-strong) solid var(--ink);
   border-radius: var(--radius-tile);
   cursor: pointer;
   transition: transform var(--duration-press) ease;
@@ -1386,7 +1439,7 @@ fieldset {
   gap: var(--space-sm);
   min-height: var(--size-option-row-height);
   padding: var(--space-xxs) var(--space-md);
-  border: 1.5px solid var(--ink);
+  border: var(--size-border-strong) solid var(--ink);
   border-radius: var(--radius-option);
   background: transparent;
   text-align: left;
@@ -1416,15 +1469,15 @@ fieldset {
   gap: var(--space-xs);
   min-height: var(--size-row-heights-2);
   padding: var(--space-xxs) var(--space-sm);
-  border: 1.5px solid var(--ink);
+  border: var(--size-border-strong) solid var(--ink);
   border-radius: var(--radius-option);
   cursor: pointer;
 }
 
 .range .radio {
   order: 2;
-  width: 20px;
-  height: 20px;
+  width: var(--size-checkbox);
+  height: var(--size-checkbox);
 }
 
 .range-label {
@@ -1439,7 +1492,7 @@ fieldset {
   flex-direction: column;
   gap: var(--space-xs);
   padding: var(--space-sm) var(--space-md);
-  border: 1.5px solid var(--ink);
+  border: var(--size-border-strong) solid var(--ink);
   border-radius: var(--radius-tile);
 }
 
@@ -1460,10 +1513,10 @@ fieldset {
 .checkbox {
   appearance: none;
   flex: none;
-  width: 24px;
-  height: 24px;
+  width: var(--size-radio);
+  height: var(--size-radio);
   margin: 0;
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
   background: transparent;
   cursor: pointer;
 }
@@ -1473,18 +1526,21 @@ fieldset {
 }
 
 .checkbox {
+  width: var(--size-checkbox);
+  height: var(--size-checkbox);
   border-radius: 6px;
 }
 
+/* Selection is ink (the text colour of the selected row), never pink: pink is only for what leaves. */
 .radio:checked {
-  border-color: var(--leave);
-  background: var(--leave);
-  box-shadow: inset 0 0 0 4px var(--block);
+  border-color: currentColor;
+  background: currentColor;
+  box-shadow: inset 0 0 0 var(--space-xxs) var(--block);
 }
 
 .checkbox:checked {
-  border-color: var(--leave);
-  background: var(--leave) var(--check-image) center / 100% no-repeat;
+  border-color: currentColor;
+  background: currentColor var(--check-image) center / 100% no-repeat;
 }
 
 .counter {
@@ -1498,7 +1554,7 @@ fieldset {
 .counter-button {
   width: var(--size-counter-button);
   height: var(--size-counter-button);
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
   border-radius: 50%;
   background: transparent;
   font-family: var(--font-display);
@@ -1589,9 +1645,9 @@ fieldset {
 
 .input {
   width: 100%;
-  min-height: 56px;
+  min-height: var(--size-option-row-height);
   padding: var(--space-xs) var(--space-md);
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
   border-radius: var(--radius-secondary);
   background: transparent;
   font-size: var(--type-body-size);
@@ -1637,7 +1693,7 @@ fieldset {
   min-height: var(--size-min-tap-target);
   margin-right: var(--space-sm);
   padding: 0 var(--space-md);
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
   border-radius: var(--radius-control);
   background: transparent;
   color: inherit;
@@ -1704,7 +1760,8 @@ fieldset {
   font-size: var(--type-list-item-size);
   font-weight: 800;
   line-height: var(--type-list-item-line);
-  opacity: 0.6;
+  /* Muted by colour, not opacity, so the names keep their contrast. */
+  color: var(--ink-muted);
 }
 
 .inverted-card {
@@ -1796,7 +1853,7 @@ fieldset {
 
 .dashed-note {
   padding: var(--space-sm) var(--space-inline-3);
-  border: 1.5px dashed currentColor;
+  border: var(--size-border-strong) dashed currentColor;
   border-radius: var(--radius-control);
   font-size: var(--type-small-size);
   line-height: var(--type-small-line);
@@ -1973,7 +2030,7 @@ fieldset {
   height: var(--space-xs);
   border-radius: var(--radius-marker);
   background-image: radial-gradient(currentColor 1.1px, transparent 1.4px);
-  background-size: 4px 4px;
+  background-size: var(--size-dot-pattern) var(--size-dot-pattern);
   animation: march var(--duration-march) linear infinite;
 }
 
@@ -2095,7 +2152,7 @@ fieldset {
   align-items: center;
   justify-content: center;
   min-height: 120px;
-  border: 1.5px dashed currentColor;
+  border: var(--size-border-strong) dashed currentColor;
   border-radius: var(--radius-tile);
 }
 
@@ -2128,7 +2185,7 @@ progress {
   align-items: flex-start;
   gap: var(--space-inline-3);
   padding: var(--space-inline-3) var(--space-md);
-  border: 1.5px solid currentColor;
+  border: var(--size-border-strong) solid currentColor;
   border-radius: var(--radius-tile);
 }
 
@@ -2179,9 +2236,7 @@ main h2.source-title {
   color: var(--ink);
   font-size: var(--type-button-size);
   font-weight: 700;
-  transition:
-    background-color var(--duration-token-fade) var(--ease-fade),
-    color var(--duration-token-fade) var(--ease-fade);
+  transition: background-color var(--duration-token-fade) var(--ease-fade);
 }
 
 .toggle button[aria-pressed='true'] {
@@ -2215,6 +2270,13 @@ main h2.source-title {
   transform: rotate(var(--rotate-document-leave));
 }
 
+/* A paper taller than the screen is not turned: its corners would leave the screen. */
+.doc[data-tall='true'] {
+  transform: none;
+  transition: none;
+}
+
+
 .tok {
   display: inline-block;
   /* Same box in both views: the width of --chars document characters, one bar height. */
@@ -2235,6 +2297,10 @@ main h2.source-title {
   color: var(--on-leave);
   font-size: inherit;
   text-align: center;
+}
+
+/* Only bars that are new wipe in: all of them once, when the first silhouette is made. */
+.doc[data-mode='leave'] .tok-new {
   animation: token-in var(--duration-token-fade) var(--ease-fade) both;
 }
 
@@ -2354,7 +2420,7 @@ main h2.source-title {
   margin: 0;
   font-family: var(--font-mono);
   font-size: var(--type-mono-value-size);
-  line-height: 24px;
+  line-height: var(--type-mono-document-line);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -2362,7 +2428,7 @@ main h2.source-title {
 .source-line mark {
   display: inline-block;
   padding: 0 7px;
-  border: 1.5px solid var(--on-paper);
+  border: var(--size-border-strong) solid var(--on-paper);
   border-radius: var(--radius-pill);
   background: transparent;
   color: inherit;
@@ -2579,15 +2645,63 @@ main h2.source-title {
   .count-sub {
     display: none;
   }
+
+  /* The note under the start action is also in the demo-rules sheet: on short screens the block keeps
+     the main action and the count only, so they stay above the fold. */
+  .block-note {
+    display: none;
+  }
+
+  /* On very short screens (400 % zoom) the digit keeps a full line, so it is never clipped. */
+  .count {
+    font-size: var(--type-stamp-count-size);
+    line-height: 1;
+    padding-bottom: 0;
+  }
+}
+
+/* ---------- Tablets (600 to 959 px): one centred column and a floating block, not a stretched phone ---------- */
+
+@media (min-width: 600px) and (max-width: 959px) {
+  .header,
+  .demo-line,
+  main {
+    width: min(100%, calc(var(--wide-column-max) + 2 * var(--space-gutter)));
+    margin-inline: auto;
+  }
+
+  .block {
+    width: min(calc(100% - 2 * var(--space-gutter)), var(--wide-column-max));
+    margin: 0 auto var(--space-md);
+    border-radius: var(--radius-block);
+  }
+
+  .block[data-tall='true'] .count-row {
+    width: min(calc(100% - 2 * var(--space-gutter)), var(--wide-column-max));
+    margin: 0 auto var(--space-md);
+    border-radius: var(--radius-block);
+  }
+
+  dialog.sheet {
+    width: min(100%, calc(var(--wide-column-max) + 2 * var(--space-gutter)));
+    margin-inline: auto;
+  }
+}
+
+/* Interface text grows a little on large screens (display type follows through the rem scale). */
+@media (min-width: 1440px) {
+  html {
+    font-size: 106.25%;
+  }
+}
+
+@media (min-width: 1920px) {
+  html {
+    font-size: 112.5%;
+  }
 }
 
 /* ---------- Wide screens (layout.wide): content on the left, the block as a panel on the right ---------- */
-
-/* The width of a headline line on a 390 px phone (the design frame less two gutters), in px. Wide
-   screens keep that measure in em, so headlines break into the same lines as on a phone. */
-:root {
-  --phone-measure: 350;
-}
 
 @media (min-width: 960px) {
   :root {
@@ -2663,15 +2777,6 @@ main h2.source-title {
     padding-inline: var(--space-lg);
   }
 
-  .sheet-glimpse {
-    display: none;
-  }
-
-  .record-sheet {
-    inset: var(--wide-top) var(--wide-right) var(--space-gutter) auto;
-    width: var(--wide-block-width);
-    border-radius: var(--radius-block);
-  }
 }
 
 /* The language sheet's choices are buttons with role="radio"; their circle is drawn here. */
@@ -2680,9 +2785,9 @@ main h2.source-title {
 }
 
 .option-row[aria-checked='true'] span.radio {
-  border-color: var(--leave);
-  background: var(--leave);
-  box-shadow: inset 0 0 0 4px var(--ground);
+  border-color: currentColor;
+  background: currentColor;
+  box-shadow: inset 0 0 0 var(--space-xxs) var(--ground);
 }
 
 .more-help ul {
@@ -2760,4 +2865,29 @@ main h2.source-title {
 /* The record headline: "3 sent," on pink, then what stayed on the device. */
 .kept-mark {
   white-space: nowrap;
+}
+
+/* The example on the wide panel: on the block colour. */
+.block-example {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-xs) 0;
+}
+
+.block-example .start-promise,
+.block-example .card-label:not(.leave-label) {
+  color: var(--on-block);
+}
+
+.block-example .start-example {
+  border-top-color: var(--block-line);
+}
+
+.block-example .example-tag {
+  border-color: var(--on-block);
+}
+
+.block-example .start-cards {
+  padding-bottom: var(--space-xs);
 }

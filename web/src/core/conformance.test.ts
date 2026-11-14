@@ -24,7 +24,7 @@ import {
   type PointerSchema,
 } from './skeleton';
 import { GeneralizeError, canonical, generalize, silhouetteVerdicts, type Bands, type ExactProfile, type GeneralizedProfile } from './generalize';
-import { modelTextIsBlocked, type OutputChecks, type OutputScope } from './output-check';
+import { modelTextIsBlocked, type OutputChecks, type OutputScope, type ShownVerdict } from './output-check';
 import { InputError, RuleError, UNKNOWN, evaluate, verdicts, type Answers, type RulePack } from './rules';
 import { ValidationInputError, validatePaystubs, type PaystubValues } from './validate';
 import { toModelSchema, type ModelSchemaOptions } from '../ai/model-schema';
@@ -213,10 +213,10 @@ const extraRunners: Record<string, (fixture: unknown) => void> = {
     for (const k of fixture.cases) it(k.id, () => expectExact(silhouetteVerdicts(pack, bands, brandGeneralized(k.profile)), k.expected));
   },
   'output-check.json': (raw) => {
-    const fixture = raw as { checks: string; cases: { id: string; locale: string; scope: OutputScope; text: string; blocked: boolean }[] };
+    const fixture = raw as { checks: string; cases: { id: string; locale: string; scope: OutputScope; text: string; blocked: boolean; verdict?: ShownVerdict }[] };
     const checks = readJson<OutputChecks>(`prompts/${fixture.checks.replace(/^prompts\//, '')}`);
     it('has cases', () => expect(fixture.cases.length).toBeGreaterThan(0));
-    for (const k of fixture.cases) it(k.id, () => expect(modelTextIsBlocked(k.text, k.locale, k.scope, checks)).toBe(k.blocked));
+    for (const k of fixture.cases) it(k.id, () => expect(modelTextIsBlocked(k.text, k.locale, k.scope, checks, k.verdict)).toBe(k.blocked));
   },
   'validate.json': (raw) => {
     const fixture = raw as { cases: ({ id: string; jurisdiction: string; stubs: PaystubValues[] } & ({ expected: unknown } | { expectedError: string }))[] };

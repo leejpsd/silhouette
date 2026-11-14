@@ -1,5 +1,5 @@
 // Skeleton preview: exactly what could leave the device, before anything is sent.
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { placeholderCounts, buildReview, type SourceSegment } from '../../core/review';
 import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
@@ -44,21 +44,28 @@ export function DocumentPreviewScreen() {
   const [sending, setSending] = useState(false);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
   const online = useOnline();
-  // The first silhouette of a session is shown being made: the document as it is, then the bars.
-  const [mode, setMode] = useState<'phone' | 'leave'>(() => {
+  // The preview opens on what could leave (the screen's heading). The first silhouette of a session is
+  // shown being made: the bars wipe in once. Later changes animate only the bars that are new.
+  const [mode, setMode] = useState<'phone' | 'leave'>('leave');
+  const [firstReveal] = useState(() => {
     const show = firstPreview && !reducedMotion();
     firstPreview = false;
-    return show ? 'phone' : 'leave';
+    return show;
   });
-  const [transforming, setTransforming] = useState(mode === 'phone');
-  useEffect(() => {
-    if (!transforming) return;
-    const timer = setTimeout(() => {
-      setMode('leave');
-      setTransforming(false);
-    }, 700);
-    return () => clearTimeout(timer);
-  }, [transforming]);
+  const docRef = useRef<HTMLPreElement>(null);
+  // The texts of the bars last shown, to tell which bars are new after a word is hidden.
+  const shownTexts = useRef<readonly string[] | null>(null);
+  // After hiding a word with the keyboard, focus goes to the word that took its place.
+  const focusWord = useRef<number | null>(null);
+  const undoRef = useRef<HTMLButtonElement>(null);
+  const tall = useTallPaper(docRef);
+  const freshRef = useRef<{ skeleton: string; quiet: boolean; set: ReadonlySet<number> } | null>(null);
+  const [quiet, setQuiet] = useState(false);
+  const [freshFor, setFreshFor] = useState(doc.skeleton);
+  if (freshFor !== doc.skeleton) {
+    setFreshFor(doc.skeleton);
+    setQuiet(false);
+  }
 
   if (!doc.skeleton || !doc.map) {
     return (
@@ -80,7 +87,11 @@ export function DocumentPreviewScreen() {
     const next = skeletonize(rawText, allowlistFor(doc.language), introducersFor(doc.language), new Set(hiddenWords));
     update({ skeleton: next.skeleton, map: next.map, hiddenWords, extraction: null, error: null });
   };
-  const hide = (word: string) => setHidden([...new Set([...doc.hiddenWords, word.toLowerCase()])]);
+  const hide = (word: string, button?: HTMLButtonElement) => {
+    const words = [...(docRef.current?.querySelectorAll('button.word') ?? [])];
+    focusWord.current = button && button === document.activeElement ? words.indexOf(button) : null;
+    setHidden([...new Set([...doc.hiddenWords, word.toLowerCase()])]);
+  };
   const unhide = (word: string) => setHidden(doc.hiddenWords.filter((w) => w !== word));
   const onDeviceFirst = ON_DEVICE_LANGUAGES.has(doc.language) && deviceStatus === 'available';
 
@@ -116,6 +127,15 @@ export function DocumentPreviewScreen() {
   // Placeholder id → the original text's length (for bar widths) and whether the person hid it.
   const original = new Map(lines.flatMap((l) => l.filter((seg) => seg.ref).map((seg) => [seg.ref as string, seg.text] as const)));
   const lastHidden = doc.hiddenWords[doc.hiddenWords.length - 1];
+  const tokenTexts = [...skeleton.matchAll(/⟦([DNW][0-9]+)⟧/g)].map((m) => original.get(m[1] as string) ?? (m[1] as string));
+  // Bars that animate: all of them on the first silhouette of a session, then only the new ones after a
+  // word is hidden; none after switching views.
+  // Worked out once per silhouette (and view switch), so other re-renders do not cut an animation short.
+  if (freshRef.current?.skeleton !== skeleton || freshRef.current.quiet !== quiet) {
+    const set = quiet ? NONE : newTokens(tokenTexts, firstReveal && shownTexts.current === null ? [] : (shownTexts.current ?? tokenTexts));
+    freshRef.current = { skeleton, quiet, set };
+  }
+  const fresh = freshRef.current.set;
 
   return (
     <div className="screen doc-preview">
@@ -125,16 +145,27 @@ export function DocumentPreviewScreen() {
       <p className="small muted">{t('preview.lead')}</p>
       {doc.photoSource && <InferenceBadge source={doc.photoSource.inferenceSource} reason={doc.photoSource.reason} />}
       <div className="toggle" role="group" aria-label={t('preview.title')}>
-        <button type="button" aria-pressed={mode === 'phone'} onClick={() => { setTransforming(false); setMode('phone'); }}>
+        <button type="button" aria-pressed={mode === 'phone'} onClick={() => { setQuiet(true); setMode('phone'); }}>
           {t('preview.onPhone')}
         </button>
-        <button type="button" aria-pressed={mode === 'leave'} className="toggle-leave" onClick={() => { setTransforming(false); setMode('leave'); }}>
+        <button type="button" aria-pressed={mode === 'leave'} className="toggle-leave" onClick={() => { setQuiet(true); setMode('leave'); }}>
           {t('preview.couldLeave')}
         </button>
       </div>
-      <pre className="doc paper paper-large" data-mode={mode} data-testid="skeleton-preview" tabIndex={0} aria-label={mode === 'leave' ? t('preview.couldLeave') : t('preview.onPhone')}>
+      <TokenMemory texts={tokenTexts} memory={shownTexts} />
+      <FocusAfterHide skeleton={skeleton} docRef={docRef} focusWord={focusWord} undoRef={undoRef} />
+      <pre
+        ref={docRef}
+        key={mode}
+        className="doc paper paper-large"
+        data-mode={mode}
+        data-tall={tall}
+        data-testid="skeleton-preview"
+        tabIndex={0}
+        aria-label={mode === 'leave' ? t('preview.couldLeave') : t('preview.onPhone')}
+      >
         {mode === 'leave'
-          ? renderSkeleton(skeleton, original, doc.hiddenWords, (word) => t('preview.hideWord', { word }), hide, sending, t)
+          ? renderSkeleton(skeleton, original, doc.hiddenWords, fresh, (word) => t('preview.hideWord', { word }), hide, sending, t)
           : renderPhone(lines, (word) => t('preview.hideWord', { word }), hide, sending)}
       </pre>
       <p className="small muted">{t('preview.counts', { numbers: counts.N, dates: counts.D, words: counts.W })}</p>
@@ -144,7 +175,7 @@ export function DocumentPreviewScreen() {
           {lastHidden !== undefined && ` ${t('preview.youHid', { word: lastHidden })}`}
         </p>
         {lastHidden !== undefined && (
-          <button type="button" className="text-link" disabled={sending} onClick={() => unhide(lastHidden)}>
+          <button ref={undoRef} type="button" className="text-link" disabled={sending} onClick={() => unhide(lastHidden)}>
             {t('preview.undo')}
           </button>
         )}
@@ -242,23 +273,26 @@ function renderSkeleton(
   skeleton: Skeleton,
   original: ReadonlyMap<string, string>,
   hidden: readonly string[],
+  fresh: ReadonlySet<number>,
   label: (word: string) => string,
-  hide: (word: string) => void,
+  hide: (word: string, button?: HTMLButtonElement) => void,
   disabled: boolean,
   t: T,
 ) {
   let n = 0;
+  let order = 0;
   return skeleton.split(PLACEHOLDER).map((part, i) => {
     if (PLACEHOLDER.test(part)) {
       const id = part.slice(1, -1);
       const text = original.get(id) ?? id;
       const mine = id.startsWith('W') && hidden.includes(text.toLowerCase());
       const kind = id[0] === 'N' ? 'placeholder.number' : id[0] === 'D' ? 'placeholder.date' : 'placeholder.word';
+      const isNew = fresh.has(order++);
       return (
         <span
-          key={i}
-          className={`tok ph${mine ? ' tok-mine' : ''}`}
-          style={tokenStyle(text, id, { animationDelay: `${Math.min(n++, 20) * 60}ms` })}
+          key={`p${i}`}
+          className={`tok ph${mine ? ' tok-mine' : ''}${isNew ? ' tok-new' : ''}`}
+          style={tokenStyle(text, id, isNew ? { animationDelay: `${Math.min(n++, 20) * 60}ms` } : {})}
           aria-label={`${t(kind)} ${id}`}
         >
           {id}
@@ -269,7 +303,7 @@ function renderSkeleton(
       piece.word === undefined ? (
         <span key={`${i}-${j}`}>{piece.text}</span>
       ) : (
-        <button key={`${i}-${j}`} type="button" className="word" aria-label={label(piece.word)} disabled={disabled} onClick={() => hide(piece.word as string)}>
+        <button key={`${i}-${j}`} type="button" className="word" aria-label={label(piece.word)} disabled={disabled} onClick={(e) => hide(piece.word as string, e.currentTarget)}>
           {piece.text}
         </button>
       ),
@@ -277,8 +311,63 @@ function renderSkeleton(
   });
 }
 
+const NONE: ReadonlySet<number> = new Set();
+
+/** Which bars are new: in order, the ones whose text was not among the bars shown before. */
+function newTokens(texts: readonly string[], before: readonly string[]): ReadonlySet<number> {
+  const left = new Map<string, number>();
+  for (const x of before) left.set(x, (left.get(x) ?? 0) + 1);
+  const out = new Set<number>();
+  texts.forEach((x, i) => {
+    const n = left.get(x) ?? 0;
+    if (n > 0) left.set(x, n - 1);
+    else out.add(i);
+  });
+  return out;
+}
+
+/** Remembers the bars shown, after they are shown. */
+function TokenMemory({ texts, memory }: { texts: readonly string[]; memory: { current: readonly string[] | null } }) {
+  useEffect(() => {
+    memory.current = texts;
+  });
+  return null;
+}
+
+/** After a word was hidden from the keyboard, focus the word that now stands where it was (or Undo). */
+function FocusAfterHide({ skeleton, docRef, focusWord, undoRef }: { skeleton: string; docRef: RefObject<HTMLPreElement | null>; focusWord: { current: number | null }; undoRef: RefObject<HTMLButtonElement | null> }) {
+  useEffect(() => {
+    const index = focusWord.current;
+    if (index === null) return;
+    focusWord.current = null;
+    const words = [...(docRef.current?.querySelectorAll<HTMLButtonElement>('button.word') ?? [])];
+    (words[Math.min(index, words.length - 1)] ?? undoRef.current)?.focus();
+  }, [skeleton, docRef, focusWord, undoRef]);
+  return null;
+}
+
+/** A paper taller than the screen is not turned: turned, its corners would leave the screen. */
+function useTallPaper(ref: RefObject<HTMLElement | null>): boolean {
+  const [tall, setTall] = useState(false);
+  // Measured before paint, so a tall paper is never shown turned first.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => setTall(el.offsetHeight > window.innerHeight * 0.8);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  });
+  return tall;
+}
+
 /** "On this phone": the document as it is here; hidden values shown with a mark that they stay. */
-function renderPhone(lines: readonly (readonly SourceSegment[])[], label: (word: string) => string, hide: (word: string) => void, disabled: boolean) {
+function renderPhone(lines: readonly (readonly SourceSegment[])[], label: (word: string) => string, hide: (word: string, button?: HTMLButtonElement) => void, disabled: boolean) {
   return lines.map((line, i) => (
     <span key={i}>
       {line.map((seg, j) =>
@@ -291,7 +380,7 @@ function renderPhone(lines: readonly (readonly SourceSegment[])[], label: (word:
             piece.word === undefined ? (
               <span key={`${j}-${k}`}>{piece.text}</span>
             ) : (
-              <button key={`${j}-${k}`} type="button" className="word" aria-label={label(piece.word)} disabled={disabled} onClick={() => hide(piece.word as string)}>
+              <button key={`${j}-${k}`} type="button" className="word" aria-label={label(piece.word)} disabled={disabled} onClick={(e) => hide(piece.word as string, e.currentTarget)}>
                 {piece.text}
               </button>
             ),

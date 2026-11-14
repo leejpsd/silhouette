@@ -13,6 +13,8 @@ export const PACK: RulePack = packJson as RulePack;
 export const BANDS: Bands = bandsJson as Bands;
 /** The pack's currency (ISO 4217), when it names one: amounts, limits and ranges are then shown as money. */
 export const CURRENCY: string | undefined = (packJson as { currency?: string }).currency;
+/** How the jurisdiction writes numbers (BCP 47, such as en-US): money is written this way in every interface language. */
+export const NUMBER_FORMAT: string | undefined = (packJson as { numberFormat?: string }).numberFormat;
 export const PACK_COPY: Readonly<Record<'en' | 'es' | 'ko', Readonly<Record<string, string>>>> = {
   en: packEn,
   es: packEs,

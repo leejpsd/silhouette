@@ -67,10 +67,13 @@ export function recordAttempt(entry: Omit<OutboundEntry, 'id' | 'status'>): stri
   return id;
 }
 
-/** Records an answer the on-device model wrote: nothing left the device. `fields` names what it used. */
-export function recordAnsweredOnDevice(fields: readonly string[], at: number = Date.now()): string {
+/** What an answer written on this device was for; the record titles it by this, not like a request. */
+export type KeptKind = 'document' | 'photo' | 'about' | 'ask' | 'why' | 'own-question';
+
+/** Records an answer the on-device model wrote: nothing left the device. */
+export function recordAnsweredOnDevice(kind: KeptKind, at: number = Date.now()): string {
   const id = `${at}-${++counter}`;
-  const entry: OutboundEntry = { id, channel: 'on-device', at, destination: '', path: '', fields, bytes: 0, status: 'answered' };
+  const entry: OutboundEntry = { id, channel: 'on-device', at, destination: '', path: '', fields: [`kept:${kind}`], bytes: 0, status: 'answered' };
   set({ ...state, entries: [...state.entries, entry] });
   return id;
 }

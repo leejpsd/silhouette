@@ -1,9 +1,9 @@
-// The profile silhouette of the current answers, the verdicts the engine reaches from it alone, and
-// the program facts that explanations are given. Exact values never leave this module except as the
-// Generalizer's output.
+// The profile silhouette of the current answers (for the tasks that are given one: other help to look
+// into), and the input of the general explanation and prepared questions, which is the program's
+// public information only. Exact values never leave this module except as the Generalizer's output.
 
 import { useMemo } from 'react';
-import { canonical, generalize, silhouetteVerdicts, type GeneralizedProfile, type SilhouetteVerdict } from '../../core/generalize';
+import { canonical, generalize, type GeneralizedProfile } from '../../core/generalize';
 import { asPublic, type Generalized, type Public } from '../../core/types';
 import type { ExplainInput, ProgramFacts, ProgramName } from '../../ai/tasks';
 export { programFacts } from './facts';
@@ -18,7 +18,6 @@ import { useCounty } from './county-choice';
 export interface Silhouette {
   readonly profile: Generalized<GeneralizedProfile>;
   readonly canonical: string;
-  readonly verdicts: readonly Generalized<SilhouetteVerdict>[];
 }
 
 export function useSilhouette(): Silhouette | null {
@@ -27,7 +26,7 @@ export function useSilhouette(): Silhouette | null {
   return useMemo(() => {
     try {
       const profile = generalize(exactProfile(PACK.jurisdiction, steps, answers, county), BANDS);
-      return { profile, canonical: canonical(profile), verdicts: silhouetteVerdicts(PACK, BANDS, profile) };
+      return { profile, canonical: canonical(profile) };
     } catch {
       // The Generalizer refused the answers (it never says why with values); no silhouette, no sending.
       return null;
@@ -35,9 +34,9 @@ export function useSilhouette(): Silhouette | null {
   }, [steps, answers, county]);
 }
 
-export function explainInput(silhouette: Silhouette, facts: Public<ProgramFacts>, locale: Locale): ExplainInput | null {
-  const verdict = silhouette.verdicts.find((v) => v.programId === facts.programId);
-  return verdict ? { profile: silhouette.profile, verdict, program: facts, locale } : null;
+/** The input of the general explanation and prepared questions: the program's public information only. */
+export function explainInput(facts: Public<ProgramFacts>, locale: Locale): ExplainInput {
+  return asPublic({ program: { programId: facts.programId, name: facts.name, facts: facts.facts }, locale }) as ExplainInput;
 }
 
 /** Every program of the pack by id and name (for the batched status search: never a subset). */

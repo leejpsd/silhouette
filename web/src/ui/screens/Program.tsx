@@ -98,7 +98,7 @@ export function ProgramScreen({ id }: { id: string }) {
         <p className="small">{PACK.verifiedOn ? t('rules.verifiedOn', { date: PACK.verifiedOn }) : t('detail.unverified')}</p>
       </section>
 
-      <OfficialInfo programs={[program]} />
+      <OfficialInfo programs={[program]} withCopy />
 
       <Suspense fallback={null}>
         <ProgramAnswers program={program} verdict={result.verdict} />

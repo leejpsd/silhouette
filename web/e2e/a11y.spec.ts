@@ -1,14 +1,25 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { completeQuickCheck, confirmAllValues, openDeleteEverything } from './helpers';
 import { fakeAnswerModels, fakeCloudModel, fixturePointers, noOnDeviceModel, seedRemoteConfig } from './model-fakes';
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
+/**
+ * Judged on the settled screen: one-off animations (a bar wiping in) have finished, and the page is
+ * scrolled to its end, where the bottom block sits after the content instead of over it (mid-scroll the
+ * sticky block covers whatever passes under it, by design).
+ */
+const settle = async (page: Page) => {
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity));
+};
+
 for (const colorScheme of ['light', 'dark'] as const) {
   test(`axe finds no WCAG A/AA violations on every Quick Check screen (${colorScheme})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme });
     const scan = async (label: string) => {
+      await settle(page);
       const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
       expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help} ${v.nodes.map((n) => n.html.slice(0, 120)).join(' | ')}`)).toEqual([]);
     };
@@ -47,6 +58,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
     await page.emulateMedia({ colorScheme });
     const scan = async (label: string) => {
+      await settle(page);
       const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
       expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help} ${v.nodes.map((n) => n.html.slice(0, 120)).join(' | ')}`)).toEqual([]);
     };
@@ -80,6 +92,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await fakeAnswerModels(page, {}, flags);
     await page.emulateMedia({ colorScheme });
     const scan = async (label: string) => {
+      await settle(page);
       const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
       expect(violations.map((v) => `${label}: ${v.id} (${v.nodes.length}) ${v.help} ${v.nodes.map((n) => n.html.slice(0, 120)).join(' | ')}`)).toEqual([]);
     };
@@ -99,6 +112,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await scan('program with answers and current information');
     await page.goto('/#/discover');
     await page.getByRole('button', { name: 'Look for other help' }).click();
+    // Other help is given the silhouette (not the program's public information): its own step first.
+    await page.getByTestId('send-decision').getByRole('button', { name: 'Send' }).click();
     await page.getByTestId('leads').waitFor();
     await scan('leads');
     await page.goto('/#/nearby');

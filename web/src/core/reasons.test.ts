@@ -17,7 +17,7 @@ describe('why this result: the rule engine\'s reasons with limits', () => {
     const screen = verdicts(pack, bands, Raw.of(answers)).find((v) => v.programId === 'food-help')!;
     expect(reasons.map((r) => r.state)).toEqual(screen.criteria.map((c) => c.state));
     expect(reasons).toEqual([
-      { id: 'income-limit', state: 'pass', comparisons: [{ variable: 'annualIncome', op: '<=', limit: 34000, yours: 33333 }] },
+      { id: 'income-limit', state: 'pass', comparisons: [{ variable: 'annualIncome', op: '<=', limit: 34000, yours: 33333, decisive: true }] },
       { id: 'residency', state: 'fail', comparisons: [] },
     ]);
   });
@@ -25,12 +25,12 @@ describe('why this result: the rule engine\'s reasons with limits', () => {
   it('a limit that depends on another answer is resolved from it; an unanswered one is not invented', () => {
     expect(criterionReasons(pack, bands, Raw.of(answers), 'work-credit')[1]).toMatchObject({ comparisons: [{ limit: 18000, yours: 33333 }] });
     const noSize = criterionReasons(pack, bands, Raw.of({ annualIncome: 10000 }), 'food-help')[0];
-    expect(noSize?.comparisons).toEqual([{ variable: 'annualIncome', op: '<=', limit: null, yours: 10000 }]);
+    expect(noSize?.comparisons).toEqual([{ variable: 'annualIncome', op: '<=', limit: null, yours: 10000, decisive: true }]);
   });
 
   it('with only a band, yours is the band; comparisons inside a top-level "or" are found', () => {
     const band = criterionReasons(pack, bands, Raw.of({ incomeBand: 'C', householdSize: 2 }), 'phone-discount')[0];
-    expect(band?.comparisons).toEqual([{ variable: 'annualIncome', op: '<=', limit: 33000, yours: { id: 'C', min: 30000, max: 44999 } }]);
+    expect(band?.comparisons).toEqual([{ variable: 'annualIncome', op: '<=', limit: 33000, yours: { id: 'C', min: 30000, max: 44999 }, decisive: true }]);
   });
 });
 

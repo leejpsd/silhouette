@@ -7,8 +7,10 @@ import { useId, useRef } from 'react';
 import { asPublic } from '../../core/types';
 import { discoverLeads, nearbyHelp, planDiscover, planNearby, type Leads, type NearbyHelp, type TaskResult } from '../../ai/tasks';
 import { useApp } from '../context';
+import { BlockActions } from '../design/block';
+import { ActionLabel } from '../design/parts';
 import { ScreenHeading } from '../Heading';
-import { ChevronLeft, ChevronRight, Pin, Search } from '../design/icons';
+import { ArrowRight, ChevronLeft, ChevronRight, Pin, Search } from '../design/icons';
 import { Marker } from '../design/parts';
 import { InferenceBadge } from '../InferenceBadge';
 import { dynamicKey, programName } from '../i18n';
@@ -26,6 +28,15 @@ function BackToResults() {
   const { t, locale, results } = useApp();
   const id = useId();
   return (
+    <>
+    <BlockActions>
+      <a className="action" href={routeHref({ name: 'results' })}>
+        <ActionLabel>{t('detail.back')}</ActionLabel>
+        <span className="action-arrow">
+          <ArrowRight />
+        </span>
+      </a>
+    </BlockActions>
     <nav className="back-nav" aria-labelledby={`${id}-title`} data-testid="back-nav">
       <h2 id={`${id}-title`} className="section-heading">
         {t('results.title')}
@@ -56,6 +67,7 @@ function BackToResults() {
         {t('detail.back')}
       </a>
     </nav>
+    </>
   );
 }
 

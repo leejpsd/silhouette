@@ -9,7 +9,7 @@ import { validatePaystubs, type Annualization, type PayFrequency, type PaystubVa
 import { POINTER_SCHEMAS } from '../../ai/tasks';
 import { useApp } from '../context';
 import { dynamicKey, formatMoney, programName, type Locale, type Translate } from '../i18n';
-import { PACK } from '../pack';
+import { NUMBER_FORMAT, PACK } from '../pack';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
@@ -149,7 +149,8 @@ export function basisText(annual: Annualization, stubs: readonly PaystubValues[]
     const exact = (annual.basis.elapsedMonths?.numerator ?? 0) / (annual.basis.elapsedMonths?.denominator ?? 1);
     let digits = 2;
     while (digits < 6 && Math.round((ytd / Number(exact.toFixed(digits))) * 12) !== annual.annualIncome) digits++;
-    const months = new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: digits }).format(Number(exact.toFixed(digits)));
+    // Written like the amounts beside it (the pack's number format).
+    const months = new Intl.NumberFormat(NUMBER_FORMAT ?? locale, { minimumFractionDigits: 0, maximumFractionDigits: digits }).format(Number(exact.toFixed(digits)));
     return t('review.basis.ytd', { ytd: money(locale, annual.basis.ytdCents ?? 0), date: annual.basis.referenceDate ?? '', months, amount });
   }
   const used = annual.basis.stubsUsed.map((i) => Math.round((stubs[i]?.grossPay ?? 0) * 100));
@@ -195,9 +196,13 @@ export function DocumentReviewScreen() {
     setInvalid(null);
   };
 
+  const annualHeading = useRef<HTMLHeadingElement>(null);
+  const checkButton = useRef<HTMLButtonElement>(null);
   const check = () => {
     const current = toValues(rows, deductions);
     setResult(validatePaystubs(Raw.of([...doc.confirmedStubs, current]), PACK.jurisdiction));
+    // The button is replaced by the result: focus goes to the yearly income it worked out.
+    requestAnimationFrame(() => annualHeading.current?.focus());
   };
 
   const currentIndex = doc.confirmedStubs.length;
@@ -215,6 +220,10 @@ export function DocumentReviewScreen() {
   const moreButton = useRef<HTMLButtonElement>(null);
   const moreId = useId();
   const pendingId = useId();
+  const [foldNotice, setFoldNotice] = useState(false);
+  // "Check these values" needs the values that decide the result; folded values that were never
+  // touched stay unconfirmed and are simply not used.
+  const leadPending = leadRows.filter((r) => r.status === 'pending').length;
   const restPending = restRows.some((r) => r.status === 'pending') || deductions.some((d) => d.status === 'pending');
   const moreUnseen = restPending && !moreSeen;
   const needsAttention = deductionProblem !== null || flagged.has('deductions') || (editing !== null && restRows.some((r) => r.name === editing));
@@ -472,20 +481,26 @@ export function DocumentReviewScreen() {
             aria-describedby={pendingId}
             onClick={() => {
               // Nothing is confirmed unseen: the first press shows the values that were folded away.
+              // Nothing is confirmed unseen: the first press opens the folded values and moves focus there,
+              // and the status says how many still need a look.
               if (!moreOpen && moreUnseen) {
                 setMoreOpen(true);
                 setMoreSeen(true);
-                requestAnimationFrame(() => moreButton.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+                setFoldNotice(true);
+                requestAnimationFrame(() => moreButton.current?.focus());
                 return;
               }
               setRows((rs) => rs.map((r) => (r.status === 'pending' ? { ...r, status: 'confirmed' } : r)));
               setDeductions((ds) => ds.map((d) => (d.status === 'pending' ? { ...d, status: 'confirmed' } : d)));
               setResult(null);
+              setFoldNotice(false);
+              // The button goes away: focus moves to the main action, which is now ready.
+              requestAnimationFrame(() => checkButton.current?.focus());
             }}
           >
             {t('review.confirmAllCount', { count: pending })}
           </button>
-          <p className="small" id={pendingId} role="status">
+          <p className={foldNotice ? 'small strong' : 'small'} id={pendingId} role="status" data-testid="review-pending">
             {t('review.pending', { count: pending })}
           </p>
         </div>
@@ -497,7 +512,7 @@ export function DocumentReviewScreen() {
 
       {result && (
         <section className="validation" aria-labelledby="checks-title" data-testid="validation">
-          <h2 className="section-heading" id="annual-title">
+          <h2 className="section-heading" id="annual-title" ref={annualHeading} tabIndex={-1}>
             {t('review.annualTitle')}
           </h2>
           {annual ? (
@@ -586,7 +601,7 @@ export function DocumentReviewScreen() {
             </div>
           </>
         ) : (
-          <button type="button" className="action" disabled={pending > 0} onClick={check}>
+          <button ref={checkButton} type="button" className="action" disabled={leadPending > 0} onClick={check}>
             <ActionLabel>{t('review.continue')}</ActionLabel>
             <span className="action-arrow">
               <ArrowRight />

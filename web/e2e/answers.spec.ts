@@ -11,6 +11,8 @@ async function openProgram(page: Page, id: string) {
 }
 
 const explainButton = (page: Page) => page.getByRole('button', { name: 'Explain this program' });
+/** Keep and Send live in the bottom block: the screen's main decision. */
+const decision = (page: Page) => page.getByTestId('send-decision');
 const shortAnswer = (page: Page) => page.getByTestId('explain-short').getByTestId('answer');
 
 test.describe('the person\'s result, and the program explained in general', () => {
@@ -20,7 +22,10 @@ test.describe('the person\'s result, and the program explained in general', () =
     await page.goto('/');
     await completeQuickCheck(page);
     await openProgram(page, 'utility-discount');
-    await expect(page.getByTestId('about-lead')).toContainText('It does not know your result');
+    await expect(page.getByTestId('about-lead')).toContainText('Nothing about you is sent');
+    // The rule pack's own information about the program is on the page before any model is asked.
+    await expect(page.getByTestId('program-copy')).toContainText('A discount on the monthly electricity or gas bill');
+    await expect(page.getByTestId('program-copy-official')).toContainText('Apply with a one-page form');
     expect(cloud.bodies).toHaveLength(0);
     await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
 
@@ -28,16 +33,17 @@ test.describe('the person\'s result, and the program explained in general', () =
     const panel = page.getByTestId('send-panel');
     await expect(panel.getByRole('heading', { name: 'Leaving your device' })).toBeFocused();
     const lines = page.getByTestId('send-lines');
-    await expect(lines).toContainText('Income range: $30,000 to $44,999 (C)');
-    await expect(lines).toContainText('Housing: I rent (renter)');
-    await expect(lines).toContainText('It never carries your result.');
+    await expect(lines).toContainText('Nothing about you. Only the program, its public information and the question.');
+    await expect(lines).toContainText('Program: Test Utility Discount');
+    await expect(lines).not.toContainText('Income range');
     await panel.getByText('Show the exact request').click();
     const shown = (await page.getByTestId('send-payload').textContent()) ?? '';
-    expect(shown).not.toContain('30524');
-    expect(shown).not.toMatch(/Verdict|"model"/);
+    // Nothing about the person: no exact value, no silhouette, no rule state, no result.
+    expect(shown).not.toMatch(/30524|incomeBand|householdSize|renter|Met from|Not met|Checked on the device|Verdict|"model"/);
+    expect(shown).toContain('Information about this program:');
     expect(cloud.bodies).toHaveLength(0);
 
-    await panel.getByRole('button', { name: 'Send' }).click();
+    await decision(page).getByRole('button', { name: 'Send' }).click();
     await expect(page.getByRole('heading', { name: 'About this program' })).toBeFocused();
     await expect(shortAnswer(page)).toContainText('This program lowers utility bills');
     const badge = shortAnswer(page).getByTestId('inference-badge');
@@ -56,7 +62,8 @@ test.describe('the person\'s result, and the program explained in general', () =
     const model = bar.locator('li[data-channel="ai-cloud"]');
     await model.getByText('Show exactly what was sent').click();
     expect(await model.getByTestId('outbound-payload').textContent()).toBe(cloud.bodies[0]);
-    await expect(bar).toContainText('Profile silhouette');
+    await expect(bar).toContainText('Program facts');
+    await expect(bar).not.toContainText('Profile silhouette');
     await bar.getByRole('button', { name: 'Hide details' }).click();
     await expect(page.getByTestId('verdict-card')).toHaveAttribute('data-verdict', 'likely');
 
@@ -88,12 +95,12 @@ test.describe('the person\'s result, and the program explained in general', () =
     await expect(panel).toHaveAttribute('data-destination', 'cloud');
     await expect(panel).toContainText('will be sent to Firebase AI Logic in the cloud');
     expect(cloud.bodies).toHaveLength(0);
-    await panel.getByRole('button', { name: 'Send' }).click();
+    await decision(page).getByRole('button', { name: 'Send' }).click();
     await expect(page.getByTestId('explain-long').getByTestId('answer')).toBeVisible();
     expect(cloud.bodies).toHaveLength(1);
   });
 
-  test('without a device model, the second request with the same silhouette says it was sent before; a changed silhouette asks again', async ({ page, context }) => {
+  test('without a device model, the next request goes without the step and says it carries nothing about the person; other answers change nothing', async ({ page, context }) => {
     await noOnDeviceModel(context);
     const cloud = await fakeAnswerModels(page);
     await page.goto('/');
@@ -107,17 +114,15 @@ test.describe('the person\'s result, and the program explained in general', () =
     const chip = page.getByTestId('chip-apply');
     await expect(chip.getByTestId('answer')).toBeVisible();
     await expect(chip.getByTestId('send-panel')).toHaveCount(0);
-    await expect(chip.getByTestId('send-once')).toContainText('was sent with your earlier question');
+    await expect(chip.getByTestId('send-once')).toContainText('Nothing about you.');
     expect(cloud.bodies).toHaveLength(2);
 
-    // Household 3 → 4: another silhouette, so the step is shown again.
+    // Household 3 → 4: the requests carry nothing about the person, so the answer is the same one.
     await page.goto('/#/q/householdSize?then=program/utility-discount');
     await page.locator('#main input[inputmode="numeric"]').fill('4');
     await page.getByRole('button', { name: /^(Next|See results)$/ }).click();
     await expect(page.getByTestId('verdict-card')).toBeVisible();
-    await explainButton(page).click();
-    await expect(page.getByTestId('send-panel')).toBeVisible();
-    await expect(page.getByTestId('send-lines')).toContainText('Household size: 4');
+    await expect(shortAnswer(page)).toBeVisible();
     expect(cloud.bodies).toHaveLength(2);
   });
 
@@ -156,8 +161,8 @@ test.describe('the person\'s result, and the program explained in general', () =
     await expect(page.getByText('You may qualify for this program.')).toHaveCount(0);
     expect(cloud.bodies).toHaveLength(2);
     for (const body of cloud.bodies) {
-      expect(body).not.toMatch(/Verdict|not-eligible|residentStatus|30524/);
-      expect(body).toMatch(/Checked on the device \(not known here\): [^\n]*You meet the residency rule/);
+      expect(body).not.toMatch(/Verdict|not-eligible|residentStatus|30524|incomeBand|Checked on the device/);
+      expect(body).toContain('This program checks: Your income is under the limit for your household size; You meet the residency rule.');
     }
   });
 
@@ -174,6 +179,11 @@ test.describe('the person\'s result, and the program explained in general', () =
     await expect(answer.getByRole('button', { name: 'Read aloud' })).toHaveCount(0);
     const prompts = await page.evaluate(() => (window as unknown as { __fakePrompts: string[] }).__fakePrompts.join('\n'));
     expect(prompts).toContain('limit 34,000, yours 30,524');
+    // Recorded as kept, under its own title.
+    const bar = page.getByTestId('leaving-bar');
+    await expect(bar).toHaveAttribute('data-kept-count', '1');
+    await bar.getByRole('button', { name: 'Details' }).click();
+    await expect(bar.locator('li[data-status="answered"]')).toContainText('Why this result');
     expect(cloud.bodies).toHaveLength(0);
     await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
   });
@@ -195,7 +205,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     await expect(answer).toContainText('Apply on the official website.');
     await expect(answer.getByTestId('inference-badge')).toHaveAttribute('data-reason', 'prepared-question');
     await expect(chipButton).toBeFocused();
-    // A second chip goes without the step (the silhouette was sent) and keeps focus on itself.
+    // A second chip goes without the step (nothing about the person; agreed once) and keeps focus on itself.
     const second = page.getByRole('button', { name: 'What papers might I need?' });
     await second.click();
     await expect(page.getByTestId('chip-documents').getByTestId('answer')).toBeVisible();
@@ -292,6 +302,21 @@ test.describe('the person\'s result, and the program explained in general', () =
     await expect(page.getByTestId('chip-apply').getByTestId('send-once')).toBeVisible();
   });
 
+  test('a Spanish prepared question is checked against the Spanish list', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    const cloud = await fakeAnswerModels(page, { text: () => 'Calificas para esta ayuda.' });
+    await page.goto('/');
+    await completeQuickCheck(page);
+    await chooseLanguage(page, 'es');
+    await openProgram(page, 'utility-discount');
+    await page.getByRole('button', { name: '¿Cómo solicito?' }).click();
+    await decision(page).getByRole('button', { name: 'Enviar' }).click();
+    const error = page.getByTestId('chip-apply').getByTestId('answer-error');
+    await expect(error).toHaveAttribute('data-kind', 'blocked');
+    await expect(page.getByText('Calificas para esta ayuda.')).toHaveCount(0);
+    expect(cloud.bodies).toHaveLength(2);
+  });
+
   test('translated step before sending', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await fakeAnswerModels(page);
@@ -301,8 +326,11 @@ test.describe('the person\'s result, and the program explained in general', () =
     await openProgram(page, 'utility-discount');
     await page.getByRole('button', { name: 'Explicar este programa' }).click();
     const lines = page.getByTestId('send-lines');
-    await expect(lines).toContainText('Vivienda: Rento (renter)');
-    await expect(lines).toContainText('Rango de ingresos: De 30.000 $ a 44.999 $ (C)');
+    await expect(lines).toContainText('Programa: Descuento de servicios públicos (prueba)');
+    await expect(lines).not.toContainText('Rango de ingresos');
+    await expect(page.getByTestId('send-payload')).toHaveCount(0);
+    await page.getByText('Mostrar la solicitud exacta').click();
+    await expect(page.getByTestId('send-payload')).toContainText('Este programa revisa:');
   });
 
   test('with the flags off every page is complete: official information and the way back, no dead buttons', async ({ page, context }) => {
@@ -319,6 +347,8 @@ test.describe('the person\'s result, and the program explained in general', () =
       const screen = page.getByTestId(path.includes('discover') ? 'discover-screen' : 'nearby-screen');
       await expect(screen).toHaveAttribute('data-enabled', 'false');
       await expect(screen.getByRole('button')).toHaveCount(0);
+      // The block carries the way back as the page's main action.
+      await expect(page.getByTestId('bottom-block').getByRole('link', { name: 'Back to results' })).toBeVisible();
       const back = screen.getByTestId('back-nav');
       await expect(back.getByRole('link')).toHaveCount(6);
       await expect(back.getByRole('link', { name: 'Test Food Help' })).toBeVisible();
@@ -337,7 +367,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     const lines = page.getByTestId('current-status').getByTestId('send-lines');
     await expect(lines).toContainText('Test Work Credit');
     await expect(lines).not.toContainText('Income range');
-    await page.getByTestId('current-status').getByRole('button', { name: 'Send' }).click();
+    await decision(page).getByRole('button', { name: 'Send' }).click();
     await expect(page.getByTestId('current-line')).toHaveText('Applications are open all year.');
     await expect(page.getByTestId('current-status').getByTestId('inference-badge')).toHaveAttribute('data-reason', 'needs-current-info');
     await expect(page.getByTestId('sources').getByRole('link', { name: 'example.gov' })).toHaveAttribute('target', '_blank');
@@ -399,7 +429,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     const answer = shortAnswer(page);
     await answer.getByRole('button', { name: 'Read aloud' }).click();
     await expect(answer.getByTestId('send-lines')).toContainText('The text of the answer above');
-    await answer.getByRole('button', { name: 'Send' }).click();
+    await decision(page).getByRole('button', { name: 'Send' }).click();
     await expect(answer.getByText(/Reading aloud\.|Stopped reading\./)).toBeVisible();
     expect(cloud.paths[1]).toContain('gemini-3.1-flash-tts-preview');
     expect(cloud.bodies[1]).toContain('This program lowers utility bills');
@@ -431,7 +461,7 @@ test.describe('narrow screens and zoom', () => {
     expect(await list.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
     // The open record leaves part of the screen for the page (200 % zoom is about 640 x 320 CSS px).
     await page.setViewportSize({ width: 640, height: 320 });
-    const panelHeight = await bar.locator('.leaving-panel').evaluate((el) => el.getBoundingClientRect().height);
+    const panelHeight = await page.getByTestId('record-sheet').evaluate((el) => el.getBoundingClientRect().height);
     expect(panelHeight).toBeLessThanOrEqual(320 * 0.6 + 1);
   });
 });

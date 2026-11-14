@@ -5,7 +5,7 @@
 import sharedEn from '../../../shared/copy/en.json';
 import sharedEs from '../../../shared/copy/es.json';
 import sharedKo from '../../../shared/copy/ko.json';
-import { CURRENCY, PACK_COPY } from './pack';
+import { CURRENCY, NUMBER_FORMAT, PACK_COPY } from './pack';
 import { LOCAL_COPY } from './copy-local';
 
 export const LOCALES = ['en', 'es', 'ko'] as const;
@@ -73,13 +73,15 @@ export function formatNumber(locale: Locale, value: number): string {
 }
 
 /**
- * An amount of money in the pack's currency, formatted for the UI language ($3,000 in English,
- * 3000 $ in Spanish). Cents are shown only when the amount has them, or always with `cents`.
- * Without a pack currency it is a plain number.
+ * An amount of money in the pack's currency, written the way the jurisdiction's own paperwork writes
+ * it (the pack's `numberFormat`, such as en-US) in every interface language, always grouped: $3,000
+ * and $34,000 in English and in Spanish. That is also the form the app accepts when an amount is
+ * typed. Cents only when the amount has them, or always with `cents`. Without a pack currency, a
+ * plain grouped number.
  */
 export function formatMoney(locale: Locale, value: number, { cents = false }: { cents?: boolean } = {}): string {
   const fraction = cents || !Number.isInteger(value) ? 2 : 0;
-  const options: Intl.NumberFormatOptions = { minimumFractionDigits: fraction, maximumFractionDigits: fraction };
+  const options: Intl.NumberFormatOptions = { minimumFractionDigits: fraction, maximumFractionDigits: fraction, useGrouping: 'always' as unknown as boolean };
   if (CURRENCY) Object.assign(options, { style: 'currency', currency: CURRENCY, currencyDisplay: 'narrowSymbol' });
-  return new Intl.NumberFormat(locale, options).format(value);
+  return new Intl.NumberFormat(CURRENCY && NUMBER_FORMAT ? NUMBER_FORMAT : locale, options).format(value);
 }

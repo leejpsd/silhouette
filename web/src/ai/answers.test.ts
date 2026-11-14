@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { HybridParams } from 'firebase/ai';
 
 import { Raw, asPublic } from '../core/types';
-import { generalize, silhouetteVerdicts, type Bands } from '../core/generalize';
+import { generalize, type Bands } from '../core/generalize';
 import type { RulePack } from '../core/rules';
 import { setConfigForTests } from '../data/remote-config';
 import { classify } from '../data/net-monitor';
@@ -28,7 +28,7 @@ import {
   type ProgramFacts,
 } from './tasks';
 import { askFreeText, explainPersonal, type PersonalResult } from './on-device';
-import { ASK_V2, EXPLAIN_V3 } from './prompts';
+import { ASK_V4, EXPLAIN_V5 } from './prompts';
 
 const shared = (rel: string) => readFileSync(new URL(`../../../shared/${rel}`, import.meta.url), 'utf8');
 const pack = JSON.parse(shared('rulepacks/zz-test/pack.json')) as RulePack;
@@ -38,11 +38,9 @@ const profile = generalize(Raw.of({ jurisdiction: 'zz-test', annualIncome: 21000
 const facts: ProgramFacts = {
   programId: 'utility-discount',
   name: 'Test Utility Discount',
-  facts: 'This program checks: Your income is under the limit; You rent or own your home.',
-  criteria: { 'income-limit': 'Your income is under the limit', housing: 'You rent or own your home' },
+  facts: 'A discount on the monthly bill.\nThis program uses: Yearly income; Housing.\nThis program checks: Your income is under the limit; You rent or own your home.',
 };
-const verdict = silhouetteVerdicts(pack, bands, profile).find((v) => v.programId === 'utility-discount')!;
-const input: ExplainInput = { profile, verdict, program: asPublic(facts), locale: 'en' };
+const input: ExplainInput = asPublic({ program: facts, locale: 'en' });
 
 interface Call {
   params: HybridParams;
@@ -71,20 +69,20 @@ afterEach(() => {
   setConfigForTests(null);
 });
 
-describe('silhouette verdicts', () => {
-  it('criteria the silhouette cannot decide are listed as checked on the device, never with a verdict', () => {
-    const food = silhouetteVerdicts(pack, bands, profile).find((v) => v.programId === 'food-help')!;
-    const plan = planExplain({ ...input, verdict: food, program: asPublic({ ...facts, programId: 'food-help', criteria: { 'income-limit': 'Income', residency: 'Residency' } }) }, 'short');
-    expect(plan.prompt).toContain('Met from the general facts: Income');
-    expect(plan.prompt).toContain('Not met from the general facts: none');
-    expect(plan.prompt).toContain('Checked on the device (not known here): Residency');
-    expect(plan.prompt).not.toMatch(/Verdict|likely|qualif/i);
+describe('nothing about the person', () => {
+  it('the general explanation and prepared questions carry the program only: no profile, criterion states or verdict', () => {
+    for (const plan of [planExplain(input, 'short'), planExplain(input, 'long'), planAskChip(input, asPublic({ id: 'change', question: 'What could change this result?' }))]) {
+      expect(plan.prompt).not.toMatch(/Profile|incomeBand|householdSize|renter|Met from|Not met|Checked on the device|likely|qualif/i);
+      expect(requestBody(plan)).not.toMatch(/incomeBand|"housing"|Met from the general facts/);
+      expect(plan.fields).not.toContain('profile-silhouette');
+    }
   });
 
-  it('use only the silhouette: a sensitive answer is unknown', () => {
-    const food = silhouetteVerdicts(pack, bands, profile).find((v) => v.programId === 'food-help')!;
-    expect(food.criteria.find((c) => c.id === 'residency')?.state).toBe('unknown');
-    expect(verdict).toEqual({ programId: 'utility-discount', verdict: 'likely', criteria: [{ id: 'income-limit', state: 'pass' }, { id: 'housing', state: 'pass' }] });
+  it('a Generalized profile does not type-check as the input', () => {
+    // @ts-expect-error the input is Public only (routing.json: explain.* and ask.chip take Public)
+    planExplain({ profile, program: facts, locale: 'en' }, 'short');
+    // @ts-expect-error a plain object is not Public either
+    planAskChip({ program: facts, locale: 'en' }, asPublic({ id: 'apply', question: 'How do I apply?' }));
   });
 });
 
@@ -107,27 +105,16 @@ describe('explain.short / explain.long routing', () => {
     expect(planExplain({ ...input, locale: 'ko' }, 'short').taskId).toBe('explain.short');
   });
 
-  it('fills shared/prompts/explain.v3.md with the silhouette, the facts and three lists of criterion states', () => {
+  it('fills shared/prompts/explain.v5.md with the program name and its information only', () => {
     const plan = planExplain(input, 'short');
-    expect(plan.systemInstruction).toBe(EXPLAIN_V3.system.replace('{locale}', 'English'));
-    expect(plan.prompt).toBe(
-      [
-        'Profile: {"jurisdiction":"zz-test","incomeBand":"B","householdSize":3,"childAgeBands":null,"county":null,"housing":"renter"}',
-        'Program: Test Utility Discount',
-        `Program facts: ${facts.facts}`,
-        'Met from the general facts: Your income is under the limit; You rent or own your home',
-        'Not met from the general facts: none',
-        'Checked on the device (not known here): none',
-        'Write 60 words or fewer.',
-      ].join('\n'),
-    );
-    expect(plan.prompt).not.toContain('21000');
+    expect(plan.systemInstruction).toBe(EXPLAIN_V5.system.replace('{locale}', 'English'));
+    expect(plan.prompt).toBe(['Program: Test Utility Discount', `Information about this program: ${facts.facts}`, 'Write 60 words or fewer.'].join('\n'));
   });
 
-  it('prepared questions use shared/prompts/ask.v2.md', () => {
+  it('prepared questions use shared/prompts/ask.v4.md', () => {
     const plan = planAskChip(input, asPublic({ id: 'apply', question: 'How do I apply?' }));
-    expect(plan.systemInstruction).toBe(ASK_V2.system.replace('{locale}', 'English'));
-    expect(plan.prompt.endsWith('Question: How do I apply?\nWrite 80 words or fewer.')).toBe(true);
+    expect(plan.systemInstruction).toBe(ASK_V4.system.replace('{locale}', 'English'));
+    expect(plan.prompt).toBe(['Program: Test Utility Discount', `Information about this program: ${facts.facts}`, 'Question: How do I apply?', 'Write 80 words or fewer.'].join('\n'));
   });
 });
 
@@ -163,7 +150,7 @@ describe('running explanations and chips', () => {
     fake(() => ({ text: () => 'x' }));
     void explainProgram(plan);
     const url = new URL('https://firebasevertexai.googleapis.com/v1beta/projects/p/models/gemini-3.5-flash-lite:generateContent');
-    expect(classify(url, body).fields).toEqual(['profile-silhouette', 'program-facts']);
+    expect(classify(url, body).fields).toEqual(['program-facts']);
   });
 
   it('a reply that states a result is asked for again, then refused; it is never returned', async () => {
@@ -201,6 +188,7 @@ const personal: PersonalResult = {
   programName: 'Test Food Help',
   facts: 'This program checks: income; residency.',
   verdictLabel: 'Probably not',
+  verdict: 'unlikely',
   criteriaLines: '- Your income is under the limit: met (limit 34,000, yours 33,333)\n- You meet the residency rule: not met',
 };
 
@@ -217,9 +205,10 @@ describe('the person\'s own result (on device only)', () => {
     await expect(explainPersonal(Raw.of({ ...personal, locale: 'es' }))).rejects.toMatchObject({ kind: 'on-device-unavailable' });
   });
 
-  it('hedged wording is fine for the person\'s own result, a definite claim is not', async () => {
+  it('hedged wording is fine for the person\'s own result unless it contradicts the verdict; a definite claim is not', async () => {
     fake(() => ({ text: () => 'You may qualify once your residency is confirmed.', inferenceSource: 'on_device' }));
-    expect((await explainPersonal(Raw.of(personal))).value).toContain('You may qualify');
+    expect((await explainPersonal(Raw.of({ ...personal, verdict: 'maybe' }))).value).toContain('You may qualify');
+    await expect(explainPersonal(Raw.of(personal))).rejects.toMatchObject({ kind: 'blocked' });
     fake(() => ({ text: () => 'You do not qualify.', inferenceSource: 'on_device' }));
     await expect(explainPersonal(Raw.of(personal))).rejects.toMatchObject({ kind: 'blocked' });
   });
@@ -326,5 +315,60 @@ describe('readAloud', () => {
     expect(answer.value.text).toBe('Plain explanation.');
     const speech = await readAloud(answer.value, 'en');
     expect(speech).toMatchObject({ value: { data: 'AAAA', mimeType: 'audio/L16;codec=pcm;rate=24000' }, inferenceSource: 'IN_CLOUD', reason: 'speech' });
+  });
+});
+
+describe('checks on model text on every path, in the answer language', () => {
+  const fixture = JSON.parse(shared('fixtures/conformance/output-check.json')) as {
+    cases: { id: string; locale: string; scope: 'general' | 'personal'; text: string; blocked: boolean; verdict?: PersonalResult['verdict'] }[];
+  };
+  const blocked = fixture.cases.filter((c) => c.blocked && (c.locale === 'en' || c.locale === 'es'));
+  const statusInput = (locale: string) => ({
+    programs: asPublic(pack.programs.map((p) => ({ id: p.id, name: p.name }))),
+    jurisdiction: asPublic('zz-test'),
+    year: asPublic(2026),
+    checkedOn: asPublic('2026-01-01'),
+    locale,
+  });
+  const generalPaths: Record<string, (locale: string) => Promise<unknown>> = {
+    'explain.short': (locale) => explainProgram(planExplain(asPublic({ program: facts, locale }), 'short')),
+    'explain.long': (locale) => explainProgram(planExplain(asPublic({ program: facts, locale }), 'long')),
+    ...Object.fromEntries(
+      ['apply', 'documents', 'change', 'offer'].map((id) => [`ask.chip ${id}`, (locale: string) => askChip(planAskChip(asPublic({ program: facts, locale }), asPublic({ id, question: id })))]),
+    ),
+    'program.currentStatus': (locale) => programCurrentStatus(statusInput(locale)),
+    'discover.leads': (locale) => discoverLeads({ profile, known: asPublic([]), locale }),
+  };
+
+  it('has blocked sentences in English and Spanish', () => {
+    expect(blocked.some((c) => c.locale === 'en')).toBe(true);
+    expect(blocked.some((c) => c.locale === 'es')).toBe(true);
+  });
+
+  for (const k of blocked) {
+    for (const [path, run] of Object.entries(generalPaths)) {
+      it(`${k.id} is blocked on ${path}`, async () => {
+        let n = 0;
+        fake(() => ({ text: () => (n++, k.text), inferenceSource: 'in_cloud', candidates: [{ groundingMetadata }] }));
+        await expect(run(k.locale)).rejects.toMatchObject({ kind: 'blocked' });
+        expect(n).toBe(2);
+      });
+    }
+    if (k.scope === 'personal') {
+      for (const [path, run] of Object.entries({
+        'explain.personal': () => explainPersonal(Raw.of({ ...personal, locale: k.locale, verdict: k.verdict ?? 'maybe' })),
+        'ask.freeText': () => askFreeText(Raw.of('?'), Raw.of({ ...personal, locale: k.locale, verdict: k.verdict ?? 'maybe' })),
+      })) {
+        it(`${k.id} is blocked on ${path}`, async () => {
+          fake(() => ({ text: () => k.text, inferenceSource: 'on_device' }));
+          await expect(run()).rejects.toMatchObject({ kind: 'blocked' });
+        });
+      }
+    }
+  }
+
+  it('a Spanish claim on a Spanish prepared question is checked against the Spanish list', async () => {
+    fake(() => ({ text: () => 'Calificas para esta ayuda.', inferenceSource: 'in_cloud' }));
+    await expect(askChip(planAskChip(asPublic({ program: facts, locale: 'es' }), asPublic({ id: 'apply', question: '¿Cómo solicito?' })))).rejects.toMatchObject({ kind: 'blocked' });
   });
 });

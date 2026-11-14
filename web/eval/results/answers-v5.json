@@ -1,0 +1,486 @@
+{
+  "date": "2026-11-14T07:12:01.838Z",
+  "profiles": {
+    "A": {
+      "label": "food-help (on screen for one person: Probably not, from a private answer)",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "food-help"
+    },
+    "B": {
+      "label": "phone-discount (on screen: may qualify, met through a benefit)",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "phone-discount"
+    }
+  },
+  "modelCalls": 12,
+  "rows": [
+    {
+      "id": "A-en-short",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Test Food Help\nInformation about this program: A monthly benefit for buying food, loaded on a card, for households under an income limit.\nApply online, by phone or at the county office. An interview usually follows.\nUsually: identification, proof of address, and proof of income for the last month.\nIt lasts several months and is renewed with a short form.\nTest County Benefits Office\nThis program uses: Yearly income; Household size; Residency.\nThis program checks: Your income is under the limit for your household size; You meet the residency rule.\nWrite 60 words or fewer.",
+        "text": "Based on the information about this program, your result is shown on the screen above. \n\nThis program offers a monthly benefit for buying food, loaded on a card. You can apply online, by phone, or at the county office. \n\nThis text is not legal or tax advice.",
+        "latencyMs": 1957
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Based on the information about this program, your result is shown on the screen above. \n\nThis program offers a monthly benefit for buying food, loaded on a card. You can apply online, by phone, or at the county office. \n\nThis text is not legal or tax advice.",
+          "usage": {
+            "promptTokenCount": 354,
+            "candidatesTokenCount": 59,
+            "totalTokenCount": 413,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 354
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Test Food Help\\nInformation about this program: A monthly benefit for buying food, loaded on a card, for households under an income limit.\\nApply online, by phone or at the county office. An interview usually follows.\\nUsually: identification, proof of address, and proof of income for the last month.\\nIt lasts several months and is renewed with a short form.\\nTest County Benefits Office\\nThis program uses: Yearly income; Household size; Residency.\\nThis program checks: Your income is under the limit for your household size; You meet the residency rule.\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-en-change",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What could change this result?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Test Food Help\nInformation about this program: A monthly benefit for buying food, loaded on a card, for households under an income limit.\nApply online, by phone or at the county office. An interview usually follows.\nUsually: identification, proof of address, and proof of income for the last month.\nIt lasts several months and is renewed with a short form.\nTest County Benefits Office\nThis program uses: Yearly income; Household size; Residency.\nThis program checks: Your income is under the limit for your household size; You meet the residency rule.\nQuestion: What could change this result?\nWrite 80 words or fewer.",
+        "text": "Your result is shown on the screen above. \n\nThe information about this program does not state what could change this result. Please check with the Test County Benefits Office. \n\nThis text is not legal or tax advice.",
+        "latencyMs": 1949
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Your result is shown on the screen above. \n\nThe information about this program does not state what could change this result. Please check with the Test County Benefits Office. \n\nThis text is not legal or tax advice.",
+          "usage": {
+            "promptTokenCount": 406,
+            "candidatesTokenCount": 45,
+            "totalTokenCount": 451,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 406
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in English.\\nIf the information does not answer the question, say so in one sentence. Suggest the office named in the information; when none is named, say that the official source is listed in the app.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Test Food Help\\nInformation about this program: A monthly benefit for buying food, loaded on a card, for households under an income limit.\\nApply online, by phone or at the county office. An interview usually follows.\\nUsually: identification, proof of address, and proof of income for the last month.\\nIt lasts several months and is renewed with a short form.\\nTest County Benefits Office\\nThis program uses: Yearly income; Household size; Residency.\\nThis program checks: Your income is under the limit for your household size; You meet the residency rule.\\nQuestion: What could change this result?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-en-apply",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "food-help",
+      "locale": "en",
+      "kind": "chip",
+      "question": "How do I apply?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Test Food Help\nInformation about this program: A monthly benefit for buying food, loaded on a card, for households under an income limit.\nApply online, by phone or at the county office. An interview usually follows.\nUsually: identification, proof of address, and proof of income for the last month.\nIt lasts several months and is renewed with a short form.\nTest County Benefits Office\nThis program uses: Yearly income; Household size; Residency.\nThis program checks: Your income is under the limit for your household size; You meet the residency rule.\nQuestion: How do I apply?\nWrite 80 words or fewer.",
+        "text": "According to the information about this program, you apply online, by phone, or at the county office. The screen above shows your result. This text is not legal or tax advice.",
+        "latencyMs": 1653
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "According to the information about this program, you apply online, by phone, or at the county office. The screen above shows your result. This text is not legal or tax advice.",
+          "usage": {
+            "promptTokenCount": 405,
+            "candidatesTokenCount": 37,
+            "totalTokenCount": 442,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 405
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in English.\\nIf the information does not answer the question, say so in one sentence. Suggest the office named in the information; when none is named, say that the official source is listed in the app.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Test Food Help\\nInformation about this program: A monthly benefit for buying food, loaded on a card, for households under an income limit.\\nApply online, by phone or at the county office. An interview usually follows.\\nUsually: identification, proof of address, and proof of income for the last month.\\nIt lasts several months and is renewed with a short form.\\nTest County Benefits Office\\nThis program uses: Yearly income; Household size; Residency.\\nThis program checks: Your income is under the limit for your household size; You meet the residency rule.\\nQuestion: How do I apply?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-es-short",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "food-help",
+      "locale": "es",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Ayuda de alimentos (prueba)\nInformation about this program: Un beneficio mensual para comprar alimentos, cargado en una tarjeta, para hogares con ingresos por debajo de un límite.\nSolicítalo en línea, por teléfono o en la oficina del condado. Normalmente sigue una entrevista.\nNormalmente: identificación, comprobante de domicilio y comprobante de ingresos del último mes.\nDura varios meses y se renueva con un formulario corto.\nOficina de Beneficios del Condado de Prueba\nEste programa usa: Ingreso anual; Tamaño del hogar; Residencia.\nEste programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\nWrite 60 words or fewer.",
+        "text": "El resultado está en la pantalla arriba. Según la información sobre este programa, ofrece un beneficio mensual para comprar alimentos en una tarjeta. Los requisitos usan el ingreso anual, el tamaño del hogar y la residencia. Este texto no es legal ni tax advice.",
+        "latencyMs": 1380
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "El resultado está en la pantalla arriba. Según la información sobre este programa, ofrece un beneficio mensual para comprar alimentos en una tarjeta. Los requisitos usan el ingreso anual, el tamaño del hogar y la residencia. Este texto no es legal ni tax advice.",
+          "usage": {
+            "promptTokenCount": 382,
+            "candidatesTokenCount": 50,
+            "totalTokenCount": 432,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 382
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Ayuda de alimentos (prueba)\\nInformation about this program: Un beneficio mensual para comprar alimentos, cargado en una tarjeta, para hogares con ingresos por debajo de un límite.\\nSolicítalo en línea, por teléfono o en la oficina del condado. Normalmente sigue una entrevista.\\nNormalmente: identificación, comprobante de domicilio y comprobante de ingresos del último mes.\\nDura varios meses y se renueva con un formulario corto.\\nOficina de Beneficios del Condado de Prueba\\nEste programa usa: Ingreso anual; Tamaño del hogar; Residencia.\\nEste programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-es-change",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "food-help",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué podría cambiar este resultado?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Ayuda de alimentos (prueba)\nInformation about this program: Un beneficio mensual para comprar alimentos, cargado en una tarjeta, para hogares con ingresos por debajo de un límite.\nSolicítalo en línea, por teléfono o en la oficina del condado. Normalmente sigue una entrevista.\nNormalmente: identificación, comprobante de domicilio y comprobante de ingresos del último mes.\nDura varios meses y se renueva con un formulario corto.\nOficina de Beneficios del Condado de Prueba\nEste programa usa: Ingreso anual; Tamaño del hogar; Residencia.\nEste programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\nQuestion: ¿Qué podría cambiar este resultado?\nWrite 80 words or fewer.",
+        "text": "El resultado se muestra en la pantalla de arriba. Según la información sobre este programa, este usa el ingreso anual, el tamaño del hogar y la residencia. Este texto no es legal ni tax advice. Si la información no responde a tu pregunta, la fuente oficial se lista en el app.",
+        "latencyMs": 1578
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "El resultado se muestra en la pantalla de arriba. Según la información sobre este programa, este usa el ingreso anual, el tamaño del hogar y la residencia. Este texto no es legal ni tax advice. Si la información no responde a tu pregunta, la fuente oficial se lista en el app.",
+          "usage": {
+            "promptTokenCount": 435,
+            "candidatesTokenCount": 58,
+            "totalTokenCount": 493,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 435
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in Spanish.\\nIf the information does not answer the question, say so in one sentence. Suggest the office named in the information; when none is named, say that the official source is listed in the app.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Ayuda de alimentos (prueba)\\nInformation about this program: Un beneficio mensual para comprar alimentos, cargado en una tarjeta, para hogares con ingresos por debajo de un límite.\\nSolicítalo en línea, por teléfono o en la oficina del condado. Normalmente sigue una entrevista.\\nNormalmente: identificación, comprobante de domicilio y comprobante de ingresos del último mes.\\nDura varios meses y se renueva con un formulario corto.\\nOficina de Beneficios del Condado de Prueba\\nEste programa usa: Ingreso anual; Tamaño del hogar; Residencia.\\nEste programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\\nQuestion: ¿Qué podría cambiar este resultado?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "A-es-apply",
+      "pid": "A",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "food-help",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Cómo solicito?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Ayuda de alimentos (prueba)\nInformation about this program: Un beneficio mensual para comprar alimentos, cargado en una tarjeta, para hogares con ingresos por debajo de un límite.\nSolicítalo en línea, por teléfono o en la oficina del condado. Normalmente sigue una entrevista.\nNormalmente: identificación, comprobante de domicilio y comprobante de ingresos del último mes.\nDura varios meses y se renueva con un formulario corto.\nOficina de Beneficios del Condado de Prueba\nEste programa usa: Ingreso anual; Tamaño del hogar; Residencia.\nEste programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\nQuestion: ¿Cómo solicito?\nWrite 80 words or fewer.",
+        "text": "Según la información sobre este programa, puedes solicitarlo en línea, por teléfono o en la oficina del condado. \n\nPuedes ver tu resultado en la pantalla arriba. \n\nEste texto no es legal ni tax advice.",
+        "latencyMs": 1581
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Según la información sobre este programa, puedes solicitarlo en línea, por teléfono o en la oficina del condado. \n\nPuedes ver tu resultado en la pantalla arriba. \n\nEste texto no es legal ni tax advice.",
+          "usage": {
+            "promptTokenCount": 433,
+            "candidatesTokenCount": 44,
+            "totalTokenCount": 477,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 433
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in Spanish.\\nIf the information does not answer the question, say so in one sentence. Suggest the office named in the information; when none is named, say that the official source is listed in the app.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Ayuda de alimentos (prueba)\\nInformation about this program: Un beneficio mensual para comprar alimentos, cargado en una tarjeta, para hogares con ingresos por debajo de un límite.\\nSolicítalo en línea, por teléfono o en la oficina del condado. Normalmente sigue una entrevista.\\nNormalmente: identificación, comprobante de domicilio y comprobante de ingresos del último mes.\\nDura varios meses y se renueva con un formulario corto.\\nOficina de Beneficios del Condado de Prueba\\nEste programa usa: Ingreso anual; Tamaño del hogar; Residencia.\\nEste programa revisa: Tu ingreso está por debajo del límite para el tamaño de tu hogar; Cumples la regla de residencia.\\nQuestion: ¿Cómo solicito?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-en-short",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "phone-discount",
+      "locale": "en",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Test Phone Discount\nInformation about this program: A monthly discount on one phone or internet service per household.\nApply through a participating phone or internet company, or with the program's own form.\nUsually: identification and proof of income, or proof of a benefit the household already receives.\nIt is confirmed again once a year.\nTest Phone Discount Administrator\nThis program uses: Yearly income; Household size; Benefits you receive.\nThis program checks: Your income is under the limit, or you receive a qualifying benefit.\nWrite 60 words or fewer.",
+        "text": "The result shown on the screen above is based on the information about this program. This program offers a monthly discount on one phone or internet service per household. This text is not legal or tax advice.",
+        "latencyMs": 1662
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "The result shown on the screen above is based on the information about this program. This program offers a monthly discount on one phone or internet service per household. This text is not legal or tax advice.",
+          "usage": {
+            "promptTokenCount": 345,
+            "candidatesTokenCount": 40,
+            "totalTokenCount": 385,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 345
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in English.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Test Phone Discount\\nInformation about this program: A monthly discount on one phone or internet service per household.\\nApply through a participating phone or internet company, or with the program's own form.\\nUsually: identification and proof of income, or proof of a benefit the household already receives.\\nIt is confirmed again once a year.\\nTest Phone Discount Administrator\\nThis program uses: Yearly income; Household size; Benefits you receive.\\nThis program checks: Your income is under the limit, or you receive a qualifying benefit.\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-en-change",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "phone-discount",
+      "locale": "en",
+      "kind": "chip",
+      "question": "What could change this result?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Test Phone Discount\nInformation about this program: A monthly discount on one phone or internet service per household.\nApply through a participating phone or internet company, or with the program's own form.\nUsually: identification and proof of income, or proof of a benefit the household already receives.\nIt is confirmed again once a year.\nTest Phone Discount Administrator\nThis program uses: Yearly income; Household size; Benefits you receive.\nThis program checks: Your income is under the limit, or you receive a qualifying benefit.\nQuestion: What could change this result?\nWrite 80 words or fewer.",
+        "text": "Based on the information about this program, your result is shown on the screen above. The information about this program does not state what could change this result. The official source is listed in the app. \n\nThis text is not legal or tax advice.",
+        "latencyMs": 1631
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Based on the information about this program, your result is shown on the screen above. The information about this program does not state what could change this result. The official source is listed in the app. \n\nThis text is not legal or tax advice.",
+          "usage": {
+            "promptTokenCount": 397,
+            "candidatesTokenCount": 51,
+            "totalTokenCount": 448,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 397
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in English.\\nIf the information does not answer the question, say so in one sentence. Suggest the office named in the information; when none is named, say that the official source is listed in the app.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Test Phone Discount\\nInformation about this program: A monthly discount on one phone or internet service per household.\\nApply through a participating phone or internet company, or with the program's own form.\\nUsually: identification and proof of income, or proof of a benefit the household already receives.\\nIt is confirmed again once a year.\\nTest Phone Discount Administrator\\nThis program uses: Yearly income; Household size; Benefits you receive.\\nThis program checks: Your income is under the limit, or you receive a qualifying benefit.\\nQuestion: What could change this result?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-en-apply",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "phone-discount",
+      "locale": "en",
+      "kind": "chip",
+      "question": "How do I apply?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Test Phone Discount\nInformation about this program: A monthly discount on one phone or internet service per household.\nApply through a participating phone or internet company, or with the program's own form.\nUsually: identification and proof of income, or proof of a benefit the household already receives.\nIt is confirmed again once a year.\nTest Phone Discount Administrator\nThis program uses: Yearly income; Household size; Benefits you receive.\nThis program checks: Your income is under the limit, or you receive a qualifying benefit.\nQuestion: How do I apply?\nWrite 80 words or fewer.",
+        "text": "Based on the information about this program, you can apply through a participating phone or internet company, or with the program's own form. To see your result, look at the screen above. This text is not legal or tax advice.",
+        "latencyMs": 2106
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Based on the information about this program, you can apply through a participating phone or internet company, or with the program's own form. To see your result, look at the screen above. This text is not legal or tax advice.",
+          "usage": {
+            "promptTokenCount": 396,
+            "candidatesTokenCount": 48,
+            "totalTokenCount": 444,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 396
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in English.\\nIf the information does not answer the question, say so in one sentence. Suggest the office named in the information; when none is named, say that the official source is listed in the app.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Test Phone Discount\\nInformation about this program: A monthly discount on one phone or internet service per household.\\nApply through a participating phone or internet company, or with the program's own form.\\nUsually: identification and proof of income, or proof of a benefit the household already receives.\\nIt is confirmed again once a year.\\nTest Phone Discount Administrator\\nThis program uses: Yearly income; Household size; Benefits you receive.\\nThis program checks: Your income is under the limit, or you receive a qualifying benefit.\\nQuestion: How do I apply?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-es-short",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "phone-discount",
+      "locale": "es",
+      "kind": "short",
+      "out": {
+        "ok": true,
+        "taskId": "explain.short",
+        "reason": "short-text",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Descuento telefónico de prueba\nInformation about this program: Un descuento mensual en un servicio de teléfono o internet por hogar.\nSolicítalo a través de una compañía de teléfono o internet participante, o con el formulario del programa.\nNormalmente: identificación y comprobante de ingresos, o comprobante de un beneficio que el hogar ya recibe.\nSe confirma de nuevo una vez al año.\nAdministrador del Descuento Telefónico de Prueba\nEste programa usa: Ingreso anual; Tamaño del hogar; Beneficios que recibes.\nEste programa revisa: Tus ingresos están por debajo del límite, o recibes un beneficio que califica.\nWrite 60 words or fewer.",
+        "text": "Según la información sobre este programa, ofrece un descuento mensual en un servicio de teléfono o internet por hogar. Tu resultado se muestra en la pantalla arriba. Este texto no es legal ni taxativo.",
+        "latencyMs": 1372
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Según la información sobre este programa, ofrece un descuento mensual en un servicio de teléfono o internet por hogar. Tu resultado se muestra en la pantalla arriba. Este texto no es legal ni taxativo.",
+          "usage": {
+            "promptTokenCount": 372,
+            "candidatesTokenCount": 39,
+            "totalTokenCount": 411,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 372
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":256},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You explain a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in Spanish.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Descuento telefónico de prueba\\nInformation about this program: Un descuento mensual en un servicio de teléfono o internet por hogar.\\nSolicítalo a través de una compañía de teléfono o internet participante, o con el formulario del programa.\\nNormalmente: identificación y comprobante de ingresos, o comprobante de un beneficio que el hogar ya recibe.\\nSe confirma de nuevo una vez al año.\\nAdministrador del Descuento Telefónico de Prueba\\nEste programa usa: Ingreso anual; Tamaño del hogar; Beneficios que recibes.\\nEste programa revisa: Tus ingresos están por debajo del límite, o recibes un beneficio que califica.\\nWrite 60 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-es-change",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "phone-discount",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Qué podría cambiar este resultado?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Descuento telefónico de prueba\nInformation about this program: Un descuento mensual en un servicio de teléfono o internet por hogar.\nSolicítalo a través de una compañía de teléfono o internet participante, o con el formulario del programa.\nNormalmente: identificación y comprobante de ingresos, o comprobante de un beneficio que el hogar ya recibe.\nSe confirma de nuevo una vez al año.\nAdministrador del Descuento Telefónico de Prueba\nEste programa usa: Ingreso anual; Tamaño del hogar; Beneficios que recibes.\nEste programa revisa: Tus ingresos están por debajo del límite, o recibes un beneficio que califica.\nQuestion: ¿Qué podría cambiar este resultado?\nWrite 80 words or fewer.",
+        "text": "La información sobre este programa no responde a qué podría cambiar este resultado. La fuente oficial está listada en la app. Puedes ver tu resultado en la pantalla de arriba. Este texto no es legal ni tax advice (aviso legal o fiscal).",
+        "latencyMs": 1932
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "La información sobre este programa no responde a qué podría cambiar este resultado. La fuente oficial está listada en la app. Puedes ver tu resultado en la pantalla de arriba. Este texto no es legal ni tax advice (aviso legal o fiscal).",
+          "usage": {
+            "promptTokenCount": 425,
+            "candidatesTokenCount": 49,
+            "totalTokenCount": 474,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 425
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in Spanish.\\nIf the information does not answer the question, say so in one sentence. Suggest the office named in the information; when none is named, say that the official source is listed in the app.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Descuento telefónico de prueba\\nInformation about this program: Un descuento mensual en un servicio de teléfono o internet por hogar.\\nSolicítalo a través de una compañía de teléfono o internet participante, o con el formulario del programa.\\nNormalmente: identificación y comprobante de ingresos, o comprobante de un beneficio que el hogar ya recibe.\\nSe confirma de nuevo una vez al año.\\nAdministrador del Descuento Telefónico de Prueba\\nEste programa usa: Ingreso anual; Tamaño del hogar; Beneficios que recibes.\\nEste programa revisa: Tus ingresos están por debajo del límite, o recibes un beneficio que califica.\\nQuestion: ¿Qué podría cambiar este resultado?\\nWrite 80 words or fewer.\"}]}]}"
+    },
+    {
+      "id": "B-es-apply",
+      "pid": "B",
+      "profile": {
+        "jurisdiction": "zz-test"
+      },
+      "programId": "phone-discount",
+      "locale": "es",
+      "kind": "chip",
+      "question": "¿Cómo solicito?",
+      "out": {
+        "ok": true,
+        "taskId": "ask.chip",
+        "reason": "prepared-question",
+        "inferenceSource": "IN_CLOUD",
+        "prompt": "Program: Descuento telefónico de prueba\nInformation about this program: Un descuento mensual en un servicio de teléfono o internet por hogar.\nSolicítalo a través de una compañía de teléfono o internet participante, o con el formulario del programa.\nNormalmente: identificación y comprobante de ingresos, o comprobante de un beneficio que el hogar ya recibe.\nSe confirma de nuevo una vez al año.\nAdministrador del Descuento Telefónico de Prueba\nEste programa usa: Ingreso anual; Tamaño del hogar; Beneficios que recibes.\nEste programa revisa: Tus ingresos están por debajo del límite, o recibes un beneficio que califica.\nQuestion: ¿Cómo solicito?\nWrite 80 words or fewer.",
+        "text": "Según la información sobre este programa, puedes solicitarlo a través de una compañía de teléfono o internet participante, o con el formulario del programa. Para ver tu resultado, mira la pantalla de arriba. Esta texto no es legal ni tax advice.",
+        "latencyMs": 1774
+      },
+      "attempts": [
+        {
+          "status": 200,
+          "reply": "Según la información sobre este programa, puedes solicitarlo a través de una compañía de teléfono o internet participante, o con el formulario del programa. Para ver tu resultado, mira la pantalla de arriba. Esta texto no es legal ni tax advice.",
+          "usage": {
+            "promptTokenCount": 423,
+            "candidatesTokenCount": 48,
+            "totalTokenCount": 471,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 423
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "requestBody": "{\"generationConfig\":{\"maxOutputTokens\":320},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You answer one question about a public benefit program in plain language at a 6th-grade reading level.\\nUse only the information about this program given to you. Do not state amounts, thresholds, deadlines or steps that are not in the input.\\nSay what the program offers only when the information says so; never infer it from the program's name.\\nWhen you refer to that information, call it \\\"the information about this program\\\" in the answer language. Call the app \\\"the app\\\"; do not call it a mobile app.\\nYou know nothing about the person. The app has already decided their result with rules on their device, and shows it above your text.\\nNever say whether the person qualifies, may qualify, is eligible, meets a rule or does not meet a rule, and never describe their income or household. Do not guess. To point at their result, say that it is shown on the screen above.\\nDo not give legal or tax advice. If you mention this, say that this text is not legal or tax advice; do not attribute it to the program. Answer in Spanish.\\nIf the information does not answer the question, say so in one sentence. Suggest the office named in the information; when none is named, say that the official source is listed in the app.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Program: Descuento telefónico de prueba\\nInformation about this program: Un descuento mensual en un servicio de teléfono o internet por hogar.\\nSolicítalo a través de una compañía de teléfono o internet participante, o con el formulario del programa.\\nNormalmente: identificación y comprobante de ingresos, o comprobante de un beneficio que el hogar ya recibe.\\nSe confirma de nuevo una vez al año.\\nAdministrador del Descuento Telefónico de Prueba\\nEste programa usa: Ingreso anual; Tamaño del hogar; Beneficios que recibes.\\nEste programa revisa: Tus ingresos están por debajo del límite, o recibes un beneficio que califica.\\nQuestion: ¿Cómo solicito?\\nWrite 80 words or fewer.\"}]}]}"
+    }
+  ]
+}

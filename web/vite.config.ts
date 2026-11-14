@@ -57,8 +57,25 @@ function samplePdfs(): Plugin {
   };
 }
 
+/**
+ * The ground colour of both themes, from the design tokens, in the document head: the page paints in
+ * its own colour before any script runs (no white flash before the dark theme).
+ */
+function groundInHead(): Plugin {
+  return {
+    name: 'ground-in-head',
+    transformIndexHtml(html) {
+      const tokens = JSON.parse(readFileSync(new URL('../shared/design/tokens.json', import.meta.url), 'utf8')) as {
+        color: { light: { ground: string }; dark: { ground: string } };
+      };
+      const css = `html{color-scheme:light dark;background:${tokens.color.light.ground}}@media (prefers-color-scheme: dark){html{background:${tokens.color.dark.ground}}}`;
+      return html.replace('</title>', `</title>\n    <style>${css}</style>`);
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), samplePdfs(), serviceWorker()],
+  plugins: [react(), samplePdfs(), serviceWorker(), groundInHead()],
   server: {
     // Contracts are imported from ../shared at build time.
     fs: { allow: ['..'] },

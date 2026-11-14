@@ -1,5 +1,5 @@
 // Captures every screen and state for design review (npm run capture): 390 px in light and dark;
-// Start, a question and Results also at 320 px, and the wide layout at 960, 1280, 1440 and 1920 px,
+// Start, a question and Results also at 320 x 568, the tablet layout at 768 px and the wide layout at 960, 1280, 1440 and 1920 px,
 // in English and Spanish, light and dark. Files go to
 // visual-captures/ (git-ignored). The model, Remote Config and the device model are the app's own
 // test fakes, so nothing leaves the machine.
@@ -157,7 +157,7 @@ for (const theme of ['light', 'dark'] as const) {
       await completeQuickCheck(page);
       await program(page, 'utility-discount');
       await page.getByRole('button', { name: /Check current information/ }).click();
-      await page.getByTestId('current-status').getByRole('button', { name: 'Send' }).click();
+      await page.getByTestId('send-decision').getByRole('button', { name: 'Send' }).click();
       await page.getByTestId('current-line').waitFor();
       await shot(page, '21-current-information', theme);
       await page.goto('/#/discover');
@@ -237,11 +237,11 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
-for (const width of [320, 960, 1280, 1440, 1920] as const) {
+for (const width of [320, 768, 960, 1280, 1440, 1920] as const) {
   for (const theme of width === 320 ? (['light'] as const) : (['light', 'dark'] as const)) {
     for (const lang of ['en', 'es'] as const) {
       test(`${width} px, ${theme}, ${lang}: start, question, results`, async ({ page, context }) => {
-        await page.setViewportSize({ width, height: width === 320 ? 640 : width >= 1440 ? 900 : 800 });
+        await page.setViewportSize({ width, height: width === 320 ? 568 : width === 768 ? 1024 : width >= 1440 ? 900 : 800 });
         await setup(page, context, theme);
         await page.goto('/');
         if (lang === 'es') await chooseLanguage(page, 'es');

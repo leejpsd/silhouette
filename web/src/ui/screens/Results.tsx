@@ -32,10 +32,16 @@ export function ResultsScreen() {
   };
   const engine = useMemo(() => Raw.of(toEngineAnswers(steps, answers)), [steps, answers]);
 
+  // The screen's main action, in the block: a paystub turns a possible result into a clearer one.
   const addPaystub = (
-    <a className="secondary-action" href={routeHref({ name: 'doc' })}>
-      {t('results.addDocument')}
-    </a>
+    <BlockActions>
+      <a className="action" href={routeHref({ name: 'doc' })}>
+        <ActionLabel>{t('results.addDocument')}</ActionLabel>
+        <span className="action-arrow">
+          <ArrowRight />
+        </span>
+      </a>
+    </BlockActions>
   );
   const editAnswers = (
     <button type="button" className="text-link" onClick={() => navigate({ name: 'question', id: steps[0]?.id ?? 'income', then: null })}>
@@ -93,10 +99,7 @@ export function ResultsScreen() {
         <section className="inverted-card" aria-label={t('results.none')}>
           <p className="card-headline">{t('results.none')}</p>
           <p className="small">{t('results.noneHelp')}</p>
-          <div className="card-actions">
-            {editAnswers}
-            {addPaystub}
-          </div>
+          <div className="card-actions">{editAnswers}</div>
         </section>
       )}
       {groups.map((group) =>
@@ -117,7 +120,6 @@ export function ResultsScreen() {
             </ul>
             <div className="card-actions">
               <p className="small">{t('results.maybeHint')}</p>
-              {addPaystub}
             </div>
           </section>
         ) : (
@@ -134,7 +136,7 @@ export function ResultsScreen() {
           </section>
         ),
       )}
-      {!nothingFits && !groups.some((g) => g.verdict === 'maybe') && <div className="results-actions">{addPaystub}</div>}
+      {addPaystub}
       <div className="results-actions">{editAnswers}</div>
       <MoreHelpLinks />
     </div>

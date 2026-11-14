@@ -38,18 +38,50 @@ test.describe('regressions', () => {
     await context.setOffline(false);
   });
 
-  test('the first silhouette of a session is shown being made; reduced motion shows the end state at once', async ({ page, context }) => {
+  test('the preview opens on what could leave; the bars wipe in once, then only new bars animate, and focus stays on the next word', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
     const preview = page.getByTestId('skeleton-preview');
-    await expect(preview).toHaveAttribute('data-mode', 'phone');
+    // Never real values first: the screen opens on the silhouette, its heading.
     await expect(preview).toHaveAttribute('data-mode', 'leave');
+    const total = await preview.locator('.tok').count();
+    await expect(preview.locator('.tok-new')).toHaveCount(total);
+    // Switching views does not replay the bars.
+    await page.getByRole('button', { name: 'On this phone' }).click();
+    await page.getByRole('button', { name: 'What could leave' }).click();
+    await expect(preview.locator('.tok-new')).toHaveCount(0);
+    // Hiding a word animates only the new bar, and focus moves to the next word.
+    const word = preview.getByRole('button', { name: 'Hide “Federal”' }).first();
+    await word.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('hidden-words')).toBeVisible();
+    const fresh = await preview.locator('.tok-new').count();
+    expect(fresh).toBeGreaterThan(0);
+    expect(fresh).toBeLessThan(5);
+    await expect(preview.locator('button.word:focus')).toHaveCount(1);
+    // Reduced motion: nothing animates.
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.reload();
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
     await expect(preview).toHaveAttribute('data-mode', 'leave');
+    await expect(preview.locator('.tok-new')).toHaveCount(0);
+  });
+
+  test('a long document: no turned paper, nothing off the screen, no sideways scroll', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/#/doc');
+    const line = 'Regular Hours 40.00 18.50 740.00 Overtime 4.00 27.75 111.00 Gross Pay 851.00 Northwind Staffing LLC\n';
+    await page.locator('textarea').first().fill(line.repeat(120));
+    await page.getByRole('button', { name: 'Continue with this text' }).click();
+    const preview = page.getByTestId('skeleton-preview');
+    await expect(preview).toHaveAttribute('data-tall', 'true');
+    expect(await preview.evaluate((el) => getComputedStyle(el).transform)).toBe('none');
+    const first = await preview.locator('.tok').first().boundingBox();
+    expect(first!.x).toBeGreaterThanOrEqual(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   });
 
   test('a dot followed by three digits is refused with the accepted form, in English and Spanish', async ({ page }) => {

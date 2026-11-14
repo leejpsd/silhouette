@@ -27,14 +27,21 @@ import {
 } from '../../ai/tasks';
 import { useApp } from '../context';
 import { InferenceBadge } from '../InferenceBadge';
-import { Check, CrossCircle, Minus, Phone } from '../design/icons';
+import { ArrowRight, Check, CrossCircle, Minus, Phone } from '../design/icons';
+import { BlockActions } from '../design/block';
+import { ActionLabel } from '../design/parts';
+import { routeHref } from '../router';
 import { dynamicKey, programName, type CopyKey } from '../i18n';
 import { PACK } from '../pack';
 import { useConfig } from './config';
 import { AnswerError, AnswerText, Loading, RequestRegion, SearchSuggestions, SourceList, useRequest } from './parts';
 import { personalResult, useReasons, whyRows } from './personal';
 import { answerKey } from './session';
-import { allProgramNames, explainInput, programFacts, silhouetteLines, useSilhouette, type Silhouette } from './silhouette';
+import { allProgramNames, explainInput, programFacts } from './silhouette';
+import { programCopy } from './facts';
+
+/** Consent and "sent before" are kept for this kind of content: a program's public information. */
+const PUBLIC_PROGRAM_INFO = 'public:program-info';
 
 const CHIPS: readonly { id: string; key: CopyKey }[] = [
   { id: 'apply', key: 'ask.chip.apply' },
@@ -67,13 +74,12 @@ export function ProgramWhy({ program, verdict }: { program: Program; verdict: Ve
 /** The model-written parts: about the program, prepared and typed questions, current information. */
 export function ProgramAnswers({ program, verdict }: { program: Program; verdict: Verdict }) {
   const { t, locale } = useApp();
-  const silhouette = useSilhouette();
   const config = useConfig();
   const device = useDeviceStatus();
-  const input = silhouette ? explainInput(silhouette, programFacts(t, locale, program), locale) : null;
+  const input = explainInput(programFacts(t, locale, program), locale);
   return (
     <>
-      {silhouette && input && <AboutSection silhouette={silhouette} input={input} programName={programName(locale, program)} />}
+      <AboutSection input={input} program={program} programName={programName(locale, program)} />
       <FreeTextQuestion program={program} verdict={verdict} device={device} />
       {config.groundingSearch && <CurrentStatusSection programId={program.id} />}
     </>
@@ -105,6 +111,8 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
     setPersonal({ status: 'idle' });
   }
   const explain = async () => {
+    // The button goes away while the answer is written: focus stays in this section.
+    heading.current?.focus();
     setPersonal({ status: 'loading' });
     try {
       setPersonal({ status: 'done', result: await explainPersonal(personalResult(t, locale, program, verdict, reasons)) });
@@ -140,11 +148,21 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
               ))
             ) : (
               <p className="criterion-state">
-                <span>{t(dynamicKey(`state.${row.state}`))}</span>
+                <span>{row.stateText}</span>
                 <StateIcon state={row.state} />
               </p>
             )}
-            {row.limits.length > 0 && <p className="visually-hidden">{t(dynamicKey(`state.${row.state}`))}</p>}
+            {row.limits.length > 0 &&
+              (row.stateText === t(dynamicKey(`state.${row.state}`)) ? (
+                <p className="visually-hidden">{row.stateText}</p>
+              ) : (
+                <p className="criterion-state">{row.stateText}</p>
+              ))}
+            {row.notes.map((note) => (
+              <p key={note} className="criterion-note" data-testid="why-note">
+                {note}
+              </p>
+            ))}
           </li>
         ))}
       </ul>
@@ -179,14 +197,15 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
 type Answer = TaskResult<ModelAnswer>;
 
 /** "About this program": the general explanation and prepared questions (cloud-capable, no result). */
-function AboutSection({ silhouette, input, programName: name }: { silhouette: Silhouette; input: ExplainInput; programName: string }) {
+function AboutSection({ input, program, programName: name }: { input: ExplainInput; program: Program; programName: string }) {
   const { t, locale } = useApp();
+  const copy = programCopy(locale, program);
   const id = useId();
   const heading = useRef<HTMLHeadingElement>(null);
-  const base = [locale, silhouette.canonical, input.program.programId];
-  const short = useRequest<Answer>(answerKey('explain-short', ...base), silhouette.canonical, heading);
-  const long = useRequest<Answer>(answerKey('explain-long', ...base), silhouette.canonical, heading);
-  const lines = [...silhouetteLines(t, locale, silhouette.profile), t('send.line.program', { value: name })];
+  const base = [locale, input.program.programId];
+  const short = useRequest<Answer>(answerKey('explain-short', ...base), PUBLIC_PROGRAM_INFO, heading);
+  const long = useRequest<Answer>(answerKey('explain-long', ...base), PUBLIC_PROGRAM_INFO, heading);
+  const lines = [t('send.linePublic'), t('send.line.program', { value: name })];
   const ask = (which: 'short' | 'long') => {
     const request = which === 'short' ? short : long;
     const plan = planExplain(input, which);
@@ -198,18 +217,37 @@ function AboutSection({ silhouette, input, programName: name }: { silhouette: Si
       <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className="section-heading">
         {t('about.title')}
       </h2>
-      <p className="small muted" data-testid="about-lead">
-        {t('about.lead')}
-      </p>
-      {again(short.state.status) && (
-        <button type="button" className="outline-button" onClick={() => ask('short')}>
-          {t('about.explain')}
-        </button>
+      {(copy.summary || copy.renewal) && (
+        <div className="program-copy" data-testid="program-copy">
+          {copy.summary && <p>{copy.summary}</p>}
+          {copy.renewal && <p className="small">{copy.renewal}</p>}
+        </div>
       )}
+      <p className="small muted" data-testid="about-lead">
+        {t('about.leadPublic')}
+      </p>
+      {/* The page's main action, in the block: explain the program; once asked, back to the results. */}
+      <BlockActions>
+        {again(short.state.status) ? (
+          <button type="button" className="action" onClick={() => ask('short')}>
+            <ActionLabel>{t('about.explain')}</ActionLabel>
+            <span className="action-arrow">
+              <ArrowRight />
+            </span>
+          </button>
+        ) : (
+          <a className="action" href={routeHref({ name: 'results' })}>
+            <ActionLabel>{t('detail.back')}</ActionLabel>
+            <span className="action-arrow">
+              <ArrowRight />
+            </span>
+          </a>
+        )}
+      </BlockActions>
       <RequestRegion
         state={short.state}
         lines={lines}
-        notListed
+        publicOnly
         onSend={short.send}
         onSkip={short.skip}
         onCancel={short.cancel}
@@ -230,7 +268,7 @@ function AboutSection({ silhouette, input, programName: name }: { silhouette: Si
         <RequestRegion
           state={long.state}
           lines={lines}
-          notListed
+          publicOnly
           onSend={long.send}
           onSkip={long.skip}
           onCancel={long.cancel}
@@ -242,18 +280,18 @@ function AboutSection({ silhouette, input, programName: name }: { silhouette: Si
       <h3 className="small strong">{t('ask.chips')}</h3>
       <ul className="chips">
         {CHIPS.map((chip) => (
-          <ChipQuestion key={chip.id} chipId={chip.id} question={t(chip.key)} silhouette={silhouette} input={input} programName={name} />
+          <ChipQuestion key={chip.id} chipId={chip.id} question={t(chip.key)} input={input} programName={name} />
         ))}
       </ul>
     </section>
   );
 }
 
-function ChipQuestion({ chipId, question, silhouette, input, programName: name }: { chipId: string; question: string; silhouette: Silhouette; input: ExplainInput; programName: string }) {
+function ChipQuestion({ chipId, question, input, programName: name }: { chipId: string; question: string; input: ExplainInput; programName: string }) {
   const { t, locale } = useApp();
   const button = useRef<HTMLButtonElement>(null);
-  const request = useRequest<Answer>(answerKey('ask-chip', locale, silhouette.canonical, input.program.programId, chipId), silhouette.canonical, button);
-  const lines = [...silhouetteLines(t, locale, silhouette.profile), t('send.line.program', { value: name }), t('send.line.question', { value: question })];
+  const request = useRequest<Answer>(answerKey('ask-chip', locale, input.program.programId, chipId), PUBLIC_PROGRAM_INFO, button);
+  const lines = [t('send.linePublic'), t('send.line.program', { value: name }), t('send.line.question', { value: question })];
   const busy = request.state.status === 'loading';
   const ask = () => {
     if (busy) return;
@@ -270,7 +308,7 @@ function ChipQuestion({ chipId, question, silhouette, input, programName: name }
         <RequestRegion
           state={request.state}
           lines={lines}
-          notListed
+          publicOnly
           onSend={request.send}
           onSkip={request.skip}
           onCancel={request.cancel}

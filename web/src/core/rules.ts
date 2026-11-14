@@ -348,12 +348,26 @@ export interface Comparison {
   readonly limit: number | null;
   /** The person's value: a number, the income band when only a band was given, or null when unanswered. */
   readonly yours: number | IncomeBand | null;
+  /**
+   * Whether this comparison is what produces the criterion's state. Inside an `or` that is met, only a
+   * comparison that holds; inside an `and` that is not met, only a comparison that fails.
+   */
+  readonly decisive: boolean;
+  /** The limit was looked up for a household of this size or more (the household is larger than the cap). */
+  readonly capped?: number | undefined;
 }
 
 export interface CriterionReason {
   readonly id: string;
   readonly state: CriterionState;
   readonly comparisons: readonly Comparison[];
+  /** An `or` met by a branch that is not a comparison with a limit: the answer (and value) that met it. */
+  readonly metBy?: { readonly variable: string; readonly value: string | null } | undefined;
+  /**
+   * The state is `mixed` because of `uncertainIf`, not because the income is uncertain: the answers
+   * `uncertainIf` reads (for example someone 60 or older), which allow a way in although the logic fails.
+   */
+  readonly exception?: readonly string[] | undefined;
 }
 
 /**
@@ -389,9 +403,28 @@ export function criterionReasons(pack: RulePack, bands: Bands, rawAnswers: Raw<A
   const result = verdicts(pack, bands, rawAnswers).find((v) => v.programId === programId);
   if (!program || !result) return [];
   const { base, unavailable, exactIncome, band } = engineData(pack, bands, reveal(rawAnswers));
+
+  // The outcome of one expression for these answers: at every sample point when only a band is known.
+  type Outcome = 'true' | 'false' | 'mixed' | 'unknown';
+  const outcome = (expr: unknown): Outcome => {
+    const once = (data: unknown) => evaluate(expr, data, { unavailable });
+    const results =
+      exactIncome || band === null
+        ? [once(base)]
+        : samplePoints(band, [...numericLiterals(pack.constants), ...numericLiterals(expr)]).map((point) => once({ ...base, annualIncome: point }));
+    if (results.includes(true) && results.includes(false)) return 'mixed';
+    if (results.some((r) => r !== true && r !== false)) return 'unknown';
+    return results[0] ? 'true' : 'false';
+  };
+  const householdSize = typeof base['householdSize'] === 'number' ? (base['householdSize'] as number) : null;
+  const capped = (limit: unknown): number | undefined =>
+    householdSize !== null && householdSize > bands.householdSizeCap && /"householdSize(Capped)?"/.test(JSON.stringify(limit)) ? bands.householdSizeCap : undefined;
+
   return program.criteria.map((criterion) => {
     const state = result.criteria.find((c) => c.id === criterion.id)?.state ?? 'unknown';
-    const comparisons = comparisonsOf(criterion.logic).map(({ variable, op, limit }): Comparison => {
+    const [op, args] = Object.entries(criterion.logic as object)[0] ?? [];
+    const branches: unknown[] = (op === 'or' || op === 'and') && Array.isArray(args) ? args : [criterion.logic];
+    const comparisons = comparisonsOf(criterion.logic).map(({ variable, op: cmp, limit }): Comparison => {
       const value = evaluate(limit, base, { unavailable });
       const yours =
         variable === 'annualIncome'
@@ -401,8 +434,59 @@ export function criterionReasons(pack: RulePack, bands: Bands, rawAnswers: Raw<A
           : isNumber(base[variable])
             ? (base[variable] as number)
             : null;
-      return { variable, op, limit: isNumber(value) ? value : null, yours };
+      const node = branches.find((b) => {
+        const [bop, bargs] = Object.entries(b as object)[0] ?? [];
+        return bop === cmp && Array.isArray(bargs) && (bargs[0] as { var?: unknown })?.var === variable && bargs[1] === limit;
+      });
+      const own = node === undefined ? 'unknown' : outcome(node);
+      const decisive =
+        op === 'or'
+          ? state === 'pass'
+            ? own === 'true'
+            : state === 'fail' || own !== 'false'
+          : op === 'and'
+            ? state === 'fail'
+              ? own === 'false'
+              : state === 'pass' || own !== 'true'
+            : true;
+      const cap = capped(limit);
+      return { variable, op: cmp, limit: isNumber(value) ? value : null, yours, decisive, ...(cap !== undefined ? { capped: cap } : {}) };
     });
-    return { id: criterion.id, state, comparisons };
+    let metBy: CriterionReason['metBy'];
+    if (op === 'or' && state === 'pass' && !comparisons.some((c) => c.decisive)) {
+      const branch = branches.find((b) => !comparisonsOf(b).length && outcome(b) === 'true');
+      if (branch !== undefined) metBy = answerIn(branch);
+    }
+    let exception: string[] | undefined;
+    if (state === 'mixed' && criterion.uncertainIf !== undefined && outcome(criterion.logic) === 'false') {
+      exception = [...new Set(varsRead(criterion.uncertainIf))];
+    }
+    return { id: criterion.id, state, comparisons, ...(metBy ? { metBy } : {}), ...(exception ? { exception } : {}) };
   });
+}
+
+/** The answer an expression such as `{"in": ["snap", {"var": "benefits"}]}` or `{"==": [{"var": "x"}, "yes"]}` checks. */
+function answerIn(expr: unknown): { variable: string; value: string | null } | undefined {
+  const [op, args] = Object.entries(expr as object)[0] ?? [];
+  if (!Array.isArray(args) || args.length !== 2) return undefined;
+  const varOf = (x: unknown) => (x !== null && typeof x === 'object' && typeof (x as { var?: unknown }).var === 'string' ? ((x as { var: string }).var) : null);
+  const literal = (x: unknown) => (typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean' ? String(x) : null);
+  if (op === 'in' && varOf(args[1])) return { variable: varOf(args[1]) as string, value: literal(args[0]) };
+  if (op === '==' && varOf(args[0])) return { variable: varOf(args[0]) as string, value: literal(args[1]) };
+  if (op === '==' && varOf(args[1])) return { variable: varOf(args[1]) as string, value: literal(args[0]) };
+  const vars = varsRead(expr);
+  return vars[0] ? { variable: vars[0], value: null } : undefined;
+}
+
+/** The answers an expression reads (not constants), in order. */
+function varsRead(expr: unknown, out: string[] = []): string[] {
+  if (Array.isArray(expr)) for (const x of expr) varsRead(x, out);
+  else if (expr !== null && typeof expr === 'object') {
+    for (const [k, v] of Object.entries(expr)) {
+      if (k === 'var' && typeof v === 'string') {
+        if (!v.startsWith('constants.')) out.push(v === 'householdSizeCapped' ? 'householdSize' : v);
+      } else varsRead(v, out);
+    }
+  }
+  return out;
 }

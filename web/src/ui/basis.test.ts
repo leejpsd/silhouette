@@ -38,10 +38,13 @@ describe('annualization basis line', () => {
 
   it('amounts are money in the pack currency, formatted for the language', () => {
     const annual = validatePaystubs(Raw.of([{ grossPay: 1271.88, payFrequency: 'semimonthly' }]), 'us-ca').annualization!;
-    expect(basisText(annual, [{ grossPay: 1271.88, payFrequency: 'semimonthly' }], 'es', translator('es'))).toContain('1271,88');
+    // The pack's numberFormat (en-US) in every interface language, always grouped.
+    expect(basisText(annual, [{ grossPay: 1271.88, payFrequency: 'semimonthly' }], 'es', translator('es'))).toContain('$1,271.88');
     expect(formatMoney('en', 3000)).toBe('$3,000');
     expect(formatMoney('en', 28000.5)).toBe('$28,000.50');
-    expect(formatMoney('es', 30524)).toMatch(/^30\.524\s\$$/);
+    expect(formatMoney('es', 30524)).toBe('$30,524');
+    expect(formatMoney('es', 3000)).toBe('$3,000');
+    expect(formatMoney('ko', 1998)).toBe('$1,998');
   });
 
   it('one paystub: gross × periods', () => {

@@ -6,10 +6,10 @@ import { allowlistFor, introducersFor } from '../src/ui/doc/allowlists';
 import { tidyNamePointers } from '../src/core/tidy';
 import { extractPointers, presentSkeleton, TaskError, type DocType } from '../src/ai/tasks';
 import { asPublic } from '../src/core/types';
-import { generalize, silhouetteVerdicts, type ExactProfile } from '../src/core/generalize';
-import { askChip, explainProgram, planAskChip, planExplain } from '../src/ai/tasks';
+import type { ExactProfile } from '../src/core/generalize';
+import { askChip, explainProgram, planAskChip, planExplain, type ExplainInput } from '../src/ai/tasks';
 import { translator, type Locale } from '../src/ui/i18n';
-import { BANDS, PACK } from '../src/ui/pack';
+import { PACK } from '../src/ui/pack';
 import { programFacts } from '../src/ui/answers/facts';
 import { buildConfig, type VariantSpec } from './variants';
 
@@ -83,11 +83,10 @@ export interface AnswerInput {
 }
 
 async function evalAnswer(input: AnswerInput) {
-  const profile = generalize(Raw.of(input.profile), BANDS);
-  const verdict = silhouetteVerdicts(PACK, BANDS, profile).find((v) => v.programId === input.programId);
+  // Since explain.v5 / ask.v4 the request carries nothing about the person: the profile is not used.
   const program = PACK.programs.find((p) => p.id === input.programId);
-  if (!verdict || !program) throw new Error('unknown program');
-  const explain = { profile, verdict, program: programFacts(translator(input.locale), input.locale, program), locale: input.locale };
+  if (!program) throw new Error('unknown program');
+  const explain = asPublic({ program: programFacts(translator(input.locale), input.locale, program), locale: input.locale }) as ExplainInput;
   const plan = input.kind === 'chip' ? planAskChip(explain, asPublic({ id: 'q', question: input.question ?? '' })) : planExplain(explain, input.kind);
   const started = performance.now();
   try {
@@ -97,7 +96,6 @@ async function evalAnswer(input: AnswerInput) {
       taskId: plan.taskId,
       reason: result.reason,
       inferenceSource: result.inferenceSource,
-      verdict: verdict.verdict,
       prompt: plan.prompt,
       text: result.value.text,
       latencyMs: Math.round(performance.now() - started),

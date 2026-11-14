@@ -1,11 +1,11 @@
 // Persistent chrome: the header with the wordmark and the language control, the one-line demo
 // notice, the "Leaving your device" count row with its record, and "Delete everything".
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { useId, useRef, useState, useSyncExternalStore } from 'react';
 import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
-import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, type Locale } from './i18n';
+import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, type CopyKey, type Locale } from './i18n';
 import { useApp } from './context';
 import { Count, Paper, Sheet, ActionLabel } from './design/parts';
-import { Caret, Check, Close, CrossCircle, Phone, Trash } from './design/icons';
+import { Caret, Check, CrossCircle, Phone, Trash } from './design/icons';
 
 const SHORT_NAMES: Record<Locale, string> = { en: 'EN', es: 'ES', ko: '한국어' };
 
@@ -30,7 +30,7 @@ export function Header({ onLocale }: { onLocale: (locale: Locale) => void }) {
       >
         {SHORT_NAMES[locale]}
       </button>
-      <Sheet open={open} label={t('nav.language')} labelledBy={headline} onClose={() => setOpen(false)} closeLabel={t('nav.close')} returnFocus={button} testId="language-sheet">
+      <Sheet open={open} label={t('nav.language')} labelledBy={headline} onClose={() => setOpen(false)} closeLabel={t('nav.close')} returnFocus={button} testId="language-sheet" count={<SheetCount />}>
         <h2 id={headline} className="visually-hidden">
           {t('nav.language')}
         </h2>
@@ -81,6 +81,7 @@ export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
         closeLabel={t('nav.close')}
         returnFocus={more}
         testId="demo-sheet"
+        count={<SheetCount />}
         footer={
           <button type="button" className="action" onClick={() => setOpen(false)}>
             <ActionLabel>{t('nav.close')}</ActionLabel>
@@ -100,21 +101,74 @@ export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
 
 const time = (locale: Locale, at: number) => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit', hourCycle: 'h23' }).format(at);
 
-/** The count row of the bottom block; "Details" opens the record of everything that left this device. */
-export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
-  const { t, locale } = useApp();
+/** What the record counts: requests that left and completed, those that did not complete, answers kept. */
+function useLedger() {
   const { entries, clearedAt } = useSyncExternalStore(subscribeOutbound, outboundState, outboundState);
-  const [open, setOpen] = useState(false);
-  const panel = useId();
-  const details = useRef<HTMLButtonElement>(null);
-  const heading = useRef<HTMLHeadingElement>(null);
-  const fieldName = (f: string) => {
+  const left = leftDevice(entries);
+  return {
+    entries,
+    clearedAt,
+    left,
+    sent: left.filter((e) => e.status === 'sent').length,
+    incomplete: left.filter((e) => e.status !== 'sent').length,
+    kept: entries.length - left.length,
+  };
+}
+
+/** The title of a record entry: what a request carried, or what an answer kept on this device was for. */
+const KEPT_TITLES: Readonly<Record<string, CopyKey>> = {
+  'kept:document': 'model.title',
+  'kept:photo': 'model.title',
+  'kept:about': 'about.title',
+  'kept:ask': 'ask.title',
+  'kept:why': 'why.title',
+  'kept:own-question': 'ask.free.label',
+};
+
+function useSummary() {
+  const { t, locale } = useApp();
+  const { left, clearedAt } = useLedger();
+  const fieldName = useFieldName();
+  const kinds = [...new Set(left.flatMap((e) => e.fields))].map(fieldName);
+  const date = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(clearedAt);
+  return left.length > 0 ? t('outbound.count', { count: left.length, list: kinds.join(', ') }) : clearedAt !== null ? t('leaving.clearedShort', { date }) : t('leaving.none');
+}
+
+function useFieldName() {
+  const { t } = useApp();
+  return (f: string) => {
+    const kept = KEPT_TITLES[f];
+    if (kept) return t(kept);
     const key = `outbound.field.${f}`;
     return lookup('en', key) === undefined ? f : t(dynamicKey(key));
   };
-  const left = leftDevice(entries);
-  const kept = entries.length - left.length;
-  const kinds = [...new Set(left.flatMap((e) => e.fields))].map(fieldName);
+}
+
+/** The count inside every sheet, so what left this device stays in view while a sheet is open. */
+export function SheetCount() {
+  const { t } = useApp();
+  const { left } = useLedger();
+  const summary = useSummary();
+  return (
+    <div className="sheet-count" data-testid="sheet-count">
+      <Count value={left.length} />
+      <p className="count-text">
+        <span className="count-title">{t('leaving.title')}</span>
+        <span className="count-sub">{summary}</span>
+      </p>
+    </div>
+  );
+}
+
+/** The count row of the bottom block; "Details" opens the record of everything that left this device. */
+export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
+  const { t, locale } = useApp();
+  const { entries, clearedAt, left, sent, incomplete, kept } = useLedger();
+  const [open, setOpen] = useState(false);
+  const details = useRef<HTMLButtonElement>(null);
+  const headline = useId();
+  const fieldName = useFieldName();
+  const summary = useSummary();
   const date = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(clearedAt);
   const shortDate = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(clearedAt);
   const carriesProfile = left.some((e) => e.fields.includes('profile-silhouette') || e.fields.includes('county-area'));
@@ -126,76 +180,49 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
         : e.status === 'sent'
           ? t('outbound.status.sent', { status: e.httpStatus ?? '' })
           : t('outbound.status.failed', { reason: e.error ?? '' });
-  const summary =
-    left.length > 0
-      ? t('outbound.count', { count: left.length, list: kinds.join(', ') })
-      : clearedAt !== null
-        ? t('leaving.clearedShort', { date })
-        : t('leaving.none');
-
-  useEffect(() => {
-    if (open) heading.current?.focus();
-  }, [open]);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  });
-  const close = () => {
-    setOpen(false);
-    requestAnimationFrame(() => details.current?.focus());
-  };
 
   return (
-    <section
+    <div
       className="leaving"
-      aria-labelledby="leaving-title"
       data-testid="leaving-bar"
       data-outbound-count={left.length}
       data-kept-count={kept}
       data-cleared={clearedAt !== null ? 'true' : 'false'}
       data-open={open}
     >
-      {open && (
-        <>
-          <div className="sheet-glimpse" aria-hidden="true" onClick={close} />
-          <div id={panel} className="leaving-panel record-sheet" role="region" aria-labelledby={`${panel}-title`}>
-            <div className="sheet-head">
-              <h2 id={`${panel}-title`} ref={heading} tabIndex={-1} className="sheet-label">
-                {t('leaving.title')}
-              </h2>
-              <button type="button" className="icon-button" aria-expanded="true" aria-controls={panel} aria-label={t('leaving.hide')} onClick={close}>
-                <Close />
-              </button>
-            </div>
-            {entries.length > 0 ? (
-              <p className="record-headline" data-testid="record-headline">
-                <span className="leave-mark">{t('leaving.sentCount', { count: left.length })}</span> <span className="kept-mark">{t('leaving.keptCount', { count: kept })}</span>
-              </p>
-            ) : (
-              <p className="record-zero" aria-hidden="true">
-                0
-              </p>
-            )}
-            {entries.length === 0 && clearedAt !== null && <p className="record-deleted">{t('leaving.recordDeleted', { date: shortDate })}</p>}
-            {entries.length > 0 ? <p>{t('leaving.bodySent')}</p> : clearedAt !== null ? <p>{t('leaving.cleared', { date })}</p> : <p>{t('leaving.body')}</p>}
-            {left.length > 0 && !carriesProfile && <p>{t('leaving.noValues')}</p>}
-            {entries.length > 0 && clearedAt !== null && <p className="record-note">{t('leaving.cleared', { date })}</p>}
-            <p className="record-note">{t('leaving.network')}</p>
-            {entries.length > 0 && (
-              <ol className="outbound-list" data-testid="outbound-list">
-                {entries.map((e) => (
-                  <OutboundItem key={e.id} entry={e} title={e.fields.map(fieldName).join(', ')} status={statusLine(e)} at={time(locale, e.at)} />
-                ))}
-              </ol>
-            )}
-            <DeleteEverything onDelete={onDelete} />
-          </div>
-        </>
-      )}
+      <Sheet open={open} label={t('leaving.title')} labelledBy={headline} onClose={() => setOpen(false)} closeLabel={t('leaving.hide')} returnFocus={details} testId="record-sheet">
+        <div className="record">
+          {entries.length > 0 ? (
+            <h2 className="record-headline" id={headline} data-testid="record-headline">
+              {/* Pink marks what left, so it starts at one. */}
+              <span className={sent > 0 ? 'leave-mark' : 'zero-mark'}>{t('leaving.sentCount', { count: sent })}</span> <span className="kept-mark">{t('leaving.keptCount', { count: kept })}</span>
+            </h2>
+          ) : (
+            <h2 className="record-zero" id={headline}>
+              <span aria-hidden="true">0</span>
+              <span className="visually-hidden">{summary}</span>
+            </h2>
+          )}
+          {incomplete > 0 && (
+            <p className="record-incomplete" data-testid="record-incomplete">
+              {t('leaving.notCompleted', { count: incomplete })}
+            </p>
+          )}
+          {entries.length === 0 && clearedAt !== null && <p className="record-deleted">{t('leaving.recordDeleted', { date: shortDate })}</p>}
+          {entries.length > 0 ? <p>{t('leaving.bodySent')}</p> : clearedAt !== null ? <p>{t('leaving.cleared', { date })}</p> : <p>{t('leaving.body')}</p>}
+          {left.length > 0 && !carriesProfile && <p>{t('leaving.noValues')}</p>}
+          {entries.length > 0 && clearedAt !== null && <p className="record-note">{t('leaving.cleared', { date })}</p>}
+          <p className="record-note">{t('leaving.network')}</p>
+          {entries.length > 0 && (
+            <ol className="outbound-list" data-testid="outbound-list">
+              {entries.map((e) => (
+                <OutboundItem key={e.id} entry={e} title={e.fields.map(fieldName).join(', ')} status={statusLine(e)} at={time(locale, e.at)} />
+              ))}
+            </ol>
+          )}
+          <DeleteEverything onDelete={onDelete} />
+        </div>
+      </Sheet>
       <div className="count-row">
         <Count value={left.length} />
         <p className="count-text">
@@ -206,11 +233,11 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
             {summary}
           </span>
         </p>
-        <button ref={details} type="button" className="details-button" aria-expanded={open} aria-controls={panel} onClick={() => setOpen(true)} hidden={open}>
+        <button ref={details} type="button" className="details-button" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
           {t('leaving.details')}
         </button>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -273,6 +300,7 @@ export function DeleteEverything({ onDelete, onDone }: { onDelete: () => Promise
         closeLabel={t('nav.close')}
         returnFocus={button}
         testId="delete-sheet"
+        count={<SheetCount />}
         footer={
           <>
             <button

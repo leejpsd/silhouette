@@ -13,25 +13,26 @@ interface BlockContextValue {
   readonly slot: HTMLElement | null;
   setSlot(el: HTMLElement | null): void;
   readonly mode: BlockMode;
-  register(mode: BlockMode): () => void;
+  /** The registration whose actions the block shows: the latest one (a decision opened over a page). */
+  readonly top: number | null;
+  register(id: number, mode: BlockMode): () => void;
 }
 
 const BlockContext = createContext<BlockContextValue | null>(null);
+let nextId = 0;
 
 export function BlockProvider({ children }: { children: ReactNode }) {
   const [slot, setSlot] = useState<HTMLElement | null>(null);
-  const [modes, setModes] = useState<BlockMode[]>([]);
+  const [stack, setStack] = useState<{ id: number; mode: BlockMode }[]>([]);
+  const last = stack[stack.length - 1];
   const value: BlockContextValue = {
     slot,
     setSlot,
-    mode: modes[modes.length - 1] ?? 'compact',
-    register: (mode) => {
-      setModes((m) => [...m, mode]);
-      return () =>
-        setModes((m) => {
-          const i = m.lastIndexOf(mode);
-          return i === -1 ? m : [...m.slice(0, i), ...m.slice(i + 1)];
-        });
+    mode: last?.mode ?? 'compact',
+    top: last?.id ?? null,
+    register: (id, mode) => {
+      setStack((s) => [...s, { id, mode }]);
+      return () => setStack((s) => s.filter((r) => r.id !== id));
     },
   };
   return <BlockContext.Provider value={value}>{children}</BlockContext.Provider>;
@@ -43,16 +44,20 @@ function useBlock(): BlockContextValue {
   return value;
 }
 
-/** Puts a screen's main action into the bottom block. */
+/**
+ * Puts a screen's main action into the bottom block. The block carries one main action: when a step
+ * opens over the page (the decision before sending), its actions replace the page's until it closes.
+ */
 export function BlockActions({ mode = 'standard', children }: { mode?: Exclude<BlockMode, 'compact'>; children: ReactNode }) {
-  const { slot, register } = useBlock();
+  const { slot, register, top } = useBlock();
+  const [id] = useState(() => ++nextId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useLayoutEffect(() => register(mode), [mode]);
-  return slot ? createPortal(<div className={`block-actions-inner block-${mode}`}>{children}</div>, slot) : null;
+  useLayoutEffect(() => register(id, mode), [mode]);
+  return slot && top === id ? createPortal(<div className={`block-actions-inner block-${mode}`}>{children}</div>, slot) : null;
 }
 
 /** The block itself; `count` is the count row (the "Leaving your device" bar). */
-export function BottomBlock({ count }: { count: ReactNode }) {
+export function BottomBlock({ count, label }: { count: ReactNode; label: string }) {
   const { setSlot, mode } = useBlock();
   const ref = useRef<HTMLDivElement>(null);
   const [tall, setTall] = useState(false);
@@ -112,9 +117,23 @@ export function BottomBlock({ count }: { count: ReactNode }) {
   }, []);
 
   return (
-    <div ref={ref} className="block" data-mode={mode} data-tall={tall} data-typing={typing} data-testid="bottom-block">
+    <div ref={ref} className="block" role="region" aria-label={label} data-mode={mode} data-tall={tall} data-typing={typing} data-testid="bottom-block">
       <div className="block-actions" ref={setSlot} />
       {count}
     </div>
   );
+}
+
+/** Whether the wide two-column layout is in use (layout.wide.from). */
+export function useWide(): boolean {
+  const query = `(min-width: ${WIDE_FROM}px)`;
+  const [wide, setWide] = useState(() => window.matchMedia?.(query).matches ?? false);
+  useEffect(() => {
+    const list = window.matchMedia?.(query);
+    if (!list) return;
+    const on = () => setWide(list.matches);
+    list.addEventListener('change', on);
+    return () => list.removeEventListener('change', on);
+  }, [query]);
+  return wide;
 }

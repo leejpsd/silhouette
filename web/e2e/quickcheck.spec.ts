@@ -214,7 +214,7 @@ test.describe('Quick Check to first result', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'es');
     await chooseLanguage(page, 'ko');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('받을 수 있을지도 모르는 공공 지원을 찾아보세요');
-    await expect(page.getByText('기기 밖으로 나가는 정보')).toBeVisible();
+    await expect(page.locator('#leaving-title')).toHaveText('기기 밖으로 나가는 정보');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
   });

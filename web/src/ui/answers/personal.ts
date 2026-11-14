@@ -8,7 +8,7 @@ import type { IncomeBand } from '../../core/generalize';
 import { Raw } from '../../core/types';
 import type { PersonalResult } from '../../ai/on-device';
 import { useApp } from '../context';
-import { dynamicKey, formatMoney, formatNumber, programName, type Locale, type Translate } from '../i18n';
+import { dynamicKey, formatMoney, formatNumber, lookup, programName, type Locale, type Translate } from '../i18n';
 import { BANDS, PACK } from '../pack';
 import { toEngineAnswers } from '../quickcheck';
 import { programFacts } from './facts';
@@ -17,8 +17,12 @@ export interface WhyRow {
   readonly id: string;
   readonly label: string;
   readonly state: CriterionState;
-  /** `limit {limit}, yours {value}` for each comparison with a limit the rules state. */
+  /** What the state means here: the state word, or what the state depends on when it is not the income. */
+  readonly stateText: string;
+  /** `limit {limit}, yours {value}` for each comparison that produces the state (rules in why.ts notes). */
   readonly limits: readonly { readonly limit: string; readonly yours: string }[];
+  /** How the criterion was met another way, and which household size a limit is for. */
+  readonly notes: readonly string[];
 }
 
 const isBand = (value: Comparison['yours']): value is IncomeBand => typeof value === 'object' && value !== null;
@@ -34,22 +38,43 @@ export function shownValue(locale: Locale, value: Comparison['yours'], none: str
   return n(value);
 }
 
+/** The label of an answer that met a criterion: the option chosen when there is one, else the question's subject. */
+function answerLabel(locale: Locale, variable: string, value: string | null): string {
+  return (value !== null ? lookup(locale, `option.${variable}.${value}`) : undefined) ?? lookup(locale, `variable.${variable}`) ?? variable;
+}
+
 /**
- * The reasons as lines. On screen (`money`, the default) income limits and answers are money in the
- * pack's currency; the on-device prompt keeps plain numbers.
+ * The reasons as lines that never contradict the verdict:
+ * 1. "limit / yours" is shown only for a comparison that produces the criterion's state;
+ * 2. a criterion met another way (an `or` branch such as receiving a benefit) says which way;
+ * 3. a `mixed` state that comes from `uncertainIf` says what it depends on instead of the income;
+ * 4. a limit looked up for the largest household size in the table says so.
+ * On screen (`money`, the default) income limits and answers are money; the on-device prompt keeps
+ * plain numbers.
  */
 export function whyRows(t: Translate, locale: Locale, program: Program, reasons: readonly CriterionReason[], money = true): WhyRow[] {
-  return reasons.map((r) => ({
-    id: r.id,
-    label: t(dynamicKey(`criterion.${program.id}.${r.id}`)),
-    state: r.state,
-    limits: r.comparisons
-      .filter((c) => c.limit !== null)
-      .map((c) => {
+  return reasons.map((r) => {
+    const shown = r.comparisons.filter((c) => c.limit !== null && c.decisive);
+    const notes: string[] = [];
+    if (r.metBy) notes.push(t('why.metBy', { way: answerLabel(locale, r.metBy.variable, r.metBy.value) }));
+    const cap = shown.find((c) => c.capped !== undefined)?.capped;
+    if (cap !== undefined) notes.push(t('why.capNote', { cap }));
+    const stateText =
+      r.exception && r.exception.length > 0
+        ? t('why.exception', { what: r.exception.map((v) => lookup(locale, `variable.${v}`) ?? v).join(', ') })
+        : t(dynamicKey(`state.${r.state}`));
+    return {
+      id: r.id,
+      label: t(dynamicKey(`criterion.${program.id}.${r.id}`)),
+      state: r.state,
+      stateText,
+      limits: shown.map((c) => {
         const isMoney = money && isMoneyVariable(c.variable);
         return { limit: shownValue(locale, c.limit as number, '', isMoney), yours: shownValue(locale, c.yours, t('send.unanswered'), isMoney) };
       }),
-  }));
+      notes,
+    };
+  });
 }
 
 /** State words of shared/prompts/explain-personal.v1.md (the prompt is in English). */
@@ -64,13 +89,16 @@ const PROMPT_STATE: Readonly<Record<CriterionState, string>> = {
 export function personalResult(t: Translate, locale: Locale, program: Program, verdict: Verdict, reasons: readonly CriterionReason[]): Raw<PersonalResult> {
   const lines = whyRows(t, 'en', program, reasons, false).map((row) => {
     const limits = row.limits.map((l) => ` (limit ${l.limit}, yours ${l.yours})`).join('');
-    return `- ${row.label}: ${PROMPT_STATE[row.state]}${limits}`;
+    const notes = row.notes.map((n) => ` ${n}`).join('');
+    const state = row.stateText === t(dynamicKey(`state.${row.state}`)) ? PROMPT_STATE[row.state] : row.stateText;
+    return `- ${row.label}: ${state}${limits}${notes}`;
   });
   return Raw.of({
     locale,
     programName: programName(locale, program),
     facts: programFacts(t, locale, program).facts,
     verdictLabel: t(dynamicKey(`verdict.${verdict}`)),
+    verdict,
     criteriaLines: lines.join('\n'),
   });
 }
