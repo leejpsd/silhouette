@@ -56,6 +56,15 @@ final class AppModel {
     @ObservationIgnored var pendingContent: [String: String] = [:]
     @ObservationIgnored var tasks: [String: Task<Void, Never>] = [:]
 
+    /// The sheet over the screen (record, language, demo rules, delete, the step before sending).
+    var sheet: AppSheet?
+    /// The count the stamp last stamped in (it stamps once, when the count goes up).
+    @ObservationIgnored var stampedCount = 0
+    /// When the record of what left was deleted (memory only).
+    private(set) var recordClearedAt: Date?
+    /// UI tests: show the offline state.
+    @ObservationIgnored var forceOffline = false
+
     @ObservationIgnored private let store: AnswerStore
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private var outboundObserver: UUID?
@@ -125,6 +134,68 @@ final class AppModel {
         var kinds: [String] = []
         for field in left.flatMap(\.fields) where !kinds.contains(field) { kinds.append(field) }
         return t("outbound.count", ["count": String(left.count), "list": kinds.map(outboundFieldName).joined(separator: ", ")])
+    }
+
+    /// Requests that left the device (`leaving.sentCount`).
+    var sentCount: Int { outbound.filter { !$0.isAnsweredOnDevice }.count }
+    /// Answers written on the device that never left (`leaving.keptCount`).
+    var keptCount: Int { outbound.filter(\.isAnsweredOnDevice).count }
+
+    /// The count row's subline: what left, or when the record was deleted, or nothing.
+    var countSubline: String {
+        if sentCount == 0, let cleared = recordClearedAt { return t("leaving.clearedShort", ["date": longDate(cleared)]) }
+        return outboundSummary
+    }
+
+    /// Whether anything that left carried the profile silhouette (otherwise no answer or value left).
+    var outboundCarriesProfile: Bool {
+        outbound.contains { !$0.isAnsweredOnDevice && ($0.fields.contains("profile-silhouette") || $0.fields.contains("county-area")) }
+    }
+
+    /// The status line in the record: answered on the device has no host and no body.
+    func recordStatus(_ entry: OutboundEntry) -> String {
+        if case .answeredOnDevice = entry.status { return t("outbound.status.answeredShort") }
+        return statusText(entry)
+    }
+
+    func time(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: locale.rawValue)
+        f.setLocalizedDateFormatFromTemplate("HHmm")
+        return f.string(from: date)
+    }
+
+    func shortDate(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: locale.rawValue)
+        f.setLocalizedDateFormatFromTemplate("MMMd")
+        return f.string(from: date)
+    }
+
+    func longDate(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: locale.rawValue)
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        return f.string(from: date)
+    }
+
+    /// A document amount as the jurisdiction's paperwork writes it (the pack's number format), with
+    /// decimals only when it has them.
+    func documentAmount(_ value: Double) -> String {
+        let f = NumberFormatter()
+        f.locale = Locale(identifier: bundle.packInfo.numberFormat ?? locale.rawValue)
+        f.numberStyle = .decimal
+        f.usesGroupingSeparator = true
+        let whole = value.rounded() == value
+        f.minimumFractionDigits = whole ? 0 : 2
+        f.maximumFractionDigits = 2
+        return f.string(from: NSNumber(value: value)) ?? String(value)
+    }
+
+    /// Money in the pack's currency, written in the pack's number format.
+    func money(_ value: Double, cents: Bool = false) -> String {
+        CopyBook.formatMoney(value, locale, currency: bundle.packInfo.currency, format: bundle.packInfo.numberFormat, cents: cents)
     }
 
     func statusText(_ entry: OutboundEntry) -> String {
@@ -225,7 +296,16 @@ final class AppModel {
         incomeChange = nil
         locale = AppLocale.preferred(from: Locale.preferredLanguages)
         path = []
+        sheet = nil
+        stampedCount = 0
+        recordClearedAt = Date()
         notice = "delete.done"
+    }
+
+    /// The wordmark: back to the start.
+    func goHome() {
+        sheet = nil
+        path = []
     }
 
     var hasSavedData: Bool { store.hasSavedData }
@@ -268,7 +348,7 @@ final class AppModel {
 
     /// Whether a model can be reached: the device model, or the network with a Firebase configuration.
     var deviceModelAvailable: Bool { port.deviceAvailability() == .available }
-    var isOnline: Bool { testModel.map { $0 == "cloud" } ?? (network.isOnline && FirebaseServices.isConfigured) }
+    var isOnline: Bool { testModel.map { $0.hasPrefix("cloud") } ?? (network.isOnline && FirebaseServices.isConfigured) }
 
     /// The reader for this silhouette: a model when one can be reached; otherwise, for a bundled sample
     /// only, its answer key (routing.json offlineSample); otherwise none.

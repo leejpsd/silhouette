@@ -19,11 +19,19 @@ public enum OutputCheck {
         }
     }
 
-    /// NFC, locale-independent lowercase, curly apostrophes to `'`, whitespace runs to one space.
+    /// Invisible characters removed before matching: soft hyphen, zero-width space, joiners, word
+    /// joiner, byte order mark.
+    static func isInvisible(_ u: UInt16) -> Bool {
+        u == 0x00AD || (0x200B...0x200D).contains(u) || u == 0x2060 || u == 0xFEFF
+    }
+
+    /// NFC, locale-independent lowercase, invisible characters removed, curly apostrophes to `'`,
+    /// whitespace runs to one space.
     static func normalize(_ text: String) -> [UInt16] {
         var out: [UInt16] = []
         var inSpace = false
         for u in text.precomposedStringWithCanonicalMapping.lowercased().utf16 {
+            if isInvisible(u) { continue }
             if isJSWhitespace(u) {
                 if !inSpace { out.append(0x20) }
                 inSpace = true
@@ -35,13 +43,18 @@ public enum OutputCheck {
         return out
     }
 
-    /// True when the text must not be shown.
-    public static func isBlocked(_ text: String, locale: String, scope: Scope, checks: JSON) -> Bool {
+    /// True when the text must not be shown. General tasks block every result phrase (positive,
+    /// negative, criterion); a personal task with the person's `verdict` also blocks the phrases that
+    /// contradict it (positive against `unlikely`, negative against `likely`).
+    public static func isBlocked(_ text: String, locale: String, scope: Scope, checks: JSON, verdict: String? = nil) -> Bool {
         let locales = checks["locales"]?.objectValue ?? JSONObject()
         let rules = locales[locale] ?? locales["en"] ?? .null
         func list(_ key: String) -> [[UInt16]] { (rules[key]?.arrayValue ?? []).compactMap(\.stringValue).map { Array($0.utf16) } }
         let allowBefore = list("allowBefore")
-        let phrases = scope == .general ? list("definite") + list("overall") : list("definite")
+        var phrases = list("definite")
+        if scope == .general { phrases += list("positive") + list("negative") + list("criterion") }
+        else if verdict == "unlikely" { phrases += list("positive") }
+        else if verdict == "likely" { phrases += list("negative") }
         let haystack = normalize(text)
         for phrase in phrases where !phrase.isEmpty && phrase.count <= haystack.count {
             for at in 0...(haystack.count - phrase.count) where haystack[at..<(at + phrase.count)].elementsEqual(phrase) {

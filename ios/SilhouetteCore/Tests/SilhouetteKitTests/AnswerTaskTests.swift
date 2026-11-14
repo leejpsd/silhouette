@@ -92,7 +92,7 @@ struct AnswerTaskTests {
     func configDefaults() throws {
         let f = try Fixture()
         #expect(f.config == AppConfig(values: ["route_short_text_max_words": "80", "route_ondevice_locales_ios": #"["en","es","ko"]"#,
-                                               "prompt_pointer_extract_v": "4", "prompt_explain_v": "3"]))
+                                               "prompt_pointer_extract_v": "4", "prompt_explain_v": "5"]))
         #expect(f.bundle.prompts.versioned("pointer-extract", version: 2, among: 2...4)?.id == "pointer-extract.v2")
         #expect(f.bundle.prompts.versioned("pointer-extract", version: 99, among: 2...4)?.id == "pointer-extract.v4")
     }
@@ -281,6 +281,12 @@ struct AnswerTaskTests {
         let band = try f.session([("householdSize", .integer(3)), ("income", .income(.band("C")))])
         let bandRows = AnswerInputs.whyRows(f.bundle, programId: "food-help", reasons: band.reasons(pack: f.bundle.pack, bands: f.bundle.bands, programId: "food-help"), locale: .en)
         #expect(bandRows.first { $0.id == "income-limit" }?.limits.first?.yours == "30,000–44,999")
+        // On screen, income limits and values are money in the pack's currency; the prompts keep plain numbers.
+        let money = AnswerInputs.whyRows(f.bundle, programId: "food-help", reasons: exact.reasons(pack: f.bundle.pack, bands: f.bundle.bands, programId: "food-help"),
+                                         locale: .en, currency: f.bundle.packInfo.currency)
+        let moneyIncome = try #require(money.first { $0.id == "income-limit" })
+        #expect(moneyIncome.limits.first?.limit == "$34,000" && moneyIncome.limits.first?.yours == "$30,524")
+        #expect(moneyIncome.limitVariables == ["annualIncome"])
     }
 
     @Test("the silhouette leaves out sensitive answers and exact income")

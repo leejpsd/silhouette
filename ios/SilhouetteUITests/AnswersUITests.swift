@@ -35,7 +35,7 @@ final class AnswersUITests: XCTestCase {
         openFoodHelp(app) { app.typeExactIncome("30524") }
         let income = app.element("why.income-limit")
         XCTAssertTrue(income.waitForExistence(timeout: 5))
-        XCTAssertTrue(income.label.contains("limit 34,000, yours 30,524"), income.label)
+        XCTAssertTrue(income.label.contains("limit $34,000, yours $30,524"), income.label)
         XCTAssertTrue(app.element("why.residency").exists)
         // Without a device model the person's own result is not put into words, and typed questions are off.
         XCTAssertTrue(app.element("why.unavailable").exists)

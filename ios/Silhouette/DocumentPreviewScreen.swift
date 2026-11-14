@@ -1,5 +1,6 @@
-// The silhouette before anything could leave: compare it with the document as it reads on this
-// phone, hide more words (every occurrence, whole phrase), undo, and read it.
+// The silhouette before anything could leave: the document on paper, switching between how it reads on
+// this phone and what could leave (each value cross-fades to its bar). Words still visible can be
+// hidden (every occurrence, whole phrase) and shown again. The block holds the decision.
 
 import SilhouetteCore
 import SilhouetteKit
@@ -8,186 +9,208 @@ import SwiftUI
 struct DocumentPreviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
-    @State private var view = Mode.leave
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var leave = true
     @State private var reading = false
 
-    enum Mode: Hashable { case leave, phone }
-
     var body: some View {
-        ScreenScroll {
-            ScreenHeading(text: model.t("preview.title")).accessibilityIdentifier("preview.title")
+        Screen(mode: .decision) {
+            BackLink(label: model.t("q.back")) { if !model.path.isEmpty { model.path.removeLast() } }
+                .padding(.bottom, -8)
+            DisplayHeadline(text: model.t("preview.title"), role: .title, maxLines: 4)
+                .accessibilityIdentifier("preview.title")
+                .appear(.rise)
             if let silhouette = model.silhouette {
-                Text(model.t("preview.lead")).tokenFont(.body).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
+                Para(model.t("preview.lead"), .small)
                 let counts = DocumentSession.counts(silhouette)
                 Text(model.t("preview.counts", ["numbers": String(counts.numbers), "dates": String(counts.dates), "words": String(counts.words)]))
-                    .tokenFont(.bodyStrong)
+                    .type(.label)
+                    .foregroundStyle(theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("preview.counts")
-                Picker(model.t("preview.title"), selection: $view) {
-                    Text(model.t("preview.couldLeave")).tag(Mode.leave)
-                    Text(model.t("preview.onPhone")).tag(Mode.phone)
+                LeaveToggle(phoneLabel: model.t("preview.onPhone"), leaveLabel: model.t("preview.couldLeave"), leave: $leave)
+                    .accessibilityIdentifier("preview.mode")
+                DocumentPaper(segments: DocumentSession.segments(of: silhouette), leave: leave,
+                              hidden: Set(model.document.hiddenWordsForDisplay.map { $0.lowercased() })) { word in
+                    model.hideWord(word)
                 }
-                .pickerStyle(.segmented)
-                .accessibilityIdentifier("preview.mode")
-
-                Group {
-                    if view == .leave {
-                        Text(leaveText(DocumentSession.segments(of: silhouette.skeleton)))
-                            .environment(\.openURL, OpenURLAction { url in
-                                guard url.scheme == "hide", let word = url.host(percentEncoded: false) else { return .discarded }
-                                model.hideWord(word)
-                                return .handled
-                            })
-                            .accessibilityIdentifier("preview.skeleton")
-                    } else {
-                        Text(phoneText(DocumentSession.segments(of: silhouette)))
-                            .accessibilityIdentifier("preview.original")
-                    }
-                }
-                .font(.system(.callout, design: .monospaced))
-                .foregroundStyle(theme.text)
-                .textSelection(.disabled)
-                .padding(theme.space("sm"))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radius("control")))
-
-                if view == .leave {
-                    Text(model.t("preview.hideHelp")).tokenFont(.small).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
+                .padding(.vertical, 8)
+                if leave {
+                    Para(model.t("preview.hideHelp"), .small)
                 }
                 hiddenWords
-                reader(silhouette)
             } else {
-                Text(model.t("preview.missing")).tokenFont(.body)
+                Para(model.t("preview.missing"))
             }
+        } actions: {
+            if model.silhouette != nil { decision }
         }
-    }
-
-    /// What could leave: placeholders as sent; each visible word is a link that hides it.
-    private func leaveText(_ segments: [PreviewSegment]) -> AttributedString {
-        var out = AttributedString()
-        for seg in segments {
-            switch seg {
-            case .text(let s): out += AttributedString(s)
-            case .word(let w):
-                var a = AttributedString(w)
-                if let url = URL(string: "hide://\(w.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? "")") {
-                    a.link = url
-                    a.foregroundColor = theme.primary
-                    a.underlineStyle = .single
-                }
-                out += a
-            case .placeholder(let id, _, _):
-                var a = AttributedString("\u{27E6}\(id)\u{27E7}")
-                a.backgroundColor = theme.privateFill
-                a.foregroundColor = theme.onPrivate
-                out += a
-            }
-        }
-        return out
-    }
-
-    /// On this phone: the document with every masked value shown and marked.
-    private func phoneText(_ segments: [PreviewSegment]) -> AttributedString {
-        var out = AttributedString()
-        for seg in segments {
-            switch seg {
-            case .text(let s), .word(let s): out += AttributedString(s)
-            case .placeholder(_, _, let original):
-                var a = AttributedString(original ?? "")
-                a.backgroundColor = theme.privateFill
-                a.foregroundColor = theme.onPrivate
-                out += a
-            }
-        }
-        return out
     }
 
     @ViewBuilder private var hiddenWords: some View {
         let hidden = model.document.hiddenWordsForDisplay
         if !hidden.isEmpty {
-            VStack(alignment: .leading, spacing: theme.space("xs")) {
-                Text(model.t("preview.hidden")).tokenFont(.bodyStrong).accessibilityAddTraits(.isHeader)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(model.t("preview.hidden")).type(.label).foregroundStyle(theme.ink).accessibilityAddTraits(.isHeader)
                 ForEach(hidden, id: \.self) { word in
-                    Button(model.t("preview.unhide", ["word": word])) { model.unhideWord(word) }
-                        .buttonStyle(.quietAction)
-                        .accessibilityIdentifier("preview.unhide.\(word)")
+                    VStack(alignment: .leading, spacing: 0) {
+                        Para(model.t("preview.youHid", ["word": "“\(word)”"]), .small)
+                        Button(model.t("preview.unhide", ["word": word])) { model.unhideWord(word) }
+                            .buttonStyle(TextLinkStyle(role: .control))
+                            .accessibilityIdentifier("preview.unhide.\(word)")
+                    }
                 }
                 Button(model.t("preview.undo")) { if let last = hidden.last { model.unhideWord(last) } }
-                    .buttonStyle(.secondaryAction)
+                    .buttonStyle(OutlineStyle())
                     .accessibilityIdentifier("preview.undo")
             }
         }
     }
 
-    @ViewBuilder private func reader(_ silhouette: SkeletonResult) -> some View {
+    // MARK: The decision in the block
+
+    @ViewBuilder private var decision: some View {
         let extractor = model.documentExtractor
         if extractor is ModelPointerExtractor {
             // A model reads the silhouette: on this device first, or in the cloud when this device
             // has no model. What could leave is exactly the silhouette shown above.
-            VStack(alignment: .leading, spacing: theme.space("sm")) {
-                Text(model.t(model.deviceModelAvailable ? "preview.onDevice" : "preview.cloud")).tokenFont(.body)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityIdentifier("preview.modelLead")
-                ProvenanceBadge(source: model.deviceModelAvailable ? .onDevice : .inCloud, reason: .documentSilhouetteOnly,
-                                noDeviceModel: !model.deviceModelAvailable)
-                if let error = model.documentError {
-                    Text(model.t(error.copyKey)).tokenFont(.small).fixedSize(horizontal: false, vertical: true)
-                        .accessibilityIdentifier("preview.error")
-                }
-                if reading {
-                    HStack { ProgressView(); Text(model.t("preview.sending")).tokenFont(.small) }
-                } else {
-                    Button(model.t("send.send")) {
+            ProvenanceBadge(source: model.deviceModelAvailable ? .onDevice : .inCloud, reason: .documentSilhouetteOnly,
+                            noDeviceModel: !model.deviceModelAvailable)
+                .padding(.horizontal, 6)
+            Para(model.t(model.deviceModelAvailable ? "preview.onDevice" : "preview.cloud"), .small)
+                .padding(.horizontal, 6)
+                .accessibilityIdentifier("preview.modelLead")
+            if let error = model.documentError {
+                Label(model.t(error.copyKey), systemImage: "exclamationmark.triangle")
+                    .type(.label, size: 13.5).foregroundStyle(theme.onBlock).fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 6)
+                    .accessibilityIdentifier("preview.error")
+            }
+            if reading {
+                LoadingLines(text: model.t("preview.sending")).padding(.horizontal, 6).padding(.vertical, 8)
+            } else {
+                HStack(spacing: 10) {
+                    Button(model.t("send.skip")) { model.typeNumbers() }
+                        .buttonStyle(OutlineStyle(large: true, fullWidth: true))
+                        .accessibilityIdentifier("preview.keep")
+                    SendButton(label: model.t("send.send"), id: "preview.send") {
                         reading = true
                         Task { await model.readDocument(); reading = false }
                     }
-                    .buttonStyle(.primaryAction)
-                    .accessibilityIdentifier("preview.send")
-                    Button(model.t("send.skip")) { model.typeNumbers() }
-                        .buttonStyle(.secondaryAction)
-                        .accessibilityIdentifier("preview.keep")
                 }
             }
         } else if extractor != nil {
-            VStack(alignment: .leading, spacing: theme.space("sm")) {
-                SourceBadge(text: model.t("badge.sampleKey"), reason: model.t(RoutingReason.sampleAnswerKey.copyKey))
-                Text(model.t("preview.sample")).tokenFont(.body).fixedSize(horizontal: false, vertical: true)
-                Button(model.t("preview.sampleButton")) {
-                    reading = true
-                    Task { await model.readDocument(); reading = false }
-                }
-                .buttonStyle(.primaryAction)
-                .disabled(reading)
-                .accessibilityIdentifier("preview.sampleButton")
+            ProvenanceBadge(source: .sampleAnswerKey, reason: .sampleAnswerKey).padding(.horizontal, 6)
+            Para(model.t("preview.sample"), .small).padding(.horizontal, 6)
+            BlockAction(label: model.t("preview.sampleButton"), id: "preview.sampleButton") {
+                reading = true
+                Task { await model.readDocument(); reading = false }
             }
+            .disabled(reading)
         } else {
-            VStack(alignment: .leading, spacing: theme.space("sm")) {
-                Text(model.t("preview.noExtractor")).tokenFont(.body).fixedSize(horizontal: false, vertical: true)
-                    .accessibilityIdentifier("preview.noExtractor")
-                Button(model.t("doc.manual")) { model.typeNumbers() }
-                    .buttonStyle(.primaryAction)
-                    .accessibilityIdentifier("preview.manual")
-            }
+            Para(model.t("preview.noExtractor"), .small)
+                .padding(.horizontal, 6)
+                .accessibilityIdentifier("preview.noExtractor")
+            BlockAction(label: model.t("doc.manual"), id: "preview.manual") { model.typeNumbers() }
         }
     }
 }
 
-/// Where a result came from, with the routing reason.
-struct SourceBadge: View {
+// MARK: - The document on paper
+
+/// The document in DM Mono 14 / 22 on a large paper slip. On this phone: every value as written,
+/// underlined. What could leave: each value is a bar with its id (pink; green for a word you hid), and
+/// each word still visible is a link that hides it.
+struct DocumentPaper: View {
     @Environment(\.theme) private var theme
-    let text: String
-    let reason: String
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(AppModel.self) private var model
+    let segments: [PreviewSegment]
+    let leave: Bool
+    let hidden: Set<String>
+    let hide: (String) -> Void
 
     var body: some View {
-        HStack(spacing: theme.space("xs")) {
-            Image(systemName: "doc.text.magnifyingglass").accessibilityHidden(true)
-            Text("\(text) · \(reason)").fixedSize(horizontal: false, vertical: true)
+        let lines = Self.lines(segments)
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                FlowLayout(spacing: 0, lineSpacing: 2) {
+                    ForEach(Array(line.enumerated()), id: \.offset) { _, token in tokenView(token) }
+                }
+                .frame(minHeight: 22, alignment: .leading)
+            }
         }
-        .tokenFont(.small)
-        .foregroundStyle(theme.onNotice)
-        .padding(.horizontal, theme.space("sm"))
-        .padding(.vertical, theme.space("xxs"))
-        .background(theme.notice, in: Capsule())
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("source.badge")
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .paper(tilt: leave ? theme.rotation("documentLeave") : theme.rotation("documentPhone"), size: .large)
+        .animation(reduceMotion ? nil : theme.curve("standard", duration: "docTilt"), value: leave)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(leave ? "preview.skeleton" : "preview.original")
+    }
+
+    enum Token {
+        case text(String)
+        case word(String)
+        case value(id: String, original: String, order: Int)
+    }
+
+    /// Lines of tokens; text is split after spaces so a line can wrap.
+    static func lines(_ segments: [PreviewSegment]) -> [[Token]] {
+        var lines: [[Token]] = [[]]
+        var order = 0
+        func addText(_ s: String) {
+            let parts = s.components(separatedBy: "\n")
+            for (i, part) in parts.enumerated() {
+                if i > 0 { lines.append([]) }
+                var chunk = ""
+                for ch in part {
+                    chunk.append(ch)
+                    if ch == " " { lines[lines.count - 1].append(.text(chunk)); chunk = "" }
+                }
+                if !chunk.isEmpty { lines[lines.count - 1].append(.text(chunk)) }
+            }
+        }
+        for seg in segments {
+            switch seg {
+            case .text(let s): addText(s)
+            case .word(let w): lines[lines.count - 1].append(.word(w))
+            case .placeholder(let id, _, let original):
+                lines[lines.count - 1].append(.value(id: id, original: original ?? id, order: order))
+                order += 1
+            }
+        }
+        return lines
+    }
+
+    @ViewBuilder private func tokenView(_ token: Token) -> some View {
+        switch token {
+        case .text(let s):
+            Text(verbatim: s).type(.monoDocument).foregroundStyle(theme.onPaper).accessibilityHidden(s.trimmingCharacters(in: .whitespaces).isEmpty)
+        case .word(let w):
+            if leave {
+                Button { hide(w) } label: {
+                    Text(verbatim: w).type(.monoDocument).foregroundStyle(theme.onPaper)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(w)
+                .accessibilityHint(model.t("preview.hideWord", ["word": w]))
+                .accessibilityRemoveTraits(.isButton)
+                .accessibilityAddTraits(.isLink)
+            } else {
+                Text(verbatim: w).type(.monoDocument).foregroundStyle(theme.onPaper)
+            }
+        case .value(let id, let original, let order):
+            let mine = hidden.contains(original.lowercased())
+            let delay = reduceMotion ? 0 : min(Double(order) * theme.delay("tokenStagger"), 0.9)
+            ZStack(alignment: .leading) {
+                Text(verbatim: original).type(.monoDocument).foregroundStyle(theme.onPaper).underline()
+                    .opacity(leave ? 0 : 1)
+                PlaceholderBar(id: id, mine: mine)
+                    .opacity(leave ? 1 : 0)
+            }
+            .padding(.trailing, 2)
+            .animation(reduceMotion ? nil : theme.curve("fade", duration: "tokenFade").delay(delay), value: leave)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(leave ? model.t(PlaceholderBar.labelKey(id)) + " \(id)" : original)
+        }
     }
 }

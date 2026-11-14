@@ -18,17 +18,24 @@ extension XCUIApplication {
         button.tap()
     }
 
-    /// At large text sizes controls can sit below the fold or under the bottom bar.
+    /// Controls can sit below the fold or under the bottom block (controls inside the block are not covered).
     func scrollIntoView(_ element: XCUIElement) {
-        let bar = self.element("leaving.bar")
+        let block = self.element("bottom.block").firstMatch
+        let inBlock = block.exists && !element.identifier.isEmpty
+            && block.descendants(matching: .any).matching(identifier: element.identifier).count > 0
         func covered() -> Bool {
-            !element.isHittable || (bar.exists && bar.frame.intersects(element.frame))
+            guard element.isHittable else { return true }
+            guard block.exists, !inBlock else { return false }
+            return block.frame.intersects(element.frame)
         }
         var attempts = 0
         while covered() && attempts < 8 {
             let scroll = scrollViews.firstMatch
-            let start = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-            start.press(forDuration: 0.05, thenDragTo: scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)))
+            // Swipe in the half above the bottom block; a drag that starts on the block does not scroll.
+            let above = element.exists && element.frame.midY < scroll.frame.minY + scroll.frame.height * 0.3
+            let from = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: above ? 0.2 : 0.5))
+            let to = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: above ? 0.5 : 0.2))
+            from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .default, thenHoldForDuration: 0.05)
             attempts += 1
         }
     }

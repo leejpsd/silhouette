@@ -1,7 +1,8 @@
 // The parts of a program's page below the result: "Why this result" (from the rules, always there;
 // with a device model, an explanation of the person's own result written on this device), "About
 // this program" and prepared questions (a model that only knows the silhouette), and a typed
-// question (on this device only). Every answer shows where it was written and why.
+// question (on this device only). Every answer shows where it was written and why. The step before
+// sending is a sheet.
 
 import SilhouetteCore
 import SilhouetteKit
@@ -13,41 +14,62 @@ struct WhySection: View {
     let programId: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: theme.space("sm")) {
-            ScreenHeading(text: model.t("why.title"), style: .heading).accessibilityIdentifier("why.title")
-            Text(model.t("why.lead")).tokenFont(.small).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
-            ForEach(model.whyRows(programId)) { row in
-                HStack(alignment: .firstTextBaseline, spacing: theme.space("sm")) {
-                    StateIcon(state: row.state).alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 6 }
-                    VStack(alignment: .leading, spacing: theme.space("xxs")) {
-                        Text(row.label).tokenFont(.body).foregroundStyle(theme.text)
-                        ForEach(Array(row.limits.enumerated()), id: \.offset) { _, l in
-                            Text(model.t("why.limitYours", ["limit": l.limit, "value": l.yours])).tokenFont(.small).foregroundStyle(theme.text)
-                        }
-                        Text(model.t("state.\(row.state.rawValue)")).tokenFont(.small).foregroundStyle(theme.textMuted)
-                    }
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .leading, spacing: 8) {
+            SectionHeading(text: model.t("why.title")).accessibilityIdentifier("why.title")
+            Para(model.t("why.lead"), .small)
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(model.whyRows(programId)) { row in
+                    Rectangle().fill(theme.line).frame(height: 1)
+                    WhyRowView(row: row)
                 }
-                .padding(theme.space("sm"))
-                .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radius("control")))
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("why.\(row.id)")
             }
             if model.deviceModelAvailable {
                 let key = model.personalKey(programId)
                 if case .idle = model.state(key) {
                     Button(model.t("why.explain")) { model.explainPersonal(programId) }
-                        .buttonStyle(.secondaryAction)
+                        .buttonStyle(OutlineStyle(fullWidth: true))
                         .accessibilityIdentifier("why.explain")
                 }
                 RequestView(key: key)
             } else {
-                Text(model.t("why.unavailable")).tokenFont(.small).foregroundStyle(theme.textMuted)
-                    .fixedSize(horizontal: false, vertical: true)
+                DashedNote { Text(model.t("why.unavailable")) }
+                    .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("why.unavailable")
+                    .padding(.top, 8)
             }
         }
+    }
+}
+
+private struct WhyRowView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.theme) private var theme
+    let row: WhyRow
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(row.label).type(.label).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+            if row.limits.isEmpty {
+                HStack {
+                    Text(model.t("state.\(row.state.rawValue)")).type(.small).foregroundStyle(theme.inkMuted)
+                    Spacer()
+                    StateIcon(state: row.state)
+                }
+            } else {
+                ForEach(Array(row.limits.enumerated()), id: \.offset) { _, l in
+                    LimitLine(label: model.t("detail.limit"), value: l.limit)
+                    LimitLine(label: model.t("detail.you"), value: l.yours, state: row.state)
+                }
+                if row.state != .pass && row.state != .fail {
+                    Text(model.t("state.\(row.state.rawValue)")).type(.small).foregroundStyle(theme.inkMuted)
+                }
+            }
+        }
+        .padding(.vertical, 10)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(([row.label] + row.limits.map { model.t("why.limitYours", ["limit": $0.limit, "value": $0.yours]) }
+                             + [model.t("state.\(row.state.rawValue)")]).joined(separator: ". "))
+        .accessibilityIdentifier("why.\(row.id)")
     }
 }
 
@@ -57,34 +79,44 @@ struct AboutSection: View {
     let programId: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: theme.space("sm")) {
-            ScreenHeading(text: model.t("about.title"), style: .heading)
-            Text(model.t("about.lead")).tokenFont(.small).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeading(text: model.t("about.title"))
+            Para(model.t("about.lead"), .small)
             if model.silhouetteForAnswers == nil {
-                Text(model.t("results.empty")).tokenFont(.small)
+                Para(model.t("results.empty"), .small)
             } else {
                 let shortKey = model.aboutKey(programId, long: false)
                 if again(model.state(shortKey)) {
                     Button(model.t("about.explain")) { model.startAbout(programId, long: false) }
-                        .buttonStyle(.secondaryAction)
+                        .buttonStyle(OutlineStyle(fullWidth: true))
                         .accessibilityIdentifier("about.explain")
                 }
-                RequestView(key: shortKey)
+                RequestView(key: shortKey) { model.startAbout(programId, long: false) }
                 if case .done = model.state(shortKey) {
                     let longKey = model.aboutKey(programId, long: true)
                     if again(model.state(longKey)) {
-                        Button(model.t("answers.explainLong")) { model.startAbout(programId, long: true) }.buttonStyle(.quietAction)
+                        Button(model.t("answers.explainLong")) { model.startAbout(programId, long: true) }
+                            .buttonStyle(TextLinkStyle())
+                            .accessibilityIdentifier("about.long")
                     }
-                    RequestView(key: longKey)
+                    RequestView(key: longKey) { model.startAbout(programId, long: true) }
                 }
-                Text(model.t("ask.chips")).tokenFont(.bodyStrong).accessibilityAddTraits(.isHeader)
+                Text(model.t("ask.chips")).type(.label).foregroundStyle(theme.ink).accessibilityAddTraits(.isHeader)
+                    .padding(.top, 4)
+                FlowLayout {
+                    ForEach(AppModel.chips, id: \.self) { chip in
+                        Button(model.t("ask.chip.\(chip)")) { model.startChip(programId, chip) }
+                            .buttonStyle(ChipStyle(selected: asked(model.state(model.chipKey(programId, chip)))))
+                            .accessibilityIdentifier("chip.\(chip)")
+                    }
+                }
                 ForEach(AppModel.chips, id: \.self) { chip in
                     let key = model.chipKey(programId, chip)
-                    VStack(alignment: .leading, spacing: theme.space("xs")) {
-                        Button(model.t("ask.chip.\(chip)")) { model.startChip(programId, chip) }
-                            .buttonStyle(.secondaryAction)
-                            .accessibilityIdentifier("chip.\(chip)")
-                        RequestView(key: key)
+                    if shows(model.state(key)) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(model.t("ask.chip.\(chip)")).type(.bodyStrong).foregroundStyle(theme.ink)
+                            RequestView(key: key) { model.startChip(programId, chip) }
+                        }
                     }
                 }
             }
@@ -93,8 +125,20 @@ struct AboutSection: View {
 
     private func again(_ state: RequestState) -> Bool {
         switch state {
-        case .idle, .skipped, .cancelled, .failed: true
+        case .idle, .skipped, .cancelled: true
+        case .failed(let e): e.kind == .quotaDaily || e.kind == .blocked
         default: false
+        }
+    }
+
+    private func asked(_ state: RequestState) -> Bool {
+        if case .done = state { true } else { false }
+    }
+
+    private func shows(_ state: RequestState) -> Bool {
+        switch state {
+        case .idle, .confirm: false
+        default: true
         }
     }
 }
@@ -108,20 +152,22 @@ struct FreeTextSection: View {
     @State private var keys: [(key: String, question: String)] = []
 
     var body: some View {
-        VStack(alignment: .leading, spacing: theme.space("sm")) {
-            ScreenHeading(text: model.t("ask.free.label"), style: .heading)
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeading(text: model.t("ask.free.label"))
             if !model.deviceModelAvailable {
-                Text(model.t("ask.free.unavailable")).tokenFont(.small).foregroundStyle(theme.textMuted)
-                    .fixedSize(horizontal: false, vertical: true)
+                DashedNote { Text(model.t("ask.free.unavailable")) }
+                    .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("ask.free.unavailable")
             } else {
-                Text(model.t("ask.free.help")).tokenFont(.small).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
-                TextField(model.t("ask.free.label"), text: $text, axis: .vertical)
+                Para(model.t("ask.free.help"), .small)
+                TextField("", text: $text, axis: .vertical)
                     .lineLimit(2...5)
-                    .padding(theme.space("sm"))
-                    .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radius("control")))
+                    .fieldStyle(error: empty, mono: false)
+                    .accessibilityLabel(model.t("ask.free.label"))
                     .accessibilityIdentifier("ask.free.text")
-                if empty { Text(model.t("ask.free.empty")).tokenFont(.small).foregroundStyle(theme.danger) }
+                if empty {
+                    Label(model.t("ask.free.empty"), systemImage: "exclamationmark.triangle").type(.label).foregroundStyle(theme.ink)
+                }
                 Button(model.t("ask.free.send")) {
                     let q = text.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !q.isEmpty else { empty = true; return }
@@ -129,10 +175,10 @@ struct FreeTextSection: View {
                     keys.append((model.askFree(programId, question: q), q))
                     text = ""
                 }
-                .buttonStyle(.secondaryAction)
+                .buttonStyle(OutlineStyle(fullWidth: true))
                 .accessibilityIdentifier("ask.free.send")
                 ForEach(keys, id: \.key) { entry in
-                    Text(entry.question).tokenFont(.bodyStrong)
+                    Text(entry.question).type(.bodyStrong).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     RequestView(key: entry.key)
                 }
             }
@@ -146,33 +192,52 @@ struct RequestView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
     let key: String
+    /// Starts the same request again after an error.
+    var retry: (() -> Void)? = nil
+    @State private var showDetail = false
 
     var body: some View {
         switch model.state(key) {
-        case .idle:
+        case .idle, .confirm:
             EmptyView()
-        case .confirm(let request, let lines):
-            SendPanel(request: request, lines: lines, onSend: { model.send(key) }, onKeep: { model.keepOnDevice(key) })
         case .loading(let slow):
-            VStack(alignment: .leading, spacing: theme.space("xs")) {
-                HStack(spacing: theme.space("sm")) {
-                    ProgressView()
-                    Text(model.t(slow ? "answers.slow" : "answers.loading")).tokenFont(.small)
-                }
-                .accessibilityElement(children: .combine)
-                Button(model.t("answers.cancel")) { model.cancel(key) }.buttonStyle(.quietAction)
+            VStack(alignment: .leading, spacing: 4) {
+                LoadingLines(text: model.t(slow ? "answers.slow" : "answers.loading"))
+                Button(model.t("answers.cancel")) { model.cancel(key) }
+                    .buttonStyle(TextLinkStyle())
+                    .accessibilityIdentifier("answer.cancel")
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("answer.loading")
         case .done(let result, let sentBefore):
             AnswerView(result: result, sentBefore: sentBefore)
         case .failed(let error):
-            Text(model.t(error.copyKey)).tokenFont(.small).foregroundStyle(theme.text).fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle").accessibilityHidden(true)
+                    Text(model.t(error.copyKey)).fixedSize(horizontal: false, vertical: true)
+                }
+                .type(.label, size: 13.5)
+                .foregroundStyle(theme.ink)
+                .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("answer.error")
+                if let retry, error.kind != .quotaDaily, error.kind != .blocked {
+                    Button { retry() } label: { Label(model.t("answers.retry"), systemImage: "arrow.clockwise") }
+                        .buttonStyle(OutlineStyle(fullWidth: true))
+                        .accessibilityIdentifier("answer.retry")
+                }
+                if let status = error.status {
+                    Disclosure(label: model.t("error.detail"), open: $showDetail) {
+                        Text(verbatim: "\(error.kind.rawValue) \(status)").type(.monoValue).foregroundStyle(theme.ink)
+                    }
+                }
+            }
         case .skipped:
-            Text(model.t("send.skipped")).tokenFont(.small).fixedSize(horizontal: false, vertical: true)
+            Para(model.t("send.skipped"), .small)
                 .accessibilityIdentifier("send.skipped")
         case .cancelled:
-            Text(model.t("answers.cancelled")).tokenFont(.small).fixedSize(horizontal: false, vertical: true)
+            Para(model.t("answers.cancelled"), .small)
+                .accessibilityIdentifier("answer.cancelled")
         }
     }
 }
@@ -184,25 +249,30 @@ struct AnswerView: View {
     let sentBefore: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: theme.space("xs")) {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(model.t("answers.ready")).type(.label).foregroundStyle(theme.ink)
             ProvenanceBadge(source: result.source, reason: result.reason, route: result.route, noDeviceModel: result.noDeviceModel)
-            if result.reason == .onDeviceFailed { Text(model.t("answers.retried")).tokenFont(.small) }
-            if sentBefore { Text(model.t("send.once")).tokenFont(.small).foregroundStyle(theme.textMuted) }
-            Text(result.text).tokenFont(.body).foregroundStyle(theme.text).fixedSize(horizontal: false, vertical: true)
+            if result.reason == .onDeviceFailed { Para(model.t("answers.retried"), .small) }
+            if sentBefore { Para(model.t("send.once"), .small, muted: true) }
+            Text(result.text)
+                .type(.body)
+                .foregroundStyle(theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityIdentifier("answer.text")
         }
-        .padding(theme.space("sm"))
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radius("control")))
+        .appear(.rise)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("answer")
     }
 }
 
-/// Where an answer was written, and why (routing.json reason, with the detail that decided it).
+/// Where an answer was written, and why: an 18 pt icon, the label in bold, " · ", the routing reason
+/// (with the detail that decided it), 13.5 pt. Text and an icon only, never a pill.
 struct ProvenanceBadge: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Environment(\.surface) private var surface
     let source: InferenceSource
     let reason: RoutingReason
     var route: ExplainRoute? = nil
@@ -223,63 +293,104 @@ struct ProvenanceBadge: View {
         case .inCloud: model.t("badge.cloud")
         case .sampleAnswerKey: model.t("badge.sampleKey")
         }
-        HStack(spacing: theme.space("xs")) {
-            Image(systemName: source == .inCloud ? "cloud" : source == .onDevice ? "iphone" : "doc.text").accessibilityHidden(true)
-            Text("\(badge) · \(reasonText)").fixedSize(horizontal: false, vertical: true)
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Image(systemName: source == .inCloud ? "cloud" : source == .onDevice ? "iphone" : "doc.text")
+                .font(.system(size: 14, weight: .semibold))
+                .frame(width: 18)
+                .accessibilityHidden(true)
+            Text("\(Text(badge).bold()) · \(reasonText)").fixedSize(horizontal: false, vertical: true)
         }
-        .tokenFont(.small)
-        .foregroundStyle(theme.text)
+        .type(.small)
+        .foregroundStyle(theme.ink(on: surface))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(source == .onDevice ? model.t("badge.sentence.device", ["reason": reasonText])
             : source == .inCloud ? model.t("badge.sentence.cloud", ["reason": reasonText]) : "\(badge): \(reasonText).")
-        .accessibilityIdentifier("answer.badge")
+        .accessibilityIdentifier(source == .sampleAnswerKey ? "source.badge" : "answer.badge")
     }
 }
 
-/// The step before sending: the silhouette lines, the request as the app builds it, where it would
-/// run, and Send or "Keep everything on this device".
-struct SendPanel: View {
+// MARK: - The step before sending (a sheet)
+
+/// What could leave, on paper under a pink tab; what is not sent; the request as the app builds it.
+struct SendSheet: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
-    let request: CloudRequest
-    let lines: [String]
-    let onSend: () -> Void
-    let onKeep: () -> Void
+    let key: String
     @State private var showRequest = false
 
     var body: some View {
-        let cloudFirst = AnswerSession.destination(of: request) == .cloud
-        VStack(alignment: .leading, spacing: theme.space("sm")) {
-            Text(model.t("send.title")).tokenFont(.heading).accessibilityAddTraits(.isHeader)
-            Text(model.t(cloudFirst ? "send.leadCloud" : "send.lead")).tokenFont(.small).fixedSize(horizontal: false, vertical: true)
-            VStack(alignment: .leading, spacing: theme.space("xxs")) {
-                Text(model.t("preview.couldLeave")).tokenFont(.small).foregroundStyle(theme.textMuted)
-                ForEach(lines, id: \.self) { Text($0).tokenFont(.small).fixedSize(horizontal: false, vertical: true) }
-                Text(model.t("send.notListed")).tokenFont(.small).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
-                Text(model.t("outbound.model", ["model": request.model])).tokenFont(.small)
+        if case .confirm(let request, let lines) = model.state(key) {
+            let cloudFirst = AnswerSession.destination(of: request) == .cloud
+            Para(model.t(cloudFirst ? "send.leadCloud" : "send.lead"))
+            VStack(alignment: .leading, spacing: 0) {
+                LeaveTab(text: model.t("preview.couldLeave"))
+                    .padding(.leading, 10)
+                    .zIndex(1)
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(lines, id: \.self) { Text($0).type(.monoValue).fixedSize(horizontal: false, vertical: true) }
+                    Text(model.t("send.notListed")).type(.caption).foregroundStyle(theme.onPaperMuted)
+                        .fixedSize(horizontal: false, vertical: true).padding(.top, 4)
+                    Text(model.t("outbound.model", ["model": request.model])).type(.monoValue)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .paper(tilt: theme.rotation("paperSmall"))
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("send.lines")
             }
-            .padding(theme.space("sm"))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(theme.surfaceSunken, in: RoundedRectangle(cornerRadius: theme.radius("control")))
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("send.lines")
-            Text(model.t("send.notSent")).tokenFont(.small).fixedSize(horizontal: false, vertical: true)
-            Text(model.t("leaving.network")).tokenFont(.small).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
-            DisclosureGroup(isExpanded: $showRequest) {
-                Text(model.t("send.requestAsBuilt")).tokenFont(.small).foregroundStyle(theme.textMuted).fixedSize(horizontal: false, vertical: true)
-                Text(request.rendering.text).font(.system(.footnote, design: .monospaced)).textSelection(.enabled)
+            Para(model.t("send.notSent"), .small)
+            Para(model.t("leaving.network"), .small)
+            Disclosure(label: model.t("send.showRequest"), open: $showRequest, id: "send.showRequest") {
+                Para(model.t("send.requestAsBuilt"), .small)
+                Text(request.rendering.text)
+                    .type(.monoValue)
+                    .textSelection(.enabled)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .paper(size: .small)
                     .accessibilityIdentifier("send.request")
-            } label: {
-                Text(model.t("send.showRequest")).tokenFont(.small)
             }
-            ProvenanceBadge(source: cloudFirst ? .inCloud : .onDevice, reason: request.reason, route: request.route)
-            Button(model.t("send.send"), action: onSend).buttonStyle(.primaryAction).accessibilityIdentifier("send.send")
-            Button(model.t("send.skip"), action: onKeep).buttonStyle(.secondaryAction).accessibilityIdentifier("send.skip")
         }
-        .padding(theme.space("md"))
-        .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radius("panel")))
-        .overlay(RoundedRectangle(cornerRadius: theme.radius("panel")).strokeBorder(theme.borderStrong, lineWidth: 2))
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("send.panel")
+    }
+}
+
+/// The decision at the foot of the sheet: the routing line, Keep everything on this device, Send.
+struct SendFooter: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.theme) private var theme
+    let key: String
+    let request: CloudRequest
+
+    var body: some View {
+        let cloudFirst = AnswerSession.destination(of: request) == .cloud
+        SheetFooter {
+            ProvenanceBadge(source: cloudFirst ? .inCloud : .onDevice, reason: request.reason, route: request.route)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 8)
+            HStack(spacing: 10) {
+                Button(model.t("send.skip")) { model.keepOnDevice(key) }
+                    .buttonStyle(OutlineStyle(large: true, fullWidth: true))
+                    .accessibilityIdentifier("send.skip")
+                SendButton(label: model.t("send.send"), id: "send.send") { model.send(key) }
+            }
+        }
+    }
+}
+
+/// The pink "What could leave" tab over a paper card.
+struct LeaveTab: View {
+    @Environment(\.theme) private var theme
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .type(.label)
+            .foregroundStyle(theme.onLeave)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(RoundedRectangle(cornerRadius: 3).fill(theme.leave))
+            .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(theme.leaveFocus, lineWidth: theme.border))
+            .rotationEffect(theme.rotation("highlight"))
+            .offset(y: 8)
+            .accessibilityAddTraits(.isHeader)
     }
 }

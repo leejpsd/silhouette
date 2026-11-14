@@ -26,6 +26,7 @@ targets:
           # Local only and git-ignored; copied into the bundle by a build phase when present.
           - GoogleService-Info.plist
           - "*.entitlements"
+          - Info.plist
     dependencies:
       - package: SilhouetteCore
         product: SilhouetteCore
@@ -47,6 +48,8 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
+        # Registers the bundled fonts (UIAppFonts); everything else is generated.
+        INFOPLIST_FILE: Silhouette/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: Silhouette
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
@@ -84,4 +87,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: app.silhouette.benefits.uitests
         TEST_TARGET_NAME: Silhouette
         GENERATE_INFOPLIST_FILE: YES
+        # Registers the bundled fonts (UIAppFonts); everything else is generated.
+        INFOPLIST_FILE: Silhouette/Info.plist
         CODE_SIGN_STYLE: Automatic

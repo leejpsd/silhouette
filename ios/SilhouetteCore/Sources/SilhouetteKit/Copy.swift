@@ -111,8 +111,27 @@ public struct CopyBook: Sendable {
         return f.string(from: NSNumber(value: value)) ?? String(value)
     }
 
-    public func bandLabel(_ band: Bands.IncomeBand, _ locale: AppLocale) -> String {
-        let n = { Self.formatNumber($0, locale) }
+    /// Money in the pack's currency, written the way the jurisdiction writes it (`format`, a BCP 47
+    /// tag such as `en-US`) in every interface language, always grouped; without a format, in the UI
+    /// language. Plain numbers without a currency. Whole amounts have no decimals; `cents: true`
+    /// keeps two.
+    public static func formatMoney(_ value: Double, _ locale: AppLocale, currency: String?, format: String? = nil,
+                                   cents: Bool = false) -> String {
+        guard let currency else { return cents ? formatAmount(value, locale) : formatNumber(value, locale) }
+        let f = NumberFormatter()
+        f.locale = Locale(identifier: format ?? locale.rawValue)
+        f.numberStyle = .currency
+        f.currencyCode = currency
+        f.usesGroupingSeparator = true
+        f.minimumGroupingDigits = 1
+        let whole = value.rounded() == value
+        f.minimumFractionDigits = cents && !whole ? 2 : 0
+        f.maximumFractionDigits = cents ? 2 : 0
+        return f.string(from: NSNumber(value: value)) ?? formatNumber(value, locale)
+    }
+
+    public func bandLabel(_ band: Bands.IncomeBand, _ locale: AppLocale, currency: String? = nil, format: String? = nil) -> String {
+        let n = { Self.formatMoney($0, locale, currency: currency, format: format) }
         guard let max = band.max else { return text("income.band.top", locale, ["amount": n(band.min)]) }
         if band.min == 0 { return text("income.band.under", locale, ["amount": n(max + 1)]) }
         return text("income.band.range", locale, ["min": n(band.min), "max": n(max)])

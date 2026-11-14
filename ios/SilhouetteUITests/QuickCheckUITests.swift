@@ -62,7 +62,7 @@ final class QuickCheckUITests: XCTestCase {
         XCTAssertTrue(workCredit.waitForExistence(timeout: 5))
         XCTAssertEqual(workCredit.value as? String, "You may qualify")
         // min(3000, 10% of 28,000.50) = 2,800. Reading the amount 100× too large would make this "Probably not".
-        XCTAssertTrue(workCredit.label.contains("About 2,800 a year"), workCredit.label)
+        XCTAssertTrue(workCredit.label.contains("About $2,800 a year"), workCredit.label)
         XCTAssertEqual(app.buttons["program.food-help"].value as? String, "You may qualify")
         XCTAssertFalse(app.element("group.depends").exists)
         XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
@@ -129,9 +129,12 @@ final class QuickCheckUITests: XCTestCase {
         XCTAssertEqual(begin.label, "Continue Quick Check", "saved answers were restored")
         XCTAssertTrue(app.buttons["start.restart"].exists)
 
+        // "Delete everything" is in the record of what left this device, behind a confirmation.
+        app.tapButton("leaving.details")
         app.tapButton("delete.all")
-        let confirm = app.alerts.buttons["Delete everything"].firstMatch
+        let confirm = app.buttons["delete.confirm"]
         XCTAssertTrue(confirm.waitForExistence(timeout: 5))
+        XCTAssertEqual(confirm.label, "Delete everything")
         confirm.tap()
         XCTAssertTrue(app.element("start.notice").waitForExistence(timeout: 5))
         XCTAssertEqual(app.buttons["start.begin"].label, "Start Quick Check")

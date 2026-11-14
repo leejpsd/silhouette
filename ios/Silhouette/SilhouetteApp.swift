@@ -15,7 +15,9 @@ struct SilhouetteApp: App {
             let local = try Bundle.main.url(forResource: "copy.local", withExtension: "json")
                 .map { try JSON.parse(Data(contentsOf: $0)) }
             let bundle = try SharedBundle(directory: shared, localCopy: local)
-            return try AppModel(bundle: bundle, store: AnswerStore(), resetOnLaunch: options.resetAll, testModel: options.testModel)
+            let model = try AppModel(bundle: bundle, store: AnswerStore(), resetOnLaunch: options.resetAll, testModel: options.testModel)
+            model.forceOffline = options.offline
+            return model
         })
         self.options = options
     }
@@ -31,6 +33,7 @@ struct SilhouetteApp: App {
                     .environment(\.theme, model.theme)
                     .environment(\.locale, Locale(identifier: model.locale.rawValue))
                     .preferredColorScheme(options.colorScheme)
+                    .tint(model.theme.ink)
             case .failure(let error):
                 Text(String(describing: error))
                     .font(.callout.monospaced())
@@ -48,9 +51,12 @@ struct LaunchOptions {
     let colorScheme: ColorScheme?
     /// `-UITestModel none|device|cloud`: a scripted model, no Firebase and no network.
     let testModel: String?
+    /// `-UITestOffline`: show the offline state.
+    let offline: Bool
 
     init(arguments: [String]) {
         resetAll = arguments.contains("-UITestResetAll")
+        offline = arguments.contains("-UITestOffline")
         if let i = arguments.firstIndex(of: "-UITestModel"), i + 1 < arguments.count { testModel = arguments[i + 1] } else { testModel = nil }
         if let i = arguments.firstIndex(of: "-UITestAppearance"), i + 1 < arguments.count {
             colorScheme = arguments[i + 1] == "dark" ? .dark : arguments[i + 1] == "light" ? .light : nil

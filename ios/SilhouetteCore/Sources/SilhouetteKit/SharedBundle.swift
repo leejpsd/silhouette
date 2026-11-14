@@ -118,6 +118,11 @@ public struct PackInfo: Sendable {
     }
 
     public let jurisdiction: String
+    /// ISO 4217 code when the pack names one: amounts, limits and income ranges are money.
+    public let currency: String?
+    /// BCP 47 tag of the jurisdiction's number conventions (`en-US`): money is written this way in
+    /// every interface language.
+    public let numberFormat: String?
     public let verifiedOn: String?
     public let questions: [Question]
     public let questionOrder: [String]?
@@ -137,6 +142,8 @@ public struct PackInfo: Sendable {
             return Int(n)
         }
         self.jurisdiction = jurisdiction
+        self.currency = json["currency"]?.stringValue
+        self.numberFormat = json["numberFormat"]?.stringValue
         self.verifiedOn = json["verifiedOn"]?.stringValue
         self.questions = try questions.map { q in
             guard let id = q["id"]?.stringValue, let type = q["type"]?.stringValue else {

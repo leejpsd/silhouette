@@ -19,6 +19,8 @@ public struct WhyRow: Sendable, Identifiable {
     public let state: CriterionState
     /// Limit and the person's value for each comparison with a known limit.
     public let limits: [(limit: String, yours: String)]
+    /// The answer each entry of `limits` compares (`annualIncome`, `householdSize` …).
+    public var limitVariables: [String] = []
 }
 
 extension QuickCheckSession {
@@ -97,24 +99,34 @@ public enum AnswerInputs {
         ]
     }
 
-    static func shown(_ yours: Comparison.Yours, locale: AppLocale, none: String) -> String {
+    static func shown(_ yours: Comparison.Yours, locale: AppLocale, none: String, currency: String? = nil, format: String? = nil) -> String {
+        let n = { CopyBook.formatMoney($0, locale, currency: currency, format: format) }
         switch yours {
-        case .number(let n): CopyBook.formatNumber(n, locale)
-        case .band(let b):
-            b.max.map { "\(CopyBook.formatNumber(b.min, locale))–\(CopyBook.formatNumber($0, locale))" } ?? "\(CopyBook.formatNumber(b.min, locale))+"
-        case .unanswered: none
+        case .number(let v): return n(v)
+        case .band(let b): return b.max.map { "\(n(b.min))–\(n($0))" } ?? "\(n(b.min))+"
+        case .unanswered: return none
         }
     }
 
     /// "Why this result" rows, for showing the person their own result on this device.
-    public static func whyRows(_ bundle: SharedBundle, programId: String, reasons: Raw<[CriterionReason]>, locale: AppLocale) -> [WhyRow] {
+    /// `currency`: income limits and values are shown as money in it (the screen passes the pack's).
+    public static func whyRows(_ bundle: SharedBundle, programId: String, reasons: Raw<[CriterionReason]>, locale: AppLocale,
+                               currency: String? = nil, format: String? = nil) -> [WhyRow] {
         reasons.value.map { r in
-            WhyRow(id: r.id, label: bundle.copy.text("criterion.\(programId).\(r.id)", locale), state: r.state,
-                   limits: r.comparisons.compactMap { c in
-                       c.limit.map { (CopyBook.formatNumber($0, locale), shown(c.yours, locale: locale, none: bundle.copy.text("send.unanswered", locale))) }
-                   })
+            let compared = r.comparisons.filter { $0.limit != nil }
+            return WhyRow(id: r.id, label: bundle.copy.text("criterion.\(programId).\(r.id)", locale), state: r.state,
+                          limits: compared.compactMap { c in
+                              let money = Self.moneyVariables.contains(c.variable) ? currency : nil
+                              return c.limit.map { (CopyBook.formatMoney($0, locale, currency: money, format: format),
+                                                    shown(c.yours, locale: locale, none: bundle.copy.text("send.unanswered", locale),
+                                                          currency: money, format: format)) }
+                          },
+                          limitVariables: compared.map(\.variable))
         }
     }
+
+    /// Answers that are amounts of money.
+    static let moneyVariables: Set<String> = ["annualIncome"]
 
     /// State words of explain-personal.v1.md (the prompt is in English).
     static let promptState: [CriterionState: String] = [.pass: "met", .fail: "not met", .mixed: "depends on your exact income", .unknown: "not answered"]

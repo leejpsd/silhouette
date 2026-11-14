@@ -1,5 +1,6 @@
-// Verdict card: criteria with their state, what the result depends on (each opens the question and
-// comes back), the estimated amount, period, caveats and the pack's verification status.
+// A program's page: the result by shape, the name and the estimated amount, why (from the rules),
+// what the result depends on (each opens the question and comes back), things to know, official
+// information, then the model-written parts. The count block is compact.
 
 import SilhouetteCore
 import SilhouetteKit
@@ -11,64 +12,72 @@ struct ProgramScreen: View {
     let programId: String
 
     var body: some View {
-        ScreenScroll {
+        Screen {
+            BackLink(label: model.t("detail.back")) { if !model.path.isEmpty { model.path.removeLast() } }
+                .padding(.bottom, -8)
             if let program = model.bundle.packInfo.program(programId), let result = model.result(programId) {
-                ScreenHeading(text: model.programName(programId))
-                HStack(spacing: theme.space("sm")) {
-                    SilhouetteMark(style: .verdict(result.verdict), size: 48)
-                    Text(model.t("verdict.\(result.verdict.rawValue)"))
-                        .tokenFont(.heading)
-                        .foregroundStyle(theme.text)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("detail.verdict")
-                .accessibilityValue(result.verdict.rawValue)
-
+                MarkerLine(kind: .verdict(result.verdict), text: model.t("verdict.\(result.verdict.rawValue)"))
+                    .accessibilityIdentifier("detail.verdict")
+                    .accessibilityValue(result.verdict.rawValue)
+                DisplayHeadline(text: model.programName(programId), role: .display, maxLines: 2)
+                    .appear(.rise)
                 if let amount = result.estimatedAmount, amount > 0 {
-                    Text(model.t("detail.amount", ["amount": model.number(amount)])).tokenFont(.bodyStrong).foregroundStyle(theme.text)
-                }
-                if let period = program.period {
-                    Text(model.t("detail.period", ["period": period])).tokenFont(.small).foregroundStyle(theme.textMuted)
-                }
-                if !program.caveats.isEmpty {
-                    VStack(alignment: .leading, spacing: theme.space("xs")) {
-                        Text(model.t("detail.caveats")).tokenFont(.bodyStrong).accessibilityAddTraits(.isHeader)
-                        ForEach(program.caveats, id: \.self) { key in
-                            Label(model.t("caveat.\(key)"), systemImage: "exclamationmark.circle")
-                                .tokenFont(.body)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
+                    VStack(alignment: .leading, spacing: 4) {
+                        DisplayLabel(text: model.money(amount), role: .amount, maxLines: 1)
+                            .accessibilityHidden(true)
+                            .appear(.pop)
+                        Para(model.t("detail.amount", ["amount": model.money(amount)]), .small)
                     }
-                    .foregroundStyle(theme.onNotice)
-                    .padding(theme.space("sm"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(theme.notice, in: RoundedRectangle(cornerRadius: theme.radius("control")))
                 }
 
-                WhySection(programId: programId).padding(.top, theme.space("sm"))
+                WhySection(programId: programId).padding(.top, theme.space("xs"))
 
                 if !result.dependsOn.isEmpty {
-                    ScreenHeading(text: model.t("detail.dependsOn"), style: .heading).padding(.top, theme.space("sm"))
-                    ForEach(result.dependsOn, id: \.self) { variable in
-                        Button(model.t("detail.answer", ["question": model.variableName(variable)])) {
-                            model.answerDependency(variable, program: programId)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(model.t("detail.dependsOn")).type(.label).foregroundStyle(theme.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
+                        FlowLayout {
+                            ForEach(result.dependsOn, id: \.self) { variable in
+                                Button(model.t("detail.answer", ["question": model.variableName(variable)])) {
+                                    model.answerDependency(variable, program: programId)
+                                }
+                                .buttonStyle(ChipStyle())
+                                .accessibilityIdentifier("depends.\(variable)")
+                            }
                         }
-                        .buttonStyle(.secondaryAction)
-                        .accessibilityIdentifier("depends.\(variable)")
+                    }
+                }
+                if let period = program.period {
+                    Para(model.t("detail.period", ["period": period]), .small)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    SectionHeading(text: model.t("detail.caveats"))
+                    ForEach(program.caveats, id: \.self) { key in
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(verbatim: "–").type(.small).accessibilityHidden(true)
+                            Para(model.t("caveat.\(key)"), .small)
+                        }
+                    }
+                    Para(model.bundle.packInfo.verifiedOn.map { model.t("rules.verifiedOn", ["date": $0]) } ?? model.t("detail.unverified"), .small)
+                }
+                .padding(.top, theme.space("sm"))
+
+                VStack(alignment: .leading, spacing: 6) {
+                    SectionHeading(text: model.t("official.title"))
+                    if let url = program.applyUrl.flatMap(URL.init(string:)) {
+                        Link(model.t("official.apply"), destination: url)
+                            .buttonStyle(TextLinkStyle())
+                    } else {
+                        Para(model.t("official.none"), .small)
                     }
                 }
 
-                AboutSection(programId: programId).padding(.top, theme.space("md"))
-                FreeTextSection(programId: programId).padding(.top, theme.space("md"))
-
-                Text(model.bundle.packInfo.verifiedOn.map { model.t("rules.verifiedOn", ["date": $0]) } ?? model.t("detail.unverified"))
-                    .tokenFont(.small)
-                    .foregroundStyle(theme.textMuted)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, theme.space("sm"))
+                AboutSection(programId: programId).padding(.top, theme.space("sm"))
+                FreeTextSection(programId: programId).padding(.top, theme.space("sm"))
             } else {
-                ScreenHeading(text: model.t("results.title"))
+                DisplayHeadline(text: model.t("results.title"), role: .title)
             }
         }
     }

@@ -55,6 +55,39 @@ struct ContentTests {
         for key in keys { #expect(copy.has(key), "missing copy key \(key)") }
     }
 
+    @Test("every key of the design the app uses exists in English")
+    func designKeys() throws {
+        let copy = try Repo.bundle().copy
+        let keys = [
+            "demo.short", "demo.more", "preview.onPhone", "preview.couldLeave", "preview.youHid", "preview.undo", "detail.limit",
+            "detail.you", "detail.limitFamily", "detail.yourAnswer", "leaving.noValues", "leaving.recordDeleted", "leaving.sentCount",
+            "leaving.keptCount", "leaving.cleared", "leaving.clearedShort", "results.notAnswered", "results.none", "results.noneHelp",
+            "state.offline", "doc.photo.staysHere", "answers.retried", "outbound.reason.offline", "outbound.status.answeredShort",
+            "nav.close", "nav.languageNote", "review.before", "review.moreValues", "review.confirmAllCount", "review.continue",
+            "send.showRequest", "send.requestAsBuilt", "leaving.sdkNote", "delete.erasedDevice", "sample.try", "official.title",
+            "official.none", "official.apply", "placeholder.word", "placeholder.number", "placeholder.date",
+        ]
+        for key in keys { #expect(copy.has(key), "missing copy key \(key)") }
+    }
+
+    @Test("money follows the pack's currency and the UI language; without one it is a plain number")
+    func money() throws {
+        let b = try Repo.bundle()
+        #expect(b.packInfo.currency == "USD")
+        #expect(CopyBook.formatMoney(3000, .en, currency: "USD") == "$3,000")
+        #expect(CopyBook.formatMoney(28000.5, .en, currency: "USD", cents: true) == "$28,000.50")
+        #expect(CopyBook.formatMoney(28000, .en, currency: "USD", cents: true) == "$28,000")
+        #expect(CopyBook.formatMoney(3000, .en, currency: nil) == "3,000")
+        // The pack's number format in every interface language, always grouped.
+        #expect(b.packInfo.numberFormat == "en-US")
+        for locale in AppLocale.allCases {
+            #expect(CopyBook.formatMoney(34000, locale, currency: "USD", format: "en-US") == "$34,000")
+            #expect(CopyBook.formatMoney(3000, locale, currency: "USD", format: "en-US") == "$3,000")
+        }
+        let bands = b.bands.annualIncome
+        #expect(b.copy.bandLabel(bands[1], .es, currency: "USD", format: "en-US").contains("$15,000"))
+    }
+
     @Test("the app's local copy never shadows a shared or pack key")
     func localDoesNotShadow() throws {
         let copy = try Repo.bundle().copy
@@ -94,6 +127,17 @@ struct ContentTests {
         for name in ["xs", "sm", "md", "lg", "xl"] { #expect(t.spacing[name] != nil, "\(name)") }
         #expect((t.radius["control"] ?? 0) > 0)
         #expect((t.size["minTapTarget"] ?? 0) >= 44)
+        // Structured values by path: the design's motion, rotation and size steps.
+        #expect(t.number("motion.duration.rise") == 700)
+        #expect(t.numbers("motion.easing.standard").count == 4)
+        #expect(t.number("rotation.stamp") == -8)
+        #expect(t.number("typography.sizeSteps.displayScaleCap") == 1.3)
+        #expect(t.number("size.compact.optionTileHeight") == 80)
+        #expect(t.number("size.marker") == 20)
+        #expect(t.number("no.such.path") == nil)
+        for role in ["ground", "ink", "block", "onBlock", "paper", "onPaper", "leave", "onLeave", "mine", "onMine"] {
+            #expect(t.light[role] != nil && t.dark[role] != nil, "\(role)")
+        }
     }
 
     @Test("the outbound log records before sending and notifies observers")

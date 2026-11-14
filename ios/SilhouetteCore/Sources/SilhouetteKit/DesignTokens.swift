@@ -30,11 +30,29 @@ public struct DesignTokens: Sendable {
     public let spacing: [String: Double]
     public let radius: [String: Double]
     public let size: [String: Double]
+    /// The whole token file, for structured values (rotation, motion, shadows, compact sizes).
+    public let json: JSON
+
+    /// A number at a dotted path (`motion.duration.rise`), or the first number of an array there.
+    public func number(_ path: String) -> Double? {
+        var node: JSON? = json
+        for key in path.split(separator: ".") { node = node?[String(key)] }
+        if let n = node?.numberValue { return n }
+        return node?.arrayValue?.first?.numberValue
+    }
+
+    /// Numbers of an array at a dotted path (`motion.easing.standard`).
+    public func numbers(_ path: String) -> [Double] {
+        var node: JSON? = json
+        for key in path.split(separator: ".") { node = node?[String(key)] }
+        return node?.arrayValue?.compactMap(\.numberValue) ?? []
+    }
 
     /// No tokens (every lookup falls back to its default).
     public static let empty = DesignTokens()
 
     private init() {
+        json = .object(JSONObject())
         light = [:]
         dark = [:]
         type = [:]
@@ -60,6 +78,7 @@ public struct DesignTokens: Sendable {
             for (name, value) in json[key]?.objectValue?.entries ?? [] { if let n = value.numberValue { out[name] = n } }
             return out
         }
+        self.json = json
         light = try colors("light")
         dark = try colors("dark")
         var styles: [String: TypeStyle] = [:]

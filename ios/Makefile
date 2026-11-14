@@ -21,10 +21,11 @@ test-ios:
 ui-test:
 	xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/QuickCheckUITests -only-testing:SilhouetteUITests/DocumentFlowUITests -only-testing:SilhouetteUITests/AnswersUITests
 
-## Screenshot tour (light/dark, en/ko/es, largest accessibility text) into SCREENSHOT_DIR
+## Screenshot tour (light and dark, English and Spanish, largest accessibility text) into SCREENSHOT_DIR.
+## SCREENSHOT_CONFIGS limits it, for example SCREENSHOT_CONFIGS=en-light,es-dark
 screenshots:
 	mkdir -p $(SCREENSHOT_DIR)
-	TEST_RUNNER_SCREENSHOT_DIR=$(SCREENSHOT_DIR) xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/ScreenshotTour
+	TEST_RUNNER_SCREENSHOT_DIR=$(SCREENSHOT_DIR) TEST_RUNNER_SCREENSHOT_CONFIGS=$(SCREENSHOT_CONFIGS) xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/ScreenshotTour
 
 ## Compile-time check that Raw cannot reach a cloud-capable call
 routing-proof:

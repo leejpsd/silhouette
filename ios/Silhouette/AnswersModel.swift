@@ -29,7 +29,8 @@ extension AppModel {
     }
 
     func whyRows(_ programId: String) -> [WhyRow] {
-        AnswerInputs.whyRows(bundle, programId: programId, reasons: reasons(programId), locale: locale)
+        AnswerInputs.whyRows(bundle, programId: programId, reasons: reasons(programId), locale: locale, currency: bundle.packInfo.currency,
+                             format: bundle.packInfo.numberFormat)
     }
 
     func state(_ key: String) -> RequestState {
@@ -37,6 +38,9 @@ extension AppModel {
         if let cached = answers.answer(key) { return .done(cached, sentBefore: false) }
         return .idle
     }
+
+    /// The device has no network path (Results shows the offline note).
+    var isOffline: Bool { forceOffline || !network.isOnline }
 
     /// Whether anything has actually left this device (the results lead says so).
     var anythingLeft: Bool { outbound.contains { if case .answeredOnDevice = $0.status { false } else { true } } }
@@ -89,6 +93,7 @@ extension AppModel {
         if answers.needsConsent(content, destination) {
             pendingContent[key] = content
             requests[key] = .confirm(request, lines: lines)
+            sheet = .send(key)
             return
         }
         run(key, request: request, content: content, sentBefore: answers.wasSent(content))
@@ -98,11 +103,14 @@ extension AppModel {
     func send(_ key: String) {
         guard case .confirm(let request, _) = state(key), let content = pendingContent[key] else { return }
         answers.giveConsent(content, AnswerSession.destination(of: request))
+        if sheet == .send(key) { sheet = nil }
         run(key, request: request, content: content, sentBefore: false)
     }
 
     /// "Keep everything on this device".
     func keepOnDevice(_ key: String) {
+        if sheet == .send(key) { sheet = nil }
+        guard case .confirm = state(key) else { return }
         pendingContent[key] = nil
         requests[key] = .skipped
     }

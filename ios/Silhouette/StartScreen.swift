@@ -1,4 +1,5 @@
-// Start: the promise, the rules in use, and the way in.
+// Start: the promise as a picture (the same paystub kept on this phone, and as it could leave), and
+// the way in.
 
 import SilhouetteKit
 import SwiftUI
@@ -8,55 +9,44 @@ struct StartScreen: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        ScreenScroll {
+        Screen {
             if let notice = model.notice {
-                Text(model.t(notice))
-                    .tokenFont(.bodyStrong)
-                    .foregroundStyle(theme.text)
-                    .padding(theme.space("sm"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radius("control")))
-                    .overlay(RoundedRectangle(cornerRadius: theme.radius("control")).strokeBorder(theme.border, lineWidth: 1))
+                DashedNote { Text(model.t(notice)).type(.bodyStrong) }
+                    .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("start.notice")
                     .onAppear { AccessibilityNotification.Announcement(model.t(notice)).post() }
             }
-            SilhouetteMark(style: .brand, size: 88)
-                .padding(.top, theme.space("xs"))
-            ScreenHeading(text: model.t("start.title"), style: .display)
-                .accessibilityIdentifier("start.title")
-            Text(model.t("start.lead"))
-                .tokenFont(.body)
-                .foregroundStyle(theme.textMuted)
-                .fixedSize(horizontal: false, vertical: true)
-            VStack(alignment: .leading, spacing: theme.space("sm")) {
-                PromiseLine(symbol: "iphone", text: model.t("promise.line1"))
-                PromiseLine(symbol: "person.crop.circle.dashed", text: model.t("promise.line2"))
+            VStack(alignment: .leading, spacing: 8) {
+                DisplayHeadline(text: model.t("start.title"), role: .display, maxLines: 4)
+                    .accessibilityIdentifier("start.title")
+                    .appear(.rise)
+                Para(model.t("start.lead"))
             }
-            .padding(theme.space("md"))
-            .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radius("panel")))
-            Text(model.t("start.rules", ["name": model.t("pack.\(model.bundle.packInfo.jurisdiction).name")]))
-                .tokenFont(.small)
-                .foregroundStyle(theme.textMuted)
-            VStack(spacing: theme.space("sm")) {
-                Button(startLabel) { model.begin() }
-                    .buttonStyle(.primaryAction)
-                    .accessibilityIdentifier("start.begin")
-                Button(model.t("start.sample")) { model.openDocument() }
-                    .buttonStyle(.secondaryAction)
+            PromisePicture()
+                .padding(.top, theme.space("xs"))
+        } actions: {
+            BlockAction(label: startLabel, id: "start.begin") { model.begin() }
+            VStack(spacing: 0) {
+                Button(model.t("sample.try")) { model.openDocument() }
+                    .buttonStyle(TextLinkStyle())
                     .accessibilityIdentifier("start.sample")
                 if model.session.isStarted {
                     Button(model.t("start.restart")) { model.restart() }
-                        .buttonStyle(.secondaryAction)
+                        .buttonStyle(TextLinkStyle())
                         .accessibilityIdentifier("start.restart")
                 }
             }
-            .padding(.top, theme.space("xs"))
-            AppFooter()
+            .frame(maxWidth: .infinity)
+            Text(model.t("promise.line3"))
+                .type(.caption)
+                .foregroundStyle(theme.onBlockMuted)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 4)
         }
     }
-}
 
-extension StartScreen {
     /// Not started: begin. Started but unfinished: continue the check. Finished: see results.
     private var startLabel: String {
         guard model.session.isStarted else { return model.t("start.begin") }
@@ -64,15 +54,57 @@ extension StartScreen {
     }
 }
 
-private struct PromiseLine: View {
+/// Two paper slips: the paystub as it reads on this phone, and what could leave (bars and a range).
+private struct PromisePicture: View {
+    @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
-    let symbol: String
-    let text: String
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: theme.space("sm")) {
-            Image(systemName: symbol).foregroundStyle(theme.primary).frame(minWidth: 24).accessibilityHidden(true)
-            Text(text).tokenFont(.body).foregroundStyle(theme.text).fixedSize(horizontal: false, vertical: true)
+        let household = model.t("variable.householdSize")
+        HStack(alignment: .top, spacing: 10) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(model.t("preview.onPhone")).type(.label).foregroundStyle(theme.ink)
+                VStack(alignment: .leading, spacing: 8) {
+                    PaperField(label: model.t("field.paystub.employerName"), value: "NORTHWIND STAFFING")
+                    PaperField(label: model.t("field.paystub.grossPay"), value: "1,271.88")
+                    PaperField(label: model.t("review.annualTitle"), value: model.money(29183))
+                    PaperField(label: household, value: "3")
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .paper(tilt: theme.rotation("paperLeft"))
+            }
+            .frame(maxWidth: .infinity)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(model.t("preview.couldLeave"))
+                    .type(.label)
+                    .foregroundStyle(theme.onLeave)
+                    .padding(.horizontal, 5)
+                    .background(RoundedRectangle(cornerRadius: 2).fill(theme.leave))
+                    .overlay(RoundedRectangle(cornerRadius: 2).strokeBorder(theme.leaveFocus, lineWidth: theme.border))
+                VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(model.t("field.paystub.employerName")).type(.caption, size: 12).foregroundStyle(theme.onPaperMuted)
+                        HStack(spacing: 6) {
+                            PlaceholderBar(id: "W1", width: 60).appear(.wipe, delay: 0.2)
+                            PlaceholderBar(id: "W2", width: 52).appear(.wipe, delay: 0.3)
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(model.t("field.paystub.grossPay")).type(.caption, size: 12).foregroundStyle(theme.onPaperMuted)
+                        PlaceholderBar(id: "N12", width: 56).appear(.wipe, delay: 0.4)
+                    }
+                    PaperField(label: model.t("review.annualTitle"),
+                               value: model.t("income.band.range", ["min": model.money(15000), "max": model.money(29999)]))
+                    PaperField(label: household, value: "3")
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .paper(tilt: theme.rotation("paperRight"))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 8)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(model.t("promise.line1")) \(model.t("promise.line2"))")
+        .accessibilityAddTraits(.isImage)
     }
 }

@@ -218,7 +218,7 @@ struct ConformanceTests {
         let scope = try #require(OutputCheck.Scope(rawValue: scopeName))
         let text = try #require(k["text"]?.stringValue)
         let locale = try #require(k["locale"]?.stringValue)
-        let blocked = OutputCheck.isBlocked(text, locale: locale, scope: scope, checks: checks)
+        let blocked = OutputCheck.isBlocked(text, locale: locale, scope: scope, checks: checks, verdict: k["verdict"]?.stringValue)
         #expect(blocked == k["blocked"]?.boolValue, "\(k.id)")
     }
 }

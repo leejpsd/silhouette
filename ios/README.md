@@ -22,9 +22,11 @@ bundle.
 | `SilhouetteCore/Sources/SilhouetteKit/` | App logic without UI: the Quick Check flow, the document flow, the encrypted store, the outbound log, copy, prompts and design tokens. `AI/`: the model port, request planning (cloud-capable requests from cloud-safe values only), routing and retry, output checks, consent and the session cache, Remote Config values |
 | `SilhouetteCore/Tests/` | Conformance tests over every file in `shared/fixtures/conformance/` (skeleton, rehydrate with typed amounts, generalize, evaluator, verdict, silhouette verdict, validate, model schema, output check; a new file fails the suite until it has a runner), the canary leak test, Swift/JavaScript edge cases, and unit tests for SilhouetteKit with a scripted model port |
 | `SilhouetteCore/RoutingProof/` | Small Swift files that must, or must not, compile against `SilhouetteCore` |
-| `Silhouette/` | SwiftUI app (iOS 26.0 or later): screens, chrome and the theme |
+| `Silhouette/` | SwiftUI app (iOS 26.0 or later): the screens and the app frame |
+| `Silhouette/Design/` | The design system: theme and type from the tokens, the screen frame with the bottom block, sheets, controls, paper, markers, bars, grain and motion |
+| `Silhouette/Resources/Fonts/` | Darker Grotesque, Hanken Grotesk and DM Mono (TTF) with their SIL Open Font License texts; registered in `Silhouette/Info.plist` |
 | `Silhouette/AI/` | Firebase AI Logic, App Check and Remote Config (the only code that imports Firebase), the network monitor, and the scripted model used by UI tests |
-| `Silhouette/Resources/copy.local.json` | App strings not yet in `shared/copy/` (never shadows a shared key; a test checks this) |
+| `Silhouette/Resources/copy.local.json` | App strings not yet in `shared/copy/` (currently none; never shadows a shared key, a test checks this) |
 | `SilhouetteUITests/` | XCUITests for the Quick Check, document and answer flows, and a screenshot tour |
 | `project.yml` | XcodeGen spec; `Silhouette.xcodeproj` is generated from it |
 | `scripts/sync-shared.sh` | Build phase: copies `shared/copy`, `shared/rulepacks/zz-test`, `shared/bands`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, `shared/schemas/pointer.paystub.json`, `shared/samples` and `shared/prompts` into the app bundle under `Shared/` |
@@ -61,7 +63,7 @@ signing team with the App Attest capability.
 make test            # swift test in SilhouetteCore (macOS)
 make test-ios        # the same package tests on the iOS simulator (the Skeletonizer uses the OS's ICU)
 make ui-test         # XCUITests: Quick Check, document and answer flows (scripted model)
-make screenshots     # screenshot tour into SCREENSHOT_DIR (default build/screenshots)
+make screenshots     # screenshot tour into SCREENSHOT_DIR (default build/screenshots, git-ignored)
 make routing-proof   # compile-time routing check
 make build           # xcodebuild for SIMULATOR (default "iPhone 18 Pro")
 make project         # xcodegen generate
@@ -77,30 +79,47 @@ make project         # xcodegen generate
   multiple-choice list is an answer, distinct from skipping. Sensitive questions and the exact
   income say that the answer never leaves the device.
 - **Results.** Programs grouped as *may qualify*, *possible*, *depends*, *probably not*, from
-  `RulesEngine.verdicts`. A program's card lists each criterion with its state; each answer it
-  depends on opens that question and returns to the card.
+  `RulesEngine.verdicts`. The *possible* group sits in an inverted card with the income limit
+  that keeps it open. When nothing fits, the card says so; before any answer, the programs are
+  listed as not answered yet. A program's page lists each criterion with its state; each answer
+  it depends on opens that question and returns to the page. Amounts, limits and income ranges
+  are money in the rule pack's `currency`, always grouped and written in the pack's
+  `numberFormat` (`$34,000` in every app language), the way the jurisdiction's paperwork writes it.
 - **Answers stay `Raw`.** `QuickCheckSession` keeps the answers inside `Raw` and hands them only
   to the verdict engine, the encrypted store, and the question screen that shows the user their
   own answer.
 - **Encrypted at rest.** Answers are sealed with AES-GCM using a 256-bit key kept in the
   Keychain (this device only). The file has complete file protection and is excluded from
   backup. *Delete everything* removes the file, the key and the language setting.
-- **Leaving your device.** The bar at the bottom reads `OutboundLog`. Every request the app makes
-  is recorded before it is made (sending), then marked sent with the response status, or not
-  completed with the reason; answers written on this device are listed as not sent. A recorded
+- **Leaving your device.** The count row at the bottom of every screen reads `OutboundLog`; its
+  record ("3 sent, 1 kept.") opens as a sheet. Every request the app makes is recorded before it
+  is made (sending), then marked sent with the response status, or not completed with the reason;
+  an answer written on this device is recorded as "Answered on this device", with no host and no
+  body, and counted as kept, never as sent. A recorded
   request is a `CloudText`, so only cloud-safe content can appear there. The details say what the
   app cannot see: the Firebase SDK renews App Check and installation tokens in the background, and
   iOS updates the system model.
 - **Copy and languages.** Strings come from `shared/copy/`, the pack's `copy/` folder and
   `copy.local.json`, with per-key fallback to English. The language (English, Español, 한국어)
-  defaults to the device language and can be changed from the globe menu.
-- **Theme.** Colors (light and dark), type scale, spacing and radii come from
-  `shared/design/tokens.json`. Type scales with Dynamic Type. Verdicts never rely on color: the
-  silhouette mark is solid (may qualify), half filled (possible), dashed (depends) or faint
-  (probably not), and always sits next to text. The token file's display sizes are meant for a
-  condensed display typeface the app does not bundle yet, so display, title and heading sizes are
-  capped in the system font.
-- **Demo banner.** Shown on every screen while the synthetic `zz-test` pack is in use.
+  defaults to the device language and can be changed from the header (EN, ES, 한국어).
+- **Design.** The look follows `shared/design/DESIGN.md`; every colour, size, radius, rotation,
+  shadow and duration comes from `shared/design/tokens.json`, in light and dark. Each screen has
+  the header, the one-line demo notice, display headlines that step down in size before they
+  would clip, and the inverted bottom block with the screen's one main action above the
+  "Leaving your device" count (stamped in pink when something leaves). The block follows the
+  keyboard and, when it would cover more than 40 % of the screen, scrolls with the content while
+  the count stays pinned. Pink marks only what leaves. Verdicts are told apart by marker shape
+  (solid, dotted, dashed, hollow) next to their text, never by colour. Document values and what
+  would be sent appear on tilted paper slips; hidden values are bars with their placeholder id.
+  The record, the step before sending, the language, the demo rules and *Delete everything* are
+  sheets. Motion (rise, wipe, pop, stamp, sheet, the preview cross-fade) shows its end state under
+  Reduce Motion; the grain is skipped under Reduce Transparency.
+- **Accessibility.** Interface and mono text scale fully with Dynamic Type; display type scales
+  up to the token cap (1.3×) and then relies on the size steps. Targets are at least 44 pt.
+  Markers, bars and the count have spoken equivalents (verdict text, "hidden word", "hidden
+  number", "hidden date", the count's subline).
+- **Demo notice.** Shown on every screen while the synthetic `zz-test` pack is in use; "More" opens
+  the demo rules, which also offer *Delete everything*.
 - **Document flow.** A paystub comes from pasted or shared text, a PDF's text layer (PDFKit; no
   OCR), a built-in sample, or the numbers typed by hand. A photo needs an on-device model and
   says so. The document's language decides its allowlist (that language ∪ English), independent
@@ -129,8 +148,24 @@ make project         # xcodegen generate
   (`ask.freeText`) is answered on the device only.
 
 UI tests and screenshots use launch arguments that are ignored otherwise: `-UITestResetAll`
-(start from a clean state), `-UITestAppearance dark|light`, and `-UITestModel none|device|cloud`
-(a scripted model instead of Firebase: no model call, no network).
+(start from a clean state), `-UITestAppearance dark|light`, `-UITestOffline` (show the offline
+state), and `-UITestModel none|device|cloud` (a scripted model instead of Firebase: no model
+call, no network; `cloud-slow`, `cloud-quota`, `cloud-blocked` script those request states).
+
+### Fonts
+
+The fonts are bundled; nothing is downloaded at run time. All three are under the SIL Open Font
+License 1.1, whose texts are in `Silhouette/Resources/Fonts/` and in the app bundle. The files
+come from the Google Fonts repository (`github.com/google/fonts`, folder `ofl/`):
+
+| File | Family | Used for |
+|---|---|---|
+| `DarkerGrotesque-Variable.ttf` | Darker Grotesque (variable, weights 800 and 900 used) | Headlines, amounts, counts, main actions |
+| `HankenGrotesk-Variable.ttf` | Hanken Grotesk (variable, weights 400, 600 and 700 used) | Interface text |
+| `DMMono-Regular.ttf`, `DMMono-Medium.ttf` | DM Mono 400 and 500 | Document values, placeholder ids, times, limits |
+
+Darker Grotesque has no Hangul, so Korean display text uses the system typeface at its heaviest
+weight, with open leading and line breaks between words.
 
 ## Models and Firebase AI Logic
 
