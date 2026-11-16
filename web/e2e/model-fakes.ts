@@ -64,17 +64,36 @@ export function placeholderFor(caseId: string, text: string): string {
  */
 export async function fakeOnDeviceModel(
   context: BrowserContext,
-  options: { availability: string; replies: Record<string, string>; throwMessage?: string; initialPromptTooLarge?: boolean },
+  options: {
+    availability: string;
+    replies: Record<string, string>;
+    /**
+     * Replies chosen by the session's system instruction (checked before `replies`): for example the
+     * wording of one part of a two-part on-device reading.
+     */
+    systemReplies?: Record<string, string>;
+    throwMessage?: string;
+    initialPromptTooLarge?: boolean;
+  },
 ) {
   await context.addInitScript((opts) => {
     let state = opts.availability;
     const prompts: string[] = [];
+    // The response constraint each prompt was given (promptOptions.responseConstraint), as JSON.
+    const constraints: string[] = [];
     (window as unknown as { __fakePrompts: string[] }).__fakePrompts = prompts;
+    (window as unknown as { __fakeConstraints: string[] }).__fakeConstraints = constraints;
     class FakeSession {
-      async prompt(input: unknown) {
+      readonly system: string;
+      constructor(system: string) {
+        this.system = system;
+      }
+      async prompt(input: unknown, promptOptions?: { responseConstraint?: unknown }) {
         const text = JSON.stringify(input);
         prompts.push(text);
+        constraints.push(JSON.stringify(promptOptions?.responseConstraint ?? null));
         if (opts.throwMessage) throw new DOMException(opts.throwMessage, 'QuotaExceededError');
+        for (const [needle, reply] of Object.entries(opts.systemReplies ?? {})) if (this.system.includes(needle) && text.includes('Document type:')) return reply;
         for (const [needle, reply] of Object.entries(opts.replies)) if (text.includes(needle)) return reply;
         return '{}';
       }
@@ -94,7 +113,7 @@ export async function fakeOnDeviceModel(
           }
           state = 'available';
         }
-        return new FakeSession();
+        return new FakeSession(JSON.stringify(o?.initialPrompts ?? []));
       },
     };
   }, options);

@@ -15,6 +15,9 @@ import {
   RUN_FILE_VERSION,
   availabilityStates,
   browserVersion,
+  finalRan,
+  firstFields,
+  firstRan,
   isRunFile,
   platformString,
   summarize,
@@ -183,6 +186,15 @@ function FieldDetail({ device }: { device: DeviceDiagnosis }) {
         {t('deviceCheck.parsed', { parsed: device.parsed ? '✓' : '✗', passed: device.passed ? '✓' : '✗' })}
         {device.problems.length > 0 && ` ${device.problems.join(', ')}`}
       </p>
+      {device.core && (
+        <p className="small" data-testid="device-parts">
+          {t('deviceCheck.parts', {
+            core: `${device.core.correct} / ${device.core.total}`,
+            deductions: device.deductions ?? '—',
+          })}
+          {device.deductionsNotRead && ` ${t('deviceCheck.deductionsNotRead')}`}
+        </p>
+      )}
       <ul className="field-list">
         {device.fields.map((f) => (
           <li key={f.field} data-status={f.status}>
@@ -194,7 +206,20 @@ function FieldDetail({ device }: { device: DeviceDiagnosis }) {
           </li>
         ))}
       </ul>
-      <pre className="payload">{device.rawText}</pre>
+      {device.passes ? (
+        device.passes.map((p) => (
+          <div key={p.part} data-testid={`device-pass-${p.part}`}>
+            <p className="small strong">
+              {t('deviceCheck.pass', { part: p.part, time: (p.latencyMs / 1000).toFixed(1) })}
+              {p.problems.length > 0 && ` ${p.problems.join(', ')}`}
+              {p.extraKeys.length > 0 && ` · ${t('deviceCheck.extraKeys', { keys: p.extraKeys.join(' ') })}`}
+            </p>
+            <pre className="payload">{p.rawText}</pre>
+          </div>
+        ))
+      ) : (
+        <pre className="payload">{device.rawText}</pre>
+      )}
     </details>
   );
 }
@@ -202,7 +227,7 @@ function FieldDetail({ device }: { device: DeviceDiagnosis }) {
 function Results({ view }: { view: Exclude<View, null> }) {
   const { t } = useApp();
   const { file } = view;
-  const s = summarize(file.cases);
+  const s = summarize(file.cases, file.version);
   return (
     <section className="device-results" aria-label={view.kind === 'live' ? t('deviceCheck.live') : t('deviceCheck.recordings')} data-testid="device-results">
       <p className="small" data-testid="device-environment">
@@ -216,13 +241,17 @@ function Results({ view }: { view: Exclude<View, null> }) {
         })}
       </p>
       <p className="strong" data-testid="device-summary">
-        {t('deviceCheck.summary', { onDevice: s.onDevice, total: s.total, inCloud: s.inCloud, notRun: s.notRun, correct: s.fieldsCorrect, fields: s.fieldsTotal })}
+        {t('deviceCheck.summary', { onDevice: s.onDevice, total: s.total, afterDevice: s.inCloudAfterDevice, inCloud: s.inCloud, notRun: s.notRun })}
       </p>
       {s.finalCorrect !== null && (
         <p className="strong" data-testid="device-summary-final">
           {t('deviceCheck.summaryFinal', { correct: s.finalCorrect, fields: s.fieldsTotal, retried: s.retriedInCloud })}
+          {file.version >= 3 && ` ${t('deviceCheck.summaryNotRead', { count: s.deductionsNotRead })}`}
         </p>
       )}
+      <p className="small" data-testid="device-summary-first">
+        {t('deviceCheck.summaryFirst', { firstOnDevice: s.firstOnDevice, total: s.total, correct: s.fieldsCorrect, fields: s.fieldsTotal })}
+      </p>
       <div className="table-scroll" tabIndex={0} role="region" aria-label={t('deviceCheck.title')}>
         <table className="device-table">
           <thead>
@@ -237,33 +266,39 @@ function Results({ view }: { view: Exclude<View, null> }) {
             </tr>
           </thead>
           <tbody>
-            {file.cases.map((c) => (
-              <tr key={c.id} data-ran={c.ran}>
-                <th scope="row">
-                  {c.id}
-                  <span className="small muted"> · {c.task}</span>
-                </th>
-                <td data-label={t('deviceCheck.col.mode')}>{c.mode.replace(/_/g, '_\u200b')}</td>
-                <td data-label={t('deviceCheck.col.ran')} className={`ran ran-${c.ran}`}>
-                  {t(dynamicKey(`deviceCheck.ran.${c.ran}`))}
-                </td>
-                <td data-label={t('deviceCheck.col.time')}>{c.latencyMs === null ? '—' : `${(c.latencyMs / 1000).toFixed(1)} s`}</td>
-                <td data-label={t('deviceCheck.col.check')}>{c.outputCheck ?? '—'}</td>
-                <td data-label={t('deviceCheck.col.fields')}>
-                  {c.fields ? `${c.fields.correct} / ${c.fields.total}` : '—'}
-                  {c.final && (
-                    <span className="small muted">
-                      {' '}
-                      → {c.final.fields.correct} / {c.final.fields.total} {c.final.retried ? `(${t('deviceCheck.ran.IN_CLOUD')})` : ''}
-                    </span>
-                  )}
-                </td>
-                <td data-label={t('deviceCheck.col.note')} className="note">
-                  {c.error ?? c.note ?? ''}
-                  {c.device && <FieldDetail device={c.device} />}
-                </td>
-              </tr>
-            ))}
+            {file.cases.map((c) => {
+              const ran = finalRan(c, file.version);
+              const afterDevice = ran === 'IN_CLOUD' && firstRan(c, file.version) === 'ON_DEVICE';
+              const first = firstFields(c, file.version);
+              return (
+                <tr key={c.id} data-ran={ran} data-first-ran={firstRan(c, file.version)}>
+                  <th scope="row">
+                    {c.id}
+                    <span className="small muted"> · {c.task}</span>
+                  </th>
+                  <td data-label={t('deviceCheck.col.mode')}>{c.mode.replace(/_/g, '_\u200b')}</td>
+                  <td data-label={t('deviceCheck.col.ran')} className={`ran ran-${ran}`}>
+                    {afterDevice ? t('deviceCheck.ran.afterDevice') : t(dynamicKey(`deviceCheck.ran.${ran}`))}
+                  </td>
+                  <td data-label={t('deviceCheck.col.time')}>{c.latencyMs === null ? '—' : `${(c.latencyMs / 1000).toFixed(1)} s`}</td>
+                  <td data-label={t('deviceCheck.col.check')}>{c.outputCheck ?? '—'}</td>
+                  <td data-label={t('deviceCheck.col.fields')}>
+                    {first ? `${first.correct} / ${first.total}` : '—'}
+                    {c.final && (
+                      <span className="small muted">
+                        {' '}
+                        → {c.final.fields.correct} / {c.final.fields.total}
+                        {c.final.deductionsNotRead ? ` (${t('deviceCheck.deductionsNotReadShort')})` : ''}
+                      </span>
+                    )}
+                  </td>
+                  <td data-label={t('deviceCheck.col.note')} className="note">
+                    {c.error ?? c.note ?? ''}
+                    {c.device && <FieldDetail device={c.device} />}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

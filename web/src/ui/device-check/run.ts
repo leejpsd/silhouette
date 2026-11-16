@@ -8,7 +8,7 @@ import { buildReview, type ReviewField } from '../../core/review';
 import { tidyNamePointers } from '../../core/tidy';
 import { criterionReasons, verdicts } from '../../core/rules';
 import { askChip, explainProgram, extractPointers, planAskChip, planExplain, POINTER_SCHEMAS, type DeviceAttempt, type TaskResult } from '../../ai/tasks';
-import { goldPlaceholderIds, pointerProblems } from '../../core/pointer-check';
+import { corePointerProblems, deductionsProblems, goldPlaceholderIds, pointerProblems } from '../../core/pointer-check';
 import { askFreeText, explainPersonal, readPhoto } from '../../ai/on-device';
 import { askDeviceStatus, photoDeviceStatus, pointerDeviceStatus } from '../../ai/device-model';
 import { classifyError } from '../../ai/errors';
@@ -32,8 +32,12 @@ import docD from '../../../eval/dataset/en-l10-1.txt?raw';
 import goldD from '../../../eval/dataset/en-l10-1.gold.json';
 
 export const RUN_FILE_KIND = 'silhouette-device-check';
-/** Version 2 adds the per-field diagnosis of extraction and the result after checks and any retry. */
-export const RUN_FILE_VERSION = 2;
+/**
+ * Version 2 adds the per-field diagnosis of extraction and the result after checks and any retry.
+ * Version 3 makes `ran` where each case was finally answered (in versions 1 and 2 it is where the first
+ * attempt ran), keeps the first attempt under `first`, and records the two parts of an on-device reading.
+ */
+export const RUN_FILE_VERSION = 3;
 
 export type Ran = 'ON_DEVICE' | 'IN_CLOUD' | 'not-run';
 
@@ -42,7 +46,11 @@ export interface CaseResult {
   readonly task: string;
   /** The inference mode the app asked for (routing.json). */
   readonly mode: 'PREFER_ON_DEVICE' | 'PREFER_IN_CLOUD' | 'ONLY_ON_DEVICE';
-  /** Where it actually ran, from the response; `not-run` when it failed or was skipped. */
+  /**
+   * Version 3: where the case was finally answered, from the response (for extraction, after the
+   * checks and any retry); `not-run` when it failed or was skipped. Versions 1 and 2: where the first
+   * attempt ran. Read it with finalRan() and firstRan(), which handle every version.
+   */
   readonly ran: Ran;
   readonly latencyMs: number | null;
   /** For model text: whether the check on model text passed (null when there was no text to check). */
@@ -53,7 +61,17 @@ export interface CaseResult {
    */
   readonly fields?: { readonly correct: number; readonly total: number } | undefined;
   /** Version 2, extraction: what the person ends up with, after the checks and any retry. */
-  readonly final?: { readonly ran: Ran; readonly fields: { readonly correct: number; readonly total: number }; readonly retried: boolean } | undefined;
+  readonly final?:
+    | {
+        readonly ran: Ran;
+        readonly fields: { readonly correct: number; readonly total: number };
+        readonly retried: boolean;
+        /** Version 3: answered on this device without the deductions, which it could not read reliably. */
+        readonly deductionsNotRead?: boolean | undefined;
+      }
+    | undefined;
+  /** Version 3, extraction: the first attempt (the device's, when it answered) and where it ran. */
+  readonly first?: { readonly ran: Ran; readonly fields: { readonly correct: number; readonly total: number } } | undefined;
   /** Version 2, extraction: the device's answer, field by field (placeholder ids and field names only). */
   readonly device?: DeviceDiagnosis | undefined;
   readonly error?: string | undefined;
@@ -70,6 +88,26 @@ export interface DeviceDiagnosis {
   readonly problems: readonly string[];
   readonly passed: boolean;
   readonly fields: readonly { readonly field: string; readonly gold: readonly string[]; readonly answered: readonly string[]; readonly status: FieldStatus }[];
+  /** Version 3: the device's core fields (all but the deductions) right, against the gold answers. */
+  readonly core?: { readonly correct: number; readonly total: number } | undefined;
+  /** Version 3: the device's deductions against the gold answers; `not-asked` when the core failed first. */
+  readonly deductions?: FieldStatus | 'not-asked' | undefined;
+  /** Version 3: the deductions were left out and marked "not read on this device". */
+  readonly deductionsNotRead?: boolean | undefined;
+  /** Version 3: each request to the device, in order (placeholder ids and field names only). */
+  readonly passes?: readonly DevicePassRecord[] | undefined;
+}
+
+export interface DevicePassRecord {
+  readonly part: string;
+  readonly rawText: string;
+  readonly parsed: boolean;
+  /** The parsed answer of this part (placeholder ids and field names only). */
+  readonly parsedValue?: Record<string, unknown> | undefined;
+  readonly problems: readonly string[];
+  readonly extraKeys: readonly string[];
+  readonly missingKeys: readonly string[];
+  readonly latencyMs: number;
 }
 
 export interface RunFile {
@@ -94,11 +132,16 @@ export function browserVersion(ua: string): string {
   return 'unknown browser';
 }
 
-/** "device-check-2026-11-16-chrome157-macos.json": the date, browser major version and platform, so files from different machines do not collide. */
+/**
+ * "device-check-2026-11-16T1744-chrome157-macos.json": the date and time (UTC, as in the file), browser
+ * major version and platform, so two runs on one day or on different machines do not collide.
+ */
 export function runFileName(file: Pick<RunFile, 'date' | 'browser' | 'platform'>): string {
   const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '');
   const [name = 'browser', version = ''] = file.browser.split(' ');
-  return `device-check-${file.date.slice(0, 10)}-${slug(name)}${version.split('.')[0] ?? ''}-${slug(file.platform)}.json`;
+  const time = /T(\d{2}):(\d{2})/.exec(file.date);
+  const stamp = `${file.date.slice(0, 10)}${time ? `T${time[1]}${time[2]}` : ''}`;
+  return `device-check-${stamp}-${slug(name)}${version.split('.')[0] ?? ''}-${slug(file.platform)}.json`;
 }
 
 export function platformString(): string {
@@ -203,8 +246,19 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number]): Promise<CaseRes
   const gold = c.gold();
   const goldIds = goldPlaceholderIds(gold, map);
   const reviewOf = (value: unknown) => buildReview(POINTER_SCHEMAS.paystub, tidyNamePointers(POINTER_SCHEMAS.paystub, value, map, introducersFor('en')), skeleton, map);
+  const { deductions: goldDeductions, ...goldCore } = gold;
+  // Everything the device answered, including deductions that were then left out as not read.
+  const deviceAnswer = (attempt: DeviceAttempt): Record<string, unknown> | undefined => {
+    if (!attempt.passes) return attempt.value;
+    const parts = attempt.passes.filter((p) => p.value !== undefined).map((p) => p.value as Record<string, unknown>);
+    return parts.length > 0 ? Object.assign({}, ...parts) : undefined;
+  };
   const diagnose = (attempt: DeviceAttempt): DeviceDiagnosis => {
-    const statuses = attempt.value ? fieldStatuses(reviewOf(attempt.value), gold) : {};
+    const answer = deviceAnswer(attempt);
+    const statuses = answer ? fieldStatuses(reviewOf(answer), gold) : {};
+    const core = answer ? scoreFields(reviewOf(answer), goldCore) : { correct: 0, total: scoreFields([], goldCore).total };
+    const deductionsAsked = !attempt.passes || attempt.passes.some((p) => p.part === 'deductions');
+    const goldHasDeductions = Array.isArray(goldDeductions) && goldDeductions.length > 0;
     return {
       rawText: attempt.rawText.slice(0, 4000),
       parsed: attempt.parsed,
@@ -213,30 +267,59 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number]): Promise<CaseRes
       fields: Object.keys(POINTER_SCHEMAS.paystub.properties).map((field) => ({
         field,
         gold: goldIds[field] ?? [],
-        answered: answeredIds(attempt.value?.[field]),
+        answered: answeredIds(answer?.[field]),
         status: statuses[field] ?? (gold[field] === undefined || gold[field] === null ? 'absent' : 'missing'),
+      })),
+      core,
+      // The deductions the device gave, before any were left out (from the deductions part's own answer).
+      deductions: deductionsAsked ? (statuses['deductions'] ?? (goldHasDeductions ? 'missing' : 'absent')) : 'not-asked',
+      deductionsNotRead: attempt.deductionsNotRead ?? false,
+      passes: attempt.passes?.map((p) => ({
+        part: p.part,
+        rawText: p.rawText.slice(0, 4000),
+        parsed: p.parsed,
+        parsedValue: p.value,
+        problems: p.problems,
+        extraKeys: p.extraKeys,
+        missingKeys: p.missingKeys,
+        latencyMs: p.latencyMs,
       })),
     };
   };
+  const schema = POINTER_SCHEMAS.paystub;
   try {
-    const result = await extractPointers(skeleton, 'paystub', 'en', { validate: (p) => pointerProblems(POINTER_SCHEMAS.paystub, p, skeleton, map, PACK.jurisdiction) });
+    const result = await extractPointers(skeleton, 'paystub', 'en', {
+      validate: (p) => pointerProblems(schema, p, skeleton, map, PACK.jurisdiction),
+      checkParts: {
+        core: (p) => corePointerProblems(schema, p, map, PACK.jurisdiction),
+        deductions: (p) => deductionsProblems(schema, p, map, PACK.jurisdiction),
+      },
+    });
     const finalFields = scoreFields(reviewOf(result.value), gold);
     const attempt = result.deviceAttempt;
     // The first answer: the device's when it answered (used or not), otherwise the cloud's.
-    const firstFields = attempt ? (attempt.value ? scoreFields(reviewOf(attempt.value), gold) : { correct: 0, total: finalFields.total }) : finalFields;
+    const answer = attempt ? deviceAnswer(attempt) : undefined;
+    const firstFields = attempt ? (answer ? scoreFields(reviewOf(answer), gold) : { correct: 0, total: finalFields.total }) : finalFields;
     return {
       ...base,
-      ran: attempt ? 'ON_DEVICE' : result.inferenceSource,
+      ran: result.inferenceSource,
       latencyMs: elapsed(started),
       outputCheck: null,
-      fields: firstFields,
-      final: { ran: result.inferenceSource, fields: finalFields, retried: result.reason === 'on-device-failed' },
+      first: { ran: attempt ? 'ON_DEVICE' : result.inferenceSource, fields: firstFields },
+      final: { ran: result.inferenceSource, fields: finalFields, retried: result.reason === 'on-device-failed', deductionsNotRead: result.deductionsNotRead ?? false },
       device: attempt ? diagnose(attempt) : undefined,
       note: result.reason,
     };
   } catch (error) {
     const attempt = (error as { deviceAttempt?: DeviceAttempt }).deviceAttempt;
-    return { ...base, ran: attempt ? 'ON_DEVICE' : 'not-run', latencyMs: elapsed(started), ...failed(error), device: attempt ? diagnose(attempt) : undefined };
+    return {
+      ...base,
+      ran: 'not-run',
+      latencyMs: elapsed(started),
+      ...failed(error),
+      first: attempt ? { ran: 'ON_DEVICE', fields: deviceAnswer(attempt) ? scoreFields(reviewOf(deviceAnswer(attempt)), gold) : { correct: 0, total: scoreFields([], gold).total } } : undefined,
+      device: attempt ? diagnose(attempt) : undefined,
+    };
   }
 }
 
@@ -345,38 +428,72 @@ export const CASES: readonly (() => Promise<CaseResult>)[] = [
   photo,
 ];
 
+/** Where a case was finally answered, in a file of any version. */
+export function finalRan(c: CaseResult, version: number): Ran {
+  if (version >= 3) return c.ran;
+  // Versions 1 and 2 recorded the first attempt in `ran`; version 2 added the final result.
+  return c.final?.ran ?? c.ran;
+}
+
+/** Where a case's first attempt ran, in a file of any version. */
+export function firstRan(c: CaseResult, version: number): Ran {
+  if (version >= 3) return c.first?.ran ?? c.ran;
+  return c.ran;
+}
+
+/** Fields right in the first answer of an extraction case, in a file of any version. */
+export function firstFields(c: CaseResult, version: number): { correct: number; total: number } | undefined {
+  return version >= 3 ? c.first?.fields : c.fields;
+}
+
 export interface Summary {
+  /** Cases finally answered on this device. */
   readonly onDevice: number;
+  /** Cases answered in the cloud after a failed on-device attempt. */
+  readonly inCloudAfterDevice: number;
+  /** Cases answered in the cloud with no on-device attempt (no model for them). */
   readonly inCloud: number;
   readonly notRun: number;
   readonly total: number;
+  /** First attempts that ran on this device (whatever happened next). */
+  readonly firstOnDevice: number;
   /** Extraction, first answer (the device's when it answered). */
   readonly fieldsCorrect: number;
   readonly fieldsTotal: number;
-  /** Extraction, what the person ends up with after the checks and any retry (version 2 files). */
+  /** Extraction, what the person ends up with after the checks and any retry (version 2 files and later). */
   readonly finalCorrect: number | null;
   /** Extraction cases repeated in the cloud after a failed or unreliable on-device answer. */
   readonly retriedInCloud: number;
+  /** Extraction cases answered on this device with the deductions marked not read (version 3). */
+  readonly deductionsNotRead: number;
 }
 
-/** Cloud runs are counted as cloud runs, never as on-device ones. */
-export function summarize(cases: readonly CaseResult[]): Summary {
-  const fields = cases.flatMap((c) => (c.fields ? [c.fields] : []));
+/** Cloud runs are counted as cloud runs, never as on-device ones; a case counts where it was finally answered. */
+export function summarize(cases: readonly CaseResult[], version: number = RUN_FILE_VERSION): Summary {
+  const fields = cases.flatMap((c) => {
+    const f = firstFields(c, version);
+    return f ? [f] : [];
+  });
+  const final = cases.map((c) => finalRan(c, version));
+  const afterDevice = (c: CaseResult) => c.final?.retried === true && finalRan(c, version) === 'IN_CLOUD';
   return {
-    onDevice: cases.filter((c) => c.ran === 'ON_DEVICE').length,
-    inCloud: cases.filter((c) => c.ran === 'IN_CLOUD').length,
-    notRun: cases.filter((c) => c.ran === 'not-run').length,
+    onDevice: final.filter((r) => r === 'ON_DEVICE').length,
+    inCloudAfterDevice: cases.filter(afterDevice).length,
+    inCloud: cases.filter((c) => finalRan(c, version) === 'IN_CLOUD' && !afterDevice(c)).length,
+    notRun: final.filter((r) => r === 'not-run').length,
     total: cases.length,
+    firstOnDevice: cases.filter((c) => firstRan(c, version) === 'ON_DEVICE').length,
     fieldsCorrect: fields.reduce((a, f) => a + f.correct, 0),
     fieldsTotal: fields.reduce((a, f) => a + f.total, 0),
     finalCorrect: cases.some((c) => c.final) ? cases.reduce((a, c) => a + (c.final?.fields.correct ?? 0), 0) : null,
     retriedInCloud: cases.filter((c) => c.final?.retried).length,
+    deductionsNotRead: cases.filter((c) => c.final?.deductionsNotRead).length,
   };
 }
 
 /** Whether a parsed JSON value is a run file this page can show. */
 export function isRunFile(value: unknown): value is RunFile {
   const v = value as Partial<RunFile> | null;
-  // Versions 1 and 2 open alike; version 1 simply has no per-field diagnosis or final result.
-  return v !== null && typeof v === 'object' && v.kind === RUN_FILE_KIND && Array.isArray(v.cases) && typeof v.date === 'string' && (v.version === 1 || v.version === 2);
+  // Versions 1 to 3 open alike; version 1 has no per-field diagnosis or final result, version 2 no parts.
+  return v !== null && typeof v === 'object' && v.kind === RUN_FILE_KIND && Array.isArray(v.cases) && typeof v.date === 'string' && (v.version === 1 || v.version === 2 || v.version === 3);
 }

@@ -7,7 +7,7 @@
 import paystubV2 from '../../../shared/schemas/pointer.paystub.json';
 import leaseV2 from '../../../shared/schemas/pointer.lease.json';
 import type { PointerSchema } from '../core/skeleton';
-import { POINTER_EXTRACT, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, type PromptTemplate } from './prompts';
+import { POINTER_DEVICE_PARTS_V1, POINTER_EXTRACT, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, type DeviceParts, type PromptTemplate } from './prompts';
 import type { ModelSchemaOptions } from './model-schema';
 
 export type DocType = 'paystub' | 'lease';
@@ -28,6 +28,12 @@ export interface PointerConfig {
    * extensions.
    */
   readonly device?: { readonly temperature?: number; readonly topK?: number } | undefined;
+  /**
+   * When set, a document with a list field (a paystub's deductions) is read on the device in two
+   * parts, each with its own strict constraint and this added wording: the core fields, then the
+   * list. The cloud reading stays a single pass with the shared prompt only.
+   */
+  readonly deviceParts?: DeviceParts | undefined;
   /** Cloud API field that carries the schema. */
   readonly schemaField: 'responseSchema' | 'responseJsonSchema';
   /** Prefix skeleton lines with L01:, L02: … in the prompt. */
@@ -71,9 +77,10 @@ export const POINTER_V3: PointerConfig = { ...POINTER_V2, id: 'v3', prompt: POIN
 
 /**
  * shared/prompts/pointer-extract.v4.md: v3 plus "hours worked and hourly rate are those of the
- * Regular (base pay) line". Same schemas and settings.
+ * Regular (base pay) line". Same schemas and settings. On the device a paystub is read in two
+ * parts with src/ai/device-prompts/pointer-extract-parts.v1.md added (the cloud call is unchanged).
  */
-export const POINTER_V4: PointerConfig = { ...POINTER_V2, id: 'v4', prompt: POINTER_EXTRACT_V4 };
+export const POINTER_V4: PointerConfig = { ...POINTER_V2, id: 'v4', prompt: POINTER_EXTRACT_V4, deviceParts: POINTER_DEVICE_PARTS_V1 };
 
 /** Bundled prompt versions, by the number in shared/prompts/pointer-extract.v{n}.md. */
 export const POINTER_CONFIGS: ReadonlyMap<number, PointerConfig> = new Map([

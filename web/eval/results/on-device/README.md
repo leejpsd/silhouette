@@ -11,7 +11,7 @@ Each `*.json` file here is one run of the app's on-device check, made in a brows
    - the general explanation and two prepared questions, in English and in Spanish;
    - the explanation of a person's own result and a typed question;
    - reading a picture of the sample paystub, when the model accepts images.
-4. When the status line says "Finished.", press **Download results**. The browser saves `device-check-YYYY-MM-DD.json`.
+4. When the status line says "Finished.", press **Download results**. The browser saves `device-check-YYYY-MM-DDTHHMM-<browser><major>-<platform>.json` (UTC time of the run, for example `device-check-2026-11-16T1744-chrome157-macos.json`).
 5. Copy that file into this folder unchanged. The file name becomes the label of the recording.
 
 Every input is synthetic: the bundled sample, generated evaluation paystubs and an invented household.
@@ -24,9 +24,11 @@ Every input is synthetic: the bundled sample, generated evaluation paystubs and 
 | `browser`, `platform`, `userAgent` | From the browser that ran it |
 | `availability` | What `LanguageModel.availability()` reported before the run, for each set of options the tasks use |
 | `jurisdiction` | The rule pack the app had |
-| `version` | 2 since the per-field diagnosis was added; version 1 files still open and replay |
-| `cases[]` | One per case: `id`, `task`, the inference `mode` the app asked for, where it actually `ran` (`ON_DEVICE`, `IN_CLOUD`, or `not-run`), `latencyMs`, `outputCheck` (`passed` or `blocked` for model text), `fields` correct in the first answer (the device's, when it answered) against the gold answers for extraction, and any `error` or `note` |
-| `cases[].final` (v2, extraction) | What the person ends up with after the deterministic check and any retry: where it `ran`, the `fields` correct, and whether it was `retried` in the cloud |
+| `version` | 3 since `ran` became the final location and the two parts of an on-device reading were recorded; version 1 and 2 files still open and replay |
+| `cases[]` | One per case: `id`, `task`, the inference `mode` the app asked for, where it was finally answered (`ran`: `ON_DEVICE`, `IN_CLOUD`, or `not-run`), `latencyMs`, `outputCheck` (`passed` or `blocked` for model text), and any `error` or `note`. In versions 1 and 2, `ran` is where the first attempt ran and `fields` the fields correct in the first answer |
+| `cases[].first` (v3, extraction) | The first attempt: where it `ran` and the `fields` correct in it (the device's whole answer, when the device answered) |
+| `cases[].final` (v2, extraction) | What the person ends up with after the deterministic check and any retry: where it `ran`, the `fields` correct, whether it was `retried` in the cloud, and (v3) whether the deductions were left out as `deductionsNotRead` |
 | `cases[].device` (v2, extraction) | The device's answer: its raw text (placeholder ids and field names only), whether it `parsed` and `passed` the check, the `problems` found, and for each field the expected (`gold`) and `answered` placeholder ids and a `status` (`correct`, `wrong`, `missing`, `spurious`, `absent`) |
+| `cases[].device` (v3 additions) | `core`: the core fields correct (all fields but the deductions); `deductions`: the status of the deductions the device gave (`not-asked` when the core failed first); `deductionsNotRead`; `passes`: for each request to the device (`core`, then `deductions`), its `rawText`, `parsed`, `parsedValue`, `problems`, `extraKeys` (ignored), `missingKeys` and `latencyMs` |
 
-A case that fell back to the cloud is recorded as `IN_CLOUD` and counted as a cloud run in the summary. A case that may only run on the device is never sent: without the model it is recorded as `not-run` with its error.
+A case that ended up in the cloud is recorded as `IN_CLOUD` and counted as a cloud run in the summary; the summary also says how many of them went to the cloud after a failed on-device attempt. A case that may only run on the device is never sent: without the model it is recorded as `not-run` with its error.

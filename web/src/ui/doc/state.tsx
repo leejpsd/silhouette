@@ -16,6 +16,8 @@ export interface Extraction {
   readonly inferenceSource: InferenceSource | 'SAMPLE_KEY';
   readonly reason: RoutingReason;
   readonly ranInCloudBecause?: 'no-device-model' | undefined;
+  /** Read on this device without the deductions, which it could not read reliably (they feed no result). */
+  readonly deductionsNotRead?: boolean | undefined;
 }
 
 export interface DocumentState {

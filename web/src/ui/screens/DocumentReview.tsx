@@ -209,7 +209,10 @@ export function DocumentReviewScreen() {
   const annual = result?.annualization ?? null;
 
   // What decides the result first; everything else behind "More values", opened when it needs attention.
-  const flagged = new Set((result?.checks[currentIndex] ?? []).filter((c) => c.status === 'warn').flatMap((c) => CHECK_FIELDS[c.id] ?? []));
+  // Deductions this device did not read (and none added): net pay against them cannot be checked.
+  const deductionsUnread = doc.extraction?.deductionsNotRead === true && deductions.length === 0;
+  const shownChecks = (result?.checks[currentIndex] ?? []).filter((c) => c.status !== 'skipped' && !(deductionsUnread && c.id === 'net-sum'));
+  const flagged = new Set(shownChecks.filter((c) => c.status === 'warn').flatMap((c) => CHECK_FIELDS[c.id] ?? []));
   const dateField = rows.find((r) => r.name === 'payDate')?.text === '' ? 'periodEnd' : 'payDate';
   const leadOrder = [...LEAD_FIELDS.map((n) => (n === 'payDate' ? dateField : n)), ...rows.map((r) => r.name).filter((n) => flagged.has(n))];
   const leadNames = new Set<string>(leadOrder);
@@ -345,6 +348,11 @@ export function DocumentReviewScreen() {
       <h2 id="deductions-title" className="section-heading">
         {label('deductions')}
       </h2>
+      {deductionsUnread && (
+        <p className="small muted" data-testid="deductions-not-read">
+          {t('review.deductionsNotRead')}
+        </p>
+      )}
       <ul className="fields">
         {deductions.map((d, i) => (
           <li key={i} className={`field-row status-${d.status}`} data-testid={`deduction-${i}`} data-status={d.status}>
@@ -534,15 +542,13 @@ export function DocumentReviewScreen() {
             {t('review.checksTitle')}
           </h2>
           <ul className="checks">
-            {(result.checks[currentIndex] ?? [])
-              .filter((c) => c.status !== 'skipped')
-              .map((c) => (
-                <li key={c.id} className={`check check-${c.status}`} data-check={c.id} data-status={c.status}>
-                  {c.status === 'ok' ? <Check size={16} /> : <Alert />}
-                  <span>{t(dynamicKey(`check.${c.id}`))}</span>
-                  <span className="check-status">{t(c.status === 'ok' ? 'check.status.ok' : 'check.status.warn')}</span>
-                </li>
-              ))}
+            {shownChecks.map((c) => (
+              <li key={c.id} className={`check check-${c.status}`} data-check={c.id} data-status={c.status}>
+                {c.status === 'ok' ? <Check size={16} /> : <Alert />}
+                <span>{t(dynamicKey(`check.${c.id}`))}</span>
+                <span className="check-status">{t(c.status === 'ok' ? 'check.status.ok' : 'check.status.warn')}</span>
+              </li>
+            ))}
           </ul>
         </section>
       )}

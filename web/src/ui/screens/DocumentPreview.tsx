@@ -1,10 +1,10 @@
 // Skeleton preview: exactly what could leave the device, before anything is sent.
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { placeholderCounts, buildReview, type SourceSegment } from '../../core/review';
-import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS } from '../../ai/tasks';
+import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
-import { pointerProblems } from '../../core/pointer-check';
+import { corePointerProblems, deductionsProblems, pointerProblems } from '../../core/pointer-check';
 import { PACK } from '../pack';
 import type { Skeleton } from '../../core/types';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
@@ -44,6 +44,8 @@ export function DocumentPreviewScreen() {
   const { t } = useApp();
   const { doc, update } = useDocument();
   const [sending, setSending] = useState(false);
+  // Where a reading is: on this device (main values, then deductions), checking, or sending after the device.
+  const [stage, setStage] = useState<PointerStage | null>(null);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
   const online = useOnline();
   // The preview opens on what could leave (the screen's heading). The first silhouette of a session is
@@ -82,6 +84,11 @@ export function DocumentPreviewScreen() {
   const { skeleton, map } = doc;
   // The deterministic check of a pointer answer: one that fails it is a failed attempt, never values to confirm.
   const checkAnswer = (pointers: Record<string, unknown>) => (doc.docType === 'paystub' ? pointerProblems(POINTER_SCHEMAS.paystub, pointers, skeleton, map, PACK.jurisdiction) : []);
+  // Read on this device in two parts: a core that fails is a failed attempt; deductions that fail are left out.
+  const checkParts = {
+    core: (pointers: Record<string, unknown>) => corePointerProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction),
+    deductions: (pointers: Record<string, unknown>) => deductionsProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction),
+  };
   const counts = placeholderCounts(skeleton);
   const rawText = doc.text;
 
@@ -101,6 +108,7 @@ export function DocumentPreviewScreen() {
 
   const send = async () => {
     setSending(true);
+    setStage(null);
     update({ error: null });
     try {
       // Re-check right before sending, so the sentence above matched what happens.
@@ -114,10 +122,10 @@ export function DocumentPreviewScreen() {
         navigate({ name: 'doc-review' });
         return;
       }
-      const result = await extractPointers(skeleton, doc.docType, doc.language, { validate: checkAnswer });
+      const result = await extractPointers(skeleton, doc.docType, doc.language, { validate: checkAnswer, checkParts, onProgress: setStage });
       const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
-      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause } });
+      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause, deductionsNotRead: result.deductionsNotRead } });
       navigate({ name: 'doc-review' });
     } catch (error) {
       update({ error: classifyError(error) });
@@ -133,12 +141,13 @@ export function DocumentPreviewScreen() {
    */
   const keepOnDevice = async () => {
     setSending(true);
+    setStage(null);
     update({ error: null });
     try {
-      const result = await extractPointers(skeleton, doc.docType, doc.language, { deviceOnly: true, validate: checkAnswer });
+      const result = await extractPointers(skeleton, doc.docType, doc.language, { deviceOnly: true, validate: checkAnswer, checkParts, onProgress: setStage });
       const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
-      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason } });
+      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, deductionsNotRead: result.deductionsNotRead } });
       navigate({ name: 'doc-review' });
     } catch (error) {
       update({ error: classifyError(error) });
@@ -225,7 +234,7 @@ export function DocumentPreviewScreen() {
       <p className="small muted">{t('leaving.network')}</p>
       {sending && <Loading />}
       <div role="status" className="status-line">
-        {sending ? t('preview.sending') : ''}
+        {sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : ''}
       </div>
       {doc.error && (
         <>
@@ -290,6 +299,14 @@ export function DocumentPreviewScreen() {
     </div>
   );
 }
+
+/** The status line for each stage of a reading. */
+const STAGE_COPY = {
+  'device-reading': 'preview.stage.deviceReading',
+  'device-deductions': 'preview.stage.deviceDeductions',
+  checking: 'preview.stage.checking',
+  'sending-after-device': 'preview.stage.sendingAfterDevice',
+} as const satisfies Record<PointerStage, string>;
 
 type T = (key: 'placeholder.word' | 'placeholder.number' | 'placeholder.date') => string;
 

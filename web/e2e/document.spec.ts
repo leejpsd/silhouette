@@ -120,6 +120,52 @@ test.describe('Document silhouette and pointer extraction', () => {
     expect(requests.filter((r) => new URL(r.url()).origin !== new URL(page.url()).origin)).toEqual([]);
   });
 
+  test('on-device in two parts: a right core is used even when the deductions are not read', async ({ page, context }) => {
+    const { deductions, ...core } = fixturePointers('paystub-en-01-correct');
+    void deductions;
+    await fakeOnDeviceModel(context, {
+      availability: 'available',
+      systemReplies: { 'answer only the fields in the schema': JSON.stringify(core), 'answer only the deductions': JSON.stringify({ deductions: [] }) },
+      replies: {},
+    });
+    const requests = recordRequests(page);
+    await page.goto('/#/doc');
+    await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'available');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
+    await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
+    await page.getByTestId('more-values').click();
+    await expect(page.getByTestId('deductions-not-read')).toContainText('Deductions were not read on this device.');
+    await confirmAllValues(page);
+    await page.getByRole('button', { name: 'Check these values' }).click();
+    await expect(page.getByTestId('annual-income')).toBeVisible();
+    // Net pay against deductions that were never read is not checked, so it is not shown as a problem.
+    await expect(page.locator('[data-check="net-sum"]')).toHaveCount(0);
+    expect(requests.filter((r) => new URL(r.url()).origin !== new URL(page.url()).origin)).toEqual([]);
+  });
+
+  test('on-device in two parts: a core that fails its check is sent once, as the silhouette, after Send', async ({ page, context }) => {
+    const correct = fixturePointers('paystub-en-01-correct');
+    // Year to date below the period's gross: a failed core.
+    await fakeOnDeviceModel(context, {
+      availability: 'available',
+      systemReplies: { 'answer only the fields in the schema': JSON.stringify({ ...correct, ytdGross: correct['netPay'] }) },
+      replies: {},
+    });
+    const cloud = await fakeCloudModel(page, { pointers: correct });
+    await page.goto('/#/doc');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
+    await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-reason', 'on-device-failed');
+    expect(cloud.bodies).toHaveLength(1);
+    expect(cloud.bodies[0]).not.toContain('1,271.88');
+    // Only the core part was asked on the device: a failed core goes straight to the retry.
+    const prompts = await page.evaluate(() => (window as unknown as { __fakePrompts: string[] }).__fakePrompts);
+    expect(prompts.filter((p) => p.includes('Document type: paystub'))).toHaveLength(1);
+  });
+
   test('photo path (fake on-device model): ONLY_ON_DEVICE transcription, then the same silhouette', async ({ page, context }) => {
     await fakeOnDeviceModel(context, {
       availability: 'available',

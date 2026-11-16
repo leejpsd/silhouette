@@ -18,7 +18,7 @@ import { recordAnsweredOnDevice } from '../data/outbound';
 import outputChecks from '../../../shared/prompts/output-checks.json';
 import { modelTextIsBlocked, type OutputChecks, type OutputScope, type ShownVerdict } from '../core/output-check';
 import { toModelSchema } from './model-schema';
-import { deviceResponseConstraint, placeholderIds } from './device-schema';
+import { deviceResponseConstraint, partFields, placeholderIds, type DevicePart } from './device-schema';
 import { CURRENT_STATUS_V1, DISCOVER_V1, NEARBY_V1, READ_ALOUD_V1, askPromptFor, explainPromptFor, fill, type PromptTemplate } from './prompts';
 import type { ModelResponse } from './model-port';
 
@@ -90,11 +90,36 @@ export interface PointerCallOptions {
   readonly validate?: ((pointers: Record<string, unknown>) => readonly string[]) | undefined;
   /** The silhouette, for the on-device response constraint (placeholder ids of this document only). */
   readonly skeleton?: Skeleton | undefined;
+  /**
+   * The checks of a two-part on-device reading (core/pointer-check.ts). `core` problems make the
+   * attempt a failed on-device attempt; `deductions` problems only leave the deductions unread.
+   */
+  readonly checkParts?: {
+    readonly core: (pointers: Record<string, unknown>) => readonly string[];
+    readonly deductions: (pointers: Record<string, unknown>) => readonly string[];
+  } | undefined;
+  /** Where the reading is, for the screen that waits for it. */
+  readonly onProgress?: ((stage: PointerStage) => void) | undefined;
+  /** Internal: one part of a two-part on-device reading. */
+  readonly part?: DevicePart | undefined;
 }
 
-function systemText(config: PointerConfig, docType: DocType): string {
+/**
+ * Stages of a pointer reading: reading on this device (one part or the other), checking the reading,
+ * and sending the approved silhouette after the device could not read it reliably.
+ */
+export type PointerStage = 'device-reading' | 'device-deductions' | 'checking' | 'sending-after-device';
+
+function systemText(config: PointerConfig, docType: DocType, part: DevicePart = 'whole'): string {
   const example = config.example?.[docType];
-  return example ? `${config.prompt.system}\n\n${example}` : config.prompt.system;
+  const base = example ? `${config.prompt.system}\n\n${example}` : config.prompt.system;
+  if (part === 'whole' || !config.deviceParts) return base;
+  return `${base}\n\n${config.deviceParts[part]}`;
+}
+
+/** Whether this document is read on the device in two parts with this configuration. */
+function readsInParts(config: PointerConfig, docType: DocType): boolean {
+  return config.deviceParts !== undefined && partFields(config.schemas[docType], 'deductions').length > 0;
 }
 
 /**
@@ -104,14 +129,18 @@ function systemText(config: PointerConfig, docType: DocType): string {
  */
 export function pointerModelParams(docType: DocType, language: string, options: PointerCallOptions = {}): HybridParams {
   const config = options.config ?? activePointerConfig();
+  const part = options.part ?? 'whole';
   const pointerSchema = config.schemas[docType] as unknown as Record<string, unknown>;
   const cloudSchema = toModelSchema(pointerSchema, config.schemaOptions);
-  // On the device, references are limited to the placeholder ids this silhouette contains.
+  // On the device, the constraint is strict and references are limited to the placeholder ids this
+  // silhouette contains, by kind (Chrome's Prompt API receives it as promptOptions.responseConstraint).
   const deviceSchema = options.skeleton
-    ? deviceResponseConstraint(config.schemas[docType], config.schemaOptions, options.skeleton)
+    ? deviceResponseConstraint(config.schemas[docType], config.schemaOptions, options.skeleton, part)
     : toModelSchema(pointerSchema, { ...config.schemaOptions, dialect: 'jsonschema' });
-  const system = systemText(config, docType);
-  describeAiRequests(system, ['document-silhouette']);
+  const devicePart = part !== 'whole';
+  const system = systemText(config, docType, part);
+  // A part of a two-part reading runs only on this device; only the cloud-capable form is described.
+  if (!devicePart) describeAiRequests(system, ['document-silhouette']);
   const generationConfig: Record<string, unknown> = {
     responseMimeType: 'application/json',
     [config.schemaField]: cloudSchema,
@@ -120,8 +149,8 @@ export function pointerModelParams(docType: DocType, language: string, options: 
   if (config.temperature !== undefined) generationConfig['temperature'] = config.temperature;
   if (config.thinkingLevel) generationConfig['thinkingConfig'] = { thinkingLevel: config.thinkingLevel.toUpperCase() };
   return {
-    mode: options.forceCloud ? InferenceMode.ONLY_IN_CLOUD : options.deviceOnly ? InferenceMode.ONLY_ON_DEVICE : InferenceMode.PREFER_ON_DEVICE,
-    inCloudParams: { model: config.cloudModel, systemInstruction: system, generationConfig: generationConfig as never },
+    mode: options.forceCloud ? InferenceMode.ONLY_IN_CLOUD : options.deviceOnly || devicePart ? InferenceMode.ONLY_ON_DEVICE : InferenceMode.PREFER_ON_DEVICE,
+    inCloudParams: { model: config.cloudModel, systemInstruction: systemText(config, docType), generationConfig: generationConfig as never },
     onDeviceParams: {
       createOptions: {
         // The instructions are English and the document is in its own language.
@@ -140,7 +169,8 @@ export function pointerModel(docType: DocType, language: string, options: Pointe
   // One model per set of placeholder ids: the on-device constraint is built from them.
   const ids = options.skeleton && !options.forceCloud ? `:${Object.values(placeholderIds(options.skeleton)).flat().join(',')}` : '';
   const mode = options.forceCloud ? ':cloud' : options.deviceOnly ? ':device' : '';
-  const key = `document.pointer.extract:${config.id}:${docType}:${language}${mode}${ids}`;
+  const part = options.part && options.part !== 'whole' && !options.forceCloud ? `:part-${options.part}` : '';
+  const key = `document.pointer.extract:${config.id}:${docType}:${language}${mode}${part}${ids}`;
   return modelFor(key, () => pointerModelParams(docType, language, options));
 }
 
@@ -152,15 +182,35 @@ export function presentSkeleton(skeleton: Skeleton, config: PointerConfig): stri
   return lines.map((line, i) => `L${String(i + 1).padStart(width, '0')}: ${line}`).join('\n');
 }
 
-/** What the device answered, when it was asked: for the on-device check and its diagnosis. */
-export interface DeviceAttempt {
+/** One request to the device: its text, what parsed, and what the checks found. */
+export interface DevicePass {
+  readonly part: DevicePart;
   /** The model's text: placeholder ids and field names only. */
   readonly rawText: string;
   readonly parsed: boolean;
-  /** The parsed answer, when it parsed. */
+  /** The parsed answer of this part (keys of the part only), when it parsed. */
   readonly value?: Record<string, unknown> | undefined;
-  /** Problems found by the deterministic check (or the error); empty when the answer was used. */
+  /** Problems found by the deterministic check of this part (or the error). */
   readonly problems: readonly string[];
+  /** Keys the device returned that the part does not have (ignored), and keys of the part it left out. */
+  readonly extraKeys: readonly string[];
+  readonly missingKeys: readonly string[];
+  readonly latencyMs: number;
+}
+
+/** What the device answered, when it was asked: for the on-device check and its diagnosis. */
+export interface DeviceAttempt {
+  /** The model's text (of the core part, in a two-part reading): placeholder ids and field names only. */
+  readonly rawText: string;
+  readonly parsed: boolean;
+  /** The parsed answer (core and deductions together, in a two-part reading), when it parsed. */
+  readonly value?: Record<string, unknown> | undefined;
+  /** Problems that made the attempt fail (the core's, in a two-part reading); empty when it was used. */
+  readonly problems: readonly string[];
+  /** A two-part reading: each request in order (the deductions part only when the core passed). */
+  readonly passes?: readonly DevicePass[] | undefined;
+  /** A two-part reading whose core was used but whose deductions did not hold up: they are left out. */
+  readonly deductionsNotRead?: boolean | undefined;
 }
 
 export interface PointerResult extends TaskResult<unknown> {
@@ -169,6 +219,8 @@ export interface PointerResult extends TaskResult<unknown> {
   readonly deviceError?: string | undefined;
   /** The on-device attempt, whether it was used or repeated in the cloud. */
   readonly deviceAttempt?: DeviceAttempt | undefined;
+  /** Answered on this device without the deductions, which it could not read reliably. */
+  readonly deductionsNotRead?: boolean | undefined;
 }
 
 /** Errors that come from the cloud side; repeating the call in the cloud would not help. */
@@ -185,8 +237,10 @@ async function callPointerModel(
   const prompt = fill(config.prompt.user, { docType, skeleton: presentSkeleton(skeleton, config) });
   // The network monitor lets a request to Firebase AI Logic leave only while a cloud-capable task has
   // asked for it: this one, while it waits for its answer. When the person keeps everything on the
-  // device, nothing is permitted, so the monitor blocks any request the SDK might still make.
-  const release = options.deviceOnly ? () => undefined : permitCloudRequest(systemText(config, docType));
+  // device, or for a part of a two-part reading (only on this device), nothing is permitted, so the
+  // monitor blocks any request the SDK might still make.
+  const deviceOnly = options.deviceOnly || (options.part !== undefined && options.part !== 'whole');
+  const release = deviceOnly ? () => undefined : permitCloudRequest(systemText(config, docType));
   let response: ModelResponse;
   try {
     ({ response } = await model.generateContent(prompt));
@@ -207,6 +261,67 @@ async function callPointerModel(
   }
   const cleaned = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null));
   return { value: cleaned, source, usage: response.usageMetadata, rawText: text };
+}
+
+const elapsedSince = (start: number) => Math.round(performance.now() - start);
+
+/** One part of a two-part on-device reading, never thrown: a pass that did not parse has problems. */
+async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: 'core' | 'deductions'): Promise<DevicePass> {
+  const config = options.config ?? activePointerConfig();
+  const fields = partFields(config.schemas[docType], part);
+  const started = performance.now();
+  let rawText = '';
+  let value: Record<string, unknown> | undefined;
+  let problems: string[] = [];
+  let returned: string[] = [];
+  try {
+    const r = await callPointerModel(skeleton, docType, language, { ...options, part, deviceOnly: false, forceCloud: false });
+    rawText = r.rawText;
+    returned = Object.keys(JSON.parse(r.rawText) as Record<string, unknown>);
+    // Keys the part does not have are ignored (and recorded); the constraint should rule them out.
+    value = Object.fromEntries(Object.entries(r.value).filter(([k]) => fields.includes(k)));
+  } catch (error) {
+    rawText = (error as { rawText?: string }).rawText ?? '';
+    problems = [rawText ? 'not-json' : `error:${classifyError(error).kind}`];
+  }
+  return {
+    part,
+    rawText,
+    parsed: value !== undefined,
+    value,
+    problems,
+    extraKeys: returned.filter((k) => !fields.includes(k)),
+    missingKeys: value === undefined ? [] : fields.filter((k) => !returned.includes(k)),
+    latencyMs: elapsedSince(started),
+  };
+}
+
+/**
+ * A paystub on a device with a ready model: the core fields first, checked; then the deductions,
+ * checked against the core. Returns the answer, or the failed attempt when the core does not hold up.
+ */
+async function readInParts(
+  skeleton: Skeleton,
+  docType: DocType,
+  language: string,
+  options: PointerCallOptions,
+): Promise<{ ok: true; value: Record<string, unknown>; attempt: DeviceAttempt } | { ok: false; attempt: DeviceAttempt }> {
+  options.onProgress?.('device-reading');
+  const core0 = await devicePass(skeleton, docType, language, options, 'core');
+  options.onProgress?.('checking');
+  const core: DevicePass = core0.value ? { ...core0, problems: [...(options.checkParts?.core(core0.value) ?? [])] } : core0;
+  if (!core.value || core.problems.length > 0) {
+    return { ok: false, attempt: { rawText: core.rawText, parsed: core.parsed, value: core.value, problems: core.problems, passes: [core] } };
+  }
+  options.onProgress?.('device-deductions');
+  const ded0 = await devicePass(skeleton, docType, language, options, 'deductions');
+  options.onProgress?.('checking');
+  const merged = ded0.value ? { ...core.value, ...ded0.value } : core.value;
+  const ded: DevicePass = ded0.value ? { ...ded0, problems: [...(options.checkParts?.deductions(merged) ?? [])] } : ded0;
+  // Deductions feed no result: when they do not hold up, the core is used and they are marked not read.
+  const deductionsNotRead = !ded.value || ded.problems.length > 0;
+  const value = deductionsNotRead ? core.value : merged;
+  return { ok: true, value, attempt: { rawText: core.rawText, parsed: true, value, problems: [], passes: [core, ded], deductionsNotRead } };
 }
 
 /** True when a failed PREFER_ON_DEVICE call failed on the device, not in the cloud. */
@@ -241,10 +356,31 @@ export async function extractPointers(
     throw new Error('routing.json changed: onDeviceFailure');
   }
   const reason = POINTER_TASK.reason as RoutingReason;
-  if (options.deviceOnly) {
-    const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
-    if ((await deviceAvailability(createOptions)) !== 'available') throw new TaskError('on-device-unavailable', 'the on-device model is not available');
+  const config = options.config ?? activePointerConfig();
+  const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
+  const available = options.forceCloud ? false : (await deviceAvailability(createOptions)) === 'available';
+  if (options.deviceOnly && !available) throw new TaskError('on-device-unavailable', 'the on-device model is not available');
+  // On a device with a ready model, a paystub is read in two parts (core, then deductions). Only a
+  // core that fails its check is a failed on-device attempt; the cloud retry stays one single pass.
+  if (available && readsInParts(config, docType)) {
+    const read = await readInParts(skeleton, docType, language, { ...options, skeleton });
+    if (read.ok) {
+      recordAnsweredOnDevice('document');
+      return { value: read.value, inferenceSource: 'ON_DEVICE', reason, deviceAttempt: read.attempt, deductionsNotRead: read.attempt.deductionsNotRead };
+    }
+    const deviceAttempt = read.attempt;
+    if (options.deviceOnly) {
+      throw Object.assign(new TaskError('on-device-unreliable', `the device could not read the silhouette reliably: ${deviceAttempt.problems.join(', ')}`), { deviceAttempt });
+    }
+    options.onProgress?.('sending-after-device');
+    try {
+      const r = await callPointerModel(skeleton, docType, language, { ...options, forceCloud: true });
+      return { value: r.value, inferenceSource: r.source, reason: ON_DEVICE_FAILURE.reason as RoutingReason, usage: r.usage, deviceError: deviceAttempt.problems.join(', '), deviceAttempt };
+    } catch (cloudError) {
+      throw Object.assign(classifyError(cloudError), { deviceAttempt });
+    }
   }
+  if (available) options.onProgress?.('device-reading');
   try {
     const r = await callPointerModel(skeleton, docType, language, options);
     // An on-device answer that fails the deterministic check is a failed on-device attempt.
@@ -258,8 +394,7 @@ export async function extractPointers(
       });
     }
     // Device-first, but answered in the cloud because this device has no model: the chip says so.
-    const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
-    const noModel = !options.forceCloud && r.source === 'IN_CLOUD' && (await deviceAvailability(createOptions)) !== 'available';
+    const noModel = !options.forceCloud && r.source === 'IN_CLOUD' && !available;
     // Answered on this device: recorded as kept, never as sent.
     if (r.source === 'ON_DEVICE') recordAnsweredOnDevice('document');
     return {
@@ -284,6 +419,7 @@ export async function extractPointers(
       throw Object.assign(new TaskError('on-device-unreliable', `the device could not read the silhouette reliably: ${deviceAttempt.problems.join(', ')}`), { deviceAttempt });
     }
     const deviceError = classifyError(error).detail;
+    options.onProgress?.('sending-after-device');
     try {
       const r = await callPointerModel(skeleton, docType, language, { ...options, forceCloud: true });
       return { value: r.value, inferenceSource: r.source, reason: ON_DEVICE_FAILURE.reason as RoutingReason, usage: r.usage, deviceError, deviceAttempt };

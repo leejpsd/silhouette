@@ -29,34 +29,88 @@ describe('the on-device check', () => {
     expect(wrong.correct).toBe(score.total - 1);
   });
 
-  it('version 2: what the person ends up with, with cloud retries counted as cloud', () => {
+  it('version 2: where each case was finally answered; cloud retries counted as cloud, the first attempt kept apart', () => {
     const cases: CaseResult[] = [
       { id: 'a', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, fields: { correct: 4, total: 12 }, final: { ran: 'IN_CLOUD', fields: { correct: 12, total: 12 }, retried: true } },
       { id: 'b', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, fields: { correct: 12, total: 12 }, final: { ran: 'ON_DEVICE', fields: { correct: 12, total: 12 }, retried: false } },
     ];
-    expect(summarize(cases)).toMatchObject({ fieldsCorrect: 16, fieldsTotal: 24, finalCorrect: 24, retriedInCloud: 1 });
+    expect(summarize(cases, 2)).toMatchObject({ onDevice: 1, inCloudAfterDevice: 1, inCloud: 0, firstOnDevice: 2, fieldsCorrect: 16, fieldsTotal: 24, finalCorrect: 24, retriedInCloud: 1 });
+  });
+
+  it('version 3: `ran` is the final location, the first attempt is under `first`, deductions not read are counted', () => {
+    const cases: CaseResult[] = [
+      { id: 'a', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'IN_CLOUD', latencyMs: 1, outputCheck: null, first: { ran: 'ON_DEVICE', fields: { correct: 9, total: 12 } }, final: { ran: 'IN_CLOUD', fields: { correct: 12, total: 12 }, retried: true, deductionsNotRead: false } },
+      { id: 'b', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, first: { ran: 'ON_DEVICE', fields: { correct: 11, total: 12 } }, final: { ran: 'ON_DEVICE', fields: { correct: 11, total: 12 }, retried: false, deductionsNotRead: true } },
+      { id: 'c', task: 'y', mode: 'PREFER_IN_CLOUD', ran: 'IN_CLOUD', latencyMs: 1, outputCheck: 'passed' },
+    ];
+    expect(summarize(cases, 3)).toEqual({
+      onDevice: 1,
+      inCloudAfterDevice: 1,
+      inCloud: 1,
+      notRun: 0,
+      total: 3,
+      firstOnDevice: 2,
+      fieldsCorrect: 20,
+      fieldsTotal: 24,
+      finalCorrect: 23,
+      retriedInCloud: 1,
+      deductionsNotRead: 1,
+    });
   });
 
   it('counts cloud runs as cloud runs, never as on-device ones', () => {
     const cases: CaseResult[] = [
-      { id: 'a', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, fields: { correct: 9, total: 11 } },
+      { id: 'a', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, first: { ran: 'ON_DEVICE', fields: { correct: 9, total: 11 } } },
       { id: 'b', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'IN_CLOUD', latencyMs: 1, outputCheck: 'passed' },
       { id: 'c', task: 'x', mode: 'ONLY_ON_DEVICE', ran: 'not-run', latencyMs: null, outputCheck: null, error: 'on-device-unavailable' },
     ];
-    expect(summarize(cases)).toEqual({ onDevice: 1, inCloud: 1, notRun: 1, total: 3, fieldsCorrect: 9, fieldsTotal: 11, finalCorrect: null, retriedInCloud: 0 });
+    expect(summarize(cases)).toEqual({
+      onDevice: 1,
+      inCloudAfterDevice: 0,
+      inCloud: 1,
+      notRun: 1,
+      total: 3,
+      firstOnDevice: 1,
+      fieldsCorrect: 9,
+      fieldsTotal: 11,
+      finalCorrect: null,
+      retriedInCloud: 0,
+      deductionsNotRead: 0,
+    });
   });
 
-  it('names the downloaded file by date, browser major version and platform', () => {
-    expect(runFileName({ date: '2026-11-16T09:30:00.000Z', browser: 'Chrome 157.0.7600.12', platform: 'macOS' })).toBe('device-check-2026-11-16-chrome157-macos.json');
+  it('names the downloaded file by date and time, browser major version and platform', () => {
+    expect(runFileName({ date: '2026-11-16T17:44:09.000Z', browser: 'Chrome 157.0.7600.12', platform: 'macOS' })).toBe('device-check-2026-11-16T1744-chrome157-macos.json');
   });
 
-  it('recognises a run file', () => {
+  const recording = (name: string) => JSON.parse(readFileSync(new URL(`../../../eval/results/on-device/${name}`, import.meta.url), 'utf8')) as { version: number; cases: CaseResult[] };
+
+  it('recognises a run file; every earlier recording still opens', () => {
+    expect(isRunFile({ kind: RUN_FILE_KIND, version: 3, date: '2026-11-17T10:00:00Z', cases: [] })).toBe(true);
     expect(isRunFile({ kind: RUN_FILE_KIND, version: 2, date: '2026-11-17T10:00:00Z', cases: [] })).toBe(true);
-    // Version 1 files, such as the first recorded run, still open and replay.
-    const first = JSON.parse(readFileSync(new URL('../../../eval/results/on-device/device-check-2026-11-16-chrome157-macos.json', import.meta.url), 'utf8')) as unknown;
-    expect(isRunFile(first)).toBe(true);
-    expect(summarize((first as { cases: CaseResult[] }).cases)).toMatchObject({ onDevice: 14, total: 14, fieldsCorrect: 37, fieldsTotal: 60, finalCorrect: null });
     expect(isRunFile({ kind: 'other', date: 'x', cases: [] })).toBe(false);
+    // Version 1: the first recorded run; no retry existed, so the device's answers were the final ones.
+    const first = recording('device-check-2026-11-16-chrome157-macos.json');
+    expect(isRunFile(first)).toBe(true);
+    expect(summarize(first.cases, first.version)).toMatchObject({ onDevice: 14, firstOnDevice: 14, total: 14, fieldsCorrect: 37, fieldsTotal: 60, finalCorrect: null });
+  });
+
+  it('the version 2 recording: 9 answered on this device, 5 in the cloud after a failed on-device attempt', () => {
+    const second = recording('device-check-2026-11-16T1744-chrome157-macos.json');
+    expect(isRunFile(second)).toBe(true);
+    expect(second.version).toBe(2);
+    expect(summarize(second.cases, second.version)).toMatchObject({
+      onDevice: 9,
+      inCloudAfterDevice: 5,
+      inCloud: 0,
+      notRun: 0,
+      total: 14,
+      firstOnDevice: 14,
+      fieldsCorrect: 48,
+      fieldsTotal: 60,
+      finalCorrect: 60,
+      retriedInCloud: 5,
+    });
   });
 });
 

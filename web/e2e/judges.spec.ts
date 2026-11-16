@@ -40,7 +40,7 @@ test.describe('for judges: try it in two minutes', () => {
     await fakeOnDeviceModel(context, { availability: 'available', replies: {} });
     await page.goto('/#/judges');
     await expect(page.getByTestId('judges-device')).toHaveAttribute('data-device', 'available');
-    await expect(page.getByTestId('judges-device')).toContainText('the fields are found on this device');
+    await expect(page.getByTestId('judges-device')).toContainText('the silhouette is read on this device first');
   });
 });
 
@@ -68,36 +68,60 @@ test.describe('the on-device check', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on\u2011device check');
     await expect(page.getByTestId('recording-meta')).toHaveText('Recorded 2026-11-17 · Chrome 142.0.7444.59 · macOS');
     await expect(page.getByTestId('recording-note')).toContainText('This is a recording, not a live run.');
-    await expect(page.getByTestId('device-summary')).toContainText('1 of 2 ran on this device; 1 in the cloud; 0 did not run. Extraction: 11 of 11 fields correct.');
+    await expect(page.getByTestId('device-summary')).toContainText('1 of 2 on this device; 0 in the cloud after a failed on-device attempt; 1 in the cloud; 0 did not run.');
+    await expect(page.getByTestId('device-summary-first')).toContainText('11 of 11 fields correct');
     await expect(page.locator('tr[data-ran="IN_CLOUD"]')).toContainText('In the cloud (fallback)');
   });
 
-  test('with a model it runs every case, reports where each ran, and offers the results as a file', async ({ page, context }) => {
+  test('with a model it runs every case in two parts, reports where each was finally answered, and offers the results as a file', async ({ page, context }) => {
     const correct = fixturePointers('paystub-en-01-correct') as Record<string, unknown>;
-    // The device's reading breaks the paystub's arithmetic: it fails the checks and is repeated in the cloud.
-    await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Document type: paystub': JSON.stringify({ ...correct, netPay: correct['grossPay'] }) } });
+    const { deductions, ...core } = correct;
+    void deductions;
+    // The device reads the core right and returns no deductions: the core is used, the deductions are not read.
+    await fakeOnDeviceModel(context, {
+      availability: 'available',
+      systemReplies: { 'answer only the fields in the schema': JSON.stringify({ ...core, netPayPay: 'N1' }), 'answer only the deductions': JSON.stringify({ deductions: [] }) },
+      replies: {},
+    });
     await fakeAnswerModels(page, { text: (p) => (p.includes('Document type: paystub') ? JSON.stringify(correct) : 'A short answer about the program.') });
     await page.goto('/#/device-check');
     await page.getByTestId('run-device-check').click();
     await expect(page.getByTestId('device-check-status')).toHaveText('Finished.', { timeout: 30_000 });
     const rows = page.locator('.device-table tbody tr');
     await expect(rows).toHaveCount(14);
-    await expect(page.locator('tr[data-ran="ON_DEVICE"]').first()).toBeVisible();
-    await expect(page.getByTestId('device-summary')).toContainText('ran on this device');
-    // Version 2: what the person ends up with, and the device's answer field by field.
-    await expect(page.getByTestId('device-summary-final')).toContainText('5 extraction cases were repeated in the cloud');
+    // The bundled sample: answered on this device, with the deductions not read.
+    await expect(rows.first()).toHaveAttribute('data-ran', 'ON_DEVICE');
+    await expect(rows.first()).toContainText('deductions not read');
+    await expect(page.getByTestId('device-summary')).toContainText('Where each case was finally answered:');
+    await expect(page.getByTestId('device-summary-first')).toContainText('First attempt: 14 of 14 were tried on this device.');
     const detail = page.getByTestId('field-detail').first();
     await detail.locator('summary').click();
-    await expect(detail).toContainText('netPay');
-    await expect(detail).toContainText('check:net-sum');
+    await expect(detail.getByTestId('device-pass-core')).toContainText('keys ignored: netPayPay');
+    await expect(detail.getByTestId('device-pass-deductions')).toContainText('check:net-sum');
+    // The strict constraint reached the device through Firebase AI Logic, one per part.
+    const constraints = (await page.evaluate(() => (window as unknown as { __fakeConstraints: string[] }).__fakeConstraints))
+      .map((c) => JSON.parse(c) as { properties?: Record<string, unknown>; additionalProperties?: boolean; required?: string[] } | null)
+      .filter((c) => c?.properties?.['grossPay'] !== undefined || c?.properties?.['deductions'] !== undefined);
+    expect(constraints.length).toBeGreaterThanOrEqual(2);
+    const coreConstraint = constraints.find((c) => c?.properties?.['grossPay'] !== undefined);
+    expect(coreConstraint).toMatchObject({ additionalProperties: false });
+    expect(coreConstraint?.required).toHaveLength(11);
+    expect(constraints.find((c) => c?.properties?.['deductions'] !== undefined)).toMatchObject({ additionalProperties: false, required: ['deductions'] });
     const download = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Download results' }).click();
     const file = await download;
-    expect(file.suggestedFilename()).toMatch(/^device-check-\d{4}-\d{2}-\d{2}-[a-z]+\d+-[a-z0-9]+\.json$/);
-    const saved = JSON.parse(readFileSync(await file.path(), 'utf8')) as { version: number; cases: { device?: { fields: { field: string; gold: string[]; answered: string[]; status: string }[] } }[] };
-    expect(saved.version).toBe(2);
-    const fields = saved.cases[0]?.device?.fields ?? [];
-    expect(fields.find((f) => f.field === 'netPay')).toMatchObject({ status: 'wrong' });
+    expect(file.suggestedFilename()).toMatch(/^device-check-\d{4}-\d{2}-\d{2}T\d{4}-[a-z]+\d+-[a-z0-9]+\.json$/);
+    type Saved = {
+      version: number;
+      cases: { ran: string; first?: { ran: string }; final?: { deductionsNotRead?: boolean }; device?: { core?: { correct: number; total: number }; deductions?: string; deductionsNotRead?: boolean; passes?: { part: string; extraKeys: string[]; latencyMs: number }[] } }[];
+    };
+    const saved = JSON.parse(readFileSync(await file.path(), 'utf8')) as Saved;
+    expect(saved.version).toBe(3);
+    const sample = saved.cases[0];
+    expect(sample).toMatchObject({ ran: 'ON_DEVICE', first: { ran: 'ON_DEVICE' }, final: { deductionsNotRead: true } });
+    expect(sample?.device).toMatchObject({ core: { correct: 11, total: 11 }, deductions: 'missing', deductionsNotRead: true });
+    expect(sample?.device?.passes?.map((p) => p.part)).toEqual(['core', 'deductions']);
+    expect(sample?.device?.passes?.[0]?.extraKeys).toEqual(['netPayPay']);
     // Placeholder ids only, never document values.
     expect(JSON.stringify(saved)).not.toContain('1,271.88');
   });
@@ -105,9 +129,19 @@ test.describe('the on-device check', () => {
   test('the first recorded run (version 1) still opens and replays', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await page.goto('/#/device-check');
-    await page.getByRole('button', { name: /Show the recording of device-check-2026-11-16/ }).click();
+    await page.getByRole('button', { name: 'Show the recording of device-check-2026-11-16-chrome157-macos' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on\u2011device check');
-    await expect(page.getByTestId('device-summary')).toContainText('14 of 14 ran on this device');
-    await expect(page.getByTestId('device-summary')).toContainText('37 of 60 fields correct');
+    await expect(page.getByTestId('device-summary')).toContainText('14 of 14 on this device');
+    await expect(page.getByTestId('device-summary-first')).toContainText('37 of 60 fields correct');
+  });
+
+  test('the second recorded run (version 2) counts where each case was finally answered', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.goto('/#/device-check');
+    await page.getByRole('button', { name: 'Show the recording of device-check-2026-11-16T1744-chrome157-macos' }).click();
+    await expect(page.getByTestId('device-summary')).toContainText('9 of 14 on this device; 5 in the cloud after a failed on-device attempt; 0 in the cloud; 0 did not run.');
+    await expect(page.getByTestId('device-summary-first')).toContainText('First attempt: 14 of 14 were tried on this device. Extraction, first answer: 48 of 60 fields correct.');
+    await expect(page.getByTestId('device-summary-final')).toContainText('60 of 60 fields correct; 5 extraction cases were repeated in the cloud.');
+    await expect(page.locator('tr[data-ran="IN_CLOUD"]').first()).toContainText('In the cloud, after a failed on');
   });
 });

@@ -11,6 +11,8 @@ import discoverV1 from '../../../shared/prompts/discover.v1.md?raw';
 import nearbyV1 from '../../../shared/prompts/nearby.v1.md?raw';
 import readAloudV1 from '../../../shared/prompts/read-aloud.v1.md?raw';
 import photoReadV1 from '../../../shared/prompts/photo-read.v1.md?raw';
+// Device-only wording for reading a paystub in two parts on the device (web/, a candidate).
+import pointerDevicePartsV1 from './device-prompts/pointer-extract-parts.v1.md?raw';
 
 export interface PromptTemplate {
   readonly id: string;
@@ -35,6 +37,27 @@ export function parsePrompt(id: string, markdown: string): PromptTemplate {
 export function fill(template: string, values: Readonly<Record<string, string>>): string {
   return template.replace(/\{(\w+)\}/g, (match, name: string) => values[name] ?? match);
 }
+
+/** Text added to the system instruction for each part of a two-part on-device reading. */
+export interface DeviceParts {
+  readonly id: string;
+  readonly core: string;
+  readonly deductions: string;
+}
+
+/** Splits a device-parts file into its "Core part" and "Deductions part" sections. */
+export function parseDeviceParts(id: string, markdown: string): DeviceParts {
+  const section = (title: string): string => {
+    const start = markdown.indexOf(`## ${title}`);
+    if (start === -1) throw new Error(`${id}: missing section "${title}"`);
+    const body = markdown.slice(start + title.length + 3);
+    const end = body.search(/\n## /);
+    return (end === -1 ? body : body.slice(0, end)).trim();
+  };
+  return { id, core: section('Core part'), deductions: section('Deductions part') };
+}
+
+export const POINTER_DEVICE_PARTS_V1 = parseDeviceParts('pointer-extract-parts.v1', pointerDevicePartsV1);
 
 export const POINTER_EXTRACT = parsePrompt('pointer-extract.v2', pointerExtractV2);
 export const POINTER_EXTRACT_V3 = parsePrompt('pointer-extract.v3', pointerExtractV3);
