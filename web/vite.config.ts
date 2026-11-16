@@ -91,9 +91,25 @@ function requireSiteKey(mode: string): void {
   }
 }
 
+/**
+ * The rule pack the app is built with. People get the California pack; the invented `zz-test` pack is
+ * built only for the unit tests (mode `test`) and for the end-to-end suite that exercises every screen
+ * against it (mode `demo-pack`, `npm run build:demo-pack`). It is never part of a shipped build.
+ */
+export function packFor(mode: string): string {
+  return mode === 'test' || mode === 'demo-pack' ? 'zz-test' : 'us-ca';
+}
+
 export default defineConfig(({ mode }) => {
   requireSiteKey(mode);
+  const pack = packFor(mode);
   return {
+  resolve: {
+    alias: {
+      '@pack': here(`../shared/rulepacks/${pack}`),
+      '@bands': here(`../shared/bands/${pack}.json`),
+    },
+  },
   plugins: [react(), samplePdfs(), serviceWorker(), groundInHead()],
   server: {
     // Contracts are imported from ../shared at build time.

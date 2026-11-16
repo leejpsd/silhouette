@@ -13,6 +13,7 @@ export type TaskErrorKind =
   | 'network'
   | 'on-device-unavailable'
   | 'bad-output' // the model answered, but not with JSON of the expected shape
+  | 'on-device-unreliable' // the on-device answer failed the checks and the person chose to keep everything on the device
   | 'unknown';
 
 export class TaskError extends Error {

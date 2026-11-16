@@ -15,6 +15,8 @@ import { Paper, ActionLabel } from '../design/parts';
 import { BlockActions } from '../design/block';
 import { useConfig } from './config';
 import { programCopy } from './facts';
+import { SOURCES_READ_ON } from '../pack';
+import { packDate, programName } from '../i18n';
 import { answerKey, cachedAnswer, giveConsent, markSent, needsConsent, storeAnswer, useSession, type Destination } from './session';
 
 // ---------- Request lifecycle ----------
@@ -527,7 +529,7 @@ export function OfficialInfo({ programs, headingLevel = 2, withCopy = false }: {
       {items.map(({ program, sources, apply }) =>
         sources.length === 0 && apply === null && (program.docsRequired ?? []).length === 0 ? null : (
           <div key={program.id} className="official-program">
-            {programs.length > 1 && <p className="official-name">{program.name}</p>}
+            {programs.length > 1 && <p className="official-name">{programName(locale, program)}</p>}
             {apply && (
               <p>
                 <a className="outline-button" href={apply} target="_blank" rel="noopener noreferrer">
@@ -536,18 +538,27 @@ export function OfficialInfo({ programs, headingLevel = 2, withCopy = false }: {
               </p>
             )}
             {sources.length > 0 && (
-              <ul>
-                {sources.map((s) => (
-                  <li key={s.url}>
-                    <a href={s.url} target="_blank" rel="noopener noreferrer">
-                      {s.title}
-                    </a>
-                    {s.checkedAt && <span className="small muted"> · {t('official.checked', { date: s.checkedAt })}</span>}
-                  </li>
-                ))}
-              </ul>
+              <>
+                <p className="small strong">{t('official.source')}</p>
+                <ul className="official-sources" data-testid="official-sources">
+                  {sources.map((s) => (
+                    <li key={s.url}>
+                      <a href={s.url} target="_blank" rel="noopener noreferrer">
+                        {s.title}
+                      </a>
+                      {/* A draft pack's numbers were read on a date; a confirmed source says when it was compared. */}
+                      {s.checkedAt ? (
+                        <span className="small muted source-date">{t('official.confirmedOn', { date: packDate(locale, s.checkedAt) })}</span>
+                      ) : SOURCES_READ_ON ? (
+                        <span className="small muted source-date" data-testid="source-read-on">{t('official.readOn', { date: packDate(locale, SOURCES_READ_ON) })}</span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
-            {(program.docsRequired ?? []).length > 0 && (
+            {/* The pack's list is in one language; its program copy says the same in the reader's. */}
+            {!(withCopy && copy.documents) && (program.docsRequired ?? []).length > 0 && (
               <>
                 <p>{t('official.docs')}</p>
                 <ul>

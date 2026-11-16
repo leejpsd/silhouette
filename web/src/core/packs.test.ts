@@ -14,7 +14,7 @@ const packs = readdirSync(new URL('rulepacks/', sharedUrl), { withFileTypes: tru
   .map((d) => d.name);
 
 describe('shared/rulepacks', () => {
-  it('includes the zz-test pack', () => expect(packs).toContain('zz-test'));
+  it('includes the zz-test pack and the California pack', () => expect(packs).toEqual(expect.arrayContaining(['zz-test', 'us-ca'])));
   for (const id of packs) {
     it(`${id} passes shared/reference/lint.mjs`, () => {
       expect(lintPack(readJson(`rulepacks/${id}/pack.json`), readJson(`bands/${id}.json`))).toEqual([]);

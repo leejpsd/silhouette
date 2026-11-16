@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { deleteEverything, loadRecord, saveRecord, PREF_PREFIX } from '../data/store';
 import { isLocale, translator, type Locale } from './i18n';
 import { AppContext, type AppState } from './context';
-import { BANDS, PACK, isDemoPack } from './pack';
+import { BANDS, PACK, isDemoPack, isDraftPack } from './pack';
 import { buildSteps, computeVerdicts, sanitizeAnswers, type AnswerValue, type QuickCheckAnswers } from './quickcheck';
 import { navigate, useRoute } from './router';
 import { DemoBanner, Header, LeavingBar } from './Chrome';
@@ -163,7 +163,7 @@ export function App() {
         </a>
         <div className="app" data-route={route.name}>
           <Header onLocale={changeLocale} />
-          {isDemoPack(PACK) && <DemoBanner onDelete={onDelete} />}
+          {(isDemoPack(PACK) || isDraftPack()) && <DemoBanner onDelete={onDelete} />}
           <main id="main" tabIndex={-1} aria-busy={!loaded}>
             <Suspense fallback={null}>{screen}</Suspense>
           </main>

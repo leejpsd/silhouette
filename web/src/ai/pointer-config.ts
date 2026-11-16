@@ -22,6 +22,12 @@ export interface PointerConfig {
    * always written as JSON Schema (Chrome's Prompt API), derived with the same options.
    */
   readonly schemaOptions: ModelSchemaOptions;
+  /**
+   * Sampling options for the on-device session (Prompt API create options), when a configuration
+   * sets them. None of the bundled configurations does: some Chrome versions accept them only in
+   * extensions.
+   */
+  readonly device?: { readonly temperature?: number; readonly topK?: number } | undefined;
   /** Cloud API field that carries the schema. */
   readonly schemaField: 'responseSchema' | 'responseJsonSchema';
   /** Prefix skeleton lines with L01:, L02: … in the prompt. */

@@ -3,13 +3,14 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useApp } from '../context';
 import { dynamicKey, formatMoney, lookup, type CopyKey, type Translate, type Locale } from '../i18n';
-import { isIncomeAnswer, validateAnswer, type AnswerValue, type IncomeAnswer, type Step } from '../quickcheck';
+import { isIncomeAnswer, isMoneyVariable, validateAnswer, type AnswerValue, type IncomeAnswer, type Step } from '../quickcheck';
 import { parseTypedAmount, readTypedAmount } from '../../core/skeleton';
 import { navigate, type Route } from '../router';
 import { ScreenHeading } from '../Heading';
 import type { IncomeBand } from '../../core/generalize';
 import { BlockActions } from '../design/block';
-import { ActionLabel } from '../design/parts';
+import { ActionLabel, FitText } from '../design/parts';
+import { LABEL_FLOOR } from '../tokens';
 import { Alert, ArrowRight, Check, ChevronLeft, Lock } from '../design/icons';
 
 type QuestionRoute = Extract<Route, { name: 'question' }>;
@@ -44,7 +45,13 @@ function draftToValue(step: Step, draft: Draft): AnswerValue | undefined {
   const integer = (s: string) => (/^\s*\d+\s*$/.test(s) ? Number(s.trim()) : Number.NaN);
   switch (step.kind) {
     case 'int':
-      return draft.text.trim() === '' ? undefined : integer(draft.text);
+      if (draft.text.trim() === '') return undefined;
+      // An amount of money is typed as money (skeleton/SPEC.md section 5.1) and kept in whole dollars.
+      if (isMoneyVariable(step.id)) {
+        const amount = parseTypedAmount(draft.text);
+        return amount === undefined ? Number.NaN : Math.round(amount);
+      }
+      return integer(draft.text);
     case 'enum':
       return draft.choice === '' ? undefined : draft.choice;
     case 'multi':
@@ -93,12 +100,16 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
     if (problem !== null || value === undefined) {
       let key: CopyKey = step.kind === 'int' && value === undefined ? 'q.error.integer' : (problem ?? 'q.error.choose');
       // Section 5.1 rule 4: "60.000" is refused with a message that shows the accepted form.
-      if (key === 'q.error.amount' && step.kind === 'income' && draft.choice === 'exact') {
+      if ((key === 'q.error.amount' && step.kind === 'income' && draft.choice === 'exact') || (step.kind === 'int' && isMoneyVariable(step.id))) {
         const read = readTypedAmount(draft.text);
         if (!read.ok && read.reason === 'decimals') key = 'q.error.amountDecimals';
       }
       setError(
-        step.kind === 'int' ? t(key, { min: step.min, max: step.max }) : t(key),
+        step.kind === 'int'
+          ? isMoneyVariable(step.id)
+            ? t(key, { min: formatMoney(locale, step.min), max: formatMoney(locale, step.max) })
+            : t(key, { min: step.min, max: step.max })
+          : t(key),
       );
       inputRef.current?.focus();
       return;
@@ -187,7 +198,32 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
         )}
       </div>
 
-      {step.kind === 'int' && (
+      {step.kind === 'int' && isMoneyVariable(step.id) && (
+        <div className="field amount-field">
+          <input
+            ref={inputRef}
+            className="input mono"
+            inputMode="decimal"
+            autoComplete="off"
+            aria-labelledby={headingId}
+            aria-describedby={[describedBy, `${headingId}-understood`].filter(Boolean).join(' ')}
+            aria-invalid={error ? true : undefined}
+            value={draft.text}
+            onChange={(e) => {
+              setDraft({ ...draft, text: e.target.value });
+              setError(null);
+            }}
+          />
+          <p id={`${headingId}-understood`} className="understood" aria-live="polite" data-testid="amount-understood">
+            {(() => {
+              const amount = parseTypedAmount(draft.text);
+              return draft.text.trim() === '' || amount === undefined ? '' : t('review.understood', { amount: formatMoney(locale, Math.round(amount)) });
+            })()}
+          </p>
+        </div>
+      )}
+
+      {step.kind === 'int' && !isMoneyVariable(step.id) && (
         <div className="counter">
           <button
             type="button"
@@ -253,7 +289,13 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
                   checked={draft.choice === c.value}
                   onChange={() => choose(c.value)}
                 />
-                <span className={asTiles ? 'tile-word' : step.kind === 'income' ? 'range-label' : 'option-word'}>{c.label}</span>
+                {asTiles || step.kind === 'income' ? (
+                  <span className={asTiles ? 'tile-word' : 'range-label'}>{c.label}</span>
+                ) : (
+                  <FitText className="option-word" size={30} maxLines={2} step={2} floor={LABEL_FLOOR}>
+                    {c.label}
+                  </FitText>
+                )}
               </label>
             ),
           )}
@@ -303,7 +345,10 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
             const checked = draft.picked.includes(value);
             return (
               <label key={value} className={`option-row${checked ? ' selected' : ''}`}>
-                <span className="option-word">{t(dynamicKey(`option.${step.id}.${value}`))}</span>
+                {/* Real benefit names can be long: the word steps down (to 66 %) before it wraps past two lines. */}
+                <FitText className="option-word" size={30} maxLines={2} step={2} floor={LABEL_FLOOR}>
+                  {t(dynamicKey(`option.${step.id}.${value}`))}
+                </FitText>
                 <input
                   ref={i === 0 ? inputRef : undefined}
                   type="checkbox"

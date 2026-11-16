@@ -2,8 +2,8 @@
 // things to know and official information, then the model-written parts. The count block is compact.
 import { lazy, Suspense } from 'react';
 import { useApp } from '../context';
-import { dynamicKey, formatMoney, programName } from '../i18n';
-import { PACK } from '../pack';
+import { dynamicKey, formatMoney, packDate, packPeriod, programName } from '../i18n';
+import { PACK, SOURCES_READ_ON, isDraftPack } from '../pack';
 import { stepForVariable } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
@@ -82,7 +82,7 @@ export function ProgramScreen({ id }: { id: string }) {
         </section>
       )}
 
-      {program.period && <p className="small">{t('detail.period', { period: program.period })}</p>}
+      {program.period && <p className="small" data-testid="program-period">{t('detail.period', { period: packPeriod(locale, program.period, t) })}</p>}
 
       <section className="things" aria-labelledby="things-title">
         <h2 id="things-title" className="section-heading">
@@ -95,7 +95,13 @@ export function ProgramScreen({ id }: { id: string }) {
             ))}
           </ul>
         )}
-        <p className="small">{PACK.verifiedOn ? t('rules.verifiedOn', { date: PACK.verifiedOn }) : t('detail.unverified')}</p>
+        <p className="small" data-testid="rules-status">
+          {PACK.verifiedOn
+            ? t('rules.verifiedOn', { date: PACK.verifiedOn })
+            : isDraftPack() && SOURCES_READ_ON
+              ? t('pack.draft.notice', { date: packDate(locale, SOURCES_READ_ON) })
+              : t('detail.unverified')}
+        </p>
       </section>
 
       <OfficialInfo programs={[program]} withCopy />

@@ -85,3 +85,28 @@ export function formatMoney(locale: Locale, value: number, { cents = false }: { 
   if (CURRENCY) Object.assign(options, { style: 'currency', currency: CURRENCY, currencyDisplay: 'narrowSymbol' });
   return new Intl.NumberFormat(CURRENCY && NUMBER_FORMAT ? NUMBER_FORMAT : locale, options).format(value);
 }
+
+/** A pack date (YYYY-MM-DD) in the UI language, such as "November 12, 2026". */
+export function packDate(locale: Locale, iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(Date.UTC(y, m - 1, d));
+}
+
+/**
+ * A program's period as the pack writes it ("Tax year 2025", "October 1, 2026 - September 30, 2027"),
+ * in the UI language. Anything else is shown as written.
+ */
+export function packPeriod(locale: Locale, period: string, t: Translate): string {
+  const year = /^Tax year (\d{4})$/.exec(period);
+  if (year) return t('period.taxYear', { year: year[1] as string });
+  const range = /^([A-Z][a-z]+ \d{1,2}, \d{4}) - ([A-Z][a-z]+ \d{1,2}, \d{4})$/.exec(period);
+  if (range) {
+    const day = (s: string) => {
+      const d = new Date(`${s} 00:00:00 UTC`);
+      return Number.isNaN(d.getTime()) ? s : new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(d);
+    };
+    return `${day(range[1] as string)} – ${day(range[2] as string)}`;
+  }
+  return period;
+}

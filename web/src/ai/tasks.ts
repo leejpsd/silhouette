@@ -18,6 +18,7 @@ import { recordAnsweredOnDevice } from '../data/outbound';
 import outputChecks from '../../../shared/prompts/output-checks.json';
 import { modelTextIsBlocked, type OutputChecks, type OutputScope, type ShownVerdict } from '../core/output-check';
 import { toModelSchema } from './model-schema';
+import { deviceResponseConstraint, placeholderIds } from './device-schema';
 import { CURRENT_STATUS_V1, DISCOVER_V1, NEARBY_V1, READ_ALOUD_V1, askPromptFor, explainPromptFor, fill, type PromptTemplate } from './prompts';
 import type { ModelResponse } from './model-port';
 
@@ -76,6 +77,19 @@ export interface PointerCallOptions {
    * model exists). The input type rule is unchanged: still a Skeleton.
    */
   readonly forceCloud?: boolean;
+  /**
+   * The person chose to keep everything on this device: the device reads the silhouette and nothing
+   * is sent, ever. There is no cloud retry (routing.json `onDeviceFailure` needs the person's
+   * agreement to send); a failed or unreliable reading is reported instead.
+   */
+  readonly deviceOnly?: boolean;
+  /**
+   * The deterministic check of a pointer answer (core/pointer-check.ts): problems by field and check,
+   * never values. An on-device answer with problems is a failed on-device attempt.
+   */
+  readonly validate?: ((pointers: Record<string, unknown>) => readonly string[]) | undefined;
+  /** The silhouette, for the on-device response constraint (placeholder ids of this document only). */
+  readonly skeleton?: Skeleton | undefined;
 }
 
 function systemText(config: PointerConfig, docType: DocType): string {
@@ -92,7 +106,10 @@ export function pointerModelParams(docType: DocType, language: string, options: 
   const config = options.config ?? activePointerConfig();
   const pointerSchema = config.schemas[docType] as unknown as Record<string, unknown>;
   const cloudSchema = toModelSchema(pointerSchema, config.schemaOptions);
-  const deviceSchema = toModelSchema(pointerSchema, { ...config.schemaOptions, dialect: 'jsonschema' });
+  // On the device, references are limited to the placeholder ids this silhouette contains.
+  const deviceSchema = options.skeleton
+    ? deviceResponseConstraint(config.schemas[docType], config.schemaOptions, options.skeleton)
+    : toModelSchema(pointerSchema, { ...config.schemaOptions, dialect: 'jsonschema' });
   const system = systemText(config, docType);
   describeAiRequests(system, ['document-silhouette']);
   const generationConfig: Record<string, unknown> = {
@@ -103,13 +120,15 @@ export function pointerModelParams(docType: DocType, language: string, options: 
   if (config.temperature !== undefined) generationConfig['temperature'] = config.temperature;
   if (config.thinkingLevel) generationConfig['thinkingConfig'] = { thinkingLevel: config.thinkingLevel.toUpperCase() };
   return {
-    mode: options.forceCloud ? InferenceMode.ONLY_IN_CLOUD : InferenceMode.PREFER_ON_DEVICE,
+    mode: options.forceCloud ? InferenceMode.ONLY_IN_CLOUD : options.deviceOnly ? InferenceMode.ONLY_ON_DEVICE : InferenceMode.PREFER_ON_DEVICE,
     inCloudParams: { model: config.cloudModel, systemInstruction: system, generationConfig: generationConfig as never },
     onDeviceParams: {
       createOptions: {
-        expectedInputs: [{ type: 'text', languages: [language] }],
+        // The instructions are English and the document is in its own language.
+        expectedInputs: [{ type: 'text', languages: [...new Set(['en', language])] }],
         expectedOutputs: [{ type: 'text', languages: ['en'] }],
         initialPrompts: [{ role: 'system', content: system }],
+        ...(config.device ?? {}),
       } as never,
       promptOptions: { responseConstraint: deviceSchema },
     },
@@ -118,7 +137,10 @@ export function pointerModelParams(docType: DocType, language: string, options: 
 
 export function pointerModel(docType: DocType, language: string, options: PointerCallOptions = {}) {
   const config = options.config ?? activePointerConfig();
-  const key = `document.pointer.extract:${config.id}:${docType}:${language}${options.forceCloud ? ':cloud' : ''}`;
+  // One model per set of placeholder ids: the on-device constraint is built from them.
+  const ids = options.skeleton && !options.forceCloud ? `:${Object.values(placeholderIds(options.skeleton)).flat().join(',')}` : '';
+  const mode = options.forceCloud ? ':cloud' : options.deviceOnly ? ':device' : '';
+  const key = `document.pointer.extract:${config.id}:${docType}:${language}${mode}${ids}`;
   return modelFor(key, () => pointerModelParams(docType, language, options));
 }
 
@@ -130,10 +152,23 @@ export function presentSkeleton(skeleton: Skeleton, config: PointerConfig): stri
   return lines.map((line, i) => `L${String(i + 1).padStart(width, '0')}: ${line}`).join('\n');
 }
 
+/** What the device answered, when it was asked: for the on-device check and its diagnosis. */
+export interface DeviceAttempt {
+  /** The model's text: placeholder ids and field names only. */
+  readonly rawText: string;
+  readonly parsed: boolean;
+  /** The parsed answer, when it parsed. */
+  readonly value?: Record<string, unknown> | undefined;
+  /** Problems found by the deterministic check (or the error); empty when the answer was used. */
+  readonly problems: readonly string[];
+}
+
 export interface PointerResult extends TaskResult<unknown> {
   readonly usage?: UsageMetadata | undefined;
   /** When the on-device attempt failed and the cloud answered: what the device reported. */
   readonly deviceError?: string | undefined;
+  /** The on-device attempt, whether it was used or repeated in the cloud. */
+  readonly deviceAttempt?: DeviceAttempt | undefined;
 }
 
 /** Errors that come from the cloud side; repeating the call in the cloud would not help. */
@@ -144,13 +179,14 @@ async function callPointerModel(
   docType: DocType,
   language: string,
   options: PointerCallOptions,
-): Promise<{ value: Record<string, unknown>; source: InferenceSource; usage: UsageMetadata | undefined }> {
+): Promise<{ value: Record<string, unknown>; source: InferenceSource; usage: UsageMetadata | undefined; rawText: string }> {
   const config = options.config ?? activePointerConfig();
-  const model = await pointerModel(docType, language, options);
+  const model = await pointerModel(docType, language, { ...options, skeleton });
   const prompt = fill(config.prompt.user, { docType, skeleton: presentSkeleton(skeleton, config) });
   // The network monitor lets a request to Firebase AI Logic leave only while a cloud-capable task has
-  // asked for it: this one, while it waits for its answer.
-  const release = permitCloudRequest(systemText(config, docType));
+  // asked for it: this one, while it waits for its answer. When the person keeps everything on the
+  // device, nothing is permitted, so the monitor blocks any request the SDK might still make.
+  const release = options.deviceOnly ? () => undefined : permitCloudRequest(systemText(config, docType));
   let response: ModelResponse;
   try {
     ({ response } = await model.generateContent(prompt));
@@ -164,13 +200,13 @@ async function callPointerModel(
     value = JSON.parse(text);
   } catch {
     // The output holds placeholder ids only (never document values), so a snippet is safe to keep.
-    throw Object.assign(new TaskError('bad-output', `model output is not JSON (${text.length} chars): ${text.slice(0, 160)}`), { source });
+    throw Object.assign(new TaskError('bad-output', `model output is not JSON (${text.length} chars): ${text.slice(0, 160)}`), { source, rawText: text });
   }
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-    throw Object.assign(new TaskError('bad-output', 'model output is not a JSON object'), { source });
+    throw Object.assign(new TaskError('bad-output', 'model output is not a JSON object'), { source, rawText: text });
   }
   const cleaned = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null));
-  return { value: cleaned, source, usage: response.usageMetadata };
+  return { value: cleaned, source, usage: response.usageMetadata, rawText: text };
 }
 
 /** True when a failed PREFER_ON_DEVICE call failed on the device, not in the cloud. */
@@ -205,22 +241,54 @@ export async function extractPointers(
     throw new Error('routing.json changed: onDeviceFailure');
   }
   const reason = POINTER_TASK.reason as RoutingReason;
+  if (options.deviceOnly) {
+    const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
+    if ((await deviceAvailability(createOptions)) !== 'available') throw new TaskError('on-device-unavailable', 'the on-device model is not available');
+  }
   try {
     const r = await callPointerModel(skeleton, docType, language, options);
+    // An on-device answer that fails the deterministic check is a failed on-device attempt.
+    const problems = r.source === 'ON_DEVICE' && options.validate ? options.validate(r.value) : [];
+    if (problems.length > 0) {
+      throw Object.assign(new TaskError('bad-output', `the on-device answer failed the checks: ${problems.join(', ')}`), {
+        source: 'ON_DEVICE',
+        rawText: r.rawText,
+        parsedValue: r.value,
+        problems,
+      });
+    }
     // Device-first, but answered in the cloud because this device has no model: the chip says so.
     const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
     const noModel = !options.forceCloud && r.source === 'IN_CLOUD' && (await deviceAvailability(createOptions)) !== 'available';
     // Answered on this device: recorded as kept, never as sent.
     if (r.source === 'ON_DEVICE') recordAnsweredOnDevice('document');
-    return { value: r.value, inferenceSource: r.source, reason, usage: r.usage, ranInCloudBecause: noModel ? 'no-device-model' : undefined };
+    return {
+      value: r.value,
+      inferenceSource: r.source,
+      reason,
+      usage: r.usage,
+      ranInCloudBecause: noModel ? 'no-device-model' : undefined,
+      deviceAttempt: r.source === 'ON_DEVICE' ? { rawText: r.rawText, parsed: true, value: r.value, problems: [] } : undefined,
+    };
   } catch (error) {
     if (options.forceCloud || !failedOnDevice(error)) throw classifyError(error);
+    const e = error as { rawText?: string; parsedValue?: Record<string, unknown>; problems?: string[] };
+    const deviceAttempt: DeviceAttempt = {
+      rawText: e.rawText ?? '',
+      parsed: e.parsedValue !== undefined,
+      value: e.parsedValue,
+      problems: e.problems ?? [classifyError(error).detail],
+    };
+    // Kept on the device by the person's choice: no retry anywhere; the app says it could not read it reliably.
+    if (options.deviceOnly) {
+      throw Object.assign(new TaskError('on-device-unreliable', `the device could not read the silhouette reliably: ${deviceAttempt.problems.join(', ')}`), { deviceAttempt });
+    }
     const deviceError = classifyError(error).detail;
     try {
       const r = await callPointerModel(skeleton, docType, language, { ...options, forceCloud: true });
-      return { value: r.value, inferenceSource: r.source, reason: ON_DEVICE_FAILURE.reason as RoutingReason, usage: r.usage, deviceError };
+      return { value: r.value, inferenceSource: r.source, reason: ON_DEVICE_FAILURE.reason as RoutingReason, usage: r.usage, deviceError, deviceAttempt };
     } catch (cloudError) {
-      throw classifyError(cloudError);
+      throw Object.assign(classifyError(cloudError), { deviceAttempt });
     }
   }
 }

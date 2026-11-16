@@ -8,6 +8,13 @@ Silhouette helps people find public benefits they may qualify for. Exact persona
 
 The eligibility decision itself is made by a deterministic rules engine, never by a model.
 
+**Real programs, as a draft.** The app ships the California rule pack (`shared/rulepacks/us-ca/`): the federal Earned Income Tax Credit, the California Earned Income Tax Credit, the Young Child Tax Credit, CalFresh, California LifeLine, CARE and FERA. Every limit and amount was read from the agencies' own publications on November 12, 2026. The pack is marked as a draft until a person has confirmed every number, so:
+- every screen says so;
+- results say "may qualify", never more;
+- every program page links its official sources with the date they were read.
+
+The web engine reproduces the pack's 27 hand-worked households (189 results; `src/core/us-ca.test.ts`). The invented `zz-test` pack is used only by the unit tests and by the end-to-end suite that drives every screen against it (`npm run build:demo-pack`); no build people get contains it.
+
 This folder is the web app: TypeScript, React and Vite, with Firebase AI Logic for hybrid on-device and cloud inference. It is installable as a PWA, and the Quick Check works offline. The cross-platform contracts it implements live in [`../shared/`](../shared/README.md).
 
 ## How it works
@@ -17,14 +24,14 @@ This folder is the web app: TypeScript, React and Vite, with Firebase AI Logic f
 | Quick Check | `src/ui/screens/Question.tsx` | One question per screen. Every answer can be skipped; sensitive answers are marked and never leave the device |
 | Verdicts | `src/core/rules.ts` | Three-valued rules engine (`shared/rulepacks/SPEC.md`). Results are `likely`, `maybe`, `depends` or `unlikely`, with the criteria and what each result depends on |
 | Document silhouette | `src/core/skeleton.ts` | The Skeletonizer replaces every number, date and non-allowlisted word with a placeholder (`shared/skeleton/SPEC.md`). The screen shows exactly this text before anything can be sent |
-| Pointer extraction | `src/ai/tasks.ts` | The model returns placeholder ids (`"N12"`), never values. The Rehydrator maps them back to the document's own values on the device |
+| Pointer extraction | `src/ai/tasks.ts`, `src/core/pointer-check.ts` | The model returns placeholder ids (`"N12"`), never values. The Rehydrator maps them back to the document's own values on the device. On the device, the response constraint allows only the placeholder ids this document contains. Before an answer is shown, a deterministic check looks for references to missing or wrong-kind placeholders, a missing gross pay, and paystub arithmetic that a correct reading never breaks (net pay, the period, the pay date, year-to-date figures). An on-device answer that does not parse or fails that check is a failed on-device attempt: when the person chose Send, it is repeated once in the cloud with the same silhouette (`routing.json` `onDeviceFailure`). When they chose to keep everything on the device, nothing is sent; the page says the device could not read it reliably and offers sending the silhouette or typing the numbers |
 | Review and annualization | `src/core/review.ts`, `src/core/validate.ts` | Every field is shown next to its highlighted source text, to confirm or edit. Deterministic checks and annualization turn confirmed paystubs into a yearly income |
 | Why this result | `src/ui/answers/ProgramAnswers.tsx`, `src/core/rules.ts` (`criterionReasons`) | Always shown, with no model: each criterion with its state from the rules and, where the comparison with a limit is what produced that state, the limit and the person's value. A criterion met another way (such as receiving a benefit) says which way; a state that depends on something other than the income says what; a limit for the largest household size says so. With a model on this device, "Explain my result on this device" (`explain.personal`, `ONLY_ON_DEVICE`) puts the result into words; without one, the page says why there is none |
 | About this program | `src/ui/answers/`, `src/ai/tasks.ts` | Only on a tap. The page first shows the rule pack's own information about the program (what it offers, how to apply, the usual papers, the office). A model then explains the program in general and answers prepared questions from that information alone: the request carries nothing about the person, no profile, no rule states and no result (`explain.v5`, `ask.v4`; the task functions accept `Public` input only). Its text is checked before it is shown, in the answer language, on every path (`shared/prompts/OUTPUT_CHECKS.md` version 2: one retry, then a plain notice instead of the text). Before a request leaves, a step lists what it carries and shows the exact request body; that string is the body sent and the one kept in the record. Agreeing to a device-first request does not cover a cloud-first one. Requests can be cancelled and say when they are slow. Answers are cached for the session |
 | Typed questions | `src/ai/on-device.ts` | Answered only by the on-device model (`ask.freeText`), with the person's own result as context; never sent |
 | Current information, other help, places, read aloud | `src/ui/answers/`, `src/ai/tasks.ts` | Behind Remote Config flags, off by default. Current information searches for every program of the rule pack in one request, so it says nothing about the person. Other help is listed separately as "Leads — not verified". Places are found near the county's center point, never the device's position. With a flag off, each page still shows the rule pack's official information |
 | Leaving your device | `src/data/net-monitor.ts`, `src/data/outbound.ts` | Every request to another host is recorded before it is sent ("attempted"), then marked "sent" with its HTTP status or "failed" with the reason. The record is kept in the encrypted store and listed in the persistent bar at the bottom of the app, with the complete body of every model request. Credentials are never recorded. An answer written by the on-device model is listed too, as "Answered on this device", with no destination and no body; the record counts it as kept, and the count in the bar stays the number of requests that left |
-| Delete everything | `src/data/store.ts` | Reached from the record of what left and from the demo-rules sheet. Erases every IndexedDB database of the app's origin (the encrypted store and its key, and the Firebase SDK's App Check, heartbeat and installation databases), and the app's and the SDK's localStorage and sessionStorage entries. Only the time of the deletion is kept, so the bar can say that the record was deleted. The service worker's cache of the app's own files is kept |
+| Delete everything | `src/data/store.ts` | Reached from the record of what left and from the rules notice's sheet. Erases every IndexedDB database of the app's origin (the encrypted store and its key, and the Firebase SDK's App Check, heartbeat and installation databases), and the app's and the SDK's localStorage and sessionStorage entries. Only the time of the deletion is kept, so the bar can say that the record was deleted. The service worker's cache of the app's own files is kept |
 
 ### Data types decide where a value may go
 
@@ -103,8 +110,16 @@ The token is used only by the dev server; production builds never contain it.
 
 ## For judges, and evidence of on-device runs
 
-- **`#/judges`** ("For judges: try it in two minutes", from the demo-rules sheet on the start screen) has three steps, one button each: run the Quick Check for a prepared, invented household; open the sample paystub's silhouette and send it; open "Leaving your device" and compare what left. It works in any browser. Without an on-device model the silhouette goes to the cloud, and offline the sample's answer key is used. The page says which steps run on the device when a model is present.
-- **`#/device-check`** runs a fixed set of synthetic cases through Firebase AI Logic in a Chrome that has the on-device model, records where each one actually ran, and offers the results as a JSON file. A case that fell back to the cloud is counted as a cloud run. Recorded runs kept in `eval/results/on-device/` are bundled, and a browser without the model can show them, labelled as recordings with their date and machine. `eval/results/on-device/README.md` explains how a run file is made.
+- **`#/judges`** ("For judges: try it in two minutes", from the "More" sheet of the rules notice) has three steps, one button each:
+  1. Run the Quick Check for a prepared, invented household. Its results show every kind of answer: may qualify, possible, depends on a skipped answer, probably not.
+  2. Open the sample paystub's silhouette and send it. Its yearly income turns two "possible" tax credits into "may qualify", with amounts.
+  3. Open "Leaving your device" and compare what left. It works in any browser. Without an on-device model the silhouette goes to the cloud, and offline the sample's answer key is used. The page says which steps run on the device when a model is present.
+- **`#/device-check`** runs a fixed set of synthetic cases through Firebase AI Logic in a Chrome that has the on-device model, records where each one actually ran, and offers the results as a JSON file. For extraction it records:
+  - the fields right in the device's first answer;
+  - the fields right in what the person ends up with, after the checks and any retry;
+  - field by field, the expected and the answered placeholder ids.
+
+  A case that fell back to the cloud is counted as a cloud run. Recorded runs kept in `eval/results/on-device/` are bundled, and a browser without the model can show them, labelled as recordings with their date and machine. `eval/results/on-device/README.md` explains how a run file is made.
 
 ## Hosting
 
@@ -127,9 +142,10 @@ VITE_RECAPTCHA_SITE_KEY=<site key> npm run build:hosting   # or put the key in w
 ```bash
 npm test                 # Vitest: conformance with shared/fixtures, unit and differential tests
 npm run typecheck        # routing check + tsc for core, app, tests, e2e and the evaluation code
-npm run build            # typecheck, then a production build in dist/ (service worker included)
+npm run build            # typecheck, then a production build in dist/ (service worker included), California pack
+npm run build:demo-pack  # the same with the invented zz-test pack, for the end-to-end suite only
 npx playwright install chromium
-npm run e2e              # Playwright end-to-end tests against the production build
+npm run e2e              # Playwright: every screen against the demo pack, the shipped California build, and module pages
 ```
 
 The end-to-end tests cover:

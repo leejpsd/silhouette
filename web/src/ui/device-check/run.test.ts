@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { Raw } from '../../core/types';
 import { skeletonize } from '../../core/skeleton';
@@ -7,7 +8,7 @@ import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { BANDS, PACK } from '../pack';
 import { buildSteps, computeVerdicts } from '../quickcheck';
 import { preparedHousehold } from '../judges/household';
-import { RUN_FILE_KIND, browserVersion, isRunFile, scoreFields, summarize, type CaseResult } from './run';
+import { RUN_FILE_KIND, browserVersion, isRunFile, runFileName, scoreFields, summarize, type CaseResult } from './run';
 import answers from '../../../../shared/samples/answers.json';
 import sampleText from '../../../../shared/samples/paystub-en-01.txt?raw';
 
@@ -28,17 +29,33 @@ describe('the on-device check', () => {
     expect(wrong.correct).toBe(score.total - 1);
   });
 
+  it('version 2: what the person ends up with, with cloud retries counted as cloud', () => {
+    const cases: CaseResult[] = [
+      { id: 'a', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, fields: { correct: 4, total: 12 }, final: { ran: 'IN_CLOUD', fields: { correct: 12, total: 12 }, retried: true } },
+      { id: 'b', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, fields: { correct: 12, total: 12 }, final: { ran: 'ON_DEVICE', fields: { correct: 12, total: 12 }, retried: false } },
+    ];
+    expect(summarize(cases)).toMatchObject({ fieldsCorrect: 16, fieldsTotal: 24, finalCorrect: 24, retriedInCloud: 1 });
+  });
+
   it('counts cloud runs as cloud runs, never as on-device ones', () => {
     const cases: CaseResult[] = [
       { id: 'a', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, fields: { correct: 9, total: 11 } },
       { id: 'b', task: 'x', mode: 'PREFER_ON_DEVICE', ran: 'IN_CLOUD', latencyMs: 1, outputCheck: 'passed' },
       { id: 'c', task: 'x', mode: 'ONLY_ON_DEVICE', ran: 'not-run', latencyMs: null, outputCheck: null, error: 'on-device-unavailable' },
     ];
-    expect(summarize(cases)).toEqual({ onDevice: 1, inCloud: 1, notRun: 1, total: 3, fieldsCorrect: 9, fieldsTotal: 11 });
+    expect(summarize(cases)).toEqual({ onDevice: 1, inCloud: 1, notRun: 1, total: 3, fieldsCorrect: 9, fieldsTotal: 11, finalCorrect: null, retriedInCloud: 0 });
+  });
+
+  it('names the downloaded file by date, browser major version and platform', () => {
+    expect(runFileName({ date: '2026-11-16T09:30:00.000Z', browser: 'Chrome 157.0.7600.12', platform: 'macOS' })).toBe('device-check-2026-11-16-chrome157-macos.json');
   });
 
   it('recognises a run file', () => {
-    expect(isRunFile({ kind: RUN_FILE_KIND, date: '2026-11-17T10:00:00Z', cases: [] })).toBe(true);
+    expect(isRunFile({ kind: RUN_FILE_KIND, version: 2, date: '2026-11-17T10:00:00Z', cases: [] })).toBe(true);
+    // Version 1 files, such as the first recorded run, still open and replay.
+    const first = JSON.parse(readFileSync(new URL('../../../eval/results/on-device/device-check-2026-11-16-chrome157-macos.json', import.meta.url), 'utf8')) as unknown;
+    expect(isRunFile(first)).toBe(true);
+    expect(summarize((first as { cases: CaseResult[] }).cases)).toMatchObject({ onDevice: 14, total: 14, fieldsCorrect: 37, fieldsTotal: 60, finalCorrect: null });
     expect(isRunFile({ kind: 'other', date: 'x', cases: [] })).toBe(false);
   });
 });
@@ -48,7 +65,7 @@ describe('the prepared household of the judges\' path', () => {
     const steps = buildSteps(PACK, BANDS);
     const household = preparedHousehold(steps);
     for (const id of Object.keys(household)) expect(steps.some((s) => s.id === id)).toBe(true);
-    expect(household['income']).toEqual({ kind: 'exact', amount: 30524 });
+    expect(household['income']).toEqual({ kind: 'band', bandId: 'C' });
     const results = computeVerdicts(PACK, BANDS, steps, household);
     expect(results.length).toBe(PACK.programs.length);
     expect(results.some((r) => r.verdict === 'likely' || r.verdict === 'maybe')).toBe(true);

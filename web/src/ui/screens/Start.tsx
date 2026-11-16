@@ -1,12 +1,17 @@
 // Start screen: the promise as a picture (what stays on this phone, what could leave), and the way in.
 import { useApp } from '../context';
 import { dynamicKey, formatMoney } from '../i18n';
+import { BANDS } from '../pack';
+import { bandLabel } from './Question';
 import { firstOpenStep } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { BlockActions, useWide } from '../design/block';
 import { ArrowRight } from '../design/icons';
 import { Bar, Paper, ActionLabel } from '../design/parts';
+
+/** The example paystub's yearly income (invented). */
+const EXAMPLE_INCOME = 29183;
 
 export function StartScreen({ notice }: { notice: string | null }) {
   const { t, locale, steps, answers, resetAnswers } = useApp();
@@ -15,6 +20,9 @@ export function StartScreen({ notice }: { notice: string | null }) {
   const firstStep = steps[0]?.id ?? 'income';
 
   const wide = useWide();
+  // The example's yearly income as it could leave: the pack's own range around it.
+  const band = BANDS.annualIncome.find((b) => b.min <= EXAMPLE_INCOME && (b.max === null || EXAMPLE_INCOME <= b.max));
+  const exampleBand = band ? bandLabel(t, locale, band) : formatMoney(locale, EXAMPLE_INCOME);
   const example = (
     <>
       <p className="start-promise" data-testid="start-promise">
@@ -28,7 +36,7 @@ export function StartScreen({ notice }: { notice: string | null }) {
           <Paper>
             <Field label={t('field.paystub.employerName')} value="NORTHWIND STAFFING" />
             <Field label={t('field.paystub.grossPay')} value="1,271.88" />
-            <Field label={t('review.annualTitle')} value={formatMoney(locale, 29183)} />
+            <Field label={t('review.annualTitle')} value={formatMoney(locale, EXAMPLE_INCOME)} />
             <Field label={t(dynamicKey('variable.householdSize'))} value="3" />
           </Paper>
         </div>
@@ -48,7 +56,7 @@ export function StartScreen({ notice }: { notice: string | null }) {
                 <Bar id="N12" label={t('placeholder.number')} width={62} delay={200} />
               </span>
             </div>
-            <Field label={t('review.annualTitle')} value={t('income.band.range', { min: formatMoney(locale, 15000), max: formatMoney(locale, 29999) })} />
+            <Field label={t('review.annualTitle')} value={exampleBand} />
             <Field label={t(dynamicKey('variable.householdSize'))} value="3" />
           </Paper>
         </div>

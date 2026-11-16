@@ -1,11 +1,13 @@
 // The active rule pack, bands and pack copy, imported from ../shared at build time (never copied).
-// Only the synthetic zz-test pack ships for now; the demo banner is shown whenever it is active.
+// `@pack` and `@bands` resolve to the California pack in every build people get; the invented zz-test
+// pack is used only by the unit tests and the end-to-end suite built with `build:demo-pack`
+// (vite.config.ts, packFor()). A draft pack shows its notice on every screen; the demo pack its banner.
 
-import packJson from '../../../shared/rulepacks/zz-test/pack.json';
-import bandsJson from '../../../shared/bands/zz-test.json';
-import packEn from '../../../shared/rulepacks/zz-test/copy/en.json';
-import packEs from '../../../shared/rulepacks/zz-test/copy/es.json';
-import packKo from '../../../shared/rulepacks/zz-test/copy/ko.json';
+import packJson from '@pack/pack.json';
+import bandsJson from '@bands';
+import packEn from '@pack/copy/en.json';
+import packEs from '@pack/copy/es.json';
+import packKo from '@pack/copy/ko.json';
 import type { Bands } from '../core/generalize';
 import type { RulePack } from '../core/rules';
 
@@ -25,3 +27,9 @@ export const PACK_COPY: Readonly<Record<'en' | 'es' | 'ko', Readonly<Record<stri
 export const DEMO_JURISDICTIONS: ReadonlySet<string> = new Set(['zz-test']);
 
 export const isDemoPack = (pack: RulePack): boolean => DEMO_JURISDICTIONS.has(pack.jurisdiction);
+
+/** A draft pack (shared/rulepacks/SPEC.md section 2): numbers read from official sources, not all confirmed. */
+export const PACK_STATUS: string | undefined = (packJson as { status?: string }).status;
+/** When the draft pack's numbers were read from their sources. */
+export const SOURCES_READ_ON: string | undefined = (packJson as { sourcesReadOn?: string }).sourcesReadOn;
+export const isDraftPack = (): boolean => PACK_STATUS === 'draft';

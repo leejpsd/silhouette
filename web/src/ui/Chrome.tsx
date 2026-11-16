@@ -2,8 +2,9 @@
 // notice, the "Leaving your device" count row with its record, and "Delete everything".
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
-import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, type CopyKey, type Locale } from './i18n';
+import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, packDate, type CopyKey, type Locale } from './i18n';
 import { useApp } from './context';
+import { PACK, SOURCES_READ_ON, isDemoPack, isDraftPack } from './pack';
 import { routeHref } from './router';
 import { Count, Paper, Sheet, ActionLabel } from './design/parts';
 import { Caret, Check, CrossCircle, Phone, Trash } from './design/icons';
@@ -64,22 +65,30 @@ export function Header({ onLocale }: { onLocale: (locale: Locale) => void }) {
 }
 
 /** The one-line demo notice, with "More" opening the demo-rules sheet. */
+/**
+ * The one-line notice under the header, with "More" opening its sheet: for a draft pack, that its
+ * numbers were read from official sources on a date and are not yet all confirmed (rulepacks/SPEC.md
+ * section 2); for the invented demo pack, that its programs are not real.
+ */
 export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
-  const { t } = useApp();
+  const { t, locale } = useApp();
   const [open, setOpen] = useState(false);
   const more = useRef<HTMLButtonElement>(null);
   const headline = useId();
+  const draft = !isDemoPack(PACK) && isDraftPack();
+  const date = SOURCES_READ_ON ? packDate(locale, SOURCES_READ_ON) : '';
+  const title = draft ? t('pack.draft.title') : t('demo.title');
   return (
-    <aside className="demo-line" aria-label={t('demo.title')} data-testid="demo-banner" data-compact="true">
+    <aside className="demo-line" aria-label={title} data-testid="demo-banner" data-pack={draft ? 'draft' : 'demo'} data-compact="true">
       <p>
-        {t('demo.short')}{' '}
+        {draft ? t('pack.draft.short', { date }) : t('demo.short')}{' '}
         <button ref={more} type="button" className="text-link inline" aria-haspopup="dialog" onClick={() => setOpen(true)}>
           {t('demo.more')}
         </button>
       </p>
       <Sheet
         open={open}
-        label={t('demo.title')}
+        label={title}
         labelledBy={headline}
         onClose={() => setOpen(false)}
         closeLabel={t('nav.close')}
@@ -93,9 +102,18 @@ export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
         }
       >
         <h2 id={headline} className="sheet-headline">
-          {t('demo.title')}
+          {title}
         </h2>
-        <p className="sheet-text">{t('demo.body')}</p>
+        {draft ? (
+          <>
+            <p className="sheet-text" data-testid="draft-body">
+              {t('pack.draft.body', { date })}
+            </p>
+            <p className="sheet-note">{t('pack.draft.notice', { date })}</p>
+          </>
+        ) : (
+          <p className="sheet-text">{t('demo.body')}</p>
+        )}
         <p className="sheet-note">{t('promise.line3')}</p>
         <ul className="sheet-links">
           <li>

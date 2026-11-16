@@ -45,3 +45,14 @@ describe('copy', () => {
     expect(format('{missing} stays', {})).toBe('{missing} stays');
   });
 });
+
+describe('pack periods in the UI language', () => {
+  it('reads "Tax year 2025" and date ranges', async () => {
+    const { packPeriod, translator } = await import('./i18n');
+    expect(packPeriod('en', 'Tax year 2025', translator('en'))).toBe('tax year 2025');
+    expect(packPeriod('es', 'Tax year 2025', translator('es'))).toBe('el año fiscal 2025');
+    expect(packPeriod('es', 'October 1, 2026 - September 30, 2027', translator('es'))).toBe('1 de octubre de 2026 – 30 de septiembre de 2027');
+    expect(packPeriod('en', 'June 1, 2026 - May 31, 2027', translator('en'))).toBe('June 1, 2026 – May 31, 2027');
+    expect(packPeriod('en', 'something else', translator('en'))).toBe('something else');
+  });
+});

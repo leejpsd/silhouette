@@ -1,4 +1,5 @@
 // The judges' path and the on-device check, in browsers with and without the on-device model.
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { fakeAnswerModels, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel } from './model-fakes';
 
@@ -64,15 +65,18 @@ test.describe('the on-device check', () => {
       ],
     };
     await page.locator('input[type="file"]').setInputFiles({ name: 'run.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(recording)) });
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on-device check: 2026-11-17, Chrome 142.0.7444.59, macOS');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on\u2011device check');
+    await expect(page.getByTestId('recording-meta')).toHaveText('Recorded 2026-11-17 · Chrome 142.0.7444.59 · macOS');
     await expect(page.getByTestId('recording-note')).toContainText('This is a recording, not a live run.');
     await expect(page.getByTestId('device-summary')).toContainText('1 of 2 ran on this device; 1 in the cloud; 0 did not run. Extraction: 11 of 11 fields correct.');
     await expect(page.locator('tr[data-ran="IN_CLOUD"]')).toContainText('In the cloud (fallback)');
   });
 
   test('with a model it runs every case, reports where each ran, and offers the results as a file', async ({ page, context }) => {
-    await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Document type: paystub': JSON.stringify(fixturePointers('paystub-en-01-correct')) } });
-    await fakeAnswerModels(page);
+    const correct = fixturePointers('paystub-en-01-correct') as Record<string, unknown>;
+    // The device's reading breaks the paystub's arithmetic: it fails the checks and is repeated in the cloud.
+    await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Document type: paystub': JSON.stringify({ ...correct, netPay: correct['grossPay'] }) } });
+    await fakeAnswerModels(page, { text: (p) => (p.includes('Document type: paystub') ? JSON.stringify(correct) : 'A short answer about the program.') });
     await page.goto('/#/device-check');
     await page.getByTestId('run-device-check').click();
     await expect(page.getByTestId('device-check-status')).toHaveText('Finished.', { timeout: 30_000 });
@@ -80,9 +84,30 @@ test.describe('the on-device check', () => {
     await expect(rows).toHaveCount(14);
     await expect(page.locator('tr[data-ran="ON_DEVICE"]').first()).toBeVisible();
     await expect(page.getByTestId('device-summary')).toContainText('ran on this device');
+    // Version 2: what the person ends up with, and the device's answer field by field.
+    await expect(page.getByTestId('device-summary-final')).toContainText('5 extraction cases were repeated in the cloud');
+    const detail = page.getByTestId('field-detail').first();
+    await detail.locator('summary').click();
+    await expect(detail).toContainText('netPay');
+    await expect(detail).toContainText('check:net-sum');
     const download = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Download results' }).click();
     const file = await download;
-    expect(file.suggestedFilename()).toMatch(/^device-check-\d{4}-\d{2}-\d{2}\.json$/);
+    expect(file.suggestedFilename()).toMatch(/^device-check-\d{4}-\d{2}-\d{2}-[a-z]+\d+-[a-z0-9]+\.json$/);
+    const saved = JSON.parse(readFileSync(await file.path(), 'utf8')) as { version: number; cases: { device?: { fields: { field: string; gold: string[]; answered: string[]; status: string }[] } }[] };
+    expect(saved.version).toBe(2);
+    const fields = saved.cases[0]?.device?.fields ?? [];
+    expect(fields.find((f) => f.field === 'netPay')).toMatchObject({ status: 'wrong' });
+    // Placeholder ids only, never document values.
+    expect(JSON.stringify(saved)).not.toContain('1,271.88');
+  });
+
+  test('the first recorded run (version 1) still opens and replays', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.goto('/#/device-check');
+    await page.getByRole('button', { name: /Show the recording of device-check-2026-11-16/ }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on\u2011device check');
+    await expect(page.getByTestId('device-summary')).toContainText('14 of 14 ran on this device');
+    await expect(page.getByTestId('device-summary')).toContainText('37 of 60 fields correct');
   });
 });

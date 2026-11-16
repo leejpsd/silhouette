@@ -24,6 +24,9 @@ Every input is synthetic: the bundled sample, generated evaluation paystubs and 
 | `browser`, `platform`, `userAgent` | From the browser that ran it |
 | `availability` | What `LanguageModel.availability()` reported before the run, for each set of options the tasks use |
 | `jurisdiction` | The rule pack the app had |
-| `cases[]` | One per case: `id`, `task`, the inference `mode` the app asked for, where it actually `ran` (`ON_DEVICE`, `IN_CLOUD`, or `not-run`), `latencyMs`, `outputCheck` (`passed` or `blocked` for model text), `fields` correct against the gold answers for extraction, and any `error` or `note` |
+| `version` | 2 since the per-field diagnosis was added; version 1 files still open and replay |
+| `cases[]` | One per case: `id`, `task`, the inference `mode` the app asked for, where it actually `ran` (`ON_DEVICE`, `IN_CLOUD`, or `not-run`), `latencyMs`, `outputCheck` (`passed` or `blocked` for model text), `fields` correct in the first answer (the device's, when it answered) against the gold answers for extraction, and any `error` or `note` |
+| `cases[].final` (v2, extraction) | What the person ends up with after the deterministic check and any retry: where it `ran`, the `fields` correct, and whether it was `retried` in the cloud |
+| `cases[].device` (v2, extraction) | The device's answer: its raw text (placeholder ids and field names only), whether it `parsed` and `passed` the check, the `problems` found, and for each field the expected (`gold`) and `answered` placeholder ids and a `status` (`correct`, `wrong`, `missing`, `spurious`, `absent`) |
 
 A case that fell back to the cloud is recorded as `IN_CLOUD` and counted as a cloud run in the summary. A case that may only run on the device is never sent: without the model it is recorded as `not-run` with its error.

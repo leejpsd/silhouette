@@ -134,7 +134,8 @@ describe('document.pointer.extract', () => {
     const deviceProps = deviceSchema['properties'] as Record<string, Record<string, unknown>>;
     expect(cloudProps['grossPay']).toEqual({ type: 'string', nullable: true });
     expect(deviceProps['grossPay']).toEqual({ type: ['string', 'null'] });
-    expect(params.onDeviceParams?.createOptions?.expectedInputs).toEqual([{ type: 'text', languages: ['ko'] }]);
+    // English (the instructions) and the document's language: Korean makes the device unavailable, so the cloud reads it.
+    expect(params.onDeviceParams?.createOptions?.expectedInputs).toEqual([{ type: 'text', languages: ['en', 'ko'] }]);
   });
 
   it('treats null answers as "not in the document"', async () => {

@@ -18,7 +18,9 @@ import {
   isRunFile,
   platformString,
   summarize,
+  runFileName,
   type CaseResult,
+  type DeviceDiagnosis,
   type RunFile,
 } from '../device-check/run';
 import { PACK } from '../pack';
@@ -66,7 +68,7 @@ export function DeviceCheckScreen() {
     const blob = new Blob([`${JSON.stringify(file, null, 2)}\n`], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `device-check-${file.date.slice(0, 10)}.json`;
+    a.download = runFileName(file);
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
@@ -97,8 +99,13 @@ export function DeviceCheckScreen() {
         {t('nav.home')}
       </a>
       <ScreenHeading size={50} maxLines={3}>
-        {recording ? t('deviceCheck.titleRecording', { date: day(recording.date), machine: `${recording.browser}, ${recording.platform}` }) : t('deviceCheck.title')}
+        {recording ? t('deviceCheck.titleRecording') : t('deviceCheck.title')}
       </ScreenHeading>
+      {recording && (
+        <p className="recording-meta strong" data-testid="recording-meta">
+          {t('deviceCheck.recordingMeta', { date: day(recording.date), browser: recording.browser, platform: recording.platform })}
+        </p>
+      )}
       {recording && (
         <p className="dashed-note" data-testid="recording-note">
           {t('deviceCheck.recordingNote')}
@@ -166,6 +173,32 @@ export function DeviceCheckScreen() {
   );
 }
 
+/** The device's answer, field by field, behind a disclosure: placeholder ids and field names only. */
+function FieldDetail({ device }: { device: DeviceDiagnosis }) {
+  const { t } = useApp();
+  return (
+    <details className="field-detail" data-testid="field-detail">
+      <summary>{t('deviceCheck.fieldDetail')}</summary>
+      <p className="small">
+        {t('deviceCheck.parsed', { parsed: device.parsed ? '✓' : '✗', passed: device.passed ? '✓' : '✗' })}
+        {device.problems.length > 0 && ` ${device.problems.join(', ')}`}
+      </p>
+      <ul className="field-list">
+        {device.fields.map((f) => (
+          <li key={f.field} data-status={f.status}>
+            <span className="strong">{f.field}</span> <span className={`field-status status-${f.status}`}>{f.status}</span>
+            <span className="small muted">
+              {' '}
+              {t('deviceCheck.goldIds', { ids: f.gold.join(' ') || '—' })} · {t('deviceCheck.answeredIds', { ids: f.answered.join(' ') || '—' })}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <pre className="payload">{device.rawText}</pre>
+    </details>
+  );
+}
+
 function Results({ view }: { view: Exclude<View, null> }) {
   const { t } = useApp();
   const { file } = view;
@@ -185,6 +218,11 @@ function Results({ view }: { view: Exclude<View, null> }) {
       <p className="strong" data-testid="device-summary">
         {t('deviceCheck.summary', { onDevice: s.onDevice, total: s.total, inCloud: s.inCloud, notRun: s.notRun, correct: s.fieldsCorrect, fields: s.fieldsTotal })}
       </p>
+      {s.finalCorrect !== null && (
+        <p className="strong" data-testid="device-summary-final">
+          {t('deviceCheck.summaryFinal', { correct: s.finalCorrect, fields: s.fieldsTotal, retried: s.retriedInCloud })}
+        </p>
+      )}
       <div className="table-scroll" tabIndex={0} role="region" aria-label={t('deviceCheck.title')}>
         <table className="device-table">
           <thead>
@@ -205,15 +243,24 @@ function Results({ view }: { view: Exclude<View, null> }) {
                   {c.id}
                   <span className="small muted"> · {c.task}</span>
                 </th>
-                <td data-label={t('deviceCheck.col.mode')}>{c.mode}</td>
+                <td data-label={t('deviceCheck.col.mode')}>{c.mode.replace(/_/g, '_\u200b')}</td>
                 <td data-label={t('deviceCheck.col.ran')} className={`ran ran-${c.ran}`}>
                   {t(dynamicKey(`deviceCheck.ran.${c.ran}`))}
                 </td>
                 <td data-label={t('deviceCheck.col.time')}>{c.latencyMs === null ? '—' : `${(c.latencyMs / 1000).toFixed(1)} s`}</td>
                 <td data-label={t('deviceCheck.col.check')}>{c.outputCheck ?? '—'}</td>
-                <td data-label={t('deviceCheck.col.fields')}>{c.fields ? `${c.fields.correct} / ${c.fields.total}` : '—'}</td>
+                <td data-label={t('deviceCheck.col.fields')}>
+                  {c.fields ? `${c.fields.correct} / ${c.fields.total}` : '—'}
+                  {c.final && (
+                    <span className="small muted">
+                      {' '}
+                      → {c.final.fields.correct} / {c.final.fields.total} {c.final.retried ? `(${t('deviceCheck.ran.IN_CLOUD')})` : ''}
+                    </span>
+                  )}
+                </td>
                 <td data-label={t('deviceCheck.col.note')} className="note">
                   {c.error ?? c.note ?? ''}
+                  {c.device && <FieldDetail device={c.device} />}
                 </td>
               </tr>
             ))}

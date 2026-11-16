@@ -3,15 +3,30 @@
 // left out (that question is then simply unanswered), so the household stays consistent with the pack.
 import { validateAnswer, type AnswerValue, type QuickCheckAnswers, type Step } from '../quickcheck';
 
-/** A renter household of three with one child, a job and a yearly income given exactly. Invented. */
+/**
+ * An invented renter household of three: a working single parent (head of household) with one child
+ * under 6, a yearly income given as a range, and one private question left unanswered, so the results
+ * show every kind of answer. With the California pack: the federal EITC, LifeLine and CARE "may
+ * qualify"; CalEITC and the Young Child Tax Credit are "possible" until the sample paystub gives an
+ * exact yearly income ($29,233), which makes them "may qualify" with an amount; CalFresh depends on
+ * the unanswered question; FERA is "probably not". Keys of other packs' questions are skipped.
+ */
 const PREPARED: Readonly<Record<string, AnswerValue>> = {
-  income: { kind: 'exact', amount: 30524 },
+  income: { kind: 'band', bandId: 'C' },
   householdSize: 3,
+  numQualifyingChildren: 1,
   numChildren: 1,
+  hasChildUnder6: 'yes',
   hasEarnedIncome: 'yes',
+  ageGroup: '25-64',
   housing: 'renter',
   benefits: [],
+  energyProvider: 'pge',
+  hasElderlyOrDisabledMember: 'no',
   hasOlderMember: 'no',
+  filingStatus: 'head-of-household',
+  taxIdType: 'ssn-valid-for-work',
+  investmentIncome: 0,
   residentStatus: 'eligible',
 };
 

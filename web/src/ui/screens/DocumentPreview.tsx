@@ -4,6 +4,8 @@ import { placeholderCounts, buildReview, type SourceSegment } from '../../core/r
 import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
+import { pointerProblems } from '../../core/pointer-check';
+import { PACK } from '../pack';
 import type { Skeleton } from '../../core/types';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
@@ -78,6 +80,8 @@ export function DocumentPreviewScreen() {
     );
   }
   const { skeleton, map } = doc;
+  // The deterministic check of a pointer answer: one that fails it is a failed attempt, never values to confirm.
+  const checkAnswer = (pointers: Record<string, unknown>) => (doc.docType === 'paystub' ? pointerProblems(POINTER_SCHEMAS.paystub, pointers, skeleton, map, PACK.jurisdiction) : []);
   const counts = placeholderCounts(skeleton);
   const rawText = doc.text;
 
@@ -110,10 +114,31 @@ export function DocumentPreviewScreen() {
         navigate({ name: 'doc-review' });
         return;
       }
-      const result = await extractPointers(skeleton, doc.docType, doc.language);
+      const result = await extractPointers(skeleton, doc.docType, doc.language, { validate: checkAnswer });
       const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
       update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause } });
+      navigate({ name: 'doc-review' });
+    } catch (error) {
+      update({ error: classifyError(error) });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  /**
+   * "Keep everything on this device" with an on-device model: the device reads the silhouette and
+   * nothing is sent. A reading that fails the checks is not repeated anywhere; the person is told the
+   * device could not read it reliably and can send the silhouette or type the numbers.
+   */
+  const keepOnDevice = async () => {
+    setSending(true);
+    update({ error: null });
+    try {
+      const result = await extractPointers(skeleton, doc.docType, doc.language, { deviceOnly: true, validate: checkAnswer });
+      const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
+      const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
+      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason } });
       navigate({ name: 'doc-review' });
     } catch (error) {
       update({ error: classifyError(error) });
@@ -207,10 +232,16 @@ export function DocumentPreviewScreen() {
           <TaskErrorNotice error={doc.error} />
           <div className="button-row">
             {/* A daily limit does not recover by trying again now. */}
-            {doc.error.kind !== 'quota-daily' && (
+            {doc.error.kind === 'on-device-unreliable' ? (
               <button type="button" className="outline-button" onClick={() => void send()}>
-                {t('error.retry')}
+                {t('preview.sendSilhouette')}
               </button>
+            ) : (
+              doc.error.kind !== 'quota-daily' && (
+                <button type="button" className="outline-button" onClick={() => void send()}>
+                  {t('error.retry')}
+                </button>
+              )
             )}
             <button type="button" className="outline-button" onClick={() => navigate({ name: 'doc-review' })}>
               {t('error.typeInstead')}
@@ -236,6 +267,8 @@ export function DocumentPreviewScreen() {
             className="outline-button tall"
             disabled={sending}
             onClick={() => {
+              // With a model on this device, keeping everything here still reads the silhouette, on the device.
+              if (onDeviceFirst && !offlineSample) return void keepOnDevice();
               update({ extraction: null, error: null });
               navigate({ name: 'doc-review' });
             }}

@@ -1,10 +1,11 @@
-// Captures every screen and state for design review (npm run capture): 390 px in light and dark;
+// Captures every screen and state of the build people get (the California pack) for design review
+// (npm run capture): 390 px in light and dark;
 // Start, a question and Results also at 320 x 568, the tablet layout at 768 px and the wide layout at 960, 1280, 1440 and 1920 px,
 // in English and Spanish, light and dark. Files go to
 // visual-captures/ (git-ignored). The model, Remote Config and the device model are the app's own
 // test fakes, so nothing leaves the machine.
 import { test, type BrowserContext, type Page } from '@playwright/test';
-import { chooseLanguage, completeQuickCheck, confirmAllValues, openDeleteEverything, type FlowAnswers } from '../helpers';
+import { chooseLanguage, confirmAllValues, openDeleteEverything } from '../helpers';
 import { fakeAnswerModels, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel, seedRemoteConfig } from '../model-fakes';
 
 const OUT = 'visual-captures';
@@ -26,7 +27,7 @@ async function shot(page: Page, name: string, theme: Theme, full = true) {
 
 async function setup(page: Page, context: BrowserContext, theme: Theme, opts: { device?: boolean; flags?: boolean; reply?: (p: string) => string; hang?: boolean; error?: boolean } = {}) {
   await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
-  if (opts.device) await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Result from the rules': 'The rules say probably not: the residency rule is not met. Your income is under the limit for a household of 3.', 'Program: Test': 'A short explanation written on this device.' } });
+  if (opts.device) await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Result from the rules': 'The rules say this depends on an answer you skipped: whether someone at home is eligible.', 'Program: ': 'A short explanation written on this device.' } });
   else await noOnDeviceModel(context);
   if (opts.flags) await seedRemoteConfig(context, ALL_ON);
   return fakeAnswerModels(
@@ -38,6 +39,14 @@ async function setup(page: Page, context: BrowserContext, theme: Theme, opts: { 
     },
     opts.flags ? ALL_ON : {},
   );
+}
+
+/** The prepared household of the two-minute path: the shipped pack's results, with every kind of answer. */
+async function prepared(page: Page) {
+  await page.goto('/#/judges');
+  await page.getByRole('button', { name: /Fill in and see the results|Rellenar/ }).click();
+  await page.getByRole('heading', { level: 1 }).waitFor();
+  await page.getByTestId('results-lead').waitFor();
 }
 
 async function program(page: Page, id: string) {
@@ -65,15 +74,15 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByLabel('Yearly household income').fill('28000.50');
       await shot(page, '05-question-income', theme, false);
       await page.goto('/#/q/benefits');
-      await page.getByLabel('Food benefits (SNAP)', { exact: true }).check();
+      await page.getByRole('checkbox').first().check();
       await shot(page, '06-question-multi', theme, false);
-      await page.goto('/#/q/residentStatus');
-      await page.getByLabel('Yes', { exact: true }).check();
+      await page.goto('/#/q/filingStatus');
+      await page.getByRole('radio').first().check();
       await shot(page, '07-question-sensitive', theme, false);
       await page.goto('/#/results');
       await shot(page, '08-results-before-answers', theme, false);
       await page.goto('/');
-      await completeQuickCheck(page, { income: { band: '$30,000 to $44,999' } } as Partial<FlowAnswers>);
+      await prepared(page);
       await shot(page, '09-results', theme);
       await context.setOffline(true);
       await page.evaluate(() => window.dispatchEvent(new Event('offline')));
@@ -81,18 +90,20 @@ for (const theme of ['light', 'dark'] as const) {
       await context.setOffline(false);
     });
 
-    test('results with nothing that fits', async ({ page, context }) => {
+    test('results with a high income', async ({ page, context }) => {
       await setup(page, context, theme);
-      await page.goto('/');
-      await completeQuickCheck(page, { hasEarnedIncome: 'No', income: { band: '$60,000 or more' }, housing: 'Something else', benefits: [], hasOlderMember: 'No', resident: 'No' } as Partial<FlowAnswers>);
-      await shot(page, '11-results-none', theme);
+      await prepared(page);
+      await page.goto('/#/q/income?then=results');
+      await page.getByRole('radio').nth(7).check();
+      await page.getByRole('button', { name: /^(Next|See results)$/ }).click();
+      await page.getByTestId('results-lead').waitFor();
+      await shot(page, '11-results-high-income', theme);
     });
 
     test('program detail and answers', async ({ page, context }) => {
       await setup(page, context, theme);
-      await page.goto('/');
-      await completeQuickCheck(page);
-      await program(page, 'work-credit');
+      await prepared(page);
+      await program(page, 'yctc');
       await shot(page, '12-program', theme);
       await page.getByRole('button', { name: 'Explain this program' }).click();
       await page.getByText('Show the exact request').click();
@@ -110,8 +121,8 @@ for (const theme of ['light', 'dark'] as const) {
     test('blocked, daily limit, loading and cancelled', async ({ page, context }) => {
       await setup(page, context, theme, { reply: () => 'You may qualify for this program.' });
       await page.goto('/');
-      await completeQuickCheck(page, { resident: 'No' } as Partial<FlowAnswers>);
-      await program(page, 'food-help');
+      await prepared(page);
+      await program(page, 'calfresh');
       await page.getByRole('button', { name: 'Explain this program' }).click();
       await page.getByRole('button', { name: 'Send' }).click();
       await page.getByTestId('answer-error').waitFor();
@@ -120,9 +131,8 @@ for (const theme of ['light', 'dark'] as const) {
 
     test('daily limit', async ({ page, context }) => {
       await setup(page, context, theme, { error: true });
-      await page.goto('/');
-      await completeQuickCheck(page);
-      await program(page, 'utility-discount');
+      await prepared(page);
+      await program(page, 'care');
       await page.getByRole('button', { name: 'Explain this program' }).click();
       await page.getByRole('button', { name: 'Send' }).click();
       await page.getByTestId('answer-error').waitFor();
@@ -131,9 +141,8 @@ for (const theme of ['light', 'dark'] as const) {
 
     test('loading and cancelled', async ({ page, context }) => {
       await setup(page, context, theme, { hang: true });
-      await page.goto('/');
-      await completeQuickCheck(page);
-      await program(page, 'utility-discount');
+      await prepared(page);
+      await program(page, 'care');
       await page.getByRole('button', { name: 'Explain this program' }).click();
       await page.getByRole('button', { name: 'Send' }).click();
       await shot(page, '18-loading', theme);
@@ -144,8 +153,8 @@ for (const theme of ['light', 'dark'] as const) {
     test('with a device model: own result, typed question', async ({ page, context }) => {
       await setup(page, context, theme, { device: true });
       await page.goto('/');
-      await completeQuickCheck(page, { resident: 'No' } as Partial<FlowAnswers>);
-      await program(page, 'food-help');
+      await prepared(page);
+      await program(page, 'calfresh');
       await page.getByRole('button', { name: 'Explain my result on this device' }).click();
       await page.getByTestId('why-answer').waitFor();
       await shot(page, '20-why-on-device', theme);
@@ -153,9 +162,8 @@ for (const theme of ['light', 'dark'] as const) {
 
     test('flags on: current information, leads, places, read aloud', async ({ page, context }) => {
       await setup(page, context, theme, { flags: true });
-      await page.goto('/');
-      await completeQuickCheck(page);
-      await program(page, 'utility-discount');
+      await prepared(page);
+      await program(page, 'care');
       await page.getByRole('button', { name: /Check current information/ }).click();
       await page.getByTestId('send-decision').getByRole('button', { name: 'Send' }).click();
       await page.getByTestId('current-line').waitFor();
@@ -166,17 +174,13 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByTestId('leads').waitFor();
       await shot(page, '22-leads', theme);
       await page.goto('/#/nearby');
-      await page.getByLabel('Your county').selectOption('testshire');
-      await page.getByRole('button', { name: 'Find help near the county center' }).click();
-      await page.getByRole('button', { name: 'Send' }).click();
-      await page.getByTestId('places').waitFor();
-      await shot(page, '23-places', theme);
+      await page.getByTestId('nearby-screen').waitFor();
+      await shot(page, '23-nearby', theme);
     });
 
     test('flags off pages', async ({ page, context }) => {
       await setup(page, context, theme);
-      await page.goto('/');
-      await completeQuickCheck(page);
+      await prepared(page);
       await page.goto('/#/discover');
       await shot(page, '24-discover-off', theme);
       await page.goto('/#/nearby');
@@ -251,11 +255,11 @@ for (const width of [320, 768, 960, 1280, 1440, 1920] as const) {
         await shot(page, `41-${width}-${lang}-question`, theme, false);
         await page.goto('/');
         if (lang === 'es') await chooseLanguage(page, 'en');
-        await completeQuickCheck(page, { income: { band: '$30,000 to $44,999' } } as Partial<FlowAnswers>);
+        await prepared(page);
         if (lang === 'es') await chooseLanguage(page, 'es');
         await shot(page, `42-${width}-${lang}-results`, theme, false);
         if (width === 320) return;
-        await program(page, 'work-credit');
+        await program(page, 'yctc');
         await shot(page, `43-${width}-${lang}-program`, theme, false);
         await page.getByTestId('language-button').click();
         await shot(page, `44-${width}-${lang}-language`, theme, false);

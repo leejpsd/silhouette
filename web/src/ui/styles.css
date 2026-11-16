@@ -2947,6 +2947,12 @@ main h2.source-title {
 .table-scroll {
   max-width: 100%;
   overflow-x: auto;
+  /* When the table is wider than the column, a shadow at the edge shows there is more to scroll to. */
+  background:
+    linear-gradient(to right, var(--ground) 30%, transparent) left / var(--space-xl) 100% no-repeat local,
+    linear-gradient(to left, var(--ground) 30%, transparent) right / var(--space-xl) 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, var(--line), transparent) left / var(--space-xs) 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, var(--line), transparent) right / var(--space-xs) 100% no-repeat scroll;
 }
 
 .device-table {
@@ -2966,7 +2972,10 @@ main h2.source-title {
 
 .device-table thead th {
   font-weight: 700;
-  white-space: nowrap;
+}
+
+.device-table td {
+  overflow-wrap: anywhere;
 }
 
 .device-table .ran-ON_DEVICE {
@@ -3024,4 +3033,37 @@ main h2.source-title {
   .device-table td:empty {
     display: none;
   }
+}
+
+/* Each official source: the link, then when it was read or confirmed, on its own line. */
+.official-sources li {
+  margin-bottom: var(--space-xs);
+}
+
+.source-date {
+  display: block;
+}
+
+.field-detail summary {
+  min-height: var(--size-min-tap-target);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.field-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.field-list li {
+  padding: var(--space-xxs) 0;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+
+.field-status {
+  font-family: var(--font-mono);
 }

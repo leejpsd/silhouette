@@ -149,3 +149,9 @@ export function exactProfile(
   if (county !== null) out['county'] = county;
   return Raw.of(out as unknown as ExactProfile);
 }
+
+/**
+ * Money variables of a rule pack: the reserved yearly income, and answers that are amounts of income
+ * (such as investment income). Asked as an amount and shown as money.
+ */
+export const isMoneyVariable = (variable: string): boolean => variable === 'annualIncome' || /^(?!has).*income$/i.test(variable);

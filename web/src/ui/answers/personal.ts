@@ -27,8 +27,8 @@ export interface WhyRow {
 
 const isBand = (value: Comparison['yours']): value is IncomeBand => typeof value === 'object' && value !== null;
 
-/** Income is the one money variable of a rule pack (the reserved income step). */
-export const isMoneyVariable = (variable: string): boolean => variable === 'annualIncome';
+export { isMoneyVariable } from '../quickcheck';
+import { isMoneyVariable } from '../quickcheck';
 
 /** A value as shown: a number, or an income band as its range; money in the pack's currency when `money`. */
 export function shownValue(locale: Locale, value: Comparison['yours'], none: string, money = false): string {
