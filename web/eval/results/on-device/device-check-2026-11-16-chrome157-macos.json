@@ -1,0 +1,164 @@
+{
+  "kind": "silhouette-device-check",
+  "version": 1,
+  "date": "2026-11-16T17:16:05.282Z",
+  "browser": "Chrome 157.0.0.0",
+  "platform": "macOS",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+  "availability": {
+    "languageModel": "present",
+    "text en → en (document pointers)": "available",
+    "text en (answers)": "available",
+    "text es (answers)": "available",
+    "image + text en (photo)": "available"
+  },
+  "jurisdiction": "zz-test",
+  "cases": [
+    {
+      "id": "pointers: bundled sample",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 9340,
+      "outputCheck": null,
+      "fields": {
+        "correct": 10,
+        "total": 12
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "pointers: evaluation paystub L01",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 4474,
+      "outputCheck": null,
+      "fields": {
+        "correct": 8,
+        "total": 12
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "pointers: evaluation paystub L04",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 4162,
+      "outputCheck": null,
+      "fields": {
+        "correct": 4,
+        "total": 12
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "pointers: evaluation paystub L07",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 4683,
+      "outputCheck": null,
+      "fields": {
+        "correct": 7,
+        "total": 12
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "pointers: evaluation paystub L10",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 3541,
+      "outputCheck": null,
+      "fields": {
+        "correct": 8,
+        "total": 12
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "explanation (en)",
+      "task": "explain.short",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 2484,
+      "outputCheck": "passed",
+      "note": "short-text"
+    },
+    {
+      "id": "explanation (es)",
+      "task": "explain.short",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 2487,
+      "outputCheck": "passed",
+      "note": "short-text"
+    },
+    {
+      "id": "How do I apply? (en)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 2505,
+      "outputCheck": "passed",
+      "note": "prepared-question"
+    },
+    {
+      "id": "What could change this result? (en)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 1927,
+      "outputCheck": "passed",
+      "note": "prepared-question"
+    },
+    {
+      "id": "¿Cómo solicito? (es)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 2409,
+      "outputCheck": "passed",
+      "note": "prepared-question"
+    },
+    {
+      "id": "¿Qué podría cambiar este resultado? (es)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 2163,
+      "outputCheck": "passed",
+      "note": "prepared-question"
+    },
+    {
+      "id": "your own result (en)",
+      "task": "explain.personal",
+      "mode": "ONLY_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 2178,
+      "outputCheck": "passed",
+      "note": "your-result-stays-on-device"
+    },
+    {
+      "id": "typed question (en)",
+      "task": "ask.freeText",
+      "mode": "ONLY_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 1742,
+      "outputCheck": "passed",
+      "note": "typed-text-may-be-personal"
+    },
+    {
+      "id": "photo of the sample (en)",
+      "task": "document.photo.read",
+      "mode": "ONLY_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 8251,
+      "outputCheck": null,
+      "note": "photo-never-leaves"
+    }
+  ]
+}
