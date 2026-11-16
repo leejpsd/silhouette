@@ -1,0 +1,1235 @@
+{
+  "kind": "silhouette-device-check",
+  "version": 3,
+  "date": "2026-11-16T18:24:18.383Z",
+  "browser": "Chrome 157.0.0.0",
+  "platform": "macOS",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+  "availability": {
+    "languageModel": "present",
+    "text en → en (document pointers)": "available",
+    "text en (answers)": "available",
+    "text es (answers)": "available",
+    "image + text en (photo)": "available"
+  },
+  "jurisdiction": "us-ca",
+  "cases": [
+    {
+      "id": "pointers: bundled sample",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 10694,
+      "outputCheck": null,
+      "first": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 8,
+          "total": 12
+        }
+      },
+      "final": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 8,
+          "total": 12
+        },
+        "retried": false,
+        "deductionsNotRead": true,
+        "notRead": [
+          "deductions"
+        ],
+        "incomeInputsCorrect": false
+      },
+      "device": {
+        "scoredBy": "value",
+        "rawText": "{\"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"semimonthly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N12\", \"netPay\": \"N22\", \"ytdGross\": null, \"hoursWorked\": null, \"hourlyRate\": null}",
+        "parsed": true,
+        "problems": [],
+        "passed": true,
+        "fields": [
+          {
+            "field": "employerName",
+            "gold": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "answered": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "employeeName",
+            "gold": [
+              "W4",
+              "W5"
+            ],
+            "answered": [
+              "W4",
+              "W5"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "payFrequency",
+            "gold": [],
+            "answered": [],
+            "status": "correct"
+          },
+          {
+            "field": "payDate",
+            "gold": [
+              "D3"
+            ],
+            "answered": [
+              "D3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodStart",
+            "gold": [
+              "D1"
+            ],
+            "answered": [
+              "D1"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodEnd",
+            "gold": [
+              "D2"
+            ],
+            "answered": [
+              "D2"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "grossPay",
+            "gold": [
+              "N12"
+            ],
+            "answered": [
+              "N12"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "netPay",
+            "gold": [
+              "N22"
+            ],
+            "answered": [
+              "N22"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "ytdGross",
+            "gold": [
+              "N13"
+            ],
+            "answered": [],
+            "status": "missing"
+          },
+          {
+            "field": "hoursWorked",
+            "gold": [
+              "N5"
+            ],
+            "answered": [],
+            "status": "missing"
+          },
+          {
+            "field": "hourlyRate",
+            "gold": [
+              "N4"
+            ],
+            "answered": [],
+            "status": "missing"
+          },
+          {
+            "field": "deductions",
+            "gold": [
+              "N14",
+              "N16",
+              "N18",
+              "N20"
+            ],
+            "answered": [
+              "N14",
+              "N16",
+              "N18"
+            ],
+            "status": "wrong"
+          }
+        ],
+        "core": {
+          "correct": 8,
+          "total": 11
+        },
+        "deductions": "wrong",
+        "deductionsNotRead": true,
+        "passes": [
+          {
+            "part": "core",
+            "rawText": "{\"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"semimonthly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N12\", \"netPay\": \"N22\", \"ytdGross\": null, \"hoursWorked\": null, \"hourlyRate\": null}",
+            "parsed": true,
+            "parsedValue": {
+              "employerName": [
+                "W1",
+                "W2",
+                "W3"
+              ],
+              "employeeName": [
+                "W4",
+                "W5"
+              ],
+              "payFrequency": "semimonthly",
+              "payDate": "D3",
+              "periodStart": "D1",
+              "periodEnd": "D2",
+              "grossPay": "N12",
+              "netPay": "N22"
+            },
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 8473
+          },
+          {
+            "part": "deductions",
+            "rawText": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}]}",
+            "parsed": true,
+            "parsedValue": {
+              "deductions": [
+                {
+                  "amount": "N14",
+                  "kind": "federal_tax"
+                },
+                {
+                  "amount": "N16",
+                  "kind": "social_security"
+                },
+                {
+                  "amount": "N18",
+                  "kind": "medicare"
+                }
+              ]
+            },
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 2162
+          }
+        ]
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "pointers: evaluation paystub L01",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 6291,
+      "outputCheck": null,
+      "first": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 11,
+          "total": 12
+        }
+      },
+      "final": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 11,
+          "total": 12
+        },
+        "retried": false,
+        "deductionsNotRead": false,
+        "notRead": [],
+        "incomeInputsCorrect": false
+      },
+      "device": {
+        "scoredBy": "value",
+        "rawText": "{\"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"biweekly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N12\", \"netPay\": \"N22\", \"ytdGross\": null, \"hoursWorked\": \"N5\", \"hourlyRate\": \"N4\"}",
+        "parsed": true,
+        "problems": [],
+        "passed": true,
+        "fields": [
+          {
+            "field": "employerName",
+            "gold": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "answered": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "employeeName",
+            "gold": [
+              "W4",
+              "W5"
+            ],
+            "answered": [
+              "W4",
+              "W5"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "payFrequency",
+            "gold": [],
+            "answered": [],
+            "status": "correct"
+          },
+          {
+            "field": "payDate",
+            "gold": [
+              "D3"
+            ],
+            "answered": [
+              "D3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodStart",
+            "gold": [
+              "D1"
+            ],
+            "answered": [
+              "D1"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodEnd",
+            "gold": [
+              "D2"
+            ],
+            "answered": [
+              "D2"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "grossPay",
+            "gold": [
+              "N12"
+            ],
+            "answered": [
+              "N12"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "netPay",
+            "gold": [
+              "N22"
+            ],
+            "answered": [
+              "N22"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "ytdGross",
+            "gold": [
+              "N13"
+            ],
+            "answered": [],
+            "status": "missing"
+          },
+          {
+            "field": "hoursWorked",
+            "gold": [
+              "N5"
+            ],
+            "answered": [
+              "N5"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "hourlyRate",
+            "gold": [
+              "N4"
+            ],
+            "answered": [
+              "N4"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "deductions",
+            "gold": [
+              "N14",
+              "N16",
+              "N18",
+              "N20"
+            ],
+            "answered": [
+              "N14",
+              "N16",
+              "N18",
+              "N20"
+            ],
+            "status": "correct"
+          }
+        ],
+        "core": {
+          "correct": 10,
+          "total": 11
+        },
+        "deductions": "correct",
+        "deductionsNotRead": false,
+        "passes": [
+          {
+            "part": "core",
+            "rawText": "{\"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"biweekly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N12\", \"netPay\": \"N22\", \"ytdGross\": null, \"hoursWorked\": \"N5\", \"hourlyRate\": \"N4\"}",
+            "parsed": true,
+            "parsedValue": {
+              "employerName": [
+                "W1",
+                "W2",
+                "W3"
+              ],
+              "employeeName": [
+                "W4",
+                "W5"
+              ],
+              "payFrequency": "biweekly",
+              "payDate": "D3",
+              "periodStart": "D1",
+              "periodEnd": "D2",
+              "grossPay": "N12",
+              "netPay": "N22",
+              "hoursWorked": "N5",
+              "hourlyRate": "N4"
+            },
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 3766
+          },
+          {
+            "part": "deductions",
+            "rawText": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}, {\"amount\": \"N20\", \"kind\": \"state_tax\"}]}",
+            "parsed": true,
+            "parsedValue": {
+              "deductions": [
+                {
+                  "amount": "N14",
+                  "kind": "federal_tax"
+                },
+                {
+                  "amount": "N16",
+                  "kind": "social_security"
+                },
+                {
+                  "amount": "N18",
+                  "kind": "medicare"
+                },
+                {
+                  "amount": "N20",
+                  "kind": "state_tax"
+                }
+              ]
+            },
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 2491
+          }
+        ]
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "pointers: evaluation paystub L04",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 5432,
+      "outputCheck": null,
+      "first": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 11,
+          "total": 12
+        }
+      },
+      "final": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 11,
+          "total": 12
+        },
+        "retried": false,
+        "deductionsNotRead": false,
+        "notRead": [],
+        "incomeInputsCorrect": true
+      },
+      "device": {
+        "scoredBy": "value",
+        "rawText": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"payFrequency\":\"biweekly\",\"payDate\":\"D3\",\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"grossPay\":\"N4\",\"netPay\":\"N8\",\"ytdGross\":\"N9\",\"hoursWorked\":null,\"hourlyRate\":\"N2\"}",
+        "parsed": true,
+        "problems": [],
+        "passed": true,
+        "fields": [
+          {
+            "field": "employerName",
+            "gold": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "answered": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "employeeName",
+            "gold": [
+              "W4",
+              "W5"
+            ],
+            "answered": [
+              "W4",
+              "W5"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "payFrequency",
+            "gold": [],
+            "answered": [],
+            "status": "correct"
+          },
+          {
+            "field": "payDate",
+            "gold": [
+              "D3"
+            ],
+            "answered": [
+              "D3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodStart",
+            "gold": [
+              "D1"
+            ],
+            "answered": [
+              "D1"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodEnd",
+            "gold": [
+              "D2"
+            ],
+            "answered": [
+              "D2"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "grossPay",
+            "gold": [
+              "N4"
+            ],
+            "answered": [
+              "N4"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "netPay",
+            "gold": [
+              "N8"
+            ],
+            "answered": [
+              "N8"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "ytdGross",
+            "gold": [
+              "N9"
+            ],
+            "answered": [
+              "N9"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "hoursWorked",
+            "gold": [
+              "N3"
+            ],
+            "answered": [],
+            "status": "missing"
+          },
+          {
+            "field": "hourlyRate",
+            "gold": [
+              "N2"
+            ],
+            "answered": [
+              "N2"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "deductions",
+            "gold": [
+              "N5",
+              "N6",
+              "N7"
+            ],
+            "answered": [
+              "N5",
+              "N6",
+              "N7"
+            ],
+            "status": "correct"
+          }
+        ],
+        "core": {
+          "correct": 10,
+          "total": 11
+        },
+        "deductions": "correct",
+        "deductionsNotRead": false,
+        "passes": [
+          {
+            "part": "core",
+            "rawText": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"payFrequency\":\"biweekly\",\"payDate\":\"D3\",\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"grossPay\":\"N4\",\"netPay\":\"N8\",\"ytdGross\":\"N9\",\"hoursWorked\":null,\"hourlyRate\":\"N2\"}",
+            "parsed": true,
+            "parsedValue": {
+              "employerName": [
+                "W1",
+                "W2",
+                "W3"
+              ],
+              "employeeName": [
+                "W4",
+                "W5"
+              ],
+              "payFrequency": "biweekly",
+              "payDate": "D3",
+              "periodStart": "D1",
+              "periodEnd": "D2",
+              "grossPay": "N4",
+              "netPay": "N8",
+              "ytdGross": "N9",
+              "hourlyRate": "N2"
+            },
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 3315
+          },
+          {
+            "part": "deductions",
+            "rawText": "{\"deductions\": [{\"amount\": \"N5\", \"kind\": \"federal_tax\"}, {\"amount\": \"N6\", \"kind\": \"social_security\"}, {\"amount\": \"N7\", \"kind\": \"medicare\"}]}",
+            "parsed": true,
+            "parsedValue": {
+              "deductions": [
+                {
+                  "amount": "N5",
+                  "kind": "federal_tax"
+                },
+                {
+                  "amount": "N6",
+                  "kind": "social_security"
+                },
+                {
+                  "amount": "N7",
+                  "kind": "medicare"
+                }
+              ]
+            },
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 2095
+          }
+        ]
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "pointers: evaluation paystub L07",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 6398,
+      "outputCheck": null,
+      "first": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 10,
+          "total": 12
+        }
+      },
+      "final": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 10,
+          "total": 12
+        },
+        "retried": false,
+        "deductionsNotRead": true,
+        "notRead": [
+          "deductions"
+        ],
+        "incomeInputsCorrect": true
+      },
+      "device": {
+        "scoredBy": "value",
+        "rawText": "{\n  \"employerName\": [\n    \"W1\",\n    \"W2\",\n    \"W3\"\n  ],\n  \"employeeName\": [\n    \"W4\",\n    \"W5\"\n  ],\n  \"payFrequency\": \"weekly\",\n  \"payDate\": \"D3\",\n  \"periodStart\": \"D1\",\n  \"periodEnd\": \"D2\",\n  \"grossPay\": \"N18\",\n  \"netPay\": \"N28\",\n  \"ytdGross\": \"N19\",\n  \n  \"hoursWorked\": \"N18\",\n  \"hourlyRate\": \"N3\"\n}",
+        "parsed": true,
+        "problems": [],
+        "passed": true,
+        "fields": [
+          {
+            "field": "employerName",
+            "gold": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "answered": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "employeeName",
+            "gold": [
+              "W4",
+              "W5"
+            ],
+            "answered": [
+              "W4",
+              "W5"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "payFrequency",
+            "gold": [],
+            "answered": [],
+            "status": "correct"
+          },
+          {
+            "field": "payDate",
+            "gold": [
+              "D3"
+            ],
+            "answered": [
+              "D3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodStart",
+            "gold": [
+              "D1"
+            ],
+            "answered": [
+              "D1"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodEnd",
+            "gold": [
+              "D2"
+            ],
+            "answered": [
+              "D2"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "grossPay",
+            "gold": [
+              "N18"
+            ],
+            "answered": [
+              "N18"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "netPay",
+            "gold": [
+              "N28"
+            ],
+            "answered": [
+              "N28"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "ytdGross",
+            "gold": [
+              "N19"
+            ],
+            "answered": [
+              "N19"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "hoursWorked",
+            "gold": [
+              "N2"
+            ],
+            "answered": [
+              "N18"
+            ],
+            "status": "wrong"
+          },
+          {
+            "field": "hourlyRate",
+            "gold": [
+              "N3",
+              "N11"
+            ],
+            "answered": [
+              "N3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "deductions",
+            "gold": [
+              "N20",
+              "N22",
+              "N24",
+              "N26"
+            ],
+            "answered": [
+              "N20",
+              "N22",
+              "N24"
+            ],
+            "status": "wrong"
+          }
+        ],
+        "core": {
+          "correct": 10,
+          "total": 11
+        },
+        "deductions": "wrong",
+        "deductionsNotRead": true,
+        "passes": [
+          {
+            "part": "core",
+            "rawText": "{\n  \"employerName\": [\n    \"W1\",\n    \"W2\",\n    \"W3\"\n  ],\n  \"employeeName\": [\n    \"W4\",\n    \"W5\"\n  ],\n  \"payFrequency\": \"weekly\",\n  \"payDate\": \"D3\",\n  \"periodStart\": \"D1\",\n  \"periodEnd\": \"D2\",\n  \"grossPay\": \"N18\",\n  \"netPay\": \"N28\",\n  \"ytdGross\": \"N19\",\n  \n  \"hoursWorked\": \"N18\",\n  \"hourlyRate\": \"N3\"\n}",
+            "parsed": true,
+            "parsedValue": {
+              "employerName": [
+                "W1",
+                "W2",
+                "W3"
+              ],
+              "employeeName": [
+                "W4",
+                "W5"
+              ],
+              "payFrequency": "weekly",
+              "payDate": "D3",
+              "periodStart": "D1",
+              "periodEnd": "D2",
+              "grossPay": "N18",
+              "netPay": "N28",
+              "ytdGross": "N19",
+              "hoursWorked": "N18",
+              "hourlyRate": "N3"
+            },
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 4240
+          },
+          {
+            "part": "deductions",
+            "rawText": "{\"deductions\": [{\"amount\": \"N20\", \"kind\": \"federal_tax\"}, {\"amount\": \"N22\", \"kind\": \"social_security\"}, {\"amount\": \"N24\", \"kind\": \"medicare\"}]}",
+            "parsed": true,
+            "parsedValue": {
+              "deductions": [
+                {
+                  "amount": "N20",
+                  "kind": "federal_tax"
+                },
+                {
+                  "amount": "N22",
+                  "kind": "social_security"
+                },
+                {
+                  "amount": "N24",
+                  "kind": "medicare"
+                }
+              ]
+            },
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 2134
+          }
+        ]
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "pointers: evaluation paystub L10",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 6031,
+      "outputCheck": null,
+      "first": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 12,
+          "total": 12
+        }
+      },
+      "final": {
+        "ran": "ON_DEVICE",
+        "fields": {
+          "correct": 12,
+          "total": 12
+        },
+        "retried": false,
+        "deductionsNotRead": false,
+        "notRead": [],
+        "incomeInputsCorrect": true
+      },
+      "device": {
+        "scoredBy": "value",
+        "rawText": "{\"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"semimonthly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N18\", \"netPay\": \"N20\", \"ytdGross\": \"N19\", \"hoursWorked\": \"N4\", \"hourlyRate\": \"N5\"}",
+        "parsed": true,
+        "problems": [],
+        "passed": true,
+        "fields": [
+          {
+            "field": "employerName",
+            "gold": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "answered": [
+              "W1",
+              "W2",
+              "W3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "employeeName",
+            "gold": [
+              "W4",
+              "W5"
+            ],
+            "answered": [
+              "W4",
+              "W5"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "payFrequency",
+            "gold": [],
+            "answered": [],
+            "status": "correct"
+          },
+          {
+            "field": "payDate",
+            "gold": [
+              "D3"
+            ],
+            "answered": [
+              "D3"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodStart",
+            "gold": [
+              "D1"
+            ],
+            "answered": [
+              "D1"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "periodEnd",
+            "gold": [
+              "D2"
+            ],
+            "answered": [
+              "D2"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "grossPay",
+            "gold": [
+              "N6",
+              "N18"
+            ],
+            "answered": [
+              "N18"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "netPay",
+            "gold": [
+              "N20"
+            ],
+            "answered": [
+              "N20"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "ytdGross",
+            "gold": [
+              "N7",
+              "N19"
+            ],
+            "answered": [
+              "N19"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "hoursWorked",
+            "gold": [
+              "N4"
+            ],
+            "answered": [
+              "N4"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "hourlyRate",
+            "gold": [
+              "N5"
+            ],
+            "answered": [
+              "N5"
+            ],
+            "status": "correct"
+          },
+          {
+            "field": "deductions",
+            "gold": [
+              "N8",
+              "N10",
+              "N12",
+              "N14",
+              "N16"
+            ],
+            "answered": [
+              "N8",
+              "N10",
+              "N12",
+              "N14",
+              "N16"
+            ],
+            "status": "correct"
+          }
+        ],
+        "core": {
+          "correct": 11,
+          "total": 11
+        },
+        "deductions": "correct",
+        "deductionsNotRead": false,
+        "passes": [
+          {
+            "part": "core",
+            "rawText": "{\"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"semimonthly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N18\", \"netPay\": \"N20\", \"ytdGross\": \"N19\", \"hoursWorked\": \"N4\", \"hourlyRate\": \"N5\"}",
+            "parsed": true,
+            "parsedValue": {
+              "employerName": [
+                "W1",
+                "W2",
+                "W3"
+              ],
+              "employeeName": [
+                "W4",
+                "W5"
+              ],
+              "payFrequency": "semimonthly",
+              "payDate": "D3",
+              "periodStart": "D1",
+              "periodEnd": "D2",
+              "grossPay": "N18",
+              "netPay": "N20",
+              "ytdGross": "N19",
+              "hoursWorked": "N4",
+              "hourlyRate": "N5"
+            },
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 3475
+          },
+          {
+            "part": "deductions",
+            "rawText": "{\"deductions\": [{\"amount\": \"N8\", \"kind\": \"federal_tax\"}, {\"amount\": \"N10\", \"kind\": \"social_security\"}, {\"amount\": \"N12\", \"kind\": \"medicare\"}, {\"amount\": \"N14\", \"kind\": \"state_tax\"}, {\"amount\": \"N16\", \"kind\": \"health\"}]}",
+            "parsed": true,
+            "parsedValue": {
+              "deductions": [
+                {
+                  "amount": "N8",
+                  "kind": "federal_tax"
+                },
+                {
+                  "amount": "N10",
+                  "kind": "social_security"
+                },
+                {
+                  "amount": "N12",
+                  "kind": "medicare"
+                },
+                {
+                  "amount": "N14",
+                  "kind": "state_tax"
+                },
+                {
+                  "amount": "N16",
+                  "kind": "health"
+                }
+              ]
+            },
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": [],
+            "latencyMs": 2536
+          }
+        ]
+      },
+      "note": "document-silhouette-only"
+    },
+    {
+      "id": "explanation (en)",
+      "task": "explain.short",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 1983,
+      "outputCheck": "passed",
+      "note": "short-text"
+    },
+    {
+      "id": "explanation (es)",
+      "task": "explain.short",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 2243,
+      "outputCheck": "passed",
+      "note": "short-text"
+    },
+    {
+      "id": "How do I apply? (en)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 2754,
+      "outputCheck": "passed",
+      "note": "prepared-question"
+    },
+    {
+      "id": "What could change this result? (en)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 3209,
+      "outputCheck": "passed",
+      "note": "prepared-question"
+    },
+    {
+      "id": "¿Cómo solicito? (es)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 1774,
+      "outputCheck": "passed",
+      "note": "prepared-question"
+    },
+    {
+      "id": "¿Qué podría cambiar este resultado? (es)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 3301,
+      "outputCheck": "passed",
+      "note": "prepared-question"
+    },
+    {
+      "id": "your own result (en)",
+      "task": "explain.personal",
+      "mode": "ONLY_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 5181,
+      "outputCheck": "passed",
+      "note": "your-result-stays-on-device"
+    },
+    {
+      "id": "typed question (en)",
+      "task": "ask.freeText",
+      "mode": "ONLY_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 2821,
+      "outputCheck": "passed",
+      "note": "typed-text-may-be-personal"
+    },
+    {
+      "id": "photo of the sample (en)",
+      "task": "document.photo.read",
+      "mode": "ONLY_ON_DEVICE",
+      "ran": "ON_DEVICE",
+      "latencyMs": 7039,
+      "outputCheck": null,
+      "note": "photo-never-leaves"
+    }
+  ]
+}

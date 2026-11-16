@@ -94,6 +94,7 @@ test.describe('the on-device check', () => {
     await expect(rows.first()).toContainText('deductions not read');
     await expect(page.getByTestId('device-summary')).toContainText('Where each case was finally answered:');
     await expect(page.getByTestId('device-summary-first')).toContainText('First attempt: 14 of 14 were tried on this device.');
+    await expect(page.getByTestId('device-summary-income')).toContainText(/Yearly-income inputs all right .*: \d of 5 extraction cases\./);
     const detail = page.getByTestId('field-detail').first();
     await detail.locator('summary').click();
     await expect(detail.getByTestId('device-pass-core')).toContainText('keys ignored: netPayPay');
@@ -113,12 +114,12 @@ test.describe('the on-device check', () => {
     expect(file.suggestedFilename()).toMatch(/^device-check-\d{4}-\d{2}-\d{2}T\d{4}-[a-z]+\d+-[a-z0-9]+\.json$/);
     type Saved = {
       version: number;
-      cases: { ran: string; first?: { ran: string }; final?: { deductionsNotRead?: boolean }; device?: { core?: { correct: number; total: number }; deductions?: string; deductionsNotRead?: boolean; passes?: { part: string; extraKeys: string[]; latencyMs: number }[] } }[];
+      cases: { ran: string; first?: { ran: string }; final?: { deductionsNotRead?: boolean; incomeInputsCorrect?: boolean }; device?: { core?: { correct: number; total: number }; deductions?: string; deductionsNotRead?: boolean; passes?: { part: string; extraKeys: string[]; latencyMs: number }[] } }[];
     };
     const saved = JSON.parse(readFileSync(await file.path(), 'utf8')) as Saved;
     expect(saved.version).toBe(3);
     const sample = saved.cases[0];
-    expect(sample).toMatchObject({ ran: 'ON_DEVICE', first: { ran: 'ON_DEVICE' }, final: { deductionsNotRead: true } });
+    expect(sample).toMatchObject({ ran: 'ON_DEVICE', first: { ran: 'ON_DEVICE' }, final: { deductionsNotRead: true, incomeInputsCorrect: true } });
     expect(sample?.device).toMatchObject({ core: { correct: 11, total: 11 }, deductions: 'missing', deductionsNotRead: true });
     expect(sample?.device?.passes?.map((p) => p.part)).toEqual(['core', 'deductions']);
     expect(sample?.device?.passes?.[0]?.extraKeys).toEqual(['netPayPay']);

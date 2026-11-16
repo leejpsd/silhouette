@@ -18,6 +18,8 @@ export interface Extraction {
   readonly ranInCloudBecause?: 'no-device-model' | undefined;
   /** Read on this device without the deductions, which it could not read reliably (they feed no result). */
   readonly deductionsNotRead?: boolean | undefined;
+  /** Fields this device left out as not read (deductions, names); none feeds a result. */
+  readonly notRead?: readonly string[] | undefined;
 }
 
 export interface DocumentState {

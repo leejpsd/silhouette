@@ -8,14 +8,19 @@
 // itself rules out keys that do not exist, ids that do not exist and ids of the wrong kind.
 //
 // On the device a paystub is read in two parts (src/ai/tasks.ts): the core fields, then the
-// deductions. Each part has its own constraint ('core' or 'deductions'); 'whole' is both in one.
+// deductions. Each part has its own constraint ('core' or 'deductions'); 'whole' is both in one. A
+// third part, 'gross', asks again for gross pay and year to date only, when the core's only problems
+// are with those two.
 import type { Skeleton } from '../core/types';
 import type { PointerSchema } from '../core/skeleton';
 import type { ModelSchemaOptions } from './model-schema';
 
 type Node = Record<string, unknown>;
 
-export type DevicePart = 'whole' | 'core' | 'deductions';
+export type DevicePart = 'whole' | 'core' | 'deductions' | 'gross';
+
+/** The fields of the 'gross' part. */
+export const GROSS_PART_FIELDS: readonly string[] = ['grossPay', 'ytdGross'];
 
 /** Placeholder ids of a silhouette by kind, in order of first appearance. */
 export function placeholderIds(skeleton: Skeleton): { readonly N: string[]; readonly D: string[]; readonly W: string[] } {
@@ -30,6 +35,7 @@ export function placeholderIds(skeleton: Skeleton): { readonly N: string[]; read
 
 /** Field names of a part of a pointer schema (the list fields are the deductions part). */
 export function partFields(schema: PointerSchema, part: DevicePart): string[] {
+  if (part === 'gross') return GROSS_PART_FIELDS.filter((name) => schema.properties[name]?.['x-kind'] === 'number');
   return Object.entries(schema.properties)
     .filter(([, spec]) => part === 'whole' || (spec['x-kind'] === 'list') === (part === 'deductions'))
     .map(([name]) => name);

@@ -8,7 +8,7 @@ import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { BANDS, PACK } from '../pack';
 import { buildSteps, computeVerdicts } from '../quickcheck';
 import { preparedHousehold } from '../judges/household';
-import { RUN_FILE_KIND, browserVersion, isRunFile, runFileName, scoreFields, summarize, type CaseResult } from './run';
+import { RUN_FILE_KIND, browserVersion, incomeInputsCorrect, isRunFile, runFileName, scoreFields, summarize, type CaseResult } from './run';
 import answers from '../../../../shared/samples/answers.json';
 import sampleText from '../../../../shared/samples/paystub-en-01.txt?raw';
 
@@ -55,6 +55,8 @@ describe('the on-device check', () => {
       finalCorrect: 23,
       retriedInCloud: 1,
       deductionsNotRead: 1,
+      incomeInputsCorrect: null,
+      extractionCases: 0,
     });
   });
 
@@ -76,7 +78,20 @@ describe('the on-device check', () => {
       finalCorrect: null,
       retriedInCloud: 0,
       deductionsNotRead: 0,
+      incomeInputsCorrect: null,
+      extractionCases: 0,
     });
+  });
+
+  it('counts the extraction cases whose yearly-income inputs are all right', () => {
+    const ok = { ran: 'ON_DEVICE' as const, fields: { correct: 12, total: 12 }, retried: false };
+    const cases: CaseResult[] = [
+      { id: 'a', task: 'document.pointer.extract', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, final: { ...ok, incomeInputsCorrect: true } },
+      { id: 'b', task: 'document.pointer.extract', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1, outputCheck: null, final: { ...ok, incomeInputsCorrect: false } },
+    ];
+    expect(summarize(cases)).toMatchObject({ incomeInputsCorrect: 1, extractionCases: 2 });
+    expect(incomeInputsCorrect({ grossPay: 'correct', ytdGross: 'correct', payFrequency: 'correct', periodStart: 'correct', periodEnd: 'correct', payDate: 'absent', employeeName: 'wrong' })).toBe(true);
+    expect(incomeInputsCorrect({ grossPay: 'correct', ytdGross: 'wrong', payFrequency: 'correct', periodStart: 'correct', periodEnd: 'correct', payDate: 'correct' })).toBe(false);
   });
 
   it('names the downloaded file by date and time, browser major version and platform', () => {
@@ -93,6 +108,12 @@ describe('the on-device check', () => {
     const first = recording('device-check-2026-11-16-chrome157-macos.json');
     expect(isRunFile(first)).toBe(true);
     expect(summarize(first.cases, first.version)).toMatchObject({ onDevice: 14, firstOnDevice: 14, total: 14, fieldsCorrect: 37, fieldsTotal: 60, finalCorrect: null });
+  });
+
+  it('the version 3 recording: 13 answered on this device, 1 in the cloud after a failed core', () => {
+    const third = recording('device-check-2026-11-16T1807-chrome157-macos.json');
+    expect(isRunFile(third)).toBe(true);
+    expect(summarize(third.cases, third.version)).toMatchObject({ onDevice: 13, inCloudAfterDevice: 1, notRun: 0, total: 14, finalCorrect: 56, fieldsTotal: 60, deductionsNotRead: 1, incomeInputsCorrect: null });
   });
 
   it('the version 2 recording: 9 answered on this device, 5 in the cloud after a failed on-device attempt', () => {

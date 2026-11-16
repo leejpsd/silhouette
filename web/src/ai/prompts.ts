@@ -13,6 +13,7 @@ import readAloudV1 from '../../../shared/prompts/read-aloud.v1.md?raw';
 import photoReadV1 from '../../../shared/prompts/photo-read.v1.md?raw';
 // Device-only wording for reading a paystub in two parts on the device (web/, a candidate).
 import pointerDevicePartsV1 from './device-prompts/pointer-extract-parts.v1.md?raw';
+import pointerDevicePartsV2 from './device-prompts/pointer-extract-parts.v2.md?raw';
 
 export interface PromptTemplate {
   readonly id: string;
@@ -43,21 +44,29 @@ export interface DeviceParts {
   readonly id: string;
   readonly core: string;
   readonly deductions: string;
+  /** Gross pay and year to date only, asked again when the core's only problems are with them. */
+  readonly gross?: string | undefined;
 }
 
 /** Splits a device-parts file into its "Core part" and "Deductions part" sections. */
 export function parseDeviceParts(id: string, markdown: string): DeviceParts {
-  const section = (title: string): string => {
+  const section = (title: string): string | undefined => {
     const start = markdown.indexOf(`## ${title}`);
-    if (start === -1) throw new Error(`${id}: missing section "${title}"`);
+    if (start === -1) return undefined;
     const body = markdown.slice(start + title.length + 3);
     const end = body.search(/\n## /);
     return (end === -1 ? body : body.slice(0, end)).trim();
   };
-  return { id, core: section('Core part'), deductions: section('Deductions part') };
+  const required = (title: string): string => {
+    const text = section(title);
+    if (text === undefined) throw new Error(`${id}: missing section "${title}"`);
+    return text;
+  };
+  return { id, core: required('Core part'), deductions: required('Deductions part'), gross: section('Gross part') };
 }
 
 export const POINTER_DEVICE_PARTS_V1 = parseDeviceParts('pointer-extract-parts.v1', pointerDevicePartsV1);
+export const POINTER_DEVICE_PARTS_V2 = parseDeviceParts('pointer-extract-parts.v2', pointerDevicePartsV2);
 
 export const POINTER_EXTRACT = parsePrompt('pointer-extract.v2', pointerExtractV2);
 export const POINTER_EXTRACT_V3 = parsePrompt('pointer-extract.v3', pointerExtractV3);

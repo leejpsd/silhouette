@@ -1,4 +1,5 @@
 // The deterministic checks of a pointer answer before it is shown for confirmation, in two parts.
+// (Year to date that may be another line's, and names that run into each other: see below.)
 //
 // The core (names, dates, pay frequency, gross, net, year to date, hours, rate) decides the yearly
 // income. A core that fails its check is a failed attempt (routing.json `onDeviceFailure`), never a
@@ -72,8 +73,95 @@ function checkWarnings(v: PaystubValues, jurisdiction: string, which: ReadonlySe
   }
 }
 
-/** Problems with the core of a pointer answer (its deductions are ignored); empty: the core may be used. */
-export function corePointerProblems(schema: PointerSchema, pointers: unknown, rawMap: Raw<PlaceholderMap>, jurisdiction: string): string[] {
+// ---------- Year to date that may be another line's ----------
+//
+// A paystub's earnings table often has a year-to-date column on every earnings line and on the gross
+// line. A small model sometimes takes the Regular line's year to date for the gross one: it is above the
+// period's gross and fits the number of pay periods, so the checks above cannot see it. These rules look
+// at the real amounts this device has, and only reject: no code picks another placeholder for the person.
+
+const near = (a: number, b: number) => Math.abs(a - b) < 0.005;
+
+/** Whether `ytd` fits as the year to date for this gross pay, frequency and date (the ytd-gross and ytd-periods checks). */
+function fitsYtd(v: PaystubValues, ytd: number, jurisdiction: string): boolean {
+  if (typeof v.grossPay !== 'number' || ytd < v.grossPay) return false;
+  try {
+    const result = validatePaystubs(Raw.of([{ grossPay: v.grossPay, ytdGross: ytd, payFrequency: v.payFrequency, periodEnd: v.periodEnd, payDate: v.payDate }]), jurisdiction);
+    return !(result.checks[0] ?? []).some((c) => c.status === 'warn' && (c.id === 'ytd-gross' || c.id === 'ytd-periods'));
+  } catch (error) {
+    if (error instanceof ValidationInputError) return true;
+    throw error;
+  }
+}
+
+/** Number placeholders of the skeleton line that holds `id` (in reading order), or [] when none does. */
+function numbersOnLineOf(skeleton: string, id: string): string[] {
+  const line = skeleton.split('\n').find((l) => l.includes(`⟦${id}⟧`));
+  return line ? [...line.matchAll(/⟦(N[0-9]+)⟧/g)].map((m) => m[1] as string) : [];
+}
+
+/**
+ * Same-line rule. When the line that holds the answered gross pay holds exactly one other number
+ * placeholder that fits as year to date, an answered year to date must have that amount. Amounts are
+ * compared, not ids: a paystub that writes the same year to date twice has two right answers.
+ */
+export function sameLineYtdProblems(schema: PointerSchema, pointers: Record<string, unknown>, skeleton: Skeleton, rawMap: Raw<PlaceholderMap>, jurisdiction: string): string[] {
+  const gross = pointers['grossPay'];
+  if (typeof gross !== 'string') return [];
+  const v = values(schema, pointers, rawMap);
+  if (typeof v.grossPay !== 'number') return [];
+  const map = reveal(rawMap);
+  const amount = (id: string) => parseNumber(map[id] ?? '');
+  const candidates = numbersOnLineOf(skeleton, gross)
+    .filter((id) => id !== gross)
+    .filter((id) => {
+      const n = amount(id);
+      return n !== undefined && fitsYtd(v, n, jurisdiction);
+    });
+  // A year to date left out is not a wrong one: the review shows it as not found, to be typed.
+  if (candidates.length !== 1 || typeof v.ytdGross !== 'number') return [];
+  const expected = amount(candidates[0] as string) as number;
+  return near(v.ytdGross, expected) ? [] : ['ytdGross:not-on-gross-line'];
+}
+
+/**
+ * Larger-candidate rule. When another amount of money in the document is larger than the answered year
+ * to date and also fits as year to date for this pay period, the year to date is ambiguous. It covers
+ * layouts where the gross year to date is not on the gross line (a "Year to Date" block, a labelled
+ * "YTD Gross" line). Numbers written without cents (ids, ZIP codes) are not candidates.
+ */
+export function largerYtdProblems(schema: PointerSchema, pointers: Record<string, unknown>, skeleton: Skeleton, rawMap: Raw<PlaceholderMap>, jurisdiction: string): string[] {
+  const v = values(schema, pointers, rawMap);
+  if (typeof v.ytdGross !== 'number' || typeof v.grossPay !== 'number') return [];
+  const ytd = v.ytdGross;
+  const map = reveal(rawMap);
+  const ids = new Set([...skeleton.matchAll(/⟦(N[0-9]+)⟧/g)].map((m) => m[1] as string));
+  for (const id of ids) {
+    // Only amounts of money (written with cents): ids, ZIP codes and years are not a year to date.
+    if (!/[.,][0-9]{2}$/.test(map[id] ?? '')) continue;
+    const n = parseNumber(map[id] ?? '');
+    if (n !== undefined && n > ytd && !near(n, ytd) && fitsYtd(v, n, jurisdiction)) return ['ytdGross:ambiguous'];
+  }
+  return [];
+}
+
+/**
+ * The two names share a placeholder: one of them runs into the other (a contradiction, not a guess).
+ * The names feed no rule; a reading with this problem keeps its other values and marks the names not read.
+ */
+export function namesProblems(pointers: Record<string, unknown>): string[] {
+  const ids = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+  const employer = new Set(ids(pointers['employerName']));
+  return ids(pointers['employeeName']).some((id) => employer.has(id)) ? ['names:shared-placeholder'] : [];
+}
+
+/**
+ * Problems with the core of a pointer answer (its deductions are ignored); empty: the core may be used.
+ * With the silhouette, also the two year-to-date rules (sameLineYtdProblems, largerYtdProblems). Both
+ * raise no alarm on any of the 38 English evaluation paystubs, whichever right placeholder is answered
+ * (src/core/ytd-check.test.ts).
+ */
+export function corePointerProblems(schema: PointerSchema, pointers: unknown, rawMap: Raw<PlaceholderMap>, jurisdiction: string, skeleton?: Skeleton): string[] {
   if (!isObject(pointers)) return ['not-an-object'];
   const problems = coreFieldProblems(schema, pointers, reveal(rawMap));
   const { deductions, ...core } = pointers;
@@ -83,6 +171,10 @@ export function corePointerProblems(schema: PointerSchema, pointers: unknown, ra
   if (typeof v.grossPay === 'number' && typeof v.netPay === 'number' && v.netPay > v.grossPay) problems.push('netPay:above-gross');
   // Year to date below this period's gross is always a problem (ytd-gross), whatever else holds.
   problems.push(...checkWarnings(v, jurisdiction, CORE_CHECKS));
+  if (skeleton !== undefined) {
+    problems.push(...sameLineYtdProblems(schema, core, skeleton, rawMap, jurisdiction));
+    problems.push(...largerYtdProblems(schema, core, skeleton, rawMap, jurisdiction));
+  }
   return problems;
 }
 

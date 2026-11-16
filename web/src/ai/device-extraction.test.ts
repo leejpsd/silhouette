@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Raw } from '../core/types';
 import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile } from '../core/skeleton';
-import { corePointerProblems, deductionsProblems, pointerProblems } from '../core/pointer-check';
+import { corePointerProblems, deductionsProblems, namesProblems, pointerProblems } from '../core/pointer-check';
 import { setModelProviderForTests } from './model-port';
 import { setDeviceModelForTests } from './device-fake';
 import { POINTER_SCHEMAS, extractPointers, pointerModelParams, type PointerStage } from './tasks';
@@ -23,12 +23,13 @@ const { deductions: KEY_DEDUCTIONS, ...KEY_CORE } = KEY;
 const schema = POINTER_SCHEMAS.paystub;
 const validate = (p: Record<string, unknown>) => pointerProblems(schema, p, doc.skeleton, doc.map, 'us-ca');
 const checkParts = {
-  core: (p: Record<string, unknown>) => corePointerProblems(schema, p, doc.map, 'us-ca'),
+  core: (p: Record<string, unknown>) => corePointerProblems(schema, p, doc.map, 'us-ca', doc.skeleton),
   deductions: (p: Record<string, unknown>) => deductionsProblems(schema, p, doc.map, 'us-ca'),
+  names: namesProblems,
 };
 const json = (v: unknown) => JSON.stringify(v);
 
-type Part = 'whole' | 'core' | 'deductions';
+type Part = 'whole' | 'core' | 'deductions' | 'gross';
 interface Params {
   mode: string;
   onDeviceParams?: { promptOptions?: { responseConstraint?: { properties?: Record<string, unknown> } }; createOptions?: { initialPrompts?: { content: string }[] } };
@@ -36,6 +37,7 @@ interface Params {
 const partOf = (params: Params): Part => {
   const keys = Object.keys(params.onDeviceParams?.promptOptions?.responseConstraint?.properties ?? {});
   if (keys.length === 1 && keys[0] === 'deductions') return 'deductions';
+  if (keys.join(',') === 'grossPay,ytdGross') return 'gross';
   return keys.includes('deductions') ? 'whole' : 'core';
 };
 
@@ -55,8 +57,11 @@ function models(device: string) {
   return modes;
 }
 
-/** A device with a ready model that answers each part with the given text; the cloud answers the key. */
-function device(text: { core: string; deductions?: string }) {
+/**
+ * A device with a ready model that answers each part with the given text (the gross part repeats the
+ * core's answer unless given), taking `delayMs` per request; the cloud answers the key.
+ */
+function device(text: { core: string; deductions?: string; gross?: string }, delayMs = 0) {
   setDeviceModelForTests('available');
   const calls: string[] = [];
   const systems: string[] = [];
@@ -70,7 +75,8 @@ function device(text: { core: string; deductions?: string }) {
       const part = partOf(p);
       calls.push(`${p.mode}:${part}`);
       systems.push(p.onDeviceParams?.createOptions?.initialPrompts?.[0]?.content ?? '');
-      const answer = part === 'deductions' ? (text.deductions ?? json({ deductions: KEY_DEDUCTIONS })) : text.core;
+      if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
+      const answer = part === 'deductions' ? (text.deductions ?? json({ deductions: KEY_DEDUCTIONS })) : part === 'gross' ? (text.gross ?? text.core) : text.core;
       return { response: { text: () => answer, inferenceSource: 'on_device' } };
     },
   }));
@@ -97,6 +103,11 @@ describe('the deterministic check of a pointer answer', () => {
     void grossPay;
     expect(validate(noGross)).toContain('grossPay:missing');
     expect(validate({ ...KEY, payFrequency: 'fortnightly' })).toContain('payFrequency:not-an-option');
+  });
+
+  it('core with the silhouette: year to date must be the gross line\'s (same-line and larger-amount rules)', () => {
+    expect(checkParts.core({ ...KEY_CORE, ytdGross: 'N7' })).toEqual(['ytdGross:not-on-gross-line', 'ytdGross:ambiguous']);
+    expect(checkParts.core(KEY_CORE)).toEqual([]);
   });
 
   it('core: names only W, dates only D, every problem reported, year to date below gross always a problem', () => {
@@ -150,27 +161,63 @@ describe('reading a paystub on the device in two parts', () => {
   });
 
   it('a core of the wrong kind is a failed on-device attempt: no deductions part, one cloud retry', async () => {
-    const { calls } = device({ core: json({ ...KEY_CORE, grossPay: 'D1' }) });
+    const { calls } = device({ core: json({ ...KEY_CORE, payFrequency: 'fortnightly' }) });
     const stages: PointerStage[] = [];
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, onProgress: (s) => stages.push(s) });
     expect(calls).toEqual(['only_on_device:core', 'cloud']);
     expect(stages).toEqual(['device-reading', 'checking', 'sending-after-device']);
     expect(result).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'on-device-failed', value: KEY });
-    expect(result.deviceAttempt).toMatchObject({ parsed: true, problems: ['grossPay:bad-reference', 'grossPay:missing'] });
+    expect(result.deviceAttempt).toMatchObject({ parsed: true, problems: ['payFrequency:not-an-option'] });
+  });
+
+  it('year to date from the Regular line: the gross part is asked; its right answer keeps the reading on this device', async () => {
+    const { calls } = device({ core: json({ ...KEY_CORE, ytdGross: 'N7' }), gross: json({ grossPay: 'N12', ytdGross: 'N13' }) }, 20);
+    const stages: PointerStage[] = [];
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, onProgress: (s) => stages.push(s) });
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'only_on_device:deductions']);
+    expect(stages).toEqual(['device-reading', 'checking', 'device-gross', 'checking', 'device-deductions', 'checking']);
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY, deductionsNotRead: false });
+    const passes = result.deviceAttempt?.passes ?? [];
+    expect(passes.map((p) => [p.part, p.problems])).toEqual([
+      ['core', ['ytdGross:not-on-gross-line', 'ytdGross:ambiguous']],
+      ['gross', []],
+      ['deductions', []],
+    ]);
+    // Each part's time is recorded: the gross part is the extra cost of this path.
+    for (const p of passes) expect(p.latencyMs).toBeGreaterThanOrEqual(15);
+  });
+
+  it('year to date from the Regular line twice: one cloud retry, both parts kept for diagnosis', async () => {
+    const { calls } = device({ core: json({ ...KEY_CORE, ytdGross: 'N7' }) });
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'cloud']);
+    expect(result).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'on-device-failed', value: KEY });
+    expect(result.deviceAttempt?.passes?.map((p) => p.part)).toEqual(['core', 'gross']);
+    expect(result.deviceAttempt?.problems).toContain('ytdGross:not-on-gross-line');
+  });
+
+  it('names that share a placeholder are left out as not read; the reading stays on this device', async () => {
+    device({ core: json({ ...KEY_CORE, employeeName: ['W4', 'W5', 'W3'] }) });
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', reason: 'document-silhouette-only', notRead: ['employerName', 'employeeName'] });
+    expect(result.value).not.toHaveProperty('employerName');
+    expect(result.value).not.toHaveProperty('employeeName');
+    expect(result.value).toMatchObject({ grossPay: 'N12', ytdGross: 'N13', deductions: KEY_DEDUCTIONS });
+    expect(result.deviceAttempt?.passes?.[0]?.marked).toEqual(['names:shared-placeholder']);
   });
 
   it('year to date below gross is a failed core; kept on the device it is a plain "could not read it reliably"', async () => {
     const core = json({ ...KEY_CORE, ytdGross: KEY['netPay'] });
     const first = device({ core });
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
-    expect(first.calls).toEqual(['only_on_device:core', 'cloud']);
+    expect(first.calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'cloud']);
     expect(result.deviceAttempt?.problems).toContain('check:ytd-gross');
     const kept = device({ core });
     await expect(extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, deviceOnly: true })).rejects.toMatchObject({
       kind: 'on-device-unreliable',
       deviceAttempt: { problems: expect.arrayContaining(['check:ytd-gross']) },
     });
-    expect(kept.calls).toEqual(['only_on_device:core']);
+    expect(kept.calls).toEqual(['only_on_device:core', 'only_on_device:gross']);
   });
 
   it('extra keys are ignored and recorded; missing keys are recorded', async () => {

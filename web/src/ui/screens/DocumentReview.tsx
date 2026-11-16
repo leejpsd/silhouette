@@ -241,6 +241,13 @@ export function DocumentReviewScreen() {
     const isEditing = editing === row.name;
     const inputId = `field-${row.name}`;
     const shownValue = () => {
+      if (row.text === '' && row.status !== 'confirmed' && doc.extraction?.notRead?.includes(row.name)) {
+        return (
+          <span className="not-found" data-testid={`not-read-${row.name}`}>
+            {t('review.namesNotRead')}
+          </span>
+        );
+      }
       if (row.text === '') return <span className="not-found">{t('review.notFound')}</span>;
       if (row.kind === 'enum') return t(dynamicKey(`option.payFrequency.${row.text}`));
       // A found value is shown as the document writes it (its currency is the document's).

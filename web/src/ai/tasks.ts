@@ -97,6 +97,8 @@ export interface PointerCallOptions {
   readonly checkParts?: {
     readonly core: (pointers: Record<string, unknown>) => readonly string[];
     readonly deductions: (pointers: Record<string, unknown>) => readonly string[];
+    /** Problems with the names (they feed no rule): the names are left out and marked not read. */
+    readonly names?: ((pointers: Record<string, unknown>) => readonly string[]) | undefined;
   } | undefined;
   /** Where the reading is, for the screen that waits for it. */
   readonly onProgress?: ((stage: PointerStage) => void) | undefined;
@@ -108,13 +110,13 @@ export interface PointerCallOptions {
  * Stages of a pointer reading: reading on this device (one part or the other), checking the reading,
  * and sending the approved silhouette after the device could not read it reliably.
  */
-export type PointerStage = 'device-reading' | 'device-deductions' | 'checking' | 'sending-after-device';
+export type PointerStage = 'device-reading' | 'device-gross' | 'device-deductions' | 'checking' | 'sending-after-device';
 
 function systemText(config: PointerConfig, docType: DocType, part: DevicePart = 'whole'): string {
   const example = config.example?.[docType];
   const base = example ? `${config.prompt.system}\n\n${example}` : config.prompt.system;
-  if (part === 'whole' || !config.deviceParts) return base;
-  return `${base}\n\n${config.deviceParts[part]}`;
+  const added = part === 'whole' ? undefined : config.deviceParts?.[part];
+  return added ? `${base}\n\n${added}` : base;
 }
 
 /** Whether this document is read on the device in two parts with this configuration. */
@@ -192,6 +194,8 @@ export interface DevicePass {
   readonly value?: Record<string, unknown> | undefined;
   /** Problems found by the deterministic check of this part (or the error). */
   readonly problems: readonly string[];
+  /** Problems that only left some fields out as not read (the names), without failing the part. */
+  readonly marked?: readonly string[] | undefined;
   /** Keys the device returned that the part does not have (ignored), and keys of the part it left out. */
   readonly extraKeys: readonly string[];
   readonly missingKeys: readonly string[];
@@ -211,6 +215,8 @@ export interface DeviceAttempt {
   readonly passes?: readonly DevicePass[] | undefined;
   /** A two-part reading whose core was used but whose deductions did not hold up: they are left out. */
   readonly deductionsNotRead?: boolean | undefined;
+  /** Fields left out of a reading used on this device, marked "not read on this device". */
+  readonly notRead?: readonly string[] | undefined;
 }
 
 export interface PointerResult extends TaskResult<unknown> {
@@ -221,6 +227,8 @@ export interface PointerResult extends TaskResult<unknown> {
   readonly deviceAttempt?: DeviceAttempt | undefined;
   /** Answered on this device without the deductions, which it could not read reliably. */
   readonly deductionsNotRead?: boolean | undefined;
+  /** Fields this device could not read reliably and left out (deductions, names); none feeds a result. */
+  readonly notRead?: readonly string[] | undefined;
 }
 
 /** Errors that come from the cloud side; repeating the call in the cloud would not help. */
@@ -266,7 +274,7 @@ async function callPointerModel(
 const elapsedSince = (start: number) => Math.round(performance.now() - start);
 
 /** One part of a two-part on-device reading, never thrown: a pass that did not parse has problems. */
-async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: 'core' | 'deductions'): Promise<DevicePass> {
+async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: 'core' | 'deductions' | 'gross'): Promise<DevicePass> {
   const config = options.config ?? activePointerConfig();
   const fields = partFields(config.schemas[docType], part);
   const started = performance.now();
@@ -296,9 +304,15 @@ async function devicePass(skeleton: Skeleton, docType: DocType, language: string
   };
 }
 
+/** Core problems that concern only gross pay and year to date (the gross part may answer them again). */
+const isGrossProblem = (p: string) => /^(grossPay|ytdGross):/.test(p) || p === 'check:ytd-gross' || p === 'check:ytd-periods';
+
 /**
- * A paystub on a device with a ready model: the core fields first, checked; then the deductions,
- * checked against the core. Returns the answer, or the failed attempt when the core does not hold up.
+ * A paystub on a device with a ready model: the core fields first, checked. When the core's only
+ * problems are with gross pay or year to date, the device is asked again for those two only (the gross
+ * part) and the core is checked again with its answer. Then the deductions, checked against the core.
+ * Names that run into each other are left out and marked not read. Returns the answer, or the failed
+ * attempt when the core does not hold up.
  */
 async function readInParts(
   skeleton: Skeleton,
@@ -306,22 +320,51 @@ async function readInParts(
   language: string,
   options: PointerCallOptions,
 ): Promise<{ ok: true; value: Record<string, unknown>; attempt: DeviceAttempt } | { ok: false; attempt: DeviceAttempt }> {
+  const config = options.config ?? activePointerConfig();
+  const checkCore = (v: Record<string, unknown>) => [...(options.checkParts?.core(v) ?? [])];
   options.onProgress?.('device-reading');
   const core0 = await devicePass(skeleton, docType, language, options, 'core');
   options.onProgress?.('checking');
-  const core: DevicePass = core0.value ? { ...core0, problems: [...(options.checkParts?.core(core0.value) ?? [])] } : core0;
+  let core: DevicePass = core0.value ? { ...core0, problems: checkCore(core0.value) } : core0;
+  const passes: DevicePass[] = [core];
+  const askGross = core.value !== undefined && core.problems.length > 0 && core.problems.every(isGrossProblem) && config.deviceParts?.gross !== undefined;
+  if (askGross && core.value) {
+    options.onProgress?.('device-gross');
+    const gross0 = await devicePass(skeleton, docType, language, options, 'gross');
+    options.onProgress?.('checking');
+    // The gross part's answer replaces gross pay and year to date; the whole core is checked again.
+    const merged = gross0.value ? { ...core.value, ...gross0.value } : undefined;
+    const gross: DevicePass = merged ? { ...gross0, problems: checkCore(merged) } : gross0;
+    passes.push(gross);
+    if (merged && gross.problems.length === 0) core = { ...core, value: merged, problems: [] };
+  }
   if (!core.value || core.problems.length > 0) {
-    return { ok: false, attempt: { rawText: core.rawText, parsed: core.parsed, value: core.value, problems: core.problems, passes: [core] } };
+    const last = passes[passes.length - 1] as DevicePass;
+    return { ok: false, attempt: { rawText: core0.rawText, parsed: core0.parsed, value: core0.value, problems: last.problems, passes } };
+  }
+  // Names that share a placeholder contradict each other: both are left out, the reading is kept.
+  const marked = [...(options.checkParts?.names?.(core.value) ?? [])];
+  const notRead: string[] = [];
+  let coreValue = core.value;
+  if (marked.length > 0) {
+    const { employerName, employeeName, ...rest } = coreValue;
+    void employerName;
+    void employeeName;
+    coreValue = rest;
+    notRead.push('employerName', 'employeeName');
+    passes[0] = { ...(passes[0] as DevicePass), marked };
   }
   options.onProgress?.('device-deductions');
   const ded0 = await devicePass(skeleton, docType, language, options, 'deductions');
   options.onProgress?.('checking');
-  const merged = ded0.value ? { ...core.value, ...ded0.value } : core.value;
+  const merged = ded0.value ? { ...coreValue, ...ded0.value } : coreValue;
   const ded: DevicePass = ded0.value ? { ...ded0, problems: [...(options.checkParts?.deductions(merged) ?? [])] } : ded0;
+  passes.push(ded);
   // Deductions feed no result: when they do not hold up, the core is used and they are marked not read.
   const deductionsNotRead = !ded.value || ded.problems.length > 0;
-  const value = deductionsNotRead ? core.value : merged;
-  return { ok: true, value, attempt: { rawText: core.rawText, parsed: true, value, problems: [], passes: [core, ded], deductionsNotRead } };
+  if (deductionsNotRead) notRead.push('deductions');
+  const value = deductionsNotRead ? coreValue : merged;
+  return { ok: true, value, attempt: { rawText: core0.rawText, parsed: true, value, problems: [], passes, deductionsNotRead, notRead } };
 }
 
 /** True when a failed PREFER_ON_DEVICE call failed on the device, not in the cloud. */
@@ -366,7 +409,7 @@ export async function extractPointers(
     const read = await readInParts(skeleton, docType, language, { ...options, skeleton });
     if (read.ok) {
       recordAnsweredOnDevice('document');
-      return { value: read.value, inferenceSource: 'ON_DEVICE', reason, deviceAttempt: read.attempt, deductionsNotRead: read.attempt.deductionsNotRead };
+      return { value: read.value, inferenceSource: 'ON_DEVICE', reason, deviceAttempt: read.attempt, deductionsNotRead: read.attempt.deductionsNotRead, notRead: read.attempt.notRead };
     }
     const deviceAttempt = read.attempt;
     if (options.deviceOnly) {

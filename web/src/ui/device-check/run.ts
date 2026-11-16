@@ -8,7 +8,7 @@ import { buildReview, type ReviewField } from '../../core/review';
 import { tidyNamePointers } from '../../core/tidy';
 import { criterionReasons, verdicts } from '../../core/rules';
 import { askChip, explainProgram, extractPointers, planAskChip, planExplain, POINTER_SCHEMAS, type DeviceAttempt, type TaskResult } from '../../ai/tasks';
-import { corePointerProblems, deductionsProblems, goldPlaceholderIds, pointerProblems } from '../../core/pointer-check';
+import { corePointerProblems, deductionsProblems, goldPlaceholderIds, namesProblems, pointerProblems } from '../../core/pointer-check';
 import { askFreeText, explainPersonal, readPhoto } from '../../ai/on-device';
 import { askDeviceStatus, photoDeviceStatus, pointerDeviceStatus } from '../../ai/device-model';
 import { classifyError } from '../../ai/errors';
@@ -68,6 +68,13 @@ export interface CaseResult {
         readonly retried: boolean;
         /** Version 3: answered on this device without the deductions, which it could not read reliably. */
         readonly deductionsNotRead?: boolean | undefined;
+        /** Version 3: every field left out as not read on this device (deductions, names). */
+        readonly notRead?: readonly string[] | undefined;
+        /**
+         * Version 3: the inputs of the yearly income (gross pay, year to date, pay frequency, period
+         * start, period end, pay date) are all right, or absent where the document has none.
+         */
+        readonly incomeInputsCorrect?: boolean | undefined;
       }
     | undefined;
   /** Version 3, extraction: the first attempt (the device's, when it answered) and where it ran. */
@@ -81,6 +88,12 @@ export interface CaseResult {
 export type FieldStatus = 'correct' | 'wrong' | 'missing' | 'spurious' | 'absent';
 
 export interface DeviceDiagnosis {
+  /**
+   * How fields are scored: by value. A field is right when the placeholder answered holds the expected
+   * value, whichever placeholder that is; `gold` lists every placeholder holding it (a paystub can
+   * write the same amount twice, as an only earnings line and as the gross line).
+   */
+  readonly scoredBy?: 'value' | undefined;
   /** The model's text, as it answered: placeholder ids and field names only. */
   readonly rawText: string;
   readonly parsed: boolean;
@@ -105,6 +118,8 @@ export interface DevicePassRecord {
   /** The parsed answer of this part (placeholder ids and field names only). */
   readonly parsedValue?: Record<string, unknown> | undefined;
   readonly problems: readonly string[];
+  /** Problems that only left fields out as not read (names that share a placeholder). */
+  readonly marked?: readonly string[] | undefined;
   readonly extraKeys: readonly string[];
   readonly missingKeys: readonly string[];
   readonly latencyMs: number;
@@ -220,6 +235,14 @@ function answeredIds(value: unknown): string[] {
   return [];
 }
 
+/** The fields the yearly income is worked out from (src/core/validate.ts, annualization). */
+export const INCOME_INPUTS: readonly string[] = ['grossPay', 'ytdGross', 'payFrequency', 'periodStart', 'periodEnd', 'payDate'];
+
+/** Whether every input of the yearly income is right (or absent where the document has none). */
+export function incomeInputsCorrect(statuses: Readonly<Record<string, FieldStatus>>): boolean {
+  return INCOME_INPUTS.every((f) => statuses[f] === undefined || statuses[f] === 'correct' || statuses[f] === 'absent');
+}
+
 /** Field-by-field outcome of an answer against the gold answers (as the review screen would show it). */
 export function fieldStatuses(review: readonly ReviewField[], gold: Gold): Record<string, FieldStatus> {
   const out: Record<string, FieldStatus> = {};
@@ -260,6 +283,7 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number]): Promise<CaseRes
     const deductionsAsked = !attempt.passes || attempt.passes.some((p) => p.part === 'deductions');
     const goldHasDeductions = Array.isArray(goldDeductions) && goldDeductions.length > 0;
     return {
+      scoredBy: 'value',
       rawText: attempt.rawText.slice(0, 4000),
       parsed: attempt.parsed,
       problems: attempt.problems,
@@ -280,6 +304,7 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number]): Promise<CaseRes
         parsed: p.parsed,
         parsedValue: p.value,
         problems: p.problems,
+        marked: p.marked,
         extraKeys: p.extraKeys,
         missingKeys: p.missingKeys,
         latencyMs: p.latencyMs,
@@ -291,8 +316,9 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number]): Promise<CaseRes
     const result = await extractPointers(skeleton, 'paystub', 'en', {
       validate: (p) => pointerProblems(schema, p, skeleton, map, PACK.jurisdiction),
       checkParts: {
-        core: (p) => corePointerProblems(schema, p, map, PACK.jurisdiction),
+        core: (p) => corePointerProblems(schema, p, map, PACK.jurisdiction, skeleton),
         deductions: (p) => deductionsProblems(schema, p, map, PACK.jurisdiction),
+        names: namesProblems,
       },
     });
     const finalFields = scoreFields(reviewOf(result.value), gold);
@@ -306,7 +332,14 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number]): Promise<CaseRes
       latencyMs: elapsed(started),
       outputCheck: null,
       first: { ran: attempt ? 'ON_DEVICE' : result.inferenceSource, fields: firstFields },
-      final: { ran: result.inferenceSource, fields: finalFields, retried: result.reason === 'on-device-failed', deductionsNotRead: result.deductionsNotRead ?? false },
+      final: {
+        ran: result.inferenceSource,
+        fields: finalFields,
+        retried: result.reason === 'on-device-failed',
+        deductionsNotRead: result.deductionsNotRead ?? false,
+        notRead: result.notRead ?? [],
+        incomeInputsCorrect: incomeInputsCorrect(fieldStatuses(reviewOf(result.value), gold)),
+      },
       device: attempt ? diagnose(attempt) : undefined,
       note: result.reason,
     };
@@ -466,6 +499,9 @@ export interface Summary {
   readonly retriedInCloud: number;
   /** Extraction cases answered on this device with the deductions marked not read (version 3). */
   readonly deductionsNotRead: number;
+  /** Extraction cases whose yearly-income inputs are all right in what the person ends up with (null: not recorded). */
+  readonly incomeInputsCorrect: number | null;
+  readonly extractionCases: number;
 }
 
 /** Cloud runs are counted as cloud runs, never as on-device ones; a case counts where it was finally answered. */
@@ -488,6 +524,8 @@ export function summarize(cases: readonly CaseResult[], version: number = RUN_FI
     finalCorrect: cases.some((c) => c.final) ? cases.reduce((a, c) => a + (c.final?.fields.correct ?? 0), 0) : null,
     retriedInCloud: cases.filter((c) => c.final?.retried).length,
     deductionsNotRead: cases.filter((c) => c.final?.deductionsNotRead).length,
+    incomeInputsCorrect: cases.some((c) => c.final?.incomeInputsCorrect !== undefined) ? cases.filter((c) => c.final?.incomeInputsCorrect).length : null,
+    extractionCases: cases.filter((c) => c.task === 'document.pointer.extract').length,
   };
 }
 

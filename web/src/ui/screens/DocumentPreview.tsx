@@ -4,7 +4,7 @@ import { placeholderCounts, buildReview, type SourceSegment } from '../../core/r
 import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
-import { corePointerProblems, deductionsProblems, pointerProblems } from '../../core/pointer-check';
+import { corePointerProblems, deductionsProblems, namesProblems, pointerProblems } from '../../core/pointer-check';
 import { PACK } from '../pack';
 import type { Skeleton } from '../../core/types';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
@@ -86,8 +86,9 @@ export function DocumentPreviewScreen() {
   const checkAnswer = (pointers: Record<string, unknown>) => (doc.docType === 'paystub' ? pointerProblems(POINTER_SCHEMAS.paystub, pointers, skeleton, map, PACK.jurisdiction) : []);
   // Read on this device in two parts: a core that fails is a failed attempt; deductions that fail are left out.
   const checkParts = {
-    core: (pointers: Record<string, unknown>) => corePointerProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction),
+    core: (pointers: Record<string, unknown>) => corePointerProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction, skeleton),
     deductions: (pointers: Record<string, unknown>) => deductionsProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction),
+    names: namesProblems,
   };
   const counts = placeholderCounts(skeleton);
   const rawText = doc.text;
@@ -125,7 +126,7 @@ export function DocumentPreviewScreen() {
       const result = await extractPointers(skeleton, doc.docType, doc.language, { validate: checkAnswer, checkParts, onProgress: setStage });
       const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
-      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause, deductionsNotRead: result.deductionsNotRead } });
+      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead } });
       navigate({ name: 'doc-review' });
     } catch (error) {
       update({ error: classifyError(error) });
@@ -147,7 +148,7 @@ export function DocumentPreviewScreen() {
       const result = await extractPointers(skeleton, doc.docType, doc.language, { deviceOnly: true, validate: checkAnswer, checkParts, onProgress: setStage });
       const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
-      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, deductionsNotRead: result.deductionsNotRead } });
+      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead } });
       navigate({ name: 'doc-review' });
     } catch (error) {
       update({ error: classifyError(error) });
@@ -303,6 +304,7 @@ export function DocumentPreviewScreen() {
 /** The status line for each stage of a reading. */
 const STAGE_COPY = {
   'device-reading': 'preview.stage.deviceReading',
+  'device-gross': 'preview.stage.deviceGross',
   'device-deductions': 'preview.stage.deviceDeductions',
   checking: 'preview.stage.checking',
   'sending-after-device': 'preview.stage.sendingAfterDevice',

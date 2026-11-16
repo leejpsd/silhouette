@@ -195,6 +195,7 @@ function FieldDetail({ device }: { device: DeviceDiagnosis }) {
           {device.deductionsNotRead && ` ${t('deviceCheck.deductionsNotRead')}`}
         </p>
       )}
+      <p className="small muted">{t('deviceCheck.scoredByValue')}</p>
       <ul className="field-list">
         {device.fields.map((f) => (
           <li key={f.field} data-status={f.status}>
@@ -212,6 +213,7 @@ function FieldDetail({ device }: { device: DeviceDiagnosis }) {
             <p className="small strong">
               {t('deviceCheck.pass', { part: p.part, time: (p.latencyMs / 1000).toFixed(1) })}
               {p.problems.length > 0 && ` ${p.problems.join(', ')}`}
+              {p.marked && p.marked.length > 0 && ` · ${t('deviceCheck.marked', { problems: p.marked.join(', ') })}`}
               {p.extraKeys.length > 0 && ` · ${t('deviceCheck.extraKeys', { keys: p.extraKeys.join(' ') })}`}
             </p>
             <pre className="payload">{p.rawText}</pre>
@@ -247,6 +249,11 @@ function Results({ view }: { view: Exclude<View, null> }) {
         <p className="strong" data-testid="device-summary-final">
           {t('deviceCheck.summaryFinal', { correct: s.finalCorrect, fields: s.fieldsTotal, retried: s.retriedInCloud })}
           {file.version >= 3 && ` ${t('deviceCheck.summaryNotRead', { count: s.deductionsNotRead })}`}
+        </p>
+      )}
+      {s.incomeInputsCorrect !== null && (
+        <p className="strong" data-testid="device-summary-income">
+          {t('deviceCheck.summaryIncome', { correct: s.incomeInputsCorrect, total: s.extractionCases })}
         </p>
       )}
       <p className="small" data-testid="device-summary-first">

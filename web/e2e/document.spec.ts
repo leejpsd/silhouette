@@ -120,12 +120,13 @@ test.describe('Document silhouette and pointer extraction', () => {
     expect(requests.filter((r) => new URL(r.url()).origin !== new URL(page.url()).origin)).toEqual([]);
   });
 
-  test('on-device in two parts: a right core is used even when the deductions are not read', async ({ page, context }) => {
+  test('on-device in two parts: a right core is used even when the deductions and names are not read', async ({ page, context }) => {
     const { deductions, ...core } = fixturePointers('paystub-en-01-correct');
     void deductions;
     await fakeOnDeviceModel(context, {
       availability: 'available',
-      systemReplies: { 'answer only the fields in the schema': JSON.stringify(core), 'answer only the deductions': JSON.stringify({ deductions: [] }) },
+      // The employee name runs into the employer's last word: both names are left out as not read.
+      systemReplies: { 'answer only the fields in the schema': JSON.stringify({ ...core, employeeName: ['W4', 'W5', 'W3'] }), 'answer only the deductions': JSON.stringify({ deductions: [] }) },
       replies: {},
     });
     const requests = recordRequests(page);
@@ -137,6 +138,8 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
     await page.getByTestId('more-values').click();
     await expect(page.getByTestId('deductions-not-read')).toContainText('Deductions were not read on this device.');
+    await expect(page.getByTestId('not-read-employeeName')).toContainText('Not read on this device.');
+    await expect(page.getByTestId('not-read-employerName')).toContainText('Not read on this device.');
     await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
     await expect(page.getByTestId('annual-income')).toBeVisible();
@@ -161,9 +164,12 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-reason', 'on-device-failed');
     expect(cloud.bodies).toHaveLength(1);
     expect(cloud.bodies[0]).not.toContain('1,271.88');
-    // Only the core part was asked on the device: a failed core goes straight to the retry.
+    // The core, then gross pay and year to date asked again (the only problem was with them); no deductions part.
     const prompts = await page.evaluate(() => (window as unknown as { __fakePrompts: string[] }).__fakePrompts);
-    expect(prompts.filter((p) => p.includes('Document type: paystub'))).toHaveLength(1);
+    expect(prompts.filter((p) => p.includes('Document type: paystub'))).toHaveLength(2);
+    const constraints = await page.evaluate(() => (window as unknown as { __fakeConstraints: string[] }).__fakeConstraints);
+    expect(constraints.some((c) => c.includes('"deductions"'))).toBe(false);
+    expect(constraints.some((c) => c.includes('"required":["grossPay","ytdGross"]'))).toBe(true);
   });
 
   test('photo path (fake on-device model): ONLY_ON_DEVICE transcription, then the same silhouette', async ({ page, context }) => {
