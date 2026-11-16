@@ -1,22 +1,16 @@
-# Rule pack: United States — California (`us-ca`)
+# Rule pack: United States, California (`us-ca`)
 
-Status: **draft in review**. No `pack.json` ships until every number has been checked by the project owner against its official source.
+Status: **draft**. Seven programs: the federal Earned Income Tax Credit, the California Earned Income Tax Credit, the Young Child Tax Credit, CalFresh, California LifeLine, CARE and FERA.
 
-## Planned programs
+Every number in `pack.json` was read from the agency's own publication on 2026-11-12. `SOURCES.md` records, for each number, the URL, the period it applies to and a verbatim quote, and says which tables were read twice by different routes. `cases.json` holds 27 households worked out by hand; the reference engine reproduces all 189 expected results (`cd ../../reference && npm test`).
 
-| Program | Official source to verify against |
-|---|---|
-| Federal Earned Income Tax Credit (EITC) | irs.gov |
-| California Earned Income Tax Credit (CalEITC) | ftb.ca.gov |
-| Young Child Tax Credit (YCTC) | ftb.ca.gov |
-| CalFresh | cdss.ca.gov |
-| California LifeLine | californialifeline.com / cpuc.ca.gov |
-| CARE (energy bill discount) | cpuc.ca.gov |
+What "draft" means:
 
-## Verification procedure
+- A number counts as **confirmed** only when a person has opened the source and compared it. Until then `sources[].checkedAt` is `null` and `verifiedOn` is `null`.
+- The apps show a draft pack with a notice on every screen and a link to the official source on every program, and say "may qualify", never more.
+- CalEITC and the Young Child Tax Credit use tax year 2025 figures, because the 2026 figures are not final; the pack says so on those programs.
+- `OPEN_QUESTIONS.md` lists what the pack does not model and why.
 
-1. A draft of `pack.json` and `../../bands/us-ca.json` is prepared from the official pages, recording the exact URL and a verbatim quote for every number.
-2. The project owner opens each URL, compares every threshold, table and amount, and fills `checkedAt` / `checkedBy`.
-3. Only then is `verifiedOn` set and the pack shipped.
+Sensitive questions in this pack (asked on the device, never sent, and skippable): filing status, taxpayer id type, investment income, whether someone at home is elderly or disabled, and whether someone at home is eligible for CalFresh.
 
-Sensitive questions for this pack (asked on device, skippable): filing status, taxpayer id type, immigration-related eligibility.
+This pack is not legal or tax advice, and it is not affiliated with any agency.

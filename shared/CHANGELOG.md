@@ -1,5 +1,14 @@
 # Contract changelog
 
+## v1.16 — 2026-11-17
+
+| Change | Why |
+|---|---|
+| **The California rule pack ships as a labelled draft** (`rulepacks/us-ca/`, `bands/us-ca.json`): seven real programs (federal EITC, CalEITC, Young Child Tax Credit, CalFresh, California LifeLine, CARE, FERA) with official sources, a source audit with verbatim quotes, 27 hand-worked households (189 results reproduced by the reference engine), and program copy in English and Spanish | An app that can only show invented programs cannot show what it is for |
+| Packs may carry `status: "draft"` and `sourcesReadOn`; an app that loads a draft pack shows a notice everywhere and the official source with its date on each program (`rulepacks/SPEC.md` section 2). 5 copy keys | A pack is confirmed only when a person has compared every number with its source; until then it must say so |
+
+`zz-test` remains for the conformance fixtures only. Apps bundle `us-ca` as the pack people see.
+
 ## v1.15 — 2026-11-13
 
 From a third independent test of the Web app, with real replies.

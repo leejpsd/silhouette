@@ -1,0 +1,1710 @@
+{
+  "jurisdiction": "us-ca",
+  "version": 1,
+  "verifiedOn": null,
+  "status": "draft",
+  "sourcesReadOn": "2026-11-12",
+  "currency": "USD",
+  "numberFormat": "en-US",
+  "note": "Draft. Every number was read from the agency's own publication on 2026-11-12, with the URL and a verbatim quote recorded in SOURCES.md. A number counts as confirmed only when a person has compared it with the source; sources[].checkedAt is null until then. CalEITC and the Young Child Tax Credit use tax year 2025 figures because the 2026 figures are not final.",
+  "constants": {
+    "eitc": {
+      "earnedIncomeAmount": {
+        "0": 8680,
+        "1": 13020,
+        "2": 18290,
+        "3": 18290
+      },
+      "maxCredit": {
+        "0": 664,
+        "1": 4427,
+        "2": 7316,
+        "3": 8231
+      },
+      "thresholdPhaseout": {
+        "joint": {
+          "0": 18140,
+          "1": 31160,
+          "2": 31160,
+          "3": 31160
+        },
+        "other": {
+          "0": 10860,
+          "1": 23890,
+          "2": 23890,
+          "3": 23890
+        }
+      },
+      "completedPhaseout": {
+        "joint": {
+          "0": 26820,
+          "1": 58863,
+          "2": 65899,
+          "3": 70244
+        },
+        "other": {
+          "0": 19540,
+          "1": 51593,
+          "2": 58629,
+          "3": 62974
+        }
+      },
+      "creditPercent": {
+        "0": 0.0765,
+        "1": 0.34,
+        "2": 0.4,
+        "3": 0.45
+      },
+      "phaseoutPercent": {
+        "0": 0.0765,
+        "1": 0.1598,
+        "2": 0.2106,
+        "3": 0.2106
+      },
+      "investmentIncomeLimit": 12200
+    },
+    "caleitc": {
+      "maxIncome": 32900,
+      "investmentIncomeLimit": 4814,
+      "maxCredit": {
+        "0": 302,
+        "1": 2016,
+        "2": 3339,
+        "3": 3756
+      }
+    },
+    "yctc": {
+      "maxIncome": 32900,
+      "maxCredit": 1189,
+      "phaseoutThreshold": 27425,
+      "reductionPer100": 21.71
+    },
+    "calfresh": {
+      "grossMonthly": {
+        "1": 2660,
+        "2": 3608,
+        "3": 4554,
+        "4": 5500,
+        "5": 6448,
+        "6": 7394,
+        "7": 8340,
+        "8": 9288
+      },
+      "grossMonthlyEachAdditional": 948,
+      "netMonthly": {
+        "1": 1330,
+        "2": 1804,
+        "3": 2277,
+        "4": 2750,
+        "5": 3224,
+        "6": 3697,
+        "7": 4170,
+        "8": 4644
+      },
+      "netMonthlyEachAdditional": 474,
+      "maxAllotment": {
+        "1": 306,
+        "2": 562,
+        "3": 808,
+        "4": 1023,
+        "5": 1217,
+        "6": 1463,
+        "7": 1616,
+        "8": 1841
+      }
+    },
+    "lifeline": {
+      "annualIncomeLimit": {
+        "1": 24600,
+        "2": 33300,
+        "3": 42100,
+        "4": 50800
+      },
+      "annualIncomeEachAdditional": 8700
+    },
+    "care": {
+      "annualIncomeLimit": {
+        "1": 43280,
+        "2": 43280,
+        "3": 54640,
+        "4": 66000,
+        "5": 77360,
+        "6": 88720,
+        "7": 100080,
+        "8": 111440
+      },
+      "annualIncomeEachAdditional": 11360
+    },
+    "fera": {
+      "annualIncomeLimit": {
+        "1": 54100,
+        "2": 54100,
+        "3": 68300,
+        "4": 82500,
+        "5": 96700,
+        "6": 110900,
+        "7": 125100,
+        "8": 139300
+      },
+      "annualIncomeEachAdditional": 14200
+    }
+  },
+  "questions": [
+    {
+      "id": "householdSize",
+      "type": "int",
+      "sensitive": false,
+      "min": 1,
+      "max": 20
+    },
+    {
+      "id": "numQualifyingChildren",
+      "type": "int",
+      "sensitive": false,
+      "min": 0,
+      "max": 20
+    },
+    {
+      "id": "hasChildUnder6",
+      "type": "enum",
+      "values": [
+        "yes",
+        "no"
+      ],
+      "sensitive": false
+    },
+    {
+      "id": "hasEarnedIncome",
+      "type": "enum",
+      "values": [
+        "yes",
+        "no"
+      ],
+      "sensitive": false
+    },
+    {
+      "id": "ageGroup",
+      "type": "enum",
+      "values": [
+        "under-18",
+        "18-24",
+        "25-64",
+        "65-plus"
+      ],
+      "sensitive": false
+    },
+    {
+      "id": "housing",
+      "type": "enum",
+      "values": [
+        "renter",
+        "owner",
+        "other"
+      ],
+      "sensitive": false
+    },
+    {
+      "id": "benefits",
+      "type": "multi",
+      "values": [
+        "medi-cal",
+        "calfresh",
+        "ssi",
+        "wic",
+        "liheap",
+        "calworks-tanf",
+        "school-lunch",
+        "head-start-tribal",
+        "bia-general-assistance",
+        "section8-public-housing",
+        "veterans-pension",
+        "fdpir"
+      ],
+      "sensitive": false
+    },
+    {
+      "id": "energyProvider",
+      "type": "enum",
+      "values": [
+        "pge",
+        "sce",
+        "sdge",
+        "socalgas",
+        "other-cpuc-regulated",
+        "municipal-or-other"
+      ],
+      "sensitive": false
+    },
+    {
+      "id": "hasElderlyOrDisabledMember",
+      "type": "enum",
+      "values": [
+        "yes",
+        "no"
+      ],
+      "sensitive": true
+    },
+    {
+      "id": "filingStatus",
+      "type": "enum",
+      "values": [
+        "single",
+        "head-of-household",
+        "qualifying-surviving-spouse",
+        "married-joint",
+        "married-separate"
+      ],
+      "sensitive": true
+    },
+    {
+      "id": "taxIdType",
+      "type": "enum",
+      "values": [
+        "ssn-valid-for-work",
+        "ssn-not-valid-for-work",
+        "itin",
+        "none"
+      ],
+      "sensitive": true
+    },
+    {
+      "id": "investmentIncome",
+      "type": "int",
+      "sensitive": true,
+      "min": 0,
+      "max": 10000000
+    },
+    {
+      "id": "calfreshEligibleMember",
+      "type": "enum",
+      "values": [
+        "yes",
+        "no"
+      ],
+      "sensitive": true
+    }
+  ],
+  "programs": [
+    {
+      "id": "federal-eitc",
+      "name": "Federal Earned Income Tax Credit (EITC)",
+      "period": "Tax year 2026",
+      "caveats": [
+        "eitc-refund-rule-proposed",
+        "eitc-estimate"
+      ],
+      "criteria": [
+        {
+          "id": "has-earned-income",
+          "requires": [
+            "hasEarnedIncome"
+          ],
+          "logic": {
+            "==": [
+              {
+                "var": "hasEarnedIncome"
+              },
+              "yes"
+            ]
+          }
+        },
+        {
+          "id": "income-limit",
+          "requires": [
+            "annualIncome",
+            "numQualifyingChildren",
+            "filingStatus"
+          ],
+          "logic": {
+            "<": [
+              {
+                "var": "annualIncome"
+              },
+              {
+                "var": {
+                  "cat": [
+                    "constants.eitc.completedPhaseout.",
+                    {
+                      "if": [
+                        {
+                          "==": [
+                            {
+                              "var": "filingStatus"
+                            },
+                            "married-joint"
+                          ]
+                        },
+                        "joint",
+                        "other"
+                      ]
+                    },
+                    ".",
+                    {
+                      "min": [
+                        {
+                          "var": "numQualifyingChildren"
+                        },
+                        3
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "investment-income",
+          "requires": [
+            "investmentIncome"
+          ],
+          "logic": {
+            "<=": [
+              {
+                "var": "investmentIncome"
+              },
+              {
+                "var": "constants.eitc.investmentIncomeLimit"
+              }
+            ]
+          }
+        },
+        {
+          "id": "valid-ssn",
+          "requires": [
+            "taxIdType"
+          ],
+          "logic": {
+            "==": [
+              {
+                "var": "taxIdType"
+              },
+              "ssn-valid-for-work"
+            ]
+          }
+        },
+        {
+          "id": "filing-status",
+          "requires": [
+            "filingStatus"
+          ],
+          "logic": {
+            "!=": [
+              {
+                "var": "filingStatus"
+              },
+              "married-separate"
+            ]
+          }
+        },
+        {
+          "id": "age-if-no-child",
+          "requires": [
+            "numQualifyingChildren",
+            "ageGroup"
+          ],
+          "logic": {
+            "or": [
+              {
+                ">=": [
+                  {
+                    "var": "numQualifyingChildren"
+                  },
+                  1
+                ]
+              },
+              {
+                "==": [
+                  {
+                    "var": "ageGroup"
+                  },
+                  "25-64"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "amount": {
+        "max": [
+          0,
+          {
+            "-": [
+              {
+                "min": [
+                  {
+                    "*": [
+                      {
+                        "var": {
+                          "cat": [
+                            "constants.eitc.creditPercent.",
+                            {
+                              "min": [
+                                {
+                                  "var": "numQualifyingChildren"
+                                },
+                                3
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "var": "annualIncome"
+                      }
+                    ]
+                  },
+                  {
+                    "var": {
+                      "cat": [
+                        "constants.eitc.maxCredit.",
+                        {
+                          "min": [
+                            {
+                              "var": "numQualifyingChildren"
+                            },
+                            3
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "*": [
+                  {
+                    "var": {
+                      "cat": [
+                        "constants.eitc.phaseoutPercent.",
+                        {
+                          "min": [
+                            {
+                              "var": "numQualifyingChildren"
+                            },
+                            3
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "max": [
+                      0,
+                      {
+                        "-": [
+                          {
+                            "var": "annualIncome"
+                          },
+                          {
+                            "var": {
+                              "cat": [
+                                "constants.eitc.thresholdPhaseout.",
+                                {
+                                  "if": [
+                                    {
+                                      "==": [
+                                        {
+                                          "var": "filingStatus"
+                                        },
+                                        "married-joint"
+                                      ]
+                                    },
+                                    "joint",
+                                    "other"
+                                  ]
+                                },
+                                ".",
+                                {
+                                  "min": [
+                                    {
+                                      "var": "numQualifyingChildren"
+                                    },
+                                    3
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "docsRequired": [
+        "Social Security cards (or SSA verification letter) for you, your spouse, and each qualifying child",
+        "Birth dates for everyone on the return",
+        "Forms W-2 and 1099 and other records of income",
+        "Last year's federal and state returns, if you have them"
+      ],
+      "applyUrl": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit-eitc",
+      "sources": [
+        {
+          "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+          "title": "Rev. Proc. 2025-32, section 4.06 Earned Income Credit (tax year 2026)",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.irs.gov/pub/irs-prior/n797--2026.pdf",
+          "title": "IRS Notice 797 (Rev. December 2026)",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/who-qualifies-for-the-earned-income-tax-credit-eitc",
+          "title": "IRS - Who qualifies for the Earned Income Tax Credit (EITC)",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapA-partIV-subpartC-sec32.htm",
+          "title": "26 U.S.C. 32 (U.S. Code, 2024 edition) - credit and phaseout percentages",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/how-to-work-with-a-tax-professional-to-claim-the-earned-income-tax-credit-eitc",
+          "title": "IRS - How to work with a tax professional to claim the EITC",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.irs.gov/pub/irs-dft/f1040s3a--dft.pdf",
+          "title": "IRS draft 2026 Schedule 3-A (Form 1040), Federal Public Benefit",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.federalregister.gov/d/2026-16985",
+          "title": "Federal Register 2026-16985 - proposed rule REG-119882-25 (PRWORA and refundable credits)",
+          "checkedAt": null,
+          "checkedBy": null
+        }
+      ]
+    },
+    {
+      "id": "caleitc",
+      "name": "California Earned Income Tax Credit (CalEITC)",
+      "period": "Tax year 2025",
+      "caveats": [
+        "ca-credit-2025-figures"
+      ],
+      "criteria": [
+        {
+          "id": "has-earned-income",
+          "requires": [
+            "hasEarnedIncome"
+          ],
+          "logic": {
+            "==": [
+              {
+                "var": "hasEarnedIncome"
+              },
+              "yes"
+            ]
+          }
+        },
+        {
+          "id": "income-limit",
+          "requires": [
+            "annualIncome"
+          ],
+          "logic": {
+            "<=": [
+              {
+                "var": "annualIncome"
+              },
+              {
+                "var": "constants.caleitc.maxIncome"
+              }
+            ]
+          }
+        },
+        {
+          "id": "investment-income",
+          "requires": [
+            "investmentIncome"
+          ],
+          "logic": {
+            "<=": [
+              {
+                "var": "investmentIncome"
+              },
+              {
+                "var": "constants.caleitc.investmentIncomeLimit"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ssn-or-itin",
+          "requires": [
+            "taxIdType"
+          ],
+          "logic": {
+            "in": [
+              {
+                "var": "taxIdType"
+              },
+              [
+                "ssn-valid-for-work",
+                "ssn-not-valid-for-work",
+                "itin"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "filing-status",
+          "requires": [
+            "filingStatus"
+          ],
+          "logic": {
+            "!=": [
+              {
+                "var": "filingStatus"
+              },
+              "married-separate"
+            ]
+          }
+        },
+        {
+          "id": "age-if-no-child",
+          "requires": [
+            "numQualifyingChildren",
+            "ageGroup"
+          ],
+          "logic": {
+            "or": [
+              {
+                ">=": [
+                  {
+                    "var": "numQualifyingChildren"
+                  },
+                  1
+                ]
+              },
+              {
+                "in": [
+                  {
+                    "var": "ageGroup"
+                  },
+                  [
+                    "18-24",
+                    "25-64",
+                    "65-plus"
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "docsRequired": [
+        "SSN or ITIN for you, your spouse/RDP, and each qualifying child",
+        "Forms W-2 (California wages) and records of self-employment income",
+        "If you use an ITIN: identity documents, if FTB asks for them"
+      ],
+      "applyUrl": "https://www.ftb.ca.gov/file/personal/credits/caleitc/index.html",
+      "sources": [
+        {
+          "url": "https://www.ftb.ca.gov/file/personal/credits/caleitc/eligibility-and-credit-information.html",
+          "title": "FTB - CalEITC eligibility and credit information",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.ftb.ca.gov/forms/2025/2025-3514-booklet.html",
+          "title": "FTB - 2025 California Earned Income Tax Credit Booklet",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.ftb.ca.gov/forms/2025/2025-3514.pdf",
+          "title": "FTB - 2025 Form FTB 3514",
+          "checkedAt": null,
+          "checkedBy": null
+        }
+      ]
+    },
+    {
+      "id": "yctc",
+      "name": "California Young Child Tax Credit (YCTC)",
+      "period": "Tax year 2025",
+      "caveats": [
+        "ca-credit-2025-figures"
+      ],
+      "criteria": [
+        {
+          "id": "child-under-6",
+          "requires": [
+            "hasChildUnder6"
+          ],
+          "logic": {
+            "==": [
+              {
+                "var": "hasChildUnder6"
+              },
+              "yes"
+            ]
+          }
+        },
+        {
+          "id": "income-limit",
+          "requires": [
+            "annualIncome"
+          ],
+          "logic": {
+            "<=": [
+              {
+                "var": "annualIncome"
+              },
+              {
+                "var": "constants.yctc.maxIncome"
+              }
+            ]
+          }
+        },
+        {
+          "id": "investment-income",
+          "requires": [
+            "investmentIncome"
+          ],
+          "logic": {
+            "<=": [
+              {
+                "var": "investmentIncome"
+              },
+              {
+                "var": "constants.caleitc.investmentIncomeLimit"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ssn-or-itin",
+          "requires": [
+            "taxIdType"
+          ],
+          "logic": {
+            "in": [
+              {
+                "var": "taxIdType"
+              },
+              [
+                "ssn-valid-for-work",
+                "ssn-not-valid-for-work",
+                "itin"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "filing-status",
+          "requires": [
+            "filingStatus"
+          ],
+          "logic": {
+            "!=": [
+              {
+                "var": "filingStatus"
+              },
+              "married-separate"
+            ]
+          }
+        }
+      ],
+      "amount": {
+        "if": [
+          {
+            "<=": [
+              {
+                "floor": {
+                  "var": "annualIncome"
+                }
+              },
+              {
+                "var": "constants.yctc.phaseoutThreshold"
+              }
+            ]
+          },
+          {
+            "var": "constants.yctc.maxCredit"
+          },
+          {
+            "if": [
+              {
+                "<=": [
+                  {
+                    "-": [
+                      {
+                        "*": [
+                          {
+                            "var": "constants.yctc.maxCredit"
+                          },
+                          100
+                        ]
+                      },
+                      {
+                        "floor": {
+                          "/": [
+                            {
+                              "*": [
+                                {
+                                  "-": [
+                                    {
+                                      "floor": {
+                                        "var": "annualIncome"
+                                      }
+                                    },
+                                    {
+                                      "var": "constants.yctc.phaseoutThreshold"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "floor": {
+                                    "+": [
+                                      {
+                                        "*": [
+                                          {
+                                            "var": "constants.yctc.reductionPer100"
+                                          },
+                                          100
+                                        ]
+                                      },
+                                      0.5
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            100
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  0
+                ]
+              },
+              0,
+              {
+                "if": [
+                  {
+                    "<": [
+                      {
+                        "-": [
+                          {
+                            "*": [
+                              {
+                                "var": "constants.yctc.maxCredit"
+                              },
+                              100
+                            ]
+                          },
+                          {
+                            "floor": {
+                              "/": [
+                                {
+                                  "*": [
+                                    {
+                                      "-": [
+                                        {
+                                          "floor": {
+                                            "var": "annualIncome"
+                                          }
+                                        },
+                                        {
+                                          "var": "constants.yctc.phaseoutThreshold"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "floor": {
+                                        "+": [
+                                          {
+                                            "*": [
+                                              {
+                                                "var": "constants.yctc.reductionPer100"
+                                              },
+                                              100
+                                            ]
+                                          },
+                                          0.5
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                100
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      100
+                    ]
+                  },
+                  1,
+                  {
+                    "floor": {
+                      "/": [
+                        {
+                          "+": [
+                            {
+                              "-": [
+                                {
+                                  "*": [
+                                    {
+                                      "var": "constants.yctc.maxCredit"
+                                    },
+                                    100
+                                  ]
+                                },
+                                {
+                                  "floor": {
+                                    "/": [
+                                      {
+                                        "*": [
+                                          {
+                                            "-": [
+                                              {
+                                                "floor": {
+                                                  "var": "annualIncome"
+                                                }
+                                              },
+                                              {
+                                                "var": "constants.yctc.phaseoutThreshold"
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "floor": {
+                                              "+": [
+                                                {
+                                                  "*": [
+                                                    {
+                                                      "var": "constants.yctc.reductionPer100"
+                                                    },
+                                                    100
+                                                  ]
+                                                },
+                                                0.5
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      100
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            50
+                          ]
+                        },
+                        100
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "docsRequired": [
+        "SSN or ITIN for you, your spouse/RDP, and the child under 6",
+        "Records of earned income (or of wages and net losses if earned income is zero or less)"
+      ],
+      "applyUrl": "https://www.ftb.ca.gov/file/personal/credits/young-child-tax-credit.html",
+      "sources": [
+        {
+          "url": "https://www.ftb.ca.gov/file/personal/credits/young-child-tax-credit.html",
+          "title": "FTB - Young Child Tax Credit",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.ftb.ca.gov/forms/2025/2025-3514-booklet.html",
+          "title": "FTB - 2025 California Earned Income Tax Credit Booklet",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.ftb.ca.gov/forms/2025/2025-3514.pdf",
+          "title": "FTB - 2025 Form FTB 3514",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.ftb.ca.gov/file/personal/credits/caleitc/eligibility-and-credit-information.html",
+          "title": "FTB - CalEITC eligibility and credit information",
+          "checkedAt": null,
+          "checkedBy": null
+        }
+      ]
+    },
+    {
+      "id": "calfresh",
+      "name": "CalFresh (food benefits)",
+      "period": "October 1, 2026 - September 30, 2027",
+      "caveats": [
+        "calfresh-mixed-status",
+        "calfresh-work-student-rules"
+      ],
+      "criteria": [
+        {
+          "id": "gross-income-limit",
+          "requires": [
+            "annualIncome",
+            "householdSize",
+            "hasElderlyOrDisabledMember"
+          ],
+          "logic": {
+            "<=": [
+              {
+                "var": "annualIncome"
+              },
+              {
+                "*": [
+                  12,
+                  {
+                    "+": [
+                      {
+                        "var": {
+                          "cat": [
+                            "constants.calfresh.grossMonthly.",
+                            {
+                              "min": [
+                                {
+                                  "var": "householdSize"
+                                },
+                                8
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "*": [
+                          {
+                            "var": "constants.calfresh.grossMonthlyEachAdditional"
+                          },
+                          {
+                            "max": [
+                              0,
+                              {
+                                "-": [
+                                  {
+                                    "var": "householdSize"
+                                  },
+                                  8
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "uncertainIf": {
+            "==": [
+              {
+                "var": "hasElderlyOrDisabledMember"
+              },
+              "yes"
+            ]
+          }
+        },
+        {
+          "id": "eligible-member",
+          "requires": [
+            "calfreshEligibleMember"
+          ],
+          "logic": {
+            "==": [
+              {
+                "var": "calfreshEligibleMember"
+              },
+              "yes"
+            ]
+          }
+        }
+      ],
+      "docsRequired": [
+        "Proof of income received in the last 30 days",
+        "Identity of the person applying",
+        "Immigration documents for noncitizens who are applying for benefits",
+        "Helpful: rent and utility costs, child care costs, child support paid, and medical costs for members 60+ or disabled"
+      ],
+      "applyUrl": "https://www.benefitscal.com/",
+      "sources": [
+        {
+          "url": "https://cdss.ca.gov/portals/9/calfreshoutreach/220000_English_Income_Inserts_FFY2027.pdf",
+          "title": "CDSS - 2026-2027 CalFresh Income & Eligibility Limits",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.cdss.ca.gov/calfreshoutreach/res/pdf/CalFresh_Modified_Categorical_Eligibility_Fact_Sheet.pdf",
+          "title": "CDSS - CalFresh Modified Categorical Eligibility (MCE) Fact Sheet",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://cdss.ca.gov/Portals/9/CalFreshResourceCenter/CalFresh%20Noncitizen%20Eligibility%20FAQ_Color.pdf",
+          "title": "CDSS - CalFresh Noncitizen Eligibility FAQ",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://cdss.ca.gov/Portals/9/CalFreshOutreach/CalFreshEligibilityBasics_InteractiveSlideDeck.pdf",
+          "title": "CDSS - CalFresh Eligibility: Basics (Updated June 2026)",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://cdss.ca.gov/Portals/9/Additional-Resources/Letters-and-Notices/ACLs/2025/25-50.pdf",
+          "title": "CDSS - All County Letter 25-50 (H.R. 1 impacts on CalFresh)",
+          "checkedAt": null,
+          "checkedBy": null
+        }
+      ]
+    },
+    {
+      "id": "ca-lifeline",
+      "name": "California LifeLine (phone discount)",
+      "period": "June 1, 2026 - May 31, 2027",
+      "caveats": [
+        "lifeline-one-per-household"
+      ],
+      "criteria": [
+        {
+          "id": "income-or-program",
+          "requires": [
+            "annualIncome",
+            "householdSize",
+            "benefits"
+          ],
+          "logic": {
+            "or": [
+              {
+                "in": [
+                  "medi-cal",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "liheap",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "ssi",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "section8-public-housing",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "calfresh",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "wic",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "school-lunch",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "calworks-tanf",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "bia-general-assistance",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "head-start-tribal",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "fdpir",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "veterans-pension",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "<=": [
+                  {
+                    "var": "annualIncome"
+                  },
+                  {
+                    "+": [
+                      {
+                        "var": {
+                          "cat": [
+                            "constants.lifeline.annualIncomeLimit.",
+                            {
+                              "min": [
+                                {
+                                  "var": "householdSize"
+                                },
+                                4
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "*": [
+                          {
+                            "var": "constants.lifeline.annualIncomeEachAdditional"
+                          },
+                          {
+                            "max": [
+                              0,
+                              {
+                                "-": [
+                                  {
+                                    "var": "householdSize"
+                                  },
+                                  4
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "docsRequired": [
+        "Proof that someone in your household is in a qualifying program (ID card or notice of eligibility), or",
+        "Proof of income: front page of last year's tax return, 3 months of pay stubs in a row, or benefit statements"
+      ],
+      "applyUrl": "https://www.californialifeline.com/",
+      "sources": [
+        {
+          "url": "https://www.cpuc.ca.gov/consumer-support/financial-assistance-savings-and-discounts/lifeline/california-lifeline-eligibility",
+          "title": "CPUC - California LifeLine Eligibility",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/communications-division/documents/lifeline/notices-for-carriers/income-limits/2026-2027-california-lifeline-income-limits.pdf",
+          "title": "CPUC - Administrative Letter 11: LifeLine income limits June 1, 2026 - May 31, 2027",
+          "checkedAt": null,
+          "checkedBy": null
+        }
+      ]
+    },
+    {
+      "id": "care",
+      "name": "CARE (energy bill discount)",
+      "period": "June 1, 2026 - May 31, 2027",
+      "caveats": [
+        "energy-account-rules"
+      ],
+      "criteria": [
+        {
+          "id": "participating-utility",
+          "requires": [
+            "energyProvider"
+          ],
+          "logic": {
+            "in": [
+              {
+                "var": "energyProvider"
+              },
+              [
+                "pge",
+                "sce",
+                "sdge",
+                "socalgas",
+                "other-cpuc-regulated"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "income-or-program",
+          "requires": [
+            "annualIncome",
+            "householdSize",
+            "benefits"
+          ],
+          "logic": {
+            "or": [
+              {
+                "in": [
+                  "medi-cal",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "wic",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "school-lunch",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "calfresh",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "liheap",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "head-start-tribal",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "ssi",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "bia-general-assistance",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "in": [
+                  "calworks-tanf",
+                  {
+                    "var": "benefits"
+                  }
+                ]
+              },
+              {
+                "<=": [
+                  {
+                    "var": "annualIncome"
+                  },
+                  {
+                    "+": [
+                      {
+                        "var": {
+                          "cat": [
+                            "constants.care.annualIncomeLimit.",
+                            {
+                              "min": [
+                                {
+                                  "var": "householdSize"
+                                },
+                                8
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "*": [
+                          {
+                            "var": "constants.care.annualIncomeEachAdditional"
+                          },
+                          {
+                            "max": [
+                              0,
+                              {
+                                "-": [
+                                  {
+                                    "var": "householdSize"
+                                  },
+                                  8
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "docsRequired": [
+        "A gas or electric account in your name (or your landlord's bill if your home is sub-metered)",
+        "Proof of income or of a qualifying program, if the utility asks"
+      ],
+      "applyUrl": "https://www.cpuc.ca.gov/industries-and-topics/electrical-energy/electric-costs/care-fera-program",
+      "sources": [
+        {
+          "url": "https://www.cpuc.ca.gov/industries-and-topics/electrical-energy/electric-costs/care-fera-program",
+          "title": "CPUC - CARE/FERA Program",
+          "checkedAt": null,
+          "checkedBy": null
+        }
+      ]
+    },
+    {
+      "id": "fera",
+      "name": "FERA (electric bill discount)",
+      "period": "June 1, 2026 - May 31, 2027",
+      "caveats": [
+        "energy-account-rules"
+      ],
+      "criteria": [
+        {
+          "id": "participating-utility",
+          "requires": [
+            "energyProvider"
+          ],
+          "logic": {
+            "in": [
+              {
+                "var": "energyProvider"
+              },
+              [
+                "pge",
+                "sce",
+                "sdge"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "income-window",
+          "requires": [
+            "annualIncome",
+            "householdSize"
+          ],
+          "logic": {
+            "and": [
+              {
+                ">": [
+                  {
+                    "var": "annualIncome"
+                  },
+                  {
+                    "+": [
+                      {
+                        "var": {
+                          "cat": [
+                            "constants.care.annualIncomeLimit.",
+                            {
+                              "min": [
+                                {
+                                  "var": "householdSize"
+                                },
+                                8
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "*": [
+                          {
+                            "var": "constants.care.annualIncomeEachAdditional"
+                          },
+                          {
+                            "max": [
+                              0,
+                              {
+                                "-": [
+                                  {
+                                    "var": "householdSize"
+                                  },
+                                  8
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "<=": [
+                  {
+                    "var": "annualIncome"
+                  },
+                  {
+                    "+": [
+                      {
+                        "var": {
+                          "cat": [
+                            "constants.fera.annualIncomeLimit.",
+                            {
+                              "min": [
+                                {
+                                  "var": "householdSize"
+                                },
+                                8
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "*": [
+                          {
+                            "var": "constants.fera.annualIncomeEachAdditional"
+                          },
+                          {
+                            "max": [
+                              0,
+                              {
+                                "-": [
+                                  {
+                                    "var": "householdSize"
+                                  },
+                                  8
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "docsRequired": [
+        "An electric account in your name with PG&E, SCE, or SDG&E",
+        "Proof of income, if the utility asks"
+      ],
+      "applyUrl": "https://www.cpuc.ca.gov/industries-and-topics/electrical-energy/electric-costs/care-fera-program",
+      "sources": [
+        {
+          "url": "https://www.cpuc.ca.gov/industries-and-topics/electrical-energy/electric-costs/care-fera-program",
+          "title": "CPUC - CARE/FERA Program",
+          "checkedAt": null,
+          "checkedBy": null
+        },
+        {
+          "url": "https://www.pge.com/en/newsroom/currents/energy-savings/more-pg-e-customers-eligible-for-18--electric-discount-under-new.html",
+          "title": "PG&E newsroom - FERA open to one- and two-person households (SB 1130)",
+          "checkedAt": null,
+          "checkedBy": null
+        }
+      ]
+    }
+  ],
+  "questionOrder": [
+    "householdSize",
+    "numQualifyingChildren",
+    "hasChildUnder6",
+    "income",
+    "hasEarnedIncome",
+    "ageGroup",
+    "housing",
+    "benefits",
+    "energyProvider",
+    "hasElderlyOrDisabledMember",
+    "filingStatus",
+    "taxIdType",
+    "investmentIncome",
+    "calfreshEligibleMember"
+  ]
+}

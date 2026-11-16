@@ -1,0 +1,962 @@
+{
+ "spec": "rulepacks/SPEC.md v1.2 section 5",
+ "pack": "rulepacks/us-ca/pack.json",
+ "bands": "bands/us-ca.json",
+ "note": "DRAFT. Expected verdicts and amounts were worked out by hand from the draft constants (arithmetic in handCalc), then compared with verdicts() from shared/reference/silhouette.mjs. 'base' answers apply to every case unless the case overrides them; a key set to null in 'answers' means the question was skipped (removed before calling verdicts()). For each program: verdict, estimatedAmount when an amount is expected (absent means no amount), and dependsOn when it is non-empty.",
+ "base": {
+  "householdSize": 1,
+  "numQualifyingChildren": 0,
+  "hasChildUnder6": "no",
+  "hasEarnedIncome": "yes",
+  "ageGroup": "25-64",
+  "housing": "renter",
+  "benefits": [],
+  "energyProvider": "pge",
+  "hasElderlyOrDisabledMember": "no",
+  "filingStatus": "single",
+  "taxIdType": "ssn-valid-for-work",
+  "investmentIncome": 0,
+  "calfreshEligibleMember": "yes"
+ },
+ "cases": [
+  {
+   "id": "single-no-child-15000",
+   "answers": {
+    "annualIncome": 15000
+   },
+   "handCalc": "EITC: 15000 < 19540; amount = min(0.0765*15000=1147.50, 664) - 0.0765*(15000-10860) = 664 - 316.71 = 347.29 -> 347. CalFresh 15000 <= 12*2660=31920. LifeLine 15000 <= 24600. CARE 15000 <= 43280. FERA needs > 43280.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely",
+     "estimatedAmount": 347
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "hoh-2-children-itin-30000",
+   "answers": {
+    "annualIncome": 30000,
+    "householdSize": 3,
+    "numQualifyingChildren": 2,
+    "hasChildUnder6": "yes",
+    "filingStatus": "head-of-household",
+    "taxIdType": "itin"
+   },
+   "handCalc": "Federal needs an SSN valid for work -> unlikely. CA accepts ITIN. YCTC: L25 = 30000-27425 = 2575; L26 = 25.75; L27 = 25.75*21.71 = 559.0325 -> 559.03; L28 = 1189-559.03 = 629.97 -> 630. CalFresh hs3 12*4554=54648. LifeLine hs3 42100. CARE hs3 54640.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "likely",
+     "estimatedAmount": 630
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "hoh-3-children-60000-sdge",
+   "answers": {
+    "annualIncome": 60000,
+    "householdSize": 4,
+    "numQualifyingChildren": 3,
+    "filingStatus": "head-of-household",
+    "energyProvider": "sdge"
+   },
+   "handCalc": "EITC 3+ children other: 60000 < 62974; amount = min(0.45*60000, 8231) - 0.2106*(60000-23890=36110) = 8231 - 7604.766 = 626.23 -> 626. CalFresh hs4 12*5500 = 66000 >= 60000. LifeLine hs4 50800 < 60000. CARE hs4 66000 >= 60000. FERA requires > 66000.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely",
+     "estimatedAmount": 626
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "unlikely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "mfj-2-children-max-credit-18290",
+   "answers": {
+    "annualIncome": 18290,
+    "householdSize": 4,
+    "numQualifyingChildren": 2,
+    "filingStatus": "married-joint"
+   },
+   "handCalc": "EITC: min(0.40*18290 = 7316, 7316) = 7316; 18290 < joint threshold 31160 so no reduction -> 7316.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely",
+     "estimatedAmount": 7316
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "mfj-3-children-just-under-completed-phaseout",
+   "answers": {
+    "annualIncome": 70243,
+    "householdSize": 5,
+    "numQualifyingChildren": 3,
+    "filingStatus": "married-joint",
+    "energyProvider": "sce"
+   },
+   "handCalc": "EITC: 70243 < 70244 passes; amount = 8231 - 0.2106*(70243-31160=39083) = 8231 - 8230.88 = 0.12 -> 0 (likely with $0; see OPEN_QUESTIONS). CalFresh hs5 12*6448 = 77376 >= 70243. LifeLine hs5 50800+8700 = 59500 < 70243. CARE hs5 77360 >= 70243.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely",
+     "estimatedAmount": 0
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "unlikely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "single-at-completed-phaseout-19540",
+   "answers": {
+    "annualIncome": 19540
+   },
+   "handCalc": "EITC: no credit at or above 19540 (strict <) -> unlikely. Others as single at low income.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "childless-age-18-24",
+   "answers": {
+    "annualIncome": 12000,
+    "ageGroup": "18-24"
+   },
+   "handCalc": "Federal childless filer must be 25-64 -> unlikely. CalEITC childless filer must be 18+ -> passes.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "married-filing-separately",
+   "answers": {
+    "annualIncome": 12000,
+    "householdSize": 2,
+    "numQualifyingChildren": 1,
+    "hasChildUnder6": "yes",
+    "filingStatus": "married-separate"
+   },
+   "handCalc": "All three tax credits fail filing-status (separated-spouse exception not modelled). CalFresh hs2 43296, LifeLine hs2 33300, CARE 43280.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "investment-income-between-ca-and-federal-limits",
+   "answers": {
+    "annualIncome": 20000,
+    "householdSize": 2,
+    "numQualifyingChildren": 1,
+    "hasChildUnder6": "yes",
+    "filingStatus": "head-of-household",
+    "investmentIncome": 6000
+   },
+   "handCalc": "6000 <= 12200 (federal) but > 4814 (CA). EITC 1 child: min(0.34*20000 = 6800, 4427) = 4427; 20000 < 23890 so no reduction -> 4427. CalEITC and YCTC fail investment income.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely",
+     "estimatedAmount": 4427
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "band-D-mfj-1-child-hs2",
+   "answers": {
+    "incomeBand": "D",
+    "householdSize": 2,
+    "numQualifyingChildren": 1,
+    "filingStatus": "married-joint"
+   },
+   "handCalc": "Band D = 33000..44999. EITC 1 child joint 58863 > 44999 -> pass, likely, no amount (band only). CalEITC 32900 < 33000 -> fail. CalFresh hs2 43296, LifeLine hs2 33300, CARE hs2 43280 all inside the band -> mixed -> maybe. FERA 43281..54100 overlaps the top of the band -> maybe.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "maybe"
+    },
+    "ca-lifeline": {
+     "verdict": "maybe"
+    },
+    "care": {
+     "verdict": "maybe"
+    },
+    "fera": {
+     "verdict": "maybe"
+    }
+   }
+  },
+  {
+   "id": "band-A-single",
+   "answers": {
+    "incomeBand": "A"
+   },
+   "handCalc": "Band A = 0..14999: every income limit for size 1 is above 14999 (EITC 19540, CA 32900, CalFresh 31920, LifeLine 24600, CARE 43280).",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely"
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "band-B-all-sensitive-skipped",
+   "answers": {
+    "incomeBand": "B",
+    "filingStatus": null,
+    "taxIdType": null,
+    "investmentIncome": null,
+    "calfreshEligibleMember": null,
+    "hasElderlyOrDisabledMember": null
+   },
+   "handCalc": "Band B = 15000..24999. EITC income-limit reads filingStatus (unknown); investment, SSN and filing-status unknown -> depends. CalEITC income passes (<= 32900), rest unknown -> depends. YCTC child-under-6 fails -> unlikely, dependsOn still lists the unknown reads. CalFresh gross passes for the whole band (<= 31920), member status unknown -> depends. LifeLine 24600 inside band -> maybe. CARE passes. FERA fails.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "depends",
+     "dependsOn": [
+      "filingStatus",
+      "investmentIncome",
+      "taxIdType"
+     ]
+    },
+    "caleitc": {
+     "verdict": "depends",
+     "dependsOn": [
+      "filingStatus",
+      "investmentIncome",
+      "taxIdType"
+     ]
+    },
+    "yctc": {
+     "verdict": "unlikely",
+     "dependsOn": [
+      "filingStatus",
+      "investmentIncome",
+      "taxIdType"
+     ]
+    },
+    "calfresh": {
+     "verdict": "depends",
+     "dependsOn": [
+      "calfreshEligibleMember"
+     ]
+    },
+    "ca-lifeline": {
+     "verdict": "maybe"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "benefit-without-income",
+   "answers": {
+    "householdSize": 3,
+    "benefits": [
+     "calfresh"
+    ],
+    "energyProvider": "socalgas"
+   },
+   "handCalc": "No income or band. LifeLine and CARE pass through the CalFresh enrollment branch of 'or'. FERA: SoCalGas is not a FERA utility -> fail -> unlikely (income-window unknown, so dependsOn annualIncome). Income-based criteria elsewhere are unknown.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "depends",
+     "dependsOn": [
+      "annualIncome"
+     ]
+    },
+    "caleitc": {
+     "verdict": "depends",
+     "dependsOn": [
+      "annualIncome"
+     ]
+    },
+    "yctc": {
+     "verdict": "unlikely",
+     "dependsOn": [
+      "annualIncome"
+     ]
+    },
+    "calfresh": {
+     "verdict": "depends",
+     "dependsOn": [
+      "annualIncome"
+     ]
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely",
+     "dependsOn": [
+      "annualIncome"
+     ]
+    }
+   }
+  },
+  {
+   "id": "lifeline-only-program-section8",
+   "answers": {
+    "annualIncome": 45000,
+    "benefits": [
+     "section8-public-housing"
+    ]
+   },
+   "handCalc": "Section 8 qualifies for LifeLine but is not on the CARE list. CARE 45000 > 43280 -> unlikely. FERA 43280 < 45000 <= 54100, PG&E -> likely. CalFresh 45000 > 31920 -> unlikely.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "unlikely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "unlikely"
+    },
+    "fera": {
+     "verdict": "likely"
+    }
+   }
+  },
+  {
+   "id": "elderly-or-disabled-above-gross-limit",
+   "answers": {
+    "annualIncome": 50000,
+    "householdSize": 2,
+    "ageGroup": "65-plus",
+    "hasElderlyOrDisabledMember": "yes"
+   },
+   "handCalc": "CalFresh hs2 gross 12*3608 = 43296 < 50000 -> fail; uncertainIf true -> mixed -> maybe. CARE hs2 43280 < 50000. FERA 43280 < 50000 <= 54100 -> likely. LifeLine hs2 33300 < 50000.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "maybe"
+    },
+    "ca-lifeline": {
+     "verdict": "unlikely"
+    },
+    "care": {
+     "verdict": "unlikely"
+    },
+    "fera": {
+     "verdict": "likely"
+    }
+   }
+  },
+  {
+   "id": "elderly-question-skipped-above-gross-limit",
+   "answers": {
+    "annualIncome": 50000,
+    "householdSize": 2,
+    "ageGroup": "65-plus",
+    "hasElderlyOrDisabledMember": null
+   },
+   "handCalc": "Gross test fails; uncertainIf reads an unanswered question -> unknown -> depends on hasElderlyOrDisabledMember.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "depends",
+     "dependsOn": [
+      "hasElderlyOrDisabledMember"
+     ]
+    },
+    "ca-lifeline": {
+     "verdict": "unlikely"
+    },
+    "care": {
+     "verdict": "unlikely"
+    },
+    "fera": {
+     "verdict": "likely"
+    }
+   }
+  },
+  {
+   "id": "no-elderly-above-gross-limit",
+   "answers": {
+    "annualIncome": 50000,
+    "householdSize": 2,
+    "hasElderlyOrDisabledMember": "no"
+   },
+   "handCalc": "Gross test fails and uncertainIf is false -> CalFresh unlikely.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "unlikely"
+    },
+    "ca-lifeline": {
+     "verdict": "unlikely"
+    },
+    "care": {
+     "verdict": "unlikely"
+    },
+    "fera": {
+     "verdict": "likely"
+    }
+   }
+  },
+  {
+   "id": "calfresh-no-eligible-member",
+   "answers": {
+    "annualIncome": 20000,
+    "householdSize": 2,
+    "calfreshEligibleMember": "no"
+   },
+   "handCalc": "Income passes (<= 43296) but no member has an eligible status -> unlikely. EITC 0 children 20000 >= 19540 -> unlikely.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "unlikely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "household-of-10-130000",
+   "answers": {
+    "annualIncome": 130000,
+    "householdSize": 10,
+    "energyProvider": "sce"
+   },
+   "handCalc": "CalFresh: (9288 + 2*948) * 12 = 11184*12 = 134208 >= 130000 -> likely. LifeLine: 50800 + 6*8700 = 103000 < 130000. CARE: 111440 + 2*11360 = 134160 >= 130000 -> likely. FERA requires > 134160.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "unlikely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "household-of-9-fera-window",
+   "answers": {
+    "annualIncome": 140000,
+    "householdSize": 9,
+    "energyProvider": "sdge"
+   },
+   "handCalc": "CARE hs9 111440 + 11360 = 122800 < 140000. FERA hs9 139300 + 14200 = 153500 >= 140000 -> likely. CalFresh hs9 (9288+948)*12 = 122832 < 140000. LifeLine hs9 50800 + 5*8700 = 94300.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "unlikely"
+    },
+    "ca-lifeline": {
+     "verdict": "unlikely"
+    },
+    "care": {
+     "verdict": "unlikely"
+    },
+    "fera": {
+     "verdict": "likely"
+    }
+   }
+  },
+  {
+   "id": "municipal-utility",
+   "answers": {
+    "annualIncome": 20000,
+    "energyProvider": "municipal-or-other"
+   },
+   "handCalc": "CARE and FERA need a CPUC-regulated / FERA utility -> unlikely. EITC 0 children 20000 >= 19540 -> unlikely.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "unlikely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "yctc-at-ca-cap-32900",
+   "answers": {
+    "annualIncome": 32900,
+    "householdSize": 2,
+    "numQualifyingChildren": 1,
+    "hasChildUnder6": "yes",
+    "filingStatus": "head-of-household"
+   },
+   "handCalc": "YCTC: L25 = 5475; L26 = 54.75; L27 = 54.75*21.71 = 1188.6225 -> 1188.62; L28 = 0.38 -> between $0 and $1 -> $1. EITC 1 child: min(0.34*32900 = 11186, 4427) - 0.1598*(32900-23890 = 9010) = 4427 - 1439.798 = 2987.20 -> 2987. LifeLine hs2 33300 >= 32900.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely",
+     "estimatedAmount": 2987
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "likely",
+     "estimatedAmount": 1
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "yctc-at-threshold-27425",
+   "answers": {
+    "annualIncome": 27425,
+    "householdSize": 2,
+    "numQualifyingChildren": 1,
+    "hasChildUnder6": "yes",
+    "filingStatus": "head-of-household"
+   },
+   "handCalc": "YCTC: 27425 or less -> 1189. EITC: 4427 - 0.1598*(27425-23890 = 3535) = 4427 - 564.893 = 3862.11 -> 3862.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely",
+     "estimatedAmount": 3862
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "likely",
+     "estimatedAmount": 1189
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "yctc-rounding-27500",
+   "answers": {
+    "annualIncome": 27500,
+    "householdSize": 2,
+    "numQualifyingChildren": 1,
+    "hasChildUnder6": "yes",
+    "filingStatus": "head-of-household"
+   },
+   "handCalc": "YCTC: L25 = 75; L26 = 0.75; L27 = 16.2825 -> 16.28; L28 = 1172.72 -> 1173. EITC: 4427 - 0.1598*3610 = 4427 - 576.878 = 3850.12 -> 3850.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely",
+     "estimatedAmount": 3850
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "likely",
+     "estimatedAmount": 1173
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "no-earned-income-child-under-6",
+   "answers": {
+    "annualIncome": 8000,
+    "householdSize": 2,
+    "numQualifyingChildren": 1,
+    "hasChildUnder6": "yes",
+    "filingStatus": "head-of-household",
+    "hasEarnedIncome": "no"
+   },
+   "handCalc": "EITC and CalEITC need earned income -> unlikely. YCTC has no earned-income requirement since TY2022 -> likely; 8000 <= 27425 -> 1189.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "likely",
+     "estimatedAmount": 1189
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "negative-income-treated-as-zero",
+   "answers": {
+    "annualIncome": -5000,
+    "householdSize": 2,
+    "numQualifyingChildren": 1,
+    "hasChildUnder6": "yes",
+    "filingStatus": "head-of-household"
+   },
+   "handCalc": "Engine evaluates -5000 as 0. EITC: min(0.34*0, 4427) - 0 = 0 -> likely with $0. YCTC: 0 <= 27425 -> 1189.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "likely",
+     "estimatedAmount": 0
+    },
+    "caleitc": {
+     "verdict": "likely"
+    },
+    "yctc": {
+     "verdict": "likely",
+     "estimatedAmount": 1189
+    },
+    "calfresh": {
+     "verdict": "likely"
+    },
+    "ca-lifeline": {
+     "verdict": "likely"
+    },
+    "care": {
+     "verdict": "likely"
+    },
+    "fera": {
+     "verdict": "unlikely"
+    }
+   }
+  },
+  {
+   "id": "band-H-household-of-8",
+   "answers": {
+    "incomeBand": "H",
+    "householdSize": 8
+   },
+   "handCalc": "Band H = 100000+, sampled up to (largest constant 139300) + 1. CalFresh hs8 12*9288 = 111456, CARE hs8 111440 and FERA 111441..139300 all fall inside -> maybe. LifeLine hs8 50800 + 4*8700 = 85600 < 100000 -> unlikely.",
+   "expected": {
+    "federal-eitc": {
+     "verdict": "unlikely"
+    },
+    "caleitc": {
+     "verdict": "unlikely"
+    },
+    "yctc": {
+     "verdict": "unlikely"
+    },
+    "calfresh": {
+     "verdict": "maybe"
+    },
+    "ca-lifeline": {
+     "verdict": "unlikely"
+    },
+    "care": {
+     "verdict": "maybe"
+    },
+    "fera": {
+     "verdict": "maybe"
+    }
+   }
+  }
+ ]
+}

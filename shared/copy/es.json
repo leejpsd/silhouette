@@ -394,5 +394,10 @@
   "send.linePublic": "Nada sobre ti. Solo el programa, su información pública y la pregunta.",
   "error.quotaDailyAnswers": "Se alcanzó el límite diario gratuito del servicio en la nube. Inténtalo mañana. Tu resultado de arriba no lo necesita.",
   "start.promise": "Tus papeles se quedan en este dispositivo. Solo puede salir una silueta con los valores ocultos, y solo cuando tú lo decidas.",
-  "start.example": "Ejemplo"
+  "start.example": "Ejemplo",
+  "pack.draft.notice": "Reglas en borrador: leídas de fuentes oficiales el {date}; una persona aún no las ha confirmado todas. Consulta la fuente oficial antes de actuar.",
+  "pack.draft.short": "Reglas en borrador, leídas el {date}.",
+  "official.readOn": "Leído de esta fuente el {date}",
+  "official.confirmedOn": "Confirmado con esta fuente el {date}",
+  "official.source": "Fuente oficial"
 }

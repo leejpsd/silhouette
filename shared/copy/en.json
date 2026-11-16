@@ -394,5 +394,10 @@
   "send.linePublic": "Nothing about you. Only the program, its public information and the question.",
   "error.quotaDailyAnswers": "The cloud service's free daily limit has been reached. Try again tomorrow. Your result above does not need it.",
   "start.promise": "Your paperwork stays on this device. Only a silhouette with the values hidden can leave, and only when you say so.",
-  "start.example": "Example"
+  "start.example": "Example",
+  "pack.draft.notice": "Draft rules: read from official sources on {date}, not yet all confirmed by a person. Check the official source before you act.",
+  "pack.draft.short": "Draft rules, read {date}.",
+  "official.readOn": "Read from this source on {date}",
+  "official.confirmedOn": "Confirmed against this source on {date}",
+  "official.source": "Official source"
 }

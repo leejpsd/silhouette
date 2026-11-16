@@ -394,5 +394,10 @@
   "send.linePublic": "나에 대한 정보는 없습니다. 제도, 공개 정보, 질문뿐입니다.",
   "error.quotaDailyAnswers": "클라우드 서비스의 하루 무료 한도에 도달했습니다. 내일 다시 시도해 주세요. 위의 결과에는 필요하지 않습니다.",
   "start.promise": "서류는 이 기기에 남습니다. 값이 가려진 실루엣만, 내가 허락할 때만 기기 밖으로 나갑니다.",
-  "start.example": "예시"
+  "start.example": "예시",
+  "pack.draft.notice": "초안 규칙: {date}에 공식 출처에서 읽었으며, 아직 사람이 모두 확인하지는 않았습니다. 행동하기 전에 공식 출처를 확인하세요.",
+  "pack.draft.short": "초안 규칙, {date}에 읽음.",
+  "official.readOn": "{date}에 이 출처에서 읽음",
+  "official.confirmedOn": "{date}에 이 출처와 대조해 확인",
+  "official.source": "공식 출처"
 }

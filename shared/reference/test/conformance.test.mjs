@@ -105,3 +105,31 @@ test('a definite criterion state from the silhouette agrees with the state from 
   }
   assert.ok(compared > 20, `only ${compared} states compared`);
 });
+
+test('the California draft pack passes the linter and reproduces its hand-worked cases', async () => {
+  const { lintPack } = await import('../lint.mjs');
+  const pack = readJson('../rulepacks/us-ca/pack.json');
+  const bands = readJson('../bands/us-ca.json');
+  assert.deepEqual(lintPack(pack, bands), []);
+  const file = readJson('../rulepacks/us-ca/cases.json');
+  let checked = 0;
+  for (const k of file.cases) {
+    const out = s.verdicts(pack, bands, { ...(file.base ?? {}), ...k.answers });
+    for (const [programId, want] of Object.entries(k.expected)) {
+      const got = out.find((v) => v.programId === programId);
+      assert.equal(got.verdict, want.verdict, `${k.id} ${programId}`);
+      if (want.estimatedAmount !== undefined) assert.equal(got.estimatedAmount, want.estimatedAmount, `${k.id} ${programId} amount`);
+      checked++;
+    }
+  }
+  assert.equal(checked, 189);
+  for (const locale of ['en', 'es', 'ko']) {
+    const copy = readJson(`../rulepacks/us-ca/copy/${locale}.json`);
+    for (const program of pack.programs) {
+      for (const field of ['name', 'summary', 'apply', 'documents', 'office']) {
+        assert.ok(typeof copy[`program.${program.id}.${field}`] === 'string', `${locale} program.${program.id}.${field}`);
+      }
+      assert.ok(program.sources.length > 0 && typeof program.applyUrl === 'string', program.id);
+    }
+  }
+});

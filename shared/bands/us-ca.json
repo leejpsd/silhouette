@@ -1,0 +1,70 @@
+{
+  "jurisdiction": "us-ca",
+  "version": 1,
+  "note": "Draft. Band edges are round numbers chosen for the quick-check question and for privacy; they are not program thresholds. Rationale in rulepacks/us-ca/SOURCES.md, section \"Generalization bands\".",
+  "annualIncome": [
+    {
+      "id": "A",
+      "min": 0,
+      "max": 14999
+    },
+    {
+      "id": "B",
+      "min": 15000,
+      "max": 24999
+    },
+    {
+      "id": "C",
+      "min": 25000,
+      "max": 32999
+    },
+    {
+      "id": "D",
+      "min": 33000,
+      "max": 44999
+    },
+    {
+      "id": "E",
+      "min": 45000,
+      "max": 59999
+    },
+    {
+      "id": "F",
+      "min": 60000,
+      "max": 74999
+    },
+    {
+      "id": "G",
+      "min": 75000,
+      "max": 99999
+    },
+    {
+      "id": "H",
+      "min": 100000,
+      "max": null
+    }
+  ],
+  "householdSizeCap": 6,
+  "childAgeBands": [
+    {
+      "id": "0-5",
+      "min": 0,
+      "max": 5
+    },
+    {
+      "id": "6-13",
+      "min": 6,
+      "max": 13
+    },
+    {
+      "id": "14-18",
+      "min": 14,
+      "max": 18
+    },
+    {
+      "id": "19-23",
+      "min": 19,
+      "max": 23
+    }
+  ]
+}

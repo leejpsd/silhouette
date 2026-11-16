@@ -13,7 +13,7 @@ Platform apps treat this folder as **read-only**. A change here is a contract ch
 | `validation/SPEC.md` | Checks on confirmed paystub values and how they become an exact annual income |
 | `rulepacks/SPEC.md` | Rule pack format and the verdict algorithm |
 | `rulepacks/zz-test/` | Synthetic rule pack used only for conformance tests |
-| `rulepacks/us-ca/` | Place for the California rule pack. It is in preparation and is published here only after every number has been checked by a person against its official source (see its README) |
+| `rulepacks/us-ca/` | California rule pack, **draft**: seven real programs read from official sources, with a source audit and hand-worked cases. Numbers are confirmed one by one by a person (see its README) |
 | `rulepacks/kr/` | Reserved for a second jurisdiction; not started |
 | `bands/` | Generalization bands per jurisdiction |
 | `prompts/` | Versioned prompts |
@@ -41,4 +41,4 @@ npm run generate    # rewrites fixtures from the cases in cases.mjs
 
 ## Not yet specified (next contract version)
 
-- Real rule packs for `us-ca` and `kr` (awaiting human verification of every number).
+- Confirmation by a person of every number in `us-ca` (the pack ships as a labelled draft until then).
