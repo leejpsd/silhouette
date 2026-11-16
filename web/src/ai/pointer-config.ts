@@ -7,7 +7,7 @@
 import paystubV2 from '../../../shared/schemas/pointer.paystub.json';
 import leaseV2 from '../../../shared/schemas/pointer.lease.json';
 import type { PointerSchema } from '../core/skeleton';
-import { POINTER_DEVICE_PARTS_V2, POINTER_EXTRACT, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, type DeviceParts, type PromptTemplate } from './prompts';
+import { POINTER_DEVICE_PARTS_V3, POINTER_EXTRACT, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, type DeviceParts, type PromptTemplate } from './prompts';
 import type { ModelSchemaOptions } from './model-schema';
 
 export type DocType = 'paystub' | 'lease';
@@ -78,9 +78,9 @@ export const POINTER_V3: PointerConfig = { ...POINTER_V2, id: 'v3', prompt: POIN
 /**
  * shared/prompts/pointer-extract.v4.md: v3 plus "hours worked and hourly rate are those of the
  * Regular (base pay) line". Same schemas and settings. On the device a paystub is read in two
- * parts with src/ai/device-prompts/pointer-extract-parts.v2.md added (the cloud call is unchanged).
+ * parts with src/ai/device-prompts/pointer-extract-parts.v3.md added (the cloud call is unchanged).
  */
-export const POINTER_V4: PointerConfig = { ...POINTER_V2, id: 'v4', prompt: POINTER_EXTRACT_V4, deviceParts: POINTER_DEVICE_PARTS_V2 };
+export const POINTER_V4: PointerConfig = { ...POINTER_V2, id: 'v4', prompt: POINTER_EXTRACT_V4, deviceParts: POINTER_DEVICE_PARTS_V3 };
 
 /** Bundled prompt versions, by the number in shared/prompts/pointer-extract.v{n}.md. */
 export const POINTER_CONFIGS: ReadonlyMap<number, PointerConfig> = new Map([

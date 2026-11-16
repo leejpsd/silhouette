@@ -94,7 +94,8 @@ test.describe('the on-device check', () => {
     await expect(rows.first()).toContainText('deductions not read');
     await expect(page.getByTestId('device-summary')).toContainText('Where each case was finally answered:');
     await expect(page.getByTestId('device-summary-first')).toContainText('First attempt: 14 of 14 were tried on this device.');
-    await expect(page.getByTestId('device-summary-income')).toContainText(/Yearly-income inputs all right .*: \d of 5 extraction cases\./);
+    await expect(page.getByTestId('device-summary-income')).toContainText(/over 5 readings: all right in \d; some not found \(left empty, none wrong\) in \d; some wrong in \d\./);
+    await expect(page.getByTestId('device-summary-wrong')).toContainText(/Readings in which any value reached the person wrong: \d of 5\./);
     const detail = page.getByTestId('field-detail').first();
     await detail.locator('summary').click();
     await expect(detail.getByTestId('device-pass-core')).toContainText('keys ignored: netPayPay');
@@ -121,10 +122,30 @@ test.describe('the on-device check', () => {
     const sample = saved.cases[0];
     expect(sample).toMatchObject({ ran: 'ON_DEVICE', first: { ran: 'ON_DEVICE' }, final: { deductionsNotRead: true, incomeInputsCorrect: true } });
     expect(sample?.device).toMatchObject({ core: { correct: 11, total: 11 }, deductions: 'missing', deductionsNotRead: true });
-    expect(sample?.device?.passes?.map((p) => p.part)).toEqual(['core', 'deductions']);
+    // The empty list did not add up: asked once more, then left out.
+    expect(sample?.device?.passes?.map((p) => p.part)).toEqual(['core', 'deductions', 'deductions-again']);
     expect(sample?.device?.passes?.[0]?.extraKeys).toEqual(['netPayPay']);
     // Placeholder ids only, never document values.
     expect(JSON.stringify(saved)).not.toContain('1,271.88');
+  });
+
+  test('can run the extraction cases three times; each reading is recorded with its repetition', async ({ page, context }) => {
+    const correct = fixturePointers('paystub-en-01-correct') as Record<string, unknown>;
+    await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Document type: paystub': JSON.stringify(correct) } });
+    await fakeAnswerModels(page, { text: (p) => (p.includes('Document type: paystub') ? JSON.stringify(correct) : 'A short answer about the program.') });
+    await page.goto('/#/device-check');
+    await page.getByTestId('device-check-repeat').getByRole('checkbox').check();
+    await page.getByTestId('run-device-check').click();
+    await expect(page.getByTestId('device-check-status')).toHaveText('Finished.', { timeout: 60_000 });
+    await expect(page.locator('.device-table tbody tr')).toHaveCount(24);
+    await expect(page.getByTestId('device-summary-repetitions')).toContainText('Each extraction case was run 3 times');
+    await expect(page.getByTestId('device-summary-income')).toContainText('over 15 readings');
+    await expect(page.locator('.device-table tbody tr').nth(5)).toContainText('run 2 of 3');
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download results' }).click();
+    const saved = JSON.parse(readFileSync(await (await download).path(), 'utf8')) as { repetitions: number; cases: { id: string; repetition?: number }[] };
+    expect(saved.repetitions).toBe(3);
+    expect(saved.cases.filter((c) => c.id === 'pointers: bundled sample').map((c) => c.repetition)).toEqual([1, 2, 3]);
   });
 
   test('the first recorded run (version 1) still opens and replays', async ({ page, context }) => {

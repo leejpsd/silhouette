@@ -4,7 +4,7 @@ import { placeholderCounts, buildReview, type SourceSegment } from '../../core/r
 import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
-import { corePointerProblems, deductionsProblems, namesProblems, pointerProblems } from '../../core/pointer-check';
+import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../../core/pointer-check';
 import { PACK } from '../pack';
 import type { Skeleton } from '../../core/types';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
@@ -88,7 +88,8 @@ export function DocumentPreviewScreen() {
   const checkParts = {
     core: (pointers: Record<string, unknown>) => corePointerProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction, skeleton),
     deductions: (pointers: Record<string, unknown>) => deductionsProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction),
-    names: namesProblems,
+    notRead: notReadFields,
+    ytdMissing: (pointers: Record<string, unknown>) => ytdMissingWithCandidate(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map, PACK.jurisdiction),
   };
   const counts = placeholderCounts(skeleton);
   const rawText = doc.text;

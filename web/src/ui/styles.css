@@ -2955,6 +2955,14 @@ main h2.source-title {
     radial-gradient(farthest-side at 100% 50%, var(--line), transparent) right / var(--space-xs) 100% no-repeat scroll;
 }
 
+.check-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: var(--space-sm) 0;
+  cursor: pointer;
+}
+
 .device-table {
   width: 100%;
   border-collapse: collapse;

@@ -97,8 +97,13 @@ export interface PointerCallOptions {
   readonly checkParts?: {
     readonly core: (pointers: Record<string, unknown>) => readonly string[];
     readonly deductions: (pointers: Record<string, unknown>) => readonly string[];
-    /** Problems with the names (they feed no rule): the names are left out and marked not read. */
-    readonly names?: ((pointers: Record<string, unknown>) => readonly string[]) | undefined;
+    /**
+     * Contradictions in fields that feed no rule (names sharing a placeholder; hours or rate on an
+     * amount's placeholder): those fields are left out and marked not read; the reading is kept.
+     */
+    readonly notRead?: ((pointers: Record<string, unknown>) => { readonly problems: readonly string[]; readonly fields: readonly string[] }) | undefined;
+    /** Year to date left out although the document has one place for it: the gross part is asked. */
+    readonly ytdMissing?: ((pointers: Record<string, unknown>) => boolean) | undefined;
   } | undefined;
   /** Where the reading is, for the screen that waits for it. */
   readonly onProgress?: ((stage: PointerStage) => void) | undefined;
@@ -115,7 +120,9 @@ export type PointerStage = 'device-reading' | 'device-gross' | 'device-deduction
 function systemText(config: PointerConfig, docType: DocType, part: DevicePart = 'whole'): string {
   const example = config.example?.[docType];
   const base = example ? `${config.prompt.system}\n\n${example}` : config.prompt.system;
-  const added = part === 'whole' ? undefined : config.deviceParts?.[part];
+  const parts = config.deviceParts;
+  const added =
+    part === 'whole' ? undefined : part === 'deductions-again' ? (parts?.deductionsAgain ? `${parts.deductions}\n${parts.deductionsAgain}` : parts?.deductions) : parts?.[part];
   return added ? `${base}\n\n${added}` : base;
 }
 
@@ -194,7 +201,7 @@ export interface DevicePass {
   readonly value?: Record<string, unknown> | undefined;
   /** Problems found by the deterministic check of this part (or the error). */
   readonly problems: readonly string[];
-  /** Problems that only left some fields out as not read (the names), without failing the part. */
+  /** Problems that only left some fields out as not read (names, hours, rate), without failing the part. */
   readonly marked?: readonly string[] | undefined;
   /** Keys the device returned that the part does not have (ignored), and keys of the part it left out. */
   readonly extraKeys: readonly string[];
@@ -274,7 +281,7 @@ async function callPointerModel(
 const elapsedSince = (start: number) => Math.round(performance.now() - start);
 
 /** One part of a two-part on-device reading, never thrown: a pass that did not parse has problems. */
-async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: 'core' | 'deductions' | 'gross'): Promise<DevicePass> {
+async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: Exclude<DevicePart, 'whole'>): Promise<DevicePass> {
   const config = options.config ?? activePointerConfig();
   const fields = partFields(config.schemas[docType], part);
   const started = performance.now();
@@ -308,11 +315,16 @@ async function devicePass(skeleton: Skeleton, docType: DocType, language: string
 const isGrossProblem = (p: string) => /^(grossPay|ytdGross):/.test(p) || p === 'check:ytd-gross' || p === 'check:ytd-periods';
 
 /**
- * A paystub on a device with a ready model: the core fields first, checked. When the core's only
- * problems are with gross pay or year to date, the device is asked again for those two only (the gross
- * part) and the core is checked again with its answer. Then the deductions, checked against the core.
- * Names that run into each other are left out and marked not read. Returns the answer, or the failed
- * attempt when the core does not hold up.
+ * A paystub on a device with a ready model, read in parts, every answer checked by deterministic code:
+ * 1. the core fields. When the core's only problems are with gross pay or year to date, or when it left
+ *    year to date out although the document has one place for it, the device is asked again for those
+ *    two only (the gross part); its answer is used only if the whole core then passes. A year to date
+ *    still missing stays "not found": missing is not a failure, and code never fills it in;
+ * 2. contradictions in fields that feed no rule (names sharing a placeholder; hours or rate on an
+ *    amount's placeholder) leave those fields out, marked not read;
+ * 3. the deductions, checked against the core. When they do not add up, they are asked once more with
+ *    one value-free sentence; if they still fail, they are left out, marked not read.
+ * Returns the answer, or the failed attempt when the core does not hold up.
  */
 async function readInParts(
   skeleton: Skeleton,
@@ -327,43 +339,49 @@ async function readInParts(
   options.onProgress?.('checking');
   let core: DevicePass = core0.value ? { ...core0, problems: checkCore(core0.value) } : core0;
   const passes: DevicePass[] = [core];
-  const askGross = core.value !== undefined && core.problems.length > 0 && core.problems.every(isGrossProblem) && config.deviceParts?.gross !== undefined;
-  if (askGross && core.value) {
+  const canAskGross = config.deviceParts?.gross !== undefined;
+  const grossFailed = core.value !== undefined && core.problems.length > 0 && core.problems.every(isGrossProblem);
+  const ytdMissing = core.value !== undefined && core.problems.length === 0 && (options.checkParts?.ytdMissing?.(core.value) ?? false);
+  if (canAskGross && core.value && (grossFailed || ytdMissing)) {
     options.onProgress?.('device-gross');
     const gross0 = await devicePass(skeleton, docType, language, options, 'gross');
     options.onProgress?.('checking');
     // The gross part's answer replaces gross pay and year to date; the whole core is checked again.
     const merged = gross0.value ? { ...core.value, ...gross0.value } : undefined;
-    const gross: DevicePass = merged ? { ...gross0, problems: checkCore(merged) } : gross0;
+    const answered = merged !== undefined && merged['ytdGross'] !== undefined;
+    const problems = merged ? checkCore(merged) : gross0.problems;
+    const gross: DevicePass = { ...gross0, problems: ytdMissing && !answered && problems.length === 0 ? ['ytdGross:still-missing'] : problems };
     passes.push(gross);
-    if (merged && gross.problems.length === 0) core = { ...core, value: merged, problems: [] };
+    if (merged && problems.length === 0 && (grossFailed || answered)) core = { ...core, value: merged, problems: [] };
   }
   if (!core.value || core.problems.length > 0) {
     const last = passes[passes.length - 1] as DevicePass;
     return { ok: false, attempt: { rawText: core0.rawText, parsed: core0.parsed, value: core0.value, problems: last.problems, passes } };
   }
-  // Names that share a placeholder contradict each other: both are left out, the reading is kept.
-  const marked = [...(options.checkParts?.names?.(core.value) ?? [])];
-  const notRead: string[] = [];
-  let coreValue = core.value;
-  if (marked.length > 0) {
-    const { employerName, employeeName, ...rest } = coreValue;
-    void employerName;
-    void employeeName;
-    coreValue = rest;
-    notRead.push('employerName', 'employeeName');
-    passes[0] = { ...(passes[0] as DevicePass), marked };
+  // Contradictions in fields that feed no rule: those fields are left out, the reading is kept.
+  const contradictions = options.checkParts?.notRead?.(core.value) ?? { problems: [], fields: [] };
+  const notRead: string[] = [...contradictions.fields];
+  const coreValue = Object.fromEntries(Object.entries(core.value).filter(([k]) => !notRead.includes(k)));
+  if (contradictions.problems.length > 0) passes[0] = { ...(passes[0] as DevicePass), marked: [...contradictions.problems] };
+
+  const readDeductions = async (part: 'deductions' | 'deductions-again') => {
+    options.onProgress?.('device-deductions');
+    const pass = await devicePass(skeleton, docType, language, options, part);
+    options.onProgress?.('checking');
+    const merged = pass.value ? { ...coreValue, ...pass.value } : coreValue;
+    const checked: DevicePass = pass.value ? { ...pass, problems: [...(options.checkParts?.deductions(merged) ?? [])] } : pass;
+    passes.push(checked);
+    return { pass: checked, merged };
+  };
+  let ded = await readDeductions('deductions');
+  // A list that does not add up is asked once more, saying so (no values); then it is left out.
+  if (ded.pass.value && ded.pass.problems.includes('check:net-sum') && config.deviceParts?.deductionsAgain !== undefined) {
+    ded = await readDeductions('deductions-again');
   }
-  options.onProgress?.('device-deductions');
-  const ded0 = await devicePass(skeleton, docType, language, options, 'deductions');
-  options.onProgress?.('checking');
-  const merged = ded0.value ? { ...coreValue, ...ded0.value } : coreValue;
-  const ded: DevicePass = ded0.value ? { ...ded0, problems: [...(options.checkParts?.deductions(merged) ?? [])] } : ded0;
-  passes.push(ded);
   // Deductions feed no result: when they do not hold up, the core is used and they are marked not read.
-  const deductionsNotRead = !ded.value || ded.problems.length > 0;
+  const deductionsNotRead = !ded.pass.value || ded.pass.problems.length > 0;
   if (deductionsNotRead) notRead.push('deductions');
-  const value = deductionsNotRead ? coreValue : merged;
+  const value = deductionsNotRead ? coreValue : ded.merged;
   return { ok: true, value, attempt: { rawText: core0.rawText, parsed: true, value, problems: [], passes, deductionsNotRead, notRead } };
 }
 

@@ -8,7 +8,7 @@ import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { BANDS, PACK } from '../pack';
 import { buildSteps, computeVerdicts } from '../quickcheck';
 import { preparedHousehold } from '../judges/household';
-import { RUN_FILE_KIND, browserVersion, incomeInputsCorrect, isRunFile, runFileName, scoreFields, summarize, type CaseResult } from './run';
+import { CASES, RUN_FILE_KIND, browserVersion, casesFor, incomeInputs, incomeInputsCorrect, isRunFile, wrongFields, runFileName, scoreFields, summarize, type CaseResult } from './run';
 import answers from '../../../../shared/samples/answers.json';
 import sampleText from '../../../../shared/samples/paystub-en-01.txt?raw';
 
@@ -57,6 +57,8 @@ describe('the on-device check', () => {
       deductionsNotRead: 1,
       incomeInputsCorrect: null,
       extractionCases: 0,
+      income: null,
+      wrongReachedPerson: null,
     });
   });
 
@@ -80,6 +82,8 @@ describe('the on-device check', () => {
       deductionsNotRead: 0,
       incomeInputsCorrect: null,
       extractionCases: 0,
+      income: null,
+      wrongReachedPerson: null,
     });
   });
 
@@ -92,6 +96,26 @@ describe('the on-device check', () => {
     expect(summarize(cases)).toMatchObject({ incomeInputsCorrect: 1, extractionCases: 2 });
     expect(incomeInputsCorrect({ grossPay: 'correct', ytdGross: 'correct', payFrequency: 'correct', periodStart: 'correct', periodEnd: 'correct', payDate: 'absent', employeeName: 'wrong' })).toBe(true);
     expect(incomeInputsCorrect({ grossPay: 'correct', ytdGross: 'wrong', payFrequency: 'correct', periodStart: 'correct', periodEnd: 'correct', payDate: 'correct' })).toBe(false);
+  });
+
+  it('splits the yearly-income inputs into right, not found and wrong, and counts wrong values that reached the person', () => {
+    const statuses = { grossPay: 'correct', ytdGross: 'missing', payFrequency: 'correct', periodStart: 'correct', periodEnd: 'absent', payDate: 'correct', hoursWorked: 'wrong', employerName: 'spurious' } as const;
+    expect(incomeInputs(statuses)).toEqual({ right: ['grossPay', 'payFrequency', 'periodStart', 'periodEnd', 'payDate'], notFound: ['ytdGross'], wrong: [] });
+    expect(wrongFields(statuses)).toEqual(['hoursWorked', 'employerName']);
+    const final = (inputs: { right: string[]; notFound: string[]; wrong: string[] }, wrong: string[]) => ({ ran: 'ON_DEVICE' as const, fields: { correct: 1, total: 1 }, retried: false, incomeInputs: inputs, wrongFields: wrong });
+    const x = { task: 'document.pointer.extract', mode: 'PREFER_ON_DEVICE' as const, ran: 'ON_DEVICE' as const, latencyMs: 1, outputCheck: null };
+    const cases: CaseResult[] = [
+      { ...x, id: 'a', repetition: 1, final: final({ right: ['grossPay'], notFound: [], wrong: [] }, []) },
+      { ...x, id: 'a', repetition: 2, final: final({ right: [], notFound: ['ytdGross'], wrong: [] }, []) },
+      { ...x, id: 'a', repetition: 3, final: final({ right: [], notFound: [], wrong: ['ytdGross'] }, ['ytdGross', 'hoursWorked']) },
+      { ...x, id: 'b', final: final({ right: ['grossPay'], notFound: [], wrong: [] }, ['hoursWorked']) },
+    ];
+    expect(summarize(cases)).toMatchObject({ extractionCases: 4, income: { allRight: 2, notFound: 1, wrong: 1 }, wrongReachedPerson: 2 });
+  });
+
+  it('repeats only the extraction cases when asked; the default is a single run', () => {
+    expect(casesFor(1)).toBe(CASES);
+    expect(casesFor(3)).toHaveLength(CASES.length + 2 * 5);
   });
 
   it('names the downloaded file by date and time, browser major version and platform', () => {

@@ -244,7 +244,7 @@ export function DocumentReviewScreen() {
       if (row.text === '' && row.status !== 'confirmed' && doc.extraction?.notRead?.includes(row.name)) {
         return (
           <span className="not-found" data-testid={`not-read-${row.name}`}>
-            {t('review.namesNotRead')}
+            {t('review.fieldNotRead')}
           </span>
         );
       }

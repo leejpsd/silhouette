@@ -156,6 +156,57 @@ export function namesProblems(pointers: Record<string, unknown>): string[] {
 }
 
 /**
+ * One placeholder, one field: hours worked or hourly rate that points at the placeholder answered for
+ * gross pay, net pay or year to date is a contradiction. Those two feed no rule; the field is marked not
+ * read and the reading keeps its other values.
+ */
+export function sharedAmountProblems(pointers: Record<string, unknown>): string[] {
+  const amounts = new Set(['grossPay', 'netPay', 'ytdGross'].map((f) => pointers[f]).filter((v): v is string => typeof v === 'string'));
+  return ['hoursWorked', 'hourlyRate'].filter((f) => typeof pointers[f] === 'string' && amounts.has(pointers[f] as string)).map((f) => `${f}:shares-placeholder`);
+}
+
+/**
+ * Fields to leave out of a reading as not read, with the problems that say why: names that share a
+ * placeholder (both names), and hours or rate that share one with an amount. None of them feeds a rule.
+ */
+export function notReadFields(pointers: Record<string, unknown>): { problems: string[]; fields: string[] } {
+  const names = namesProblems(pointers);
+  const shared = sharedAmountProblems(pointers);
+  return {
+    problems: [...names, ...shared],
+    fields: [...(names.length > 0 ? ['employerName', 'employeeName'] : []), ...shared.map((p) => p.split(':')[0] as string)],
+  };
+}
+
+/**
+ * Year to date left out although the document has one place for it: the answered gross line holds
+ * exactly one other amount that fits as year to date, or, when the gross line holds none, exactly one
+ * amount of money in the document (other than gross pay's own amount) fits. Then the device may be
+ * asked again for gross pay and year to date; code never fills the field in.
+ */
+export function ytdMissingWithCandidate(schema: PointerSchema, pointers: Record<string, unknown>, skeleton: Skeleton, rawMap: Raw<PlaceholderMap>, jurisdiction: string): boolean {
+  const gross = pointers['grossPay'];
+  if (typeof gross !== 'string' || (pointers['ytdGross'] !== undefined && pointers['ytdGross'] !== null)) return false;
+  const v = values(schema, pointers, rawMap);
+  if (typeof v.grossPay !== 'number') return false;
+  const grossPay = v.grossPay;
+  const map = reveal(rawMap);
+  const fits = (id: string) => {
+    const n = parseNumber(map[id] ?? '');
+    return n !== undefined && fitsYtd(v, n, jurisdiction);
+  };
+  const onLine = numbersOnLineOf(skeleton, gross).filter((id) => id !== gross && fits(id));
+  if (onLine.length > 0) return onLine.length === 1;
+  const money = new Set(
+    [...skeleton.matchAll(/⟦(N[0-9]+)⟧/g)]
+      .map((m) => m[1] as string)
+      .filter((id) => /[.,][0-9]{2}$/.test(map[id] ?? '') && !near(parseNumber(map[id] ?? '') ?? Number.NaN, grossPay) && fits(id))
+      .map((id) => parseNumber(map[id] ?? '')),
+  );
+  return money.size === 1;
+}
+
+/**
  * Problems with the core of a pointer answer (its deductions are ignored); empty: the core may be used.
  * With the silhouette, also the two year-to-date rules (sameLineYtdProblems, largerYtdProblems). Both
  * raise no alarm on any of the 38 English evaluation paystubs, whichever right placeholder is answered

@@ -8,7 +8,7 @@ import { buildReview, type ReviewField } from '../../core/review';
 import { tidyNamePointers } from '../../core/tidy';
 import { criterionReasons, verdicts } from '../../core/rules';
 import { askChip, explainProgram, extractPointers, planAskChip, planExplain, POINTER_SCHEMAS, type DeviceAttempt, type TaskResult } from '../../ai/tasks';
-import { corePointerProblems, deductionsProblems, goldPlaceholderIds, namesProblems, pointerProblems } from '../../core/pointer-check';
+import { corePointerProblems, deductionsProblems, goldPlaceholderIds, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../../core/pointer-check';
 import { askFreeText, explainPersonal, readPhoto } from '../../ai/on-device';
 import { askDeviceStatus, photoDeviceStatus, pointerDeviceStatus } from '../../ai/device-model';
 import { classifyError } from '../../ai/errors';
@@ -75,6 +75,10 @@ export interface CaseResult {
          * start, period end, pay date) are all right, or absent where the document has none.
          */
         readonly incomeInputsCorrect?: boolean | undefined;
+        /** Version 3: the yearly-income inputs that are right (or rightly absent), not found, or wrong. */
+        readonly incomeInputs?: IncomeInputs | undefined;
+        /** Version 3: every field whose value reached the person wrong (a value where the document has another, or none). */
+        readonly wrongFields?: readonly string[] | undefined;
       }
     | undefined;
   /** Version 3, extraction: the first attempt (the device's, when it answered) and where it ran. */
@@ -83,6 +87,14 @@ export interface CaseResult {
   readonly device?: DeviceDiagnosis | undefined;
   readonly error?: string | undefined;
   readonly note?: string | undefined;
+  /** Version 3, repeated runs: which repetition of the case this is (1, 2, 3…). */
+  readonly repetition?: number | undefined;
+}
+
+export interface IncomeInputs {
+  readonly right: readonly string[];
+  readonly notFound: readonly string[];
+  readonly wrong: readonly string[];
 }
 
 export type FieldStatus = 'correct' | 'wrong' | 'missing' | 'spurious' | 'absent';
@@ -135,6 +147,8 @@ export interface RunFile {
   /** Model availability states seen before the run, per set of create options. */
   readonly availability: Readonly<Record<string, string>>;
   readonly jurisdiction: string;
+  /** Version 3: how many times each extraction case was run (1 when absent). */
+  readonly repetitions?: number | undefined;
   readonly cases: readonly CaseResult[];
 }
 
@@ -243,6 +257,19 @@ export function incomeInputsCorrect(statuses: Readonly<Record<string, FieldStatu
   return INCOME_INPUTS.every((f) => statuses[f] === undefined || statuses[f] === 'correct' || statuses[f] === 'absent');
 }
 
+/** The yearly-income inputs as right (or rightly absent), not found (left empty), or wrong (a value that is not the document's). */
+export function incomeInputs(statuses: Readonly<Record<string, FieldStatus>>): IncomeInputs {
+  const of = (want: readonly (FieldStatus | undefined)[]) => INCOME_INPUTS.filter((f) => want.includes(statuses[f]));
+  return { right: of(['correct', 'absent', undefined]), notFound: of(['missing']), wrong: of(['wrong', 'spurious']) };
+}
+
+/** Fields whose value reaches the person wrong: a value that is not the document's, or one where it has none. */
+export function wrongFields(statuses: Readonly<Record<string, FieldStatus>>): string[] {
+  return Object.entries(statuses)
+    .filter(([, s]) => s === 'wrong' || s === 'spurious')
+    .map(([f]) => f);
+}
+
 /** Field-by-field outcome of an answer against the gold answers (as the review screen would show it). */
 export function fieldStatuses(review: readonly ReviewField[], gold: Gold): Record<string, FieldStatus> {
   const out: Record<string, FieldStatus> = {};
@@ -262,9 +289,9 @@ export function fieldStatuses(review: readonly ReviewField[], gold: Gold): Recor
   return out;
 }
 
-async function extraction(c: (typeof EXTRACTION_CASES)[number]): Promise<CaseResult> {
+async function extraction(c: (typeof EXTRACTION_CASES)[number], repetition?: number): Promise<CaseResult> {
   const started = performance.now();
-  const base = { id: c.id, task: 'document.pointer.extract', mode: 'PREFER_ON_DEVICE' as const };
+  const base = { id: c.id, task: 'document.pointer.extract', mode: 'PREFER_ON_DEVICE' as const, ...(repetition !== undefined ? { repetition } : {}) };
   const { skeleton, map } = skeletonize(Raw.of(c.text), allowlistFor('en'), introducersFor('en'));
   const gold = c.gold();
   const goldIds = goldPlaceholderIds(gold, map);
@@ -318,10 +345,12 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number]): Promise<CaseRes
       checkParts: {
         core: (p) => corePointerProblems(schema, p, map, PACK.jurisdiction, skeleton),
         deductions: (p) => deductionsProblems(schema, p, map, PACK.jurisdiction),
-        names: namesProblems,
+        notRead: notReadFields,
+        ytdMissing: (p) => ytdMissingWithCandidate(schema, p, skeleton, map, PACK.jurisdiction),
       },
     });
     const finalFields = scoreFields(reviewOf(result.value), gold);
+    const finalStatuses = fieldStatuses(reviewOf(result.value), gold);
     const attempt = result.deviceAttempt;
     // The first answer: the device's when it answered (used or not), otherwise the cloud's.
     const answer = attempt ? deviceAnswer(attempt) : undefined;
@@ -338,7 +367,9 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number]): Promise<CaseRes
         retried: result.reason === 'on-device-failed',
         deductionsNotRead: result.deductionsNotRead ?? false,
         notRead: result.notRead ?? [],
-        incomeInputsCorrect: incomeInputsCorrect(fieldStatuses(reviewOf(result.value), gold)),
+        incomeInputsCorrect: incomeInputsCorrect(finalStatuses),
+        incomeInputs: incomeInputs(finalStatuses),
+        wrongFields: wrongFields(finalStatuses),
       },
       device: attempt ? diagnose(attempt) : undefined,
       note: result.reason,
@@ -448,6 +479,13 @@ async function photo(): Promise<CaseResult> {
 }
 
 /** Every case, in order. Each one is reported as soon as it finishes. */
+/** Every case, with the extraction cases run `repetitions` times (each recorded with its repetition). */
+export function casesFor(repetitions: number): readonly (() => Promise<CaseResult>)[] {
+  if (repetitions <= 1) return CASES;
+  const extractions = Array.from({ length: repetitions }, (_, i) => EXTRACTION_CASES.map((c) => () => extraction(c, i + 1))).flat();
+  return [...extractions, ...CASES.slice(EXTRACTION_CASES.length)];
+}
+
 export const CASES: readonly (() => Promise<CaseResult>)[] = [
   ...EXTRACTION_CASES.map((c) => () => extraction(c)),
   () => explanation('en'),
@@ -502,6 +540,10 @@ export interface Summary {
   /** Extraction cases whose yearly-income inputs are all right in what the person ends up with (null: not recorded). */
   readonly incomeInputsCorrect: number | null;
   readonly extractionCases: number;
+  /** Readings (extraction cases, with repetitions) by their yearly-income inputs; null in files without the split. */
+  readonly income: { readonly allRight: number; readonly notFound: number; readonly wrong: number } | null;
+  /** Readings in which any value reached the person wrong (not missing); null in files without it. This must be zero. */
+  readonly wrongReachedPerson: number | null;
 }
 
 /** Cloud runs are counted as cloud runs, never as on-device ones; a case counts where it was finally answered. */
@@ -526,6 +568,14 @@ export function summarize(cases: readonly CaseResult[], version: number = RUN_FI
     deductionsNotRead: cases.filter((c) => c.final?.deductionsNotRead).length,
     incomeInputsCorrect: cases.some((c) => c.final?.incomeInputsCorrect !== undefined) ? cases.filter((c) => c.final?.incomeInputsCorrect).length : null,
     extractionCases: cases.filter((c) => c.task === 'document.pointer.extract').length,
+    income: cases.some((c) => c.final?.incomeInputs)
+      ? {
+          allRight: cases.filter((c) => c.final?.incomeInputs && c.final.incomeInputs.notFound.length === 0 && c.final.incomeInputs.wrong.length === 0).length,
+          notFound: cases.filter((c) => c.final?.incomeInputs && c.final.incomeInputs.notFound.length > 0 && c.final.incomeInputs.wrong.length === 0).length,
+          wrong: cases.filter((c) => c.final?.incomeInputs && c.final.incomeInputs.wrong.length > 0).length,
+        }
+      : null,
+    wrongReachedPerson: cases.some((c) => c.final?.wrongFields) ? cases.filter((c) => (c.final?.wrongFields?.length ?? 0) > 0).length : null,
   };
 }
 

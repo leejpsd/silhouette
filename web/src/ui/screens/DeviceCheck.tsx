@@ -10,7 +10,7 @@ import { ActionLabel } from '../design/parts';
 import { dynamicKey } from '../i18n';
 import { routeHref } from '../router';
 import {
-  CASES,
+  casesFor,
   RUN_FILE_KIND,
   RUN_FILE_VERSION,
   availabilityStates,
@@ -39,6 +39,9 @@ export function DeviceCheckScreen() {
   const [view, setView] = useState<View>(null);
   const [badFile, setBadFile] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  // Run the extraction cases three times, to show how stable the device's reading is (default: once).
+  const [repeat, setRepeat] = useState(false);
+  const [total, setTotal] = useState(casesFor(1).length);
   const status = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -46,6 +49,9 @@ export function DeviceCheckScreen() {
   }, []);
 
   const run = async () => {
+    const repetitions = repeat ? 3 : 1;
+    const cases = casesFor(repetitions);
+    setTotal(cases.length);
     const availability = await availabilityStates();
     let file: RunFile = {
       kind: RUN_FILE_KIND,
@@ -56,14 +62,15 @@ export function DeviceCheckScreen() {
       userAgent: navigator.userAgent,
       availability,
       jurisdiction: PACK.jurisdiction,
+      repetitions,
       cases: [],
     };
     setView({ kind: 'live', file, running: 1 });
     status.current?.focus();
-    for (let i = 0; i < CASES.length; i++) {
-      const result: CaseResult = await (CASES[i] as () => Promise<CaseResult>)();
+    for (let i = 0; i < cases.length; i++) {
+      const result: CaseResult = await (cases[i] as () => Promise<CaseResult>)();
       file = { ...file, cases: [...file.cases, result] };
-      setView({ kind: 'live', file, running: i + 2 <= CASES.length ? i + 2 : null });
+      setView({ kind: 'live', file, running: i + 2 <= cases.length ? i + 2 : null });
     }
   };
 
@@ -124,7 +131,7 @@ export function DeviceCheckScreen() {
 
       {view && <Results view={view} />}
       <p ref={status} tabIndex={-1} className="status-line" role="status" data-testid="device-check-status">
-        {view?.kind === 'live' ? (view.running !== null ? t('deviceCheck.running', { n: view.running, total: CASES.length }) : t('deviceCheck.done')) : ''}
+        {view?.kind === 'live' ? (view.running !== null ? t('deviceCheck.running', { n: view.running, total }) : t('deviceCheck.done')) : ''}
       </p>
       {view && (view.kind === 'recording' || view.running === null) && (
         <button type="button" className="outline-button" onClick={() => download(view.file)}>
@@ -162,6 +169,12 @@ export function DeviceCheckScreen() {
         )}
       </section>
 
+      {hasModel && (
+        <label className="check-option" data-testid="device-check-repeat">
+          <input type="checkbox" className="checkbox" checked={repeat} disabled={view?.kind === 'live' && view.running !== null} onChange={(e) => setRepeat(e.target.checked)} />
+          <span>{t('deviceCheck.repeat')}</span>
+        </label>
+      )}
       {hasModel && (
         <BlockActions>
           <button type="button" className="action" disabled={view?.kind === 'live' && view.running !== null} onClick={() => void run()} data-testid="run-device-check">
@@ -251,9 +264,26 @@ function Results({ view }: { view: Exclude<View, null> }) {
           {file.version >= 3 && ` ${t('deviceCheck.summaryNotRead', { count: s.deductionsNotRead })}`}
         </p>
       )}
-      {s.incomeInputsCorrect !== null && (
-        <p className="strong" data-testid="device-summary-income">
-          {t('deviceCheck.summaryIncome', { correct: s.incomeInputsCorrect, total: s.extractionCases })}
+      {s.income !== null ? (
+        <>
+          <p className="strong" data-testid="device-summary-income">
+            {t('deviceCheck.summaryIncomeSplit', { total: s.extractionCases, right: s.income.allRight, notFound: s.income.notFound, wrong: s.income.wrong })}
+          </p>
+          <p className="strong" data-testid="device-summary-wrong" data-wrong={s.wrongReachedPerson ?? 0}>
+            {t('deviceCheck.summaryWrong', { wrong: s.wrongReachedPerson ?? 0, total: s.extractionCases })}
+          </p>
+          <p className="small">{t('deviceCheck.wrongMustBeZero')}</p>
+        </>
+      ) : (
+        s.incomeInputsCorrect !== null && (
+          <p className="strong" data-testid="device-summary-income">
+            {t('deviceCheck.summaryIncome', { correct: s.incomeInputsCorrect, total: s.extractionCases })}
+          </p>
+        )
+      )}
+      {(file.repetitions ?? 1) > 1 && (
+        <p className="small" data-testid="device-summary-repetitions">
+          {t('deviceCheck.summaryRepetitions', { repetitions: file.repetitions ?? 1 })}
         </p>
       )}
       <p className="small" data-testid="device-summary-first">
@@ -278,9 +308,10 @@ function Results({ view }: { view: Exclude<View, null> }) {
               const afterDevice = ran === 'IN_CLOUD' && firstRan(c, file.version) === 'ON_DEVICE';
               const first = firstFields(c, file.version);
               return (
-                <tr key={c.id} data-ran={ran} data-first-ran={firstRan(c, file.version)}>
+                <tr key={`${c.id}#${c.repetition ?? 1}`} data-ran={ran} data-first-ran={firstRan(c, file.version)}>
                   <th scope="row">
                     {c.id}
+                    {c.repetition !== undefined && <span className="small muted"> · {t('deviceCheck.repetition', { n: c.repetition, of: file.repetitions ?? c.repetition })}</span>}
                     <span className="small muted"> · {c.task}</span>
                   </th>
                   <td data-label={t('deviceCheck.col.mode')}>{c.mode.replace(/_/g, '_\u200b')}</td>

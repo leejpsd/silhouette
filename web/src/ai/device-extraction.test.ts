@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Raw } from '../core/types';
 import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile } from '../core/skeleton';
-import { corePointerProblems, deductionsProblems, namesProblems, pointerProblems } from '../core/pointer-check';
+import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../core/pointer-check';
 import { setModelProviderForTests } from './model-port';
 import { setDeviceModelForTests } from './device-fake';
 import { POINTER_SCHEMAS, extractPointers, pointerModelParams, type PointerStage } from './tasks';
@@ -25,11 +25,12 @@ const validate = (p: Record<string, unknown>) => pointerProblems(schema, p, doc.
 const checkParts = {
   core: (p: Record<string, unknown>) => corePointerProblems(schema, p, doc.map, 'us-ca', doc.skeleton),
   deductions: (p: Record<string, unknown>) => deductionsProblems(schema, p, doc.map, 'us-ca'),
-  names: namesProblems,
+  notRead: notReadFields,
+  ytdMissing: (p: Record<string, unknown>) => ytdMissingWithCandidate(schema, p, doc.skeleton, doc.map, 'us-ca'),
 };
 const json = (v: unknown) => JSON.stringify(v);
 
-type Part = 'whole' | 'core' | 'deductions' | 'gross';
+type Part = 'whole' | 'core' | 'deductions' | 'deductions-again' | 'gross';
 interface Params {
   mode: string;
   onDeviceParams?: { promptOptions?: { responseConstraint?: { properties?: Record<string, unknown> } }; createOptions?: { initialPrompts?: { content: string }[] } };
@@ -59,9 +60,10 @@ function models(device: string) {
 
 /**
  * A device with a ready model that answers each part with the given text (the gross part repeats the
- * core's answer unless given), taking `delayMs` per request; the cloud answers the key.
+ * core's answer unless given; the deductions asked again repeat the first deductions unless given),
+ * taking `delayMs` per request; the cloud answers the key.
  */
-function device(text: { core: string; deductions?: string; gross?: string }, delayMs = 0) {
+function device(text: { core: string; deductions?: string; deductionsAgain?: string; gross?: string }, delayMs = 0) {
   setDeviceModelForTests('available');
   const calls: string[] = [];
   const systems: string[] = [];
@@ -72,11 +74,14 @@ function device(text: { core: string; deductions?: string; gross?: string }, del
         calls.push('cloud');
         return { response: { text: () => json(KEY), inferenceSource: 'in_cloud' } };
       }
-      const part = partOf(p);
+      const system = p.onDeviceParams?.createOptions?.initialPrompts?.[0]?.content ?? '';
+      const part: Part = partOf(p) === 'deductions' && system.includes('did not add up') ? 'deductions-again' : partOf(p);
       calls.push(`${p.mode}:${part}`);
-      systems.push(p.onDeviceParams?.createOptions?.initialPrompts?.[0]?.content ?? '');
+      systems.push(system);
       if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
-      const answer = part === 'deductions' ? (text.deductions ?? json({ deductions: KEY_DEDUCTIONS })) : part === 'gross' ? (text.gross ?? text.core) : text.core;
+      const deductions = text.deductions ?? json({ deductions: KEY_DEDUCTIONS });
+      const answer =
+        part === 'deductions' ? deductions : part === 'deductions-again' ? (text.deductionsAgain ?? deductions) : part === 'gross' ? (text.gross ?? text.core) : text.core;
       return { response: { text: () => answer, inferenceSource: 'on_device' } };
     },
   }));
@@ -147,10 +152,15 @@ describe('reading a paystub on the device in two parts', () => {
   it('core right and deductions empty: the core is used, deductions marked not read', async () => {
     const { calls } = device({ core: json(KEY_CORE), deductions: json({ deductions: [] }) });
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
-    expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions']);
+    // Asked once more (the list did not add up), then left out.
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions', 'only_on_device:deductions-again']);
     expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY_CORE, deductionsNotRead: true });
     expect(result.value).not.toHaveProperty('deductions');
-    expect(result.deviceAttempt?.passes?.[1]?.problems).toEqual(['check:net-sum']);
+    expect(result.deviceAttempt?.passes?.map((p) => [p.part, p.problems])).toEqual([
+      ['core', []],
+      ['deductions', ['check:net-sum']],
+      ['deductions-again', ['check:net-sum']],
+    ]);
   });
 
   it('core right and deductions that fail net pay = gross − deductions: the core is used, deductions not read', async () => {
@@ -204,6 +214,63 @@ describe('reading a paystub on the device in two parts', () => {
     expect(result.value).not.toHaveProperty('employeeName');
     expect(result.value).toMatchObject({ grossPay: 'N12', ytdGross: 'N13', deductions: KEY_DEDUCTIONS });
     expect(result.deviceAttempt?.passes?.[0]?.marked).toEqual(['names:shared-placeholder']);
+  });
+
+  it('hours or rate on the placeholder of an amount: that field is left out as not read, the reading kept', async () => {
+    device({ core: json({ ...KEY_CORE, hoursWorked: 'N12' }) });
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', notRead: ['hoursWorked'] });
+    expect(result.value).not.toHaveProperty('hoursWorked');
+    expect(result.value).toMatchObject({ hourlyRate: 'N4', grossPay: 'N12' });
+    expect(result.deviceAttempt?.passes?.[0]?.marked).toEqual(['hoursWorked:shares-placeholder']);
+  });
+
+  it('year to date left out although the gross line holds one: the gross part is asked, its answer used when the core passes', async () => {
+    const { ytdGross, ...noYtd } = KEY_CORE;
+    void ytdGross;
+    const { calls } = device({ core: json({ ...noYtd, ytdGross: null }), gross: json({ grossPay: 'N12', ytdGross: 'N13' }) });
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'only_on_device:deductions']);
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY });
+  });
+
+  it('year to date still left out by the gross part: kept on this device as "not found", nothing filled in', async () => {
+    const { ytdGross, ...noYtd } = KEY_CORE;
+    void ytdGross;
+    const { calls } = device({ core: json({ ...noYtd, ytdGross: null }), gross: json({ grossPay: 'N12', ytdGross: null }) });
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'only_on_device:deductions']);
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', reason: 'document-silhouette-only' });
+    expect(result.value).not.toHaveProperty('ytdGross');
+    expect(result.deviceAttempt?.passes?.[1]).toMatchObject({ part: 'gross', problems: ['ytdGross:still-missing'] });
+  });
+
+  it('a wrong year to date from the gross part is not used: still "not found", on this device', async () => {
+    const { ytdGross, ...noYtd } = KEY_CORE;
+    void ytdGross;
+    device({ core: json({ ...noYtd, ytdGross: null }), gross: json({ grossPay: 'N12', ytdGross: 'N7' }) });
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(result.inferenceSource).toBe('ON_DEVICE');
+    expect(result.value).not.toHaveProperty('ytdGross');
+    expect(result.deviceAttempt?.passes?.[1]?.problems).toContain('ytdGross:not-on-gross-line');
+  });
+
+  it('deductions that leave out the last line are asked once more; a right second answer is used, both times recorded', async () => {
+    const short = json({ deductions: (KEY_DEDUCTIONS as unknown[]).slice(0, 3) });
+    const { calls, systems } = device({ core: json(KEY_CORE), deductions: short, deductionsAgain: json({ deductions: KEY_DEDUCTIONS }) }, 15);
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions', 'only_on_device:deductions-again']);
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY, deductionsNotRead: false, notRead: [] });
+    const passes = result.deviceAttempt?.passes ?? [];
+    expect(passes.map((p) => [p.part, p.problems])).toEqual([
+      ['core', []],
+      ['deductions', ['check:net-sum']],
+      ['deductions-again', []],
+    ]);
+    for (const p of passes) expect(p.latencyMs).toBeGreaterThanOrEqual(10);
+    // The added sentence carries no value: only the fixed wording.
+    expect(systems[2]).toContain('including the last one');
+    expect(systems[2]).not.toMatch(/\d+\.\d{2}/);
   });
 
   it('year to date below gross is a failed core; kept on the device it is a plain "could not read it reliably"', async () => {

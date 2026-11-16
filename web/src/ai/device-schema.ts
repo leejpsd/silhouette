@@ -17,7 +17,8 @@ import type { ModelSchemaOptions } from './model-schema';
 
 type Node = Record<string, unknown>;
 
-export type DevicePart = 'whole' | 'core' | 'deductions' | 'gross';
+/** 'deductions-again': the deductions part asked once more after its list did not add up (same constraint). */
+export type DevicePart = 'whole' | 'core' | 'deductions' | 'deductions-again' | 'gross';
 
 /** The fields of the 'gross' part. */
 export const GROSS_PART_FIELDS: readonly string[] = ['grossPay', 'ytdGross'];
@@ -36,8 +37,9 @@ export function placeholderIds(skeleton: Skeleton): { readonly N: string[]; read
 /** Field names of a part of a pointer schema (the list fields are the deductions part). */
 export function partFields(schema: PointerSchema, part: DevicePart): string[] {
   if (part === 'gross') return GROSS_PART_FIELDS.filter((name) => schema.properties[name]?.['x-kind'] === 'number');
+  const list = part === 'deductions' || part === 'deductions-again';
   return Object.entries(schema.properties)
-    .filter(([, spec]) => part === 'whole' || (spec['x-kind'] === 'list') === (part === 'deductions'))
+    .filter(([, spec]) => part === 'whole' || (spec['x-kind'] === 'list') === list)
     .map(([name]) => name);
 }
 

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { Raw } from './types';
 import { skeletonize } from './skeleton';
 import { allowlistFor, introducersFor } from '../ui/doc/allowlists';
-import { corePointerProblems, goldPlaceholderIds, largerYtdProblems, namesProblems, sameLineYtdProblems } from './pointer-check';
+import { corePointerProblems, goldPlaceholderIds, largerYtdProblems, namesProblems, notReadFields, sameLineYtdProblems, sharedAmountProblems, ytdMissingWithCandidate } from './pointer-check';
 import { POINTER_SCHEMAS } from '../ai/tasks';
 
 const S = POINTER_SCHEMAS.paystub;
@@ -102,6 +102,47 @@ describe('year to date read from the wrong line', () => {
     // The misses: two paystubs without any year to date (en-l03-1) and an employee number that fits (en-l04-1).
     expect({ simulated, caught }).toEqual({ simulated: 34, caught: 31 });
     expect(missed.map((m) => m.split(' ')[0])).toEqual(['en-l03-1.txt', 'en-l03-1.txt', 'en-l04-1.txt']);
+  });
+});
+
+describe('year to date left out', () => {
+  it('asks again where the document has one place for it, never where it has none (en-l03); en-l08 has two candidates', () => {
+    const trigger = (d: (typeof GOLD)[number]) => (d.ids['grossPay'] ?? []).some((g) => ytdMissingWithCandidate(S, { ...d.right, grossPay: g, ytdGross: undefined }, d.skeleton, d.map, J));
+    const withYtd = GOLD.filter((d) => (d.ids['ytdGross'] ?? []).length > 0);
+    const without = GOLD.filter((d) => (d.ids['ytdGross'] ?? []).length === 0);
+    expect(without.map((d) => d.file)).toEqual(['en-l03-1.txt', 'en-l03-2.txt', 'en-l03-3.txt']);
+    expect(without.filter(trigger)).toEqual([]);
+    expect(withYtd).toHaveLength(35);
+    // A "Year to Date" block with both gross and net amounts that fit: two candidates, so no new request.
+    expect(withYtd.filter((d) => !trigger(d)).map((d) => d.file)).toEqual(['en-l08-1.txt', 'en-l08-2.txt', 'en-l08-3.txt']);
+    // Not a trigger when the year to date is answered.
+    for (const d of GOLD) for (const r of d.readings) expect(ytdMissingWithCandidate(S, r, d.skeleton, d.map, J) && r.ytdGross !== undefined).toBe(false);
+  });
+
+  it('the real run 4 misses (sample and L01: year to date null) would ask again', () => {
+    const sample = silhouette(read(new URL('../../../shared/samples/paystub-en-01.txt', import.meta.url)));
+    const l01 = GOLD.find((g) => g.file === 'en-l01-1.txt');
+    expect(ytdMissingWithCandidate(S, { grossPay: 'N12', payFrequency: 'semimonthly', payDate: 'D3', periodStart: 'D1', periodEnd: 'D2' }, sample.skeleton, sample.map, J)).toBe(true);
+    expect(ytdMissingWithCandidate(S, { ...l01?.right, ytdGross: undefined }, l01!.skeleton, l01!.map, J)).toBe(true);
+  });
+});
+
+describe('one placeholder, one field', () => {
+  it('no false alarm on any right reading, with every right id for gross pay, year to date, hours and rate', () => {
+    const alarms: string[] = [];
+    for (const d of GOLD) {
+      const hours = d.ids['hoursWorked']?.length ? d.ids['hoursWorked'] : [undefined];
+      const rates = d.ids['hourlyRate']?.length ? d.ids['hourlyRate'] : [undefined];
+      for (const r of d.readings) for (const h of hours) for (const rate of rates) {
+        const found = sharedAmountProblems({ ...r, hoursWorked: h, hourlyRate: rate });
+        if (found.length > 0) alarms.push(`${d.file}: ${found.join(', ')}`);
+      }
+    }
+    expect(alarms).toEqual([]);
+  });
+
+  it('the real L07 mistake (hours worked on gross pay\'s placeholder) leaves hours out', () => {
+    expect(notReadFields({ grossPay: 'N18', netPay: 'N28', ytdGross: 'N19', hoursWorked: 'N18', hourlyRate: 'N3' })).toEqual({ problems: ['hoursWorked:shares-placeholder'], fields: ['hoursWorked'] });
   });
 });
 

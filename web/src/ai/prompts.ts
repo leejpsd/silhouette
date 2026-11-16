@@ -14,6 +14,7 @@ import photoReadV1 from '../../../shared/prompts/photo-read.v1.md?raw';
 // Device-only wording for reading a paystub in two parts on the device (web/, a candidate).
 import pointerDevicePartsV1 from './device-prompts/pointer-extract-parts.v1.md?raw';
 import pointerDevicePartsV2 from './device-prompts/pointer-extract-parts.v2.md?raw';
+import pointerDevicePartsV3 from './device-prompts/pointer-extract-parts.v3.md?raw';
 
 export interface PromptTemplate {
   readonly id: string;
@@ -46,6 +47,8 @@ export interface DeviceParts {
   readonly deductions: string;
   /** Gross pay and year to date only, asked again when the core's only problems are with them. */
   readonly gross?: string | undefined;
+  /** Added to the deductions part when it is asked once more after its list did not add up (value-free). */
+  readonly deductionsAgain?: string | undefined;
 }
 
 /** Splits a device-parts file into its "Core part" and "Deductions part" sections. */
@@ -62,11 +65,12 @@ export function parseDeviceParts(id: string, markdown: string): DeviceParts {
     if (text === undefined) throw new Error(`${id}: missing section "${title}"`);
     return text;
   };
-  return { id, core: required('Core part'), deductions: required('Deductions part'), gross: section('Gross part') };
+  return { id, core: required('Core part'), deductions: required('Deductions part'), gross: section('Gross part'), deductionsAgain: section('Deductions part, asked again') };
 }
 
 export const POINTER_DEVICE_PARTS_V1 = parseDeviceParts('pointer-extract-parts.v1', pointerDevicePartsV1);
 export const POINTER_DEVICE_PARTS_V2 = parseDeviceParts('pointer-extract-parts.v2', pointerDevicePartsV2);
+export const POINTER_DEVICE_PARTS_V3 = parseDeviceParts('pointer-extract-parts.v3', pointerDevicePartsV3);
 
 export const POINTER_EXTRACT = parsePrompt('pointer-extract.v2', pointerExtractV2);
 export const POINTER_EXTRACT_V3 = parsePrompt('pointer-extract.v3', pointerExtractV3);
