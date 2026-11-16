@@ -310,3 +310,40 @@ for (const theme of ['light', 'dark'] as const) {
     await shot(page, '39-income-exact-360x640', theme, false);
   });
 }
+
+for (const theme of ['light', 'dark'] as const) {
+  for (const width of [390, 768, 1280] as const) {
+    test(`${width} px, ${theme}: judges and the on-device check`, async ({ page, context }) => {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : width === 768 ? 1024 : 800 });
+      await setup(page, context, theme);
+      await page.goto('/#/judges');
+      await page.getByTestId('judges-device').waitFor();
+      await shot(page, `50-${width}-judges`, theme, false);
+      await page.goto('/#/device-check');
+      await page.getByTestId('no-model').waitFor();
+      await page.locator('input[type="file"]').setInputFiles({
+        name: 'recording.json',
+        mimeType: 'application/json',
+        buffer: Buffer.from(
+          JSON.stringify({
+            kind: 'silhouette-device-check',
+            version: 1,
+            date: '2026-11-17T09:30:00.000Z',
+            browser: 'Chrome 142.0.7444.59',
+            platform: 'macOS',
+            userAgent: 'example',
+            availability: { languageModel: 'present', 'text en (answers)': 'available' },
+            jurisdiction: 'zz-test',
+            cases: [
+              { id: 'pointers: bundled sample', task: 'document.pointer.extract', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 4200, outputCheck: null, fields: { correct: 11, total: 11 } },
+              { id: 'explanation (en)', task: 'explain.short', mode: 'PREFER_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 2300, outputCheck: 'passed' },
+              { id: 'typed question (en)', task: 'ask.freeText', mode: 'ONLY_ON_DEVICE', ran: 'ON_DEVICE', latencyMs: 1900, outputCheck: 'passed' },
+            ],
+          }),
+        ),
+      });
+      await page.getByTestId('recording-note').waitFor();
+      await shot(page, `51-${width}-device-check-recording`, theme);
+    });
+  }
+}

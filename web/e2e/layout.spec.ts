@@ -17,7 +17,7 @@ test.describe('layout', () => {
         const block = await box(page, 'bottom-block');
         expect(block.width).toBe(400);
         expect(block.x + block.width).toBeLessThan(width);
-        const main = await page.locator('main > *').first().boundingBox();
+        const main = await page.locator('main .screen').first().boundingBox();
         expect(main!.x + main!.width, 'the content stays left of the block').toBeLessThanOrEqual(block.x);
         columns.push(Math.round(main!.x), Math.round(main!.width));
       };

@@ -43,6 +43,8 @@ Functions that make cloud-capable model calls accept only `Skeleton | Generalize
 - no unwrapping of `Raw` outside `src/core/`, except in the on-device-only photo task;
 - `firebase/ai` is imported only under `src/ai/`.
 
+**On-device only means on-device only.** In a browser without Chrome's Prompt API (`LanguageModel`), Firebase AI Logic 3.1 sends a request to the cloud whatever its inference mode, `ONLY_ON_DEVICE` included. So every `ONLY_ON_DEVICE` task (`src/ai/on-device.ts`) stops with a typed error before any SDK call unless the on-device model reports `available`, and the network monitor (`src/data/net-monitor.ts`) lets a request reach Firebase AI Logic only when a cloud-capable task registered it just before, blocking and recording anything else (tests: `src/ai/only-on-device.test.ts`, `e2e/dev/only-on-device.spec.ts`).
+
 ## Where the Firebase AI Logic calls live
 
 Every model call is under `src/ai/`:
@@ -95,9 +97,30 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 
 The token is used only by the dev server; production builds never contain it.
 
-**Production.** Production builds use reCAPTCHA Enterprise through `VITE_RECAPTCHA_SITE_KEY`.
+**Production.** Production builds use reCAPTCHA Enterprise through `VITE_RECAPTCHA_SITE_KEY`, with limited-use App Check tokens for Firebase AI Logic.
 
 **Without a token.** Everything except cloud requests works: Quick Check, verdicts, sample documents, on-device reading, manual entry and the rule pack's official information.
+
+## For judges, and evidence of on-device runs
+
+- **`#/judges`** ("For judges: try it in two minutes", from the demo-rules sheet on the start screen) has three steps, one button each: run the Quick Check for a prepared, invented household; open the sample paystub's silhouette and send it; open "Leaving your device" and compare what left. It works in any browser. Without an on-device model the silhouette goes to the cloud, and offline the sample's answer key is used. The page says which steps run on the device when a model is present.
+- **`#/device-check`** runs a fixed set of synthetic cases through Firebase AI Logic in a Chrome that has the on-device model, records where each one actually ran, and offers the results as a JSON file. A case that fell back to the cloud is counted as a cloud run. Recorded runs kept in `eval/results/on-device/` are bundled, and a browser without the model can show them, labelled as recordings with their date and machine. `eval/results/on-device/README.md` explains how a run file is made.
+
+## Hosting
+
+```bash
+VITE_RECAPTCHA_SITE_KEY=<site key> npm run build:hosting   # or put the key in web/.env.hosting.local
+```
+
+`build:hosting` typechecks, then builds `dist/` in mode `hosting`. It stops with a clear message if the reCAPTCHA Enterprise site key is missing. Afterwards it runs `scripts/check-bundle.mjs`, which fails if the output contains the App Check debug-token code path or any value from a local env file. A unit test checks the same on a production build.
+
+`hosting/firebase.hosting.json` is the Firebase Hosting section this build expects:
+- `public` set to `web/dist`;
+- a rewrite to `index.html`;
+- long caching for hashed assets, and no caching for `index.html` and the service worker;
+- a content security policy that allows only the Firebase endpoints the app calls (AI Logic, App Check, Installations, Remote Config) and reCAPTCHA, with no font or analytics hosts.
+
+`e2e/hosting.spec.ts` runs the app under that policy and fails on any violation.
 
 ## Test and build
 

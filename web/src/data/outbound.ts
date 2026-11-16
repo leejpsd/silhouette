@@ -6,7 +6,7 @@
 // carry no destination and no body, and are never counted as sent.
 
 export type OutboundChannel = 'ai-cloud' | 'app-check' | 'firestore' | 'remote-config' | 'analytics' | 'other' | 'on-device';
-export type OutboundStatus = 'attempted' | 'sent' | 'failed' | 'answered';
+export type OutboundStatus = 'attempted' | 'sent' | 'failed' | 'answered' | 'blocked';
 
 export interface OutboundEntry {
   readonly id: string;
@@ -78,8 +78,8 @@ export function recordAnsweredOnDevice(kind: KeptKind, at: number = Date.now()):
   return id;
 }
 
-/** Entries for requests that left the device (everything but answers written on the device). */
-export const leftDevice = (entries: readonly OutboundEntry[]): readonly OutboundEntry[] => entries.filter((e) => e.status !== 'answered');
+/** Entries for requests that left the device (not answers written on it, not requests blocked before sending). */
+export const leftDevice = (entries: readonly OutboundEntry[]): readonly OutboundEntry[] => entries.filter((e) => e.status !== 'answered' && e.status !== 'blocked');
 
 function update(id: string, patch: Partial<OutboundEntry>): void {
   set({ ...state, entries: state.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)) });
@@ -87,6 +87,11 @@ function update(id: string, patch: Partial<OutboundEntry>): void {
 
 export function markSent(id: string, httpStatus: number): void {
   update(id, { status: 'sent', httpStatus });
+}
+
+/** A request stopped before it left (the network monitor refused it): nothing was sent. */
+export function markBlocked(id: string, reason: string): void {
+  update(id, { status: 'blocked', error: reason });
 }
 
 export function markFailed(id: string, error: string, httpStatus?: number): void {

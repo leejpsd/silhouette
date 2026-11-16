@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { clearOutbound, outboundState, restoreOutbound } from './outbound';
-import { AI_LOGIC_HOST, aiPayloadText, bodyToSend, classify, describeAiRequests, expectRequestBody, installNetMonitor, modelOf } from './net-monitor';
+import { AI_LOGIC_HOST, BLOCKED_REASON, aiPayloadText, bodyToSend, classify, describeAiRequests, expectRequestBody, installNetMonitor, modelOf, permitCloudRequest } from './net-monitor';
 
 afterEach(() => clearOutbound(null));
 
@@ -38,10 +38,22 @@ describe('network monitor', () => {
     expect(bodyToSend(reordered)).toBe(shown);
     const changed = reordered.replace('"P"', '"Q"');
     expect(bodyToSend(changed)).toBeNull();
+    // A request no cloud-capable task registered is never sent.
     const unrelated = JSON.stringify({ systemInstruction: { parts: [{ text: 'OTHER' }] }, contents: [] });
-    expect(bodyToSend(unrelated)).toBe(unrelated);
+    expect(bodyToSend(unrelated)).toBeNull();
     release();
-    expect(bodyToSend(changed)).toBe(changed);
+    expect(bodyToSend(changed)).toBeNull();
+    expect(bodyToSend(reordered)).toBeNull();
+  });
+
+  it('lets a request through only while a cloud-capable task permits its system instruction', () => {
+    const body = JSON.stringify({ systemInstruction: { parts: [{ text: 'POINTERS' }] }, contents: [] });
+    expect(bodyToSend(body)).toBeNull();
+    const release = permitCloudRequest('POINTERS');
+    expect(bodyToSend(body)).toBe(body);
+    expect(bodyToSend(body.replace('POINTERS', 'PERSONAL'))).toBeNull();
+    release();
+    expect(bodyToSend(body)).toBeNull();
   });
 
   it('records attempted, then sent or failed, with the reason; drops queries and App Check bodies', async () => {
@@ -57,12 +69,16 @@ describe('network monitor', () => {
     installNetMonitor(target);
     await target.fetch('/assets/app.js');
     await target.fetch('data:image/png;base64,AAAA');
+    const release = permitCloudRequest('SYSTEM');
     const pending = target.fetch(`https://${AI_LOGIC_HOST}/v1beta/projects/p/models/m:generateContent?key=SECRETKEY`, { method: 'POST', body: generateBody });
     expect(outboundState().entries.at(-1)?.status).toBe('attempted');
     await pending;
     await target.fetch('https://content-firebaseappcheck.googleapis.com/v1/x:exchangeDebugToken', { method: 'POST', body: '{"debug_token":"SECRET"}' });
     await target.fetch(`https://${AI_LOGIC_HOST}/v1beta/models/m:generateContent/denied`, { method: 'POST', body: generateBody });
     await expect(target.fetch('https://fail.example/x', { method: 'POST', body: '{}' })).rejects.toThrow();
+    release();
+    // Nothing asked for this one: it is blocked before it leaves, and recorded as blocked.
+    await expect(target.fetch(`https://${AI_LOGIC_HOST}/v1beta/models/m:generateContent`, { method: 'POST', body: generateBody })).rejects.toThrow(BLOCKED_REASON);
 
     const entries = outboundState().entries;
     expect(entries.map((e) => [e.channel, e.status])).toEqual([
@@ -70,6 +86,7 @@ describe('network monitor', () => {
       ['app-check', 'sent'],
       ['ai-cloud', 'failed'],
       ['other', 'failed'],
+      ['ai-cloud', 'blocked'],
     ]);
     expect(entries[0]).toMatchObject({ httpStatus: 200, path: '/v1beta/projects/p/models/m:generateContent', model: 'm' });
     expect(entries[2]).toMatchObject({ httpStatus: 401, error: 'HTTP 401 Unauthorized' });

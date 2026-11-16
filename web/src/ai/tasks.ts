@@ -13,7 +13,7 @@ import { classifyError, TaskError, type TaskErrorKind } from './errors';
 import { deviceAvailability, modelFor, sourceOf, type InferenceSource, type UsageMetadata } from './model-port';
 import { SHARED_POINTER_SCHEMAS, pointerConfigFor, type DocType, type PointerConfig } from './pointer-config';
 import { appConfig } from '../data/remote-config';
-import { describeAiModel, describeAiRequests, expectRequestBody } from '../data/net-monitor';
+import { describeAiModel, describeAiRequests, expectRequestBody, permitCloudRequest } from '../data/net-monitor';
 import { recordAnsweredOnDevice } from '../data/outbound';
 import outputChecks from '../../../shared/prompts/output-checks.json';
 import { modelTextIsBlocked, type OutputChecks, type OutputScope, type ShownVerdict } from '../core/output-check';
@@ -148,7 +148,15 @@ async function callPointerModel(
   const config = options.config ?? activePointerConfig();
   const model = await pointerModel(docType, language, options);
   const prompt = fill(config.prompt.user, { docType, skeleton: presentSkeleton(skeleton, config) });
-  const { response } = await model.generateContent(prompt);
+  // The network monitor lets a request to Firebase AI Logic leave only while a cloud-capable task has
+  // asked for it: this one, while it waits for its answer.
+  const release = permitCloudRequest(systemText(config, docType));
+  let response: ModelResponse;
+  try {
+    ({ response } = await model.generateContent(prompt));
+  } finally {
+    release();
+  }
   const source = sourceOf(response, 'IN_CLOUD');
   const text = response.text();
   let value: unknown;

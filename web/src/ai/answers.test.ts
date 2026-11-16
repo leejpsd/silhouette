@@ -2,7 +2,7 @@
 // ai/ boundary. Response shapes follow the Firebase AI Logic SDK (groundingMetadata with
 // searchEntryPoint.renderedContent and groundingChunks; inlineData audio parts).
 import { readFileSync } from 'node:fs';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { HybridParams } from 'firebase/ai';
 
 import { Raw, asPublic } from '../core/types';
@@ -28,6 +28,7 @@ import {
   type ProgramFacts,
 } from './tasks';
 import { askFreeText, explainPersonal, type PersonalResult } from './on-device';
+import { setDeviceModelForTests } from './device-fake';
 import { ASK_V4, EXPLAIN_V5 } from './prompts';
 
 const shared = (rel: string) => readFileSync(new URL(`../../../shared/${rel}`, import.meta.url), 'utf8');
@@ -65,6 +66,7 @@ function fake(reply: (params: HybridParams) => Partial<ModelResponse> | Error) {
 }
 
 afterEach(() => {
+  setDeviceModelForTests('absent');
   setModelProviderForTests(null);
   setConfigForTests(null);
 });
@@ -193,6 +195,9 @@ const personal: PersonalResult = {
 };
 
 describe('the person\'s own result (on device only)', () => {
+  beforeEach(() => setDeviceModelForTests('available'));
+  afterEach(() => setDeviceModelForTests('absent'));
+
   it('explain.personal runs ONLY_ON_DEVICE with the result, limits and values, and refuses a cloud answer', async () => {
     const calls = fake(() => ({ text: () => 'The rules say probably not, because the residency rule is not met.', inferenceSource: 'on_device' }));
     const result = await explainPersonal(Raw.of(personal));
@@ -355,11 +360,13 @@ describe('checks on model text on every path, in the answer language', () => {
       });
     }
     if (k.scope === 'personal') {
+      // The guard of ONLY_ON_DEVICE tasks needs a device model that reports itself available.
       for (const [path, run] of Object.entries({
         'explain.personal': () => explainPersonal(Raw.of({ ...personal, locale: k.locale, verdict: k.verdict ?? 'maybe' })),
         'ask.freeText': () => askFreeText(Raw.of('?'), Raw.of({ ...personal, locale: k.locale, verdict: k.verdict ?? 'maybe' })),
       })) {
         it(`${k.id} is blocked on ${path}`, async () => {
+          setDeviceModelForTests('available');
           fake(() => ({ text: () => k.text, inferenceSource: 'on_device' }));
           await expect(run()).rejects.toMatchObject({ kind: 'blocked' });
         });

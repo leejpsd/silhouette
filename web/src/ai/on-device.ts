@@ -6,7 +6,7 @@ import { InferenceMode } from 'firebase/ai';
 import { Raw, reveal } from '../core/types';
 import routing from '../../../shared/routing.json';
 import { classifyError, TaskError } from './errors';
-import { modelFor, sourceOf } from './model-port';
+import { deviceAvailability, modelFor, sourceOf } from './model-port';
 import { ASK_CREATE_OPTIONS, PHOTO_CREATE_OPTIONS } from './device-model';
 import { ASK_PERSONAL_V1, EXPLAIN_PERSONAL_V1, PHOTO_READ, fill, type PromptTemplate } from './prompts';
 import { checked, languageName, type DocType, type RoutingReason, type TaskResult } from './tasks';
@@ -27,6 +27,20 @@ async function base64(blob: Blob): Promise<string> {
 }
 
 /**
+ * The hard guard of every ONLY_ON_DEVICE task, before any SDK call. Firebase AI Logic 3.1 creates no
+ * on-device adapter when the browser has no `LanguageModel` global, and then sends the request to the
+ * cloud whatever the inference mode, ONLY_ON_DEVICE included. So without the Prompt API, or with a
+ * model that is not ready, these tasks stop here and nothing is built or sent.
+ */
+async function requireDeviceModel(createOptions: unknown, task: string): Promise<void> {
+  if (typeof (globalThis as { LanguageModel?: unknown }).LanguageModel === 'undefined') {
+    throw new TaskError('on-device-unavailable', `${task}: this browser has no on-device model`);
+  }
+  const status = await deviceAvailability(createOptions);
+  if (status !== 'available') throw new TaskError('on-device-unavailable', `${task}: the on-device model is ${status}`);
+}
+
+/**
  * Task `document.photo.read`: ONLY_ON_DEVICE, input Raw (photo), reason `photo-never-leaves`.
  * Transcribes the photo on device; the text stays Raw and goes through the Skeletonizer next.
  * Throws TaskError('on-device-unavailable') when the on-device model cannot run.
@@ -35,6 +49,7 @@ export async function readPhoto(photo: Raw<Blob>, docType: DocType, language: st
   if (PHOTO_TASK.mode !== 'ONLY_ON_DEVICE') throw new Error('routing.json changed: document.photo.read mode');
   const image = reveal(photo);
   if (!PHOTO_TYPES.has(image.type)) throw new TaskError('on-device-unavailable', 'only JPEG and PNG photos can be read on device');
+  await requireDeviceModel(PHOTO_CREATE_OPTIONS(language), 'document.photo.read');
   try {
     const model = await modelFor(`document.photo.read:${language}`, () => ({
       mode: InferenceMode.ONLY_ON_DEVICE,
@@ -85,6 +100,7 @@ async function runPersonal(
   reason: RoutingReason,
   signal: AbortSignal | undefined,
 ): Promise<TaskResult<string>> {
+  await requireDeviceModel(ASK_CREATE_OPTIONS(locale), taskKey);
   const system = fill(prompt.system, { locale: languageName(locale) });
   const once = async (): Promise<TaskResult<string>> => {
     try {

@@ -1,13 +1,17 @@
 // Persistent chrome: the header with the wordmark and the language control, the one-line demo
 // notice, the "Leaving your device" count row with its record, and "Delete everything".
-import { useId, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
 import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, type CopyKey, type Locale } from './i18n';
 import { useApp } from './context';
+import { routeHref } from './router';
 import { Count, Paper, Sheet, ActionLabel } from './design/parts';
 import { Caret, Check, CrossCircle, Phone, Trash } from './design/icons';
 
 const SHORT_NAMES: Record<Locale, string> = { en: 'EN', es: 'ES', ko: '한국어' };
+
+/** Opens the record of what left this device (the "Leaving your device" sheet) from anywhere. */
+export const OPEN_RECORD_EVENT = 'silhouette:open-record';
 
 export function Header({ onLocale }: { onLocale: (locale: Locale) => void }) {
   const { t, locale } = useApp();
@@ -93,6 +97,18 @@ export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
         </h2>
         <p className="sheet-text">{t('demo.body')}</p>
         <p className="sheet-note">{t('promise.line3')}</p>
+        <ul className="sheet-links">
+          <li>
+            <a className="text-link" href={routeHref({ name: 'judges' })} onClick={() => setOpen(false)} data-testid="judges-link">
+              {t('demo.judges')}
+            </a>
+          </li>
+          <li>
+            <a className="text-link" href={routeHref({ name: 'device-check' })} onClick={() => setOpen(false)}>
+              {t('demo.deviceCheck')}
+            </a>
+          </li>
+        </ul>
         <DeleteEverything onDelete={onDelete} onDone={() => setOpen(false)} />
       </Sheet>
     </aside>
@@ -111,7 +127,7 @@ function useLedger() {
     left,
     sent: left.filter((e) => e.status === 'sent').length,
     incomplete: left.filter((e) => e.status !== 'sent').length,
-    kept: entries.length - left.length,
+    kept: entries.filter((e) => e.status === 'answered').length,
   };
 }
 
@@ -168,6 +184,11 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   const details = useRef<HTMLButtonElement>(null);
   const headline = useId();
   const fieldName = useFieldName();
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener(OPEN_RECORD_EVENT, show);
+    return () => window.removeEventListener(OPEN_RECORD_EVENT, show);
+  }, []);
   const summary = useSummary();
   const date = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(clearedAt);
   const shortDate = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(clearedAt);

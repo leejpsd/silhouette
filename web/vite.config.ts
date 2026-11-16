@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { loadEnv } from 'vite';
 import { defineConfig, type Plugin } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { makeTextPdf } from './scripts/text-pdf.mjs';
@@ -74,7 +75,25 @@ function groundInHead(): Plugin {
   };
 }
 
-export default defineConfig({
+/**
+ * `npm run build:hosting` builds in mode `hosting`: the build for Firebase Hosting. It needs the
+ * reCAPTCHA Enterprise site key for production App Check, from the environment or a git-ignored
+ * `.env.hosting.local`, and stops with a clear message without it.
+ */
+function requireSiteKey(mode: string): void {
+  if (mode !== 'hosting') return;
+  const key = loadEnv(mode, here('.'), 'VITE_')['VITE_RECAPTCHA_SITE_KEY'];
+  if (!key) {
+    throw new Error(
+      'build:hosting needs VITE_RECAPTCHA_SITE_KEY (the reCAPTCHA Enterprise site key registered for App Check). ' +
+        'Set it in the environment or in web/.env.hosting.local, which is not committed.',
+    );
+  }
+}
+
+export default defineConfig(({ mode }) => {
+  requireSiteKey(mode);
+  return {
   plugins: [react(), samplePdfs(), serviceWorker(), groundInHead()],
   server: {
     // Contracts are imported from ../shared at build time.
@@ -82,6 +101,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts', 'eval/**/*.test.mjs'],
+    include: ['src/**/*.test.ts', 'eval/**/*.test.mjs', 'scripts/**/*.test.mjs'],
   },
+  };
 });

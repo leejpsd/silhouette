@@ -5,7 +5,7 @@
 // headers, which are not recorded; query strings are dropped; App Check request bodies (debug
 // token or attestation) are never stored.
 
-import { markFailed, markSent, recordAttempt, type OutboundChannel } from './outbound';
+import { markBlocked, markFailed, markSent, recordAttempt, type OutboundChannel } from './outbound';
 
 export const AI_LOGIC_HOST = 'firebasevertexai.googleapis.com';
 export const APP_CHECK_HOST = 'content-firebaseappcheck.googleapis.com';
@@ -113,20 +113,45 @@ function sameJson(a: unknown, b: unknown): boolean {
   return ka.every((k) => Object.hasOwn(b, k) && sameJson((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
 }
 
-/** The bytes to send for an AI request body: the shown body when it is the same request; null when it differs. */
-export function bodyToSend(body: string): string | null {
-  if (expectedBodies.length === 0) return body;
+/**
+ * Cloud requests a cloud-capable task built itself (document pointer extraction), allowed by their
+ * system instruction while the task waits for the answer. ONLY_ON_DEVICE tasks never register one.
+ */
+const permittedSystems: string[] = [];
+
+export function permitCloudRequest(systemInstruction: string): () => void {
+  permittedSystems.push(systemInstruction);
+  return () => {
+    const i = permittedSystems.indexOf(systemInstruction);
+    if (i !== -1) permittedSystems.splice(i, 1);
+  };
+}
+
+/**
+ * The bytes to send for a request to Firebase AI Logic, or null when it must not leave:
+ * - the body a task showed before sending (byte for byte), when it is the same request;
+ * - the SDK's own body, when a cloud-capable task permitted requests with this system instruction;
+ * - otherwise nothing. A request no cloud-capable task registered immediately before (for example one
+ *   the SDK sends on its own for an ONLY_ON_DEVICE task when the browser has no on-device model) is
+ *   blocked, and so is a request that differs from the one shown.
+ */
+export function bodyToSend(body: string | null): string | null {
+  if (body === null) return null;
   let parsed: unknown;
   try {
     parsed = JSON.parse(body);
   } catch {
-    return body;
+    return null;
   }
   const match = expectedBodies.find((e) => sameJson(e.parsed, parsed));
   if (match) return match.body;
   const system = systemInstructionOf(body);
-  return system !== undefined && expectedBodies.some((e) => e.system === system) ? null : body;
+  if (system !== undefined && expectedBodies.some((e) => e.system === system)) return null;
+  return system !== undefined && permittedSystems.includes(system) ? body : null;
 }
+
+/** Why a request to Firebase AI Logic was stopped before it left (shown in the record). */
+export const BLOCKED_REASON = 'Blocked before sending: no cloud request was expected';
 
 /** Called once, when the first request to Firebase AI Logic in the cloud is about to leave. */
 const firstCloudRequest = new Set<() => void>();
@@ -157,9 +182,15 @@ export function installNetMonitor(target: { fetch: typeof fetch; location: Locat
       // data: and blob: URLs are read locally (the SDK uses them to decode images); never network.
       if ((url.protocol === 'https:' || url.protocol === 'http:') && url.origin !== target.location.origin) {
         let body = typeof init?.body === 'string' ? init.body : null;
-        if (body !== null && url.hostname === AI_LOGIC_HOST) {
+        if (url.hostname === AI_LOGIC_HOST) {
           const send = bodyToSend(body);
-          if (send === null) return Promise.reject(new Error('The request differs from the one shown before sending; it was not sent.'));
+          if (send === null) {
+            // Recorded as blocked: it never left this device.
+            const info = classify(url, null);
+            const blocked = recordAttempt({ channel: info.channel, fields: info.fields, destination: url.hostname, path: url.pathname, at: Date.now(), bytes: 0 });
+            markBlocked(blocked, BLOCKED_REASON);
+            return Promise.reject(new Error(BLOCKED_REASON));
+          }
           if (send !== body) {
             body = send;
             init = { ...init, body: send };

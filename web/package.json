@@ -19,7 +19,9 @@
     "eval:generate": "node eval/generate.mjs",
     "eval:leaks": "node eval/leakcheck.mjs",
     "capture": "playwright test -c playwright.visual.config.ts",
-    "fonts:copy": "node scripts/copy-fonts.mjs"
+    "fonts:copy": "node scripts/copy-fonts.mjs",
+    "build:hosting": "npm run typecheck && vite build --mode hosting && node scripts/check-bundle.mjs dist",
+    "check:bundle": "node scripts/check-bundle.mjs dist"
   },
   "dependencies": {
     "firebase": "^13.3.0",

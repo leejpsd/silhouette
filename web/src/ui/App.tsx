@@ -27,6 +27,8 @@ const DocumentPreviewScreen = lazy(() => import('./screens/DocumentPreview').the
 const DocumentReviewScreen = lazy(() => import('./screens/DocumentReview').then((m) => ({ default: m.DocumentReviewScreen })));
 const DiscoverScreen = lazy(() => import('./answers/MoreHelp').then((m) => ({ default: m.DiscoverScreen })));
 const NearbyScreen = lazy(() => import('./answers/MoreHelp').then((m) => ({ default: m.NearbyScreen })));
+const DeviceCheckScreen = lazy(() => import('./screens/DeviceCheck').then((m) => ({ default: m.DeviceCheckScreen })));
+const JudgesScreen = lazy(() => import('./screens/Judges').then((m) => ({ default: m.JudgesScreen })));
 
 const ANSWERS_RECORD = 'quickcheck.answers';
 const LOCALE_PREF = `${PREF_PREFIX}locale`;
@@ -142,6 +144,8 @@ export function App() {
     else if (route.name === 'doc') screen = <DocumentAddScreen />;
     else if (route.name === 'discover') screen = <DiscoverScreen />;
     else if (route.name === 'nearby') screen = <NearbyScreen />;
+    else if (route.name === 'device-check') screen = <DeviceCheckScreen />;
+    else if (route.name === 'judges') screen = <JudgesScreen />;
     else if (route.name === 'doc-preview') screen = <DocumentPreviewScreen />;
     else if (route.name === 'doc-review') screen = <DocumentReviewScreen key={doc.extraction ? 'extracted' : 'manual'} />;
     else screen = <StartScreen notice={notice} />;

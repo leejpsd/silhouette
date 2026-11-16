@@ -1,7 +1,7 @@
 // The model is mocked at the ai/ boundary (setModelProviderForTests); everything else is real:
 // prompt loading, schema conversion, response parsing, error classification, rehydration.
 import { readFileSync } from 'node:fs';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { HybridParams } from 'firebase/ai';
 
 import { Raw, reveal } from '../core/types';
@@ -13,6 +13,7 @@ import { CLOUD_MODEL, POINTER_SCHEMAS, activePointerConfig, extractPointers, poi
 import { setConfigForTests } from '../data/remote-config';
 import { POINTER_V2, POINTER_V3, POINTER_V4, pointerConfigFor } from './pointer-config';
 import { readPhoto } from './on-device';
+import { setDeviceModelForTests } from './device-fake';
 import { POINTER_EXTRACT, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, parsePrompt } from './prompts';
 import { toModelSchema } from './model-schema';
 
@@ -154,6 +155,9 @@ describe('document.pointer.extract', () => {
 });
 
 describe('document.photo.read (ONLY_ON_DEVICE)', () => {
+  beforeEach(() => setDeviceModelForTests('available'));
+  afterEach(() => setDeviceModelForTests('absent'));
+
   const photo = () => Raw.of<Blob>(new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: 'image/jpeg' }));
 
   it('returns Raw text when the model runs on device', async () => {
@@ -281,6 +285,7 @@ describe('on-device failure falls back to the cloud once (cloud-safe input only)
   });
 
   it('never sends Raw input to the cloud: a failed photo read is not repeated anywhere', async () => {
+    setDeviceModelForTests('available');
     const modes: string[] = [];
     setModelProviderForTests(async (params) => ({
       async generateContent() {
@@ -290,5 +295,6 @@ describe('on-device failure falls back to the cloud once (cloud-safe input only)
     }));
     await expect(readPhoto(Raw.of<Blob>(new Blob([new Uint8Array([1])], { type: 'image/png' })), 'paystub', 'en')).rejects.toBeInstanceOf(TaskError);
     expect(modes).toEqual(['only_on_device']);
+    setDeviceModelForTests('absent');
   });
 });
