@@ -10,3 +10,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** The app's version (web/package.json), for the on-device check's run file. */
+declare const __APP_VERSION__: string;
+/** The Firebase JS SDK's version (Firebase AI Logic), for the on-device check's run file. */
+declare const __FIREBASE_SDK_VERSION__: string;

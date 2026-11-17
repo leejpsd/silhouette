@@ -111,6 +111,11 @@ export default defineConfig(({ mode }) => {
     },
   },
   plugins: [react(), samplePdfs(), serviceWorker(), groundInHead()],
+  // For the on-device check's run file (device block): the app's and the Firebase JS SDK's versions.
+  define: {
+    __APP_VERSION__: JSON.stringify((JSON.parse(readFileSync(here('./package.json'), 'utf8')) as { version: string }).version),
+    __FIREBASE_SDK_VERSION__: JSON.stringify((JSON.parse(readFileSync(here('./node_modules/firebase/package.json'), 'utf8')) as { version: string }).version),
+  },
   server: {
     // Contracts are imported from ../shared at build time.
     fs: { allow: ['..'] },

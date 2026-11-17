@@ -145,7 +145,8 @@ function useLedger() {
     clearedAt,
     left,
     sent: left.filter((e) => e.status === 'sent').length,
-    incomplete: left.filter((e) => e.status !== 'sent').length,
+    // Listed under "Not completed" (shared/RECORD.md section 2): failed requests; one still in progress is not.
+    incomplete: left.filter((e) => e.status === 'failed').length,
     kept: entries.filter((e) => e.status === 'answered').length,
   };
 }
@@ -162,8 +163,8 @@ const KEPT_TITLES: Readonly<Record<string, CopyKey>> = {
 
 /** What a request carries that comes from the person (a silhouette of their document or answers). */
 const PERSONAL_FIELDS: ReadonlySet<string> = new Set(['document-silhouette', 'profile-silhouette', 'county-area', 'inline-file']);
-/** Channels of requests that carry nothing of the person's: checks and settings. */
-const TECHNICAL_CHANNELS: ReadonlySet<string> = new Set(['app-check', 'recaptcha', 'remote-config', 'firestore', 'analytics', 'other']);
+/** Channels of requests that carry nothing of the person's: checks and settings (shared/RECORD.md section 4). */
+const TECHNICAL_CHANNELS: ReadonlySet<string> = new Set(['app-check', 'recaptcha', 'remote-config', 'other']);
 
 /**
  * The line under the count: the requests that carried something of the person's, apart from the

@@ -20,6 +20,7 @@ import {
   firstRan,
   isRunFile,
   platformString,
+  webRunDevice,
   summarize,
   runFileName,
   type CaseResult,
@@ -63,6 +64,7 @@ export function DeviceCheckScreen() {
       availability,
       jurisdiction: PACK.jurisdiction,
       repetitions,
+      device: webRunDevice(platformString()),
       cases: [],
     };
     setView({ kind: 'live', file, running: 1 });

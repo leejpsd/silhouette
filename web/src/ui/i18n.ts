@@ -1,6 +1,8 @@
 // UI copy: shared/copy/*.json (app-wide) and shared/rulepacks/{jurisdiction}/copy/*.json (pack
 // labels, key conventions in shared/rulepacks/SPEC.md section 1).
-// Per-key lookup: shared/{locale} → pack/{locale} → ./copy-local → the same in English.
+// Per-key lookup: shared/{locale} → pack/{locale} → ./copy-local → the same in English. A key that
+// names the platform has variants in shared/copy (shared/copy/PLATFORM_VARIANTS.md): `{key}.web` is
+// looked up first.
 
 import sharedEn from '../../../shared/copy/en.json';
 import sharedEs from '../../../shared/copy/es.json';
@@ -14,7 +16,10 @@ export type Locale = (typeof LOCALES)[number];
 /** Language names in their own language (not translated). */
 export const LOCALE_NAMES: Record<Locale, string> = { en: 'English', es: 'Español', ko: '한국어' };
 
-export type CopyKey = keyof typeof sharedEn | keyof (typeof LOCAL_COPY)['en'];
+/** Keys of shared/copy, with the platform variants (`{key}.web`) also under their plain name. */
+type SharedKey = keyof typeof sharedEn;
+type PlainOfWeb<K> = K extends `${infer Base}.web` ? Base : never;
+export type CopyKey = SharedKey | PlainOfWeb<SharedKey>;
 
 type Table = Readonly<Record<string, string>>;
 const SHARED: Record<Locale, Table> = { en: sharedEn, es: sharedEs, ko: sharedKo };
@@ -23,8 +28,11 @@ export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 }
 
+/** This platform's variant of keys that name the platform (shared/copy/PLATFORM_VARIANTS.md). */
+const PLATFORM = 'web';
+
 function inLocale(locale: Locale, key: string): string | undefined {
-  return SHARED[locale][key] ?? PACK_COPY[locale][key] ?? (LOCAL_COPY[locale] as Table)[key];
+  return SHARED[locale][`${key}.${PLATFORM}`] ?? SHARED[locale][key] ?? PACK_COPY[locale][key] ?? (LOCAL_COPY[locale] as Table)[key];
 }
 
 /** Looks up a key with per-key fallback to English. Returns undefined when no table has it. */

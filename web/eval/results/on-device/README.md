@@ -43,7 +43,7 @@ Figures are taken from the files. "Readings" are the extraction cases (5 per run
 
 In the 18:36 run both wrong values were names cut short; the 00:38 run is the first with that rule. Its two readings with a value not found: L01 run 3 (the gross part answered another line's year to date, the checks rejected it, and year to date stayed empty) and L07 run 3 (period start and end left empty; the yearly income used the pay date).
 
-The rules of the on-device reading are specified in `shared/validation/DEVICE_READING.md` (contract v1.17), with the prompts `shared/prompts/pointer-extract.v5.md` and `pointer-extract-device.v1.md`.
+The rules of the on-device reading are specified in `shared/validation/DEVICE_READING.md` (version 2, contract v1.18), with the prompts `shared/prompts/pointer-extract.v5.md` and `pointer-extract-device.v1.md`.
 
 ## Recomputed under the confirmation rules (contract v1.18)
 
@@ -65,6 +65,8 @@ On the iPhone the wrong values were all secondary: hourly rate 11 times, hours w
 
 ## What a run file contains
 
+The format is specified for every platform in `shared/validation/DEVICE_CHECK.md` (contract v1.18), with the JSON Schema `shared/schemas/device-check-run.v3.json`; every file here and in `history/` validates against it (`src/ui/device-check/run.test.ts`). The cases and the check documents are `shared/fixtures/device-check/`.
+
 | Field | Meaning |
 |---|---|
 | `date` | When the run started (ISO 8601) |
@@ -79,5 +81,6 @@ On the iPhone the wrong values were all secondary: hourly rate 11 times, hours w
 | `cases[].device` (v3 additions) | `scoredBy`: `value` (a field is right when the answered placeholder holds the expected value; `gold` lists every placeholder that holds it, so a paystub that writes an amount twice has two right ids); `core`: the core fields correct (all fields but the deductions); `deductions`: the status of the deductions the device gave (`not-asked` when the core failed first); `deductionsNotRead`; `passes`: for each request to the device (`core`, `gross` when gross pay and year to date were asked again, `deductions`, then `deductions-again` when the list did not add up), its `rawText`, `parsed`, `parsedValue`, `problems`, `marked` (problems that only left fields out as not read: names sharing a placeholder, hours or rate on an amount's placeholder), `extraKeys` (ignored), `missingKeys` and `latencyMs` |
 | `cases[].final` (v3 additions) | `notRead`: every field left out as not read on this device; `incomeInputsCorrect`: gross pay, year to date, pay frequency, period start, period end and pay date all right (or absent where the document has none); `incomeInputs`: those inputs split into `right`, `notFound` (left empty) and `wrong` (a value that is not the document's); `wrongFields`: every field whose value reached the person wrong |
 | `repetitions`, `cases[].repetition` (v3) | How many times each extraction case was run, and which run a case is (absent: one run) |
+| `device` (v3, optional) | The device block of the schema. A run made in a browser writes platform `web`, the operating system, the Firebase JS SDK version and the app version; phones also write the device model and the on-device model where their platform names it |
 
 A case that ended up in the cloud is recorded as `IN_CLOUD` and counted as a cloud run in the summary; the summary also says how many of them went to the cloud after a failed on-device attempt. A case that may only run on the device is never sent: without the model it is recorded as `not-run` with its error.

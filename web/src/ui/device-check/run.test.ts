@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { Raw } from '../../core/types';
 import { skeletonize } from '../../core/skeleton';
@@ -8,6 +8,8 @@ import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { BANDS, PACK } from '../pack';
 import { buildSteps, computeVerdicts } from '../quickcheck';
 import { preparedHousehold } from '../judges/household';
+import { runFileProblems } from './run-schema';
+import { webRunDevice } from './run';
 import { CASES, RUN_FILE_KIND, browserVersion, casesFor, incomeInputs, incomeInputsCorrect, isRunFile, wrongFields, runFileName, scoreFields, summarize, type CaseResult } from './run';
 import answers from '../../../../shared/samples/answers.json';
 import sampleText from '../../../../shared/samples/paystub-en-01.txt?raw';
@@ -127,8 +129,11 @@ describe('the on-device check', () => {
   const recording = (name: string) => JSON.parse(readFileSync(new URL(`../../../eval/results/on-device/${name}`, import.meta.url), 'utf8')) as { version: number; cases: CaseResult[] };
 
   it('recognises a run file; every earlier recording still opens', () => {
-    expect(isRunFile({ kind: RUN_FILE_KIND, version: 3, date: '2026-11-17T10:00:00Z', cases: [] })).toBe(true);
-    expect(isRunFile({ kind: RUN_FILE_KIND, version: 2, date: '2026-11-17T10:00:00Z', cases: [] })).toBe(true);
+    const header = { kind: RUN_FILE_KIND, date: '2026-11-17T10:00:00Z', browser: 'Chrome 157.0.0.0', platform: 'macOS', userAgent: 'x', availability: {}, jurisdiction: 'us-ca', cases: [] };
+    expect(isRunFile({ ...header, version: 3 })).toBe(true);
+    expect(isRunFile({ ...header, version: 2 })).toBe(true);
+    // A file without the fields the schema requires is not a run file.
+    expect(isRunFile({ kind: RUN_FILE_KIND, version: 3, date: '2026-11-17T10:00:00Z', cases: [] })).toBe(false);
     expect(isRunFile({ kind: 'other', date: 'x', cases: [] })).toBe(false);
     // Version 1: the first recorded run; no retry existed, so the device's answers were the final ones.
     const first = recording('device-check-2026-11-16-chrome157-macos.json');
@@ -158,6 +163,34 @@ describe('the on-device check', () => {
       finalCorrect: 60,
       retriedInCloud: 5,
     });
+  });
+});
+
+describe('the run files and the shared contract (v1.18)', () => {
+  const dir = new URL('../../../eval/results/on-device/', import.meta.url);
+  const files = [...readdirSync(dir).filter((f) => f.endsWith('.json')), ...readdirSync(new URL('history/', dir)).map((f) => `history/${f}`)];
+
+  it('every bundled and history run file validates against shared/schemas/device-check-run.v3.json', () => {
+    expect(files.length).toBeGreaterThanOrEqual(6);
+    for (const f of files) expect(runFileProblems(JSON.parse(readFileSync(new URL(f, dir), 'utf8'))), f).toEqual([]);
+  });
+
+  it('the latest recorded run has exactly the cases of shared/fixtures/device-check/cases.json, in order', () => {
+    const cases = (JSON.parse(readFileSync(new URL('../../../../shared/fixtures/device-check/cases.json', import.meta.url), 'utf8')) as { cases: { id: string; task: string; mode: string }[] }).cases;
+    const latest = JSON.parse(readFileSync(new URL('device-check-2026-11-17T0038-chrome157-macos.json', dir), 'utf8')) as { cases: { id: string; task: string; mode: string }[] };
+    const seen = new Map<string, { id: string; task: string; mode: string }>();
+    for (const c of latest.cases) if (!seen.has(c.id)) seen.set(c.id, { id: c.id, task: c.task, mode: c.mode });
+    expect([...seen.values()]).toEqual(cases.map(({ id, task, mode }) => ({ id, task, mode })));
+    expect(CASES).toHaveLength(cases.length);
+  });
+
+  it('a run made in this browser carries the web device block, and validates', () => {
+    const device = webRunDevice('macOS');
+    expect(device).toMatchObject({ platform: 'web', os: 'macOS' });
+    expect(device.sdk).toMatch(/^Firebase JS SDK \d+\.\d+\.\d+/);
+    const file = { kind: RUN_FILE_KIND, version: 3, date: '2026-11-17T10:00:00.000Z', browser: 'Chrome 157.0.0.0', platform: 'macOS', userAgent: 'x', availability: {}, jurisdiction: 'us-ca', repetitions: 1, device, cases: [] };
+    expect(runFileProblems(JSON.parse(JSON.stringify(file)))).toEqual([]);
+    expect(isRunFile({ ...file, device: { ...device, extra: 1 } })).toBe(false);
   });
 });
 

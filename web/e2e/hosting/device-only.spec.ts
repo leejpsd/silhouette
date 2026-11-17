@@ -10,7 +10,7 @@ const hosting = JSON.parse(readFileSync(new URL('../../hosting/firebase.hosting.
   hosting: { headers: { source: string; headers: { key: string; value: string }[] }[] };
 };
 const POLICY = hosting.hosting.headers.flatMap((h) => h.headers).find((h) => h.key === 'Content-Security-Policy')?.value ?? '';
-const ANSWERS = JSON.parse(readFileSync(new URL('../fixtures/device-check-answers.json', import.meta.url), 'utf8')) as {
+const ANSWERS = JSON.parse(readFileSync(new URL('../../../shared/fixtures/device-check/answers.json', import.meta.url), 'utf8')) as {
   documents: { needle: string; core: Record<string, unknown>; deductions: Record<string, unknown> }[];
 };
 

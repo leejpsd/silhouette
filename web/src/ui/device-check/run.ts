@@ -1,4 +1,5 @@
-// The device check: a fixed set of synthetic cases run through Firebase AI Logic and the app's own task
+// The device check (shared/validation/DEVICE_CHECK.md): the fixed set of synthetic cases of
+// shared/fixtures/device-check/cases.json, run through Firebase AI Logic and the app's own task
 // functions, recording where each one actually ran. It produces a run file (JSON) that can be kept as
 // evidence and replayed by a browser without the on-device model. Synthetic inputs only.
 
@@ -20,16 +21,17 @@ import { translator, type Locale } from '../i18n';
 import { BANDS, PACK } from '../pack';
 import { buildSteps, toEngineAnswers } from '../quickcheck';
 import { preparedHousehold } from '../judges/household';
+import { runFileProblems } from './run-schema';
 import answers from '../../../../shared/samples/answers.json';
 import sampleText from '../../../../shared/samples/paystub-en-01.txt?raw';
-import docA from '../../../eval/dataset/en-l01-1.txt?raw';
-import goldA from '../../../eval/dataset/en-l01-1.gold.json';
-import docB from '../../../eval/dataset/en-l04-2.txt?raw';
-import goldB from '../../../eval/dataset/en-l04-2.gold.json';
-import docC from '../../../eval/dataset/en-l07-3.txt?raw';
-import goldC from '../../../eval/dataset/en-l07-3.gold.json';
-import docD from '../../../eval/dataset/en-l10-1.txt?raw';
-import goldD from '../../../eval/dataset/en-l10-1.gold.json';
+import docA from '../../../../shared/fixtures/device-check/documents/en-l01-1.txt?raw';
+import goldA from '../../../../shared/fixtures/device-check/documents/en-l01-1.gold.json';
+import docB from '../../../../shared/fixtures/device-check/documents/en-l04-2.txt?raw';
+import goldB from '../../../../shared/fixtures/device-check/documents/en-l04-2.gold.json';
+import docC from '../../../../shared/fixtures/device-check/documents/en-l07-3.txt?raw';
+import goldC from '../../../../shared/fixtures/device-check/documents/en-l07-3.gold.json';
+import docD from '../../../../shared/fixtures/device-check/documents/en-l10-1.txt?raw';
+import goldD from '../../../../shared/fixtures/device-check/documents/en-l10-1.gold.json';
 
 export const RUN_FILE_KIND = 'silhouette-device-check';
 /**
@@ -149,7 +151,27 @@ export interface RunFile {
   readonly jurisdiction: string;
   /** Version 3: how many times each extraction case was run (1 when absent). */
   readonly repetitions?: number | undefined;
+  /** Version 3, optional: the device block of shared/schemas/device-check-run.v3.json. */
+  readonly device?: RunDevice | undefined;
   readonly cases: readonly CaseResult[];
+}
+
+export interface RunDevice {
+  readonly platform: 'web' | 'ios' | 'android';
+  readonly os?: string | undefined;
+  readonly osVersion?: string | undefined;
+  readonly model?: string | undefined;
+  readonly onDeviceModel?: string | undefined;
+  readonly sdk?: string | undefined;
+  readonly appVersion?: string | undefined;
+}
+
+/**
+ * The device block of a run made in this browser. Chrome does not name its on-device model to pages, so
+ * `onDeviceModel` and `model` are left out; the browser and its version are the file's `browser`.
+ */
+export function webRunDevice(platform: string): RunDevice {
+  return { platform: 'web', os: platform, sdk: `Firebase JS SDK ${__FIREBASE_SDK_VERSION__} (Firebase AI Logic)`, appVersion: __APP_VERSION__ };
 }
 
 /** "Chrome 142.0.7444.59" from the user agent. */
@@ -582,7 +604,7 @@ export function summarize(cases: readonly CaseResult[], version: number = RUN_FI
 
 /** Whether a parsed JSON value is a run file this page can show. */
 export function isRunFile(value: unknown): value is RunFile {
-  const v = value as Partial<RunFile> | null;
-  // Versions 1 to 3 open alike; version 1 has no per-field diagnosis or final result, version 2 no parts.
-  return v !== null && typeof v === 'object' && v.kind === RUN_FILE_KIND && Array.isArray(v.cases) && typeof v.date === 'string' && (v.version === 1 || v.version === 2 || v.version === 3);
+  // Versions 1 to 3 open alike (shared/schemas/device-check-run.v3.json accepts all three); version 1
+  // has no per-field diagnosis or final result, version 2 no parts.
+  return runFileProblems(value).length === 0;
 }

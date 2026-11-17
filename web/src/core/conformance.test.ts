@@ -29,6 +29,7 @@ import { InputError, RuleError, UNKNOWN, evaluate, verdicts, type Answers, type 
 import { ValidationInputError, validatePaystubs, type PaystubValues } from './validate';
 import { toModelSchema, type ModelSchemaOptions } from '../ai/model-schema';
 import { runDeviceReadingFixture } from '../ai/device-reading.conformance';
+import { runDeviceCheckFixture, runJudgesHouseholdFixture } from '../ui/device-check/device-check.conformance';
 
 const SHARED = fileURLToPath(new URL('../../../shared/', import.meta.url));
 const CONFORMANCE_DIR = join(SHARED, 'fixtures', 'conformance');
@@ -241,18 +242,24 @@ const extraRunners: Record<string, (fixture: unknown) => void> = {
     }
   },
 };
-Object.assign(runners, extraRunners, { 'device-reading.json': runDeviceReadingFixture });
+Object.assign(runners, extraRunners, {
+  'device-reading.json': runDeviceReadingFixture,
+  'device-check.json': runDeviceCheckFixture,
+  'judges-household.json': runJudgesHouseholdFixture,
+});
 
 // ---------- Every file in the conformance folder ----------
 
 const conformanceFiles = readdirSync(CONFORMANCE_DIR).sort();
 
 describe('shared/fixtures/conformance', () => {
-  it('contains the ten known files (contract v1.17) and every file has a runner', () => {
+  it('contains the twelve known files (contract v1.18) and every file has a runner', () => {
     expect(conformanceFiles).toEqual([
+      'device-check.json',
       'device-reading.json',
       'evaluator.json',
       'generalize.json',
+      'judges-household.json',
       'model-schema.json',
       'output-check.json',
       'rehydrate.json',
