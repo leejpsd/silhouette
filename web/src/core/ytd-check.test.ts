@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { Raw } from './types';
 import { skeletonize } from './skeleton';
 import { allowlistFor, introducersFor } from '../ui/doc/allowlists';
-import { corePointerProblems, goldPlaceholderIds, largerYtdProblems, namesProblems, notReadFields, sameLineYtdProblems, sharedAmountProblems, ytdMissingWithCandidate } from './pointer-check';
+import { corePointerProblems, goldPlaceholderIds, incompleteNameProblems, largerYtdProblems, namesProblems, notReadFields, sameLineYtdProblems, sharedAmountProblems, ytdMissingWithCandidate } from './pointer-check';
 import { POINTER_SCHEMAS } from '../ai/tasks';
 
 const S = POINTER_SCHEMAS.paystub;
@@ -59,7 +59,7 @@ describe('year to date read from the wrong line', () => {
   });
 
   it('catches the three real on-device mistakes of the recorded run (sample and L01: N7 for N13; L07: N13 for N19)', () => {
-    const run = JSON.parse(read(new URL('../../eval/results/on-device/device-check-2026-11-16T1807-chrome157-macos.json', import.meta.url))) as {
+    const run = JSON.parse(read(new URL('../../eval/results/on-device/history/device-check-2026-11-16T1807-chrome157-macos.json', import.meta.url))) as {
       cases: { id: string; device?: { passes?: { part: string; rawText: string }[] } }[];
     };
     const docs: Record<string, URL> = {
@@ -143,6 +143,42 @@ describe('one placeholder, one field', () => {
 
   it('the real L07 mistake (hours worked on gross pay\'s placeholder) leaves hours out', () => {
     expect(notReadFields({ grossPay: 'N18', netPay: 'N28', ytdGross: 'N19', hoursWorked: 'N18', hourlyRate: 'N3' })).toEqual({ problems: ['hoursWorked:shares-placeholder'], fields: ['hoursWorked'] });
+  });
+});
+
+describe('names cut short', () => {
+  it('no false alarm on any right name: every line that holds a gold name, read as on that line', () => {
+    let readings = 0;
+    const alarms: string[] = [];
+    for (const d of GOLD) {
+      for (const field of ['employerName', 'employeeName']) {
+        for (const line of d.skeleton.split('\n')) {
+          const ids = (d.ids[field] ?? []).filter((id) => line.includes(`⟦${id}⟧`));
+          if (ids.length === 0) continue;
+          readings++;
+          const found = incompleteNameProblems({ [field]: ids }, d.skeleton);
+          if (found.length > 0) alarms.push(`${d.file} ${field}: ${found.join(', ')}`);
+        }
+      }
+    }
+    expect(alarms).toEqual([]);
+    expect(readings).toBe(76);
+  });
+
+  it('catches the two real shortened names of the 3-repetition run (sample: W1 for W1 W2 W3; L07: W1, and W4 for W4 W5)', () => {
+    const sample = silhouette(read(new URL('../../../shared/samples/paystub-en-01.txt', import.meta.url)));
+    expect(incompleteNameProblems({ employerName: ['W1'], employeeName: ['W4', 'W5'] }, sample.skeleton)).toEqual(['employerName:incomplete']);
+    const l07 = GOLD.find((g) => g.file === 'en-l07-3.txt');
+    expect(incompleteNameProblems({ employerName: ['W1'], employeeName: ['W4'] }, l07!.skeleton)).toEqual(['employerName:incomplete', 'employeeName:incomplete']);
+    expect(notReadFields({ employerName: ['W1'], employeeName: ['W4'] }, l07!.skeleton).fields).toEqual(['employerName', 'employeeName']);
+  });
+
+  it('a gap of three or more spaces, or any visible text, is not counted (two names may share a line)', () => {
+    const skeleton = '⟦W1⟧ ⟦W2⟧   ⟦W3⟧ ⟦W4⟧\nEmployee: ⟦W5⟧, ⟦W6⟧' as never;
+    expect(incompleteNameProblems({ employerName: ['W1', 'W2'], employeeName: ['W3', 'W4'] }, skeleton)).toEqual([]);
+    expect(incompleteNameProblems({ employeeName: ['W5'] }, skeleton)).toEqual([]);
+    expect(incompleteNameProblems({ employerName: ['W1'] }, skeleton)).toEqual(['employerName:incomplete']);
+    expect(incompleteNameProblems({ employerName: ['W2'] }, skeleton)).toEqual(['employerName:incomplete']);
   });
 });
 

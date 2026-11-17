@@ -348,6 +348,13 @@ for (const theme of ['light', 'dark'] as const) {
       });
       await page.getByTestId('recording-note').waitFor();
       await shot(page, `51-${width}-device-check-recording`, theme);
+      // The latest bundled run: its first screen (the three numbers) and the whole page.
+      await page.goto('/#/judges');
+      await page.goto('/#/device-check');
+      await page.getByRole('button', { name: 'Show the recording of device-check-2026-11-16T1836-chrome157-macos' }).click();
+      await page.getByTestId('device-headline').waitFor();
+      await shot(page, `52-${width}-device-check-latest-first-screen`, theme, false);
+      await shot(page, `52-${width}-device-check-latest`, theme);
     });
   }
 }

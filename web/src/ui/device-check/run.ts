@@ -345,7 +345,7 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number], repetition?: num
       checkParts: {
         core: (p) => corePointerProblems(schema, p, map, PACK.jurisdiction, skeleton),
         deductions: (p) => deductionsProblems(schema, p, map, PACK.jurisdiction),
-        notRead: notReadFields,
+        notRead: (p) => notReadFields(p, skeleton),
         ytdMissing: (p) => ytdMissingWithCandidate(schema, p, skeleton, map, PACK.jurisdiction),
       },
     });

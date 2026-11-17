@@ -102,6 +102,8 @@ describe('the on-device check', () => {
     const statuses = { grossPay: 'correct', ytdGross: 'missing', payFrequency: 'correct', periodStart: 'correct', periodEnd: 'absent', payDate: 'correct', hoursWorked: 'wrong', employerName: 'spurious' } as const;
     expect(incomeInputs(statuses)).toEqual({ right: ['grossPay', 'payFrequency', 'periodStart', 'periodEnd', 'payDate'], notFound: ['ytdGross'], wrong: [] });
     expect(wrongFields(statuses)).toEqual(['hoursWorked', 'employerName']);
+    // A name left out as not read is "missing" (not found), never wrong.
+    expect(wrongFields({ employerName: 'missing', employeeName: 'missing', grossPay: 'correct' })).toEqual([]);
     const final = (inputs: { right: string[]; notFound: string[]; wrong: string[] }, wrong: string[]) => ({ ran: 'ON_DEVICE' as const, fields: { correct: 1, total: 1 }, retried: false, incomeInputs: inputs, wrongFields: wrong });
     const x = { task: 'document.pointer.extract', mode: 'PREFER_ON_DEVICE' as const, ran: 'ON_DEVICE' as const, latencyMs: 1, outputCheck: null };
     const cases: CaseResult[] = [
@@ -135,13 +137,13 @@ describe('the on-device check', () => {
   });
 
   it('the version 3 recording: 13 answered on this device, 1 in the cloud after a failed core', () => {
-    const third = recording('device-check-2026-11-16T1807-chrome157-macos.json');
+    const third = recording('history/device-check-2026-11-16T1807-chrome157-macos.json');
     expect(isRunFile(third)).toBe(true);
     expect(summarize(third.cases, third.version)).toMatchObject({ onDevice: 13, inCloudAfterDevice: 1, notRun: 0, total: 14, finalCorrect: 56, fieldsTotal: 60, deductionsNotRead: 1, incomeInputsCorrect: null });
   });
 
   it('the version 2 recording: 9 answered on this device, 5 in the cloud after a failed on-device attempt', () => {
-    const second = recording('device-check-2026-11-16T1744-chrome157-macos.json');
+    const second = recording('history/device-check-2026-11-16T1744-chrome157-macos.json');
     expect(isRunFile(second)).toBe(true);
     expect(second.version).toBe(2);
     expect(summarize(second.cases, second.version)).toMatchObject({

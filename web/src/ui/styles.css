@@ -2955,6 +2955,29 @@ main h2.source-title {
     radial-gradient(farthest-side at 100% 50%, var(--line), transparent) right / var(--space-xs) 100% no-repeat scroll;
 }
 
+.device-headline {
+  display: grid;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.device-headline li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.device-headline .figure {
+  flex: none;
+  min-width: 4.5ch;
+  font-family: var(--font-display);
+  font-size: var(--type-heading-size);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
 .check-option {
   display: flex;
   align-items: center;

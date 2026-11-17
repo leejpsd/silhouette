@@ -156,6 +156,42 @@ export function namesProblems(pointers: Record<string, unknown>): string[] {
 }
 
 /**
+ * A name cut short: the answered word placeholders are directly followed or preceded, on the same line,
+ * by a word placeholder the answer leaves out, with nothing but one or two spaces between them (no
+ * visible text). Wider gaps are not counted, because a layout may put two names on one line separated
+ * by spaces. Names feed no rule; the name is marked not read and never extended by code.
+ */
+export function incompleteNameProblems(pointers: Record<string, unknown>, skeleton: Skeleton): string[] {
+  const out: string[] = [];
+  for (const field of ['employerName', 'employeeName']) {
+    const ids = Array.isArray(pointers[field]) ? (pointers[field] as unknown[]).filter((x): x is string => typeof x === 'string') : [];
+    if (ids.length === 0) continue;
+    const answered = new Set(ids);
+    let cut = false;
+    for (const line of skeleton.split('\n')) {
+      // Each placeholder on the line, with the text between it and the previous one.
+      const tokens = [...line.matchAll(/⟦([NDW][0-9]+)⟧/g)];
+      for (let i = 0; i < tokens.length && !cut; i++) {
+        const id = tokens[i]?.[1] as string;
+        if (!answered.has(id)) continue;
+        for (const j of [i - 1, i + 1]) {
+          const other = tokens[j];
+          if (!other) continue;
+          const otherId = other[1] as string;
+          if (!otherId.startsWith('W') || answered.has(otherId)) continue;
+          const [a, b] = j < i ? [other, tokens[i]] : [tokens[i], other];
+          const gap = line.slice((a?.index ?? 0) + (a?.[0].length ?? 0), b?.index ?? 0);
+          if (/^ {1,2}$/.test(gap)) cut = true;
+        }
+      }
+      if (cut) break;
+    }
+    if (cut) out.push(`${field}:incomplete`);
+  }
+  return out;
+}
+
+/**
  * One placeholder, one field: hours worked or hourly rate that points at the placeholder answered for
  * gross pay, net pay or year to date is a contradiction. Those two feed no rule; the field is marked not
  * read and the reading keeps its other values.
@@ -167,15 +203,15 @@ export function sharedAmountProblems(pointers: Record<string, unknown>): string[
 
 /**
  * Fields to leave out of a reading as not read, with the problems that say why: names that share a
- * placeholder (both names), and hours or rate that share one with an amount. None of them feeds a rule.
+ * placeholder (both names), a name cut short (with the silhouette), and hours or rate that share a
+ * placeholder with an amount. None of them feeds a rule.
  */
-export function notReadFields(pointers: Record<string, unknown>): { problems: string[]; fields: string[] } {
+export function notReadFields(pointers: Record<string, unknown>, skeleton?: Skeleton): { problems: string[]; fields: string[] } {
   const names = namesProblems(pointers);
+  const incomplete = skeleton !== undefined ? incompleteNameProblems(pointers, skeleton) : [];
   const shared = sharedAmountProblems(pointers);
-  return {
-    problems: [...names, ...shared],
-    fields: [...(names.length > 0 ? ['employerName', 'employeeName'] : []), ...shared.map((p) => p.split(':')[0] as string)],
-  };
+  const fields = [...(names.length > 0 ? ['employerName', 'employeeName'] : []), ...[...incomplete, ...shared].map((p) => p.split(':')[0] as string)];
+  return { problems: [...names, ...incomplete, ...shared], fields: [...new Set(fields)] };
 }
 
 /**

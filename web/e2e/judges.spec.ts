@@ -157,13 +157,33 @@ test.describe('the on-device check', () => {
     await expect(page.getByTestId('device-summary-first')).toContainText('37 of 60 fields correct');
   });
 
-  test('the second recorded run (version 2) counts where each case was finally answered', async ({ page, context }) => {
+  test('the version 2 run from the history folder still opens with "Open a run file"', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await page.goto('/#/device-check');
-    await page.getByRole('button', { name: 'Show the recording of device-check-2026-11-16T1744-chrome157-macos' }).click();
+    // Only the baseline and the latest run are bundled; earlier runs are kept in history/.
+    await expect(page.locator('.recordings .chip-button')).toHaveCount(2);
+    const file = new URL('../eval/results/on-device/history/device-check-2026-11-16T1744-chrome157-macos.json', import.meta.url);
+    await page.locator('input[type="file"]').setInputFiles({ name: 'device-check-2026-11-16T1744-chrome157-macos.json', mimeType: 'application/json', buffer: readFileSync(file) });
     await expect(page.getByTestId('device-summary')).toContainText('9 of 14 on this device; 5 in the cloud after a failed on-device attempt; 0 in the cloud; 0 did not run.');
     await expect(page.getByTestId('device-summary-first')).toContainText('First attempt: 14 of 14 were tried on this device. Extraction, first answer: 48 of 60 fields correct.');
     await expect(page.getByTestId('device-summary-final')).toContainText('60 of 60 fields correct; 5 extraction cases were repeated in the cloud.');
     await expect(page.locator('tr[data-ran="IN_CLOUD"]').first()).toContainText('In the cloud, after a failed on');
+  });
+
+  test('the latest run shows its three numbers in the first screen at 390 px', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/#/device-check');
+    await page.getByRole('button', { name: 'Show the recording of device-check-2026-11-16T1836-chrome157-macos' }).click();
+    for (const [id, text] of [
+      ['headline-on-device', '24 / 24'],
+      ['headline-income-right', '15 / 15'],
+      ['headline-wrong', '2 / 15'],
+    ] as const) {
+      const item = page.getByTestId(id);
+      await expect(item).toContainText(text);
+      await expect(item).toBeInViewport({ ratio: 1 });
+    }
+    await expect(page.getByTestId('device-summary-repetitions')).toContainText('run 3 times');
   });
 });

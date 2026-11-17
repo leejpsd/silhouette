@@ -116,6 +116,7 @@ export function DeviceCheckScreen() {
           {t('deviceCheck.recordingMeta', { date: day(recording.date), browser: recording.browser, platform: recording.platform })}
         </p>
       )}
+      {view && <Headline file={view.file} />}
       {recording && (
         <p className="dashed-note" data-testid="recording-note">
           {t('deviceCheck.recordingNote')}
@@ -186,6 +187,32 @@ export function DeviceCheckScreen() {
         </BlockActions>
       )}
     </div>
+  );
+}
+
+/**
+ * The three numbers that matter, first, readable without the table: cases answered on this device,
+ * readings with every yearly-income input right, and readings in which a wrong value reached the person.
+ * A number a file does not record is left out, never guessed.
+ */
+function Headline({ file }: { file: RunFile }) {
+  const { t } = useApp();
+  const s = summarize(file.cases, file.version);
+  const incomeRight = s.income?.allRight ?? s.incomeInputsCorrect;
+  const items = [
+    { id: 'on-device', figure: `${s.onDevice} / ${s.total}`, label: t('deviceCheck.headline.onDevice') },
+    ...(incomeRight !== null ? [{ id: 'income-right', figure: `${incomeRight} / ${s.extractionCases}`, label: t('deviceCheck.headline.incomeRight') }] : []),
+    ...(s.wrongReachedPerson !== null ? [{ id: 'wrong', figure: `${s.wrongReachedPerson} / ${s.extractionCases}`, label: t('deviceCheck.headline.wrong') }] : []),
+  ];
+  return (
+    <ul className="device-headline" data-testid="device-headline">
+      {items.map((item) => (
+        <li key={item.id} data-testid={`headline-${item.id}`}>
+          <span className="figure">{item.figure}</span>
+          <span className="small">{item.label}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 

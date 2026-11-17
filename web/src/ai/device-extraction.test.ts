@@ -25,7 +25,7 @@ const validate = (p: Record<string, unknown>) => pointerProblems(schema, p, doc.
 const checkParts = {
   core: (p: Record<string, unknown>) => corePointerProblems(schema, p, doc.map, 'us-ca', doc.skeleton),
   deductions: (p: Record<string, unknown>) => deductionsProblems(schema, p, doc.map, 'us-ca'),
-  notRead: notReadFields,
+  notRead: (p: Record<string, unknown>) => notReadFields(p, doc.skeleton),
   ytdMissing: (p: Record<string, unknown>) => ytdMissingWithCandidate(schema, p, doc.skeleton, doc.map, 'us-ca'),
 };
 const json = (v: unknown) => JSON.stringify(v);
@@ -213,7 +213,17 @@ describe('reading a paystub on the device in two parts', () => {
     expect(result.value).not.toHaveProperty('employerName');
     expect(result.value).not.toHaveProperty('employeeName');
     expect(result.value).toMatchObject({ grossPay: 'N12', ytdGross: 'N13', deductions: KEY_DEDUCTIONS });
-    expect(result.deviceAttempt?.passes?.[0]?.marked).toEqual(['names:shared-placeholder']);
+    // W3 also leaves the employee name cut short on the employer's line.
+    expect(result.deviceAttempt?.passes?.[0]?.marked).toEqual(['names:shared-placeholder', 'employeeName:incomplete']);
+  });
+
+  it('a name cut short (the next word on its line left out) is left out as not read; the reading stays on this device', async () => {
+    device({ core: json({ ...KEY_CORE, employerName: ['W1'], employeeName: ['W4'] }) });
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', notRead: ['employerName', 'employeeName'] });
+    expect(result.value).not.toHaveProperty('employerName');
+    expect(result.value).not.toHaveProperty('employeeName');
+    expect(result.deviceAttempt?.passes?.[0]?.marked).toEqual(['employerName:incomplete', 'employeeName:incomplete']);
   });
 
   it('hours or rate on the placeholder of an amount: that field is left out as not read, the reading kept', async () => {

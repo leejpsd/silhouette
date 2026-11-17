@@ -88,7 +88,7 @@ export function DocumentPreviewScreen() {
   const checkParts = {
     core: (pointers: Record<string, unknown>) => corePointerProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction, skeleton),
     deductions: (pointers: Record<string, unknown>) => deductionsProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction),
-    notRead: notReadFields,
+    notRead: (pointers: Record<string, unknown>) => notReadFields(pointers, skeleton),
     ytdMissing: (pointers: Record<string, unknown>) => ytdMissingWithCandidate(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map, PACK.jurisdiction),
   };
   const counts = placeholderCounts(skeleton);
