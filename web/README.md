@@ -104,7 +104,7 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 
 The token is used only by the dev server; production builds never contain it.
 
-**Production.** Production builds use reCAPTCHA Enterprise through `VITE_RECAPTCHA_SITE_KEY`, with limited-use App Check tokens for Firebase AI Logic. The site key is public but not committed: `npm run build:hosting` reads it from the environment or from the git-ignored `web/.env.hosting.local`. When App Check cannot get a token, the page says so without blaming the person, and "Try again" starts Firebase again so the SDK's throttling of the failed attempt does not block the retry.
+**Production.** Production builds use reCAPTCHA Enterprise through `VITE_RECAPTCHA_SITE_KEY`, with limited-use App Check tokens for Firebase AI Logic. App Check starts only when a request is about to go to the cloud (see "What leaves, and when" below). The site key is public but not committed: `npm run build:hosting` reads it from the environment or from the git-ignored `web/.env.hosting.local`. When App Check cannot get a token, the page says so without blaming the person, and "Try again" starts Firebase again so the SDK's throttling of the failed attempt does not block the retry.
 
 **Without a token.** Everything except cloud requests works: Quick Check, verdicts, sample documents, on-device reading, manual entry and the rule pack's official information.
 
@@ -145,6 +145,23 @@ VITE_RECAPTCHA_SITE_KEY=<site key> npm run build:hosting   # or put the key in w
 - a content security policy that allows only the Firebase endpoints the app calls (AI Logic, App Check, Installations, Remote Config) and reCAPTCHA Enterprise as Google documents it (`script-src` `https://www.google.com/recaptcha/` and `https://www.gstatic.com/recaptcha/`, `frame-src` `https://www.google.com/recaptcha/` and `https://recaptcha.google.com/recaptcha/`, `connect-src` `https://www.google.com/recaptcha/`), with no font or analytics hosts.
 
 `e2e/hosting.spec.ts` runs the app under that policy and fails on any violation. `e2e/hosting/recaptcha.spec.ts` runs the hosting build itself (mode `hosting`, with a test site key) under the policy, with reCAPTCHA Enterprise and App Check answering in the shapes they use in production (the `enterprise.js` loader, the release script, the check frame, the `clr` and `reload` calls, the token exchange): it fails if the policy refuses any of them, checks that the App Check token reaches Firebase AI Logic, and that "Try again" after a failed exchange works without reloading.
+
+**What leaves, and when.** Work on the device leaves nothing: opening the app, the Quick Check, the preview and its read-ahead, an on-device reading with all its parts, on-device explanations, typed questions and the photo reading make no request to any other origin. Firebase runs as two apps (`src/ai/firebase.ts`): requests that run on the device model use an app without App Check; App Check, and with it reCAPTCHA, belongs to a second app that is created only when a request is about to go to the cloud, after the person chose to send. `e2e/hosting/device-only.spec.ts` checks this on the network, under the hosting build and policy, for the two-minute path and the on-device check.
+
+On a first cloud Send in a browser without the device model, the hosted app makes these requests, in this order:
+
+| # | Request | Purpose |
+|---|---|---|
+| 1 | `GET https://www.google.com/recaptcha/enterprise.js?render=explicit` | reCAPTCHA Enterprise's loader, added by App Check when it starts |
+| 2 | `GET https://www.gstatic.com/recaptcha/releases/…/recaptcha__en.js` | reCAPTCHA's script, added by the loader |
+| 3 | `GET https://www.google.com/recaptcha/enterprise/anchor?…` | reCAPTCHA's invisible check frame; what the frame itself loads and sends is not visible to the page |
+| 4 | `POST https://www.google.com/recaptcha/enterprise/clr?k=…` | reCAPTCHA's check call from the page |
+| 5 | `POST https://content-firebaseappcheck.googleapis.com/v1/projects/…/apps/…:exchangeRecaptchaEnterpriseToken` | one limited-use App Check token for this request (no standing token is kept or refreshed) |
+| 6 | `POST https://firebasevertexai.googleapis.com/v1beta/projects/…/models/gemini-3.5-flash-lite:generateContent` | the silhouette, with the App Check token in a header |
+| 7 | `POST https://firebaseinstallations.googleapis.com/v1/projects/…/installations` | after the first cloud request only: an installation id for Remote Config (once per browser) |
+| 8 | `POST https://firebaseremoteconfig.googleapis.com/v1/projects/…/namespaces/firebase:fetch` | the settings, after the first cloud request only |
+
+Every later Send makes the reCAPTCHA check (4) again, one token exchange (5) and one model request (6). If the exchange fails, the model request is not made: nothing carries the silhouette, and the page offers "Try again". The record lists each request in plain words, and the line under its count separates what carried something of the person's from checks that carry none, for example "1 sent with your document’s silhouette · 6 technical checks, no personal data".
 
 **Service worker.** The first page is fetched from the network whenever it answers, so a returning visitor gets the latest deploy with its own headers; the precached copy is used offline or when the server fails. Other files come from the precache. A new worker takes over at once and keeps the previous version's files for a page still open with them (`sw/sw.template.js`, tested in `sw/sw.test.mjs` and `e2e/service-worker.spec.ts`).
 

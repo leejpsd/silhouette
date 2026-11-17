@@ -2,7 +2,7 @@
 // notice, the "Leaving your device" count row with its record, and "Delete everything".
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
-import { REFUSED_BY_BROWSER } from '../data/net-monitor';
+import { NO_APP_CHECK_TOKEN, REFUSED_BY_BROWSER } from '../data/net-monitor';
 import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, packDate, type CopyKey, type Locale } from './i18n';
 import { useApp } from './context';
 import { PACK, SOURCES_READ_ON, isDemoPack, isDraftPack } from './pack';
@@ -160,13 +160,37 @@ const KEPT_TITLES: Readonly<Record<string, CopyKey>> = {
   'kept:own-question': 'ask.free.label',
 };
 
+/** What a request carries that comes from the person (a silhouette of their document or answers). */
+const PERSONAL_FIELDS: ReadonlySet<string> = new Set(['document-silhouette', 'profile-silhouette', 'county-area', 'inline-file']);
+/** Channels of requests that carry nothing of the person's: checks and settings. */
+const TECHNICAL_CHANNELS: ReadonlySet<string> = new Set(['app-check', 'recaptcha', 'remote-config', 'firestore', 'analytics', 'other']);
+
+/**
+ * The line under the count: the requests that carried something of the person's, apart from the
+ * technical checks and general questions that carry nothing of theirs. The two add up to the count.
+ */
+export function summaryParts(left: readonly OutboundEntry[]): { personal: number; documentOnly: boolean; other: number; otherTechnicalOnly: boolean } {
+  const personal = left.filter((e) => e.fields.some((f) => PERSONAL_FIELDS.has(f)));
+  const other = left.filter((e) => !e.fields.some((f) => PERSONAL_FIELDS.has(f)));
+  return {
+    personal: personal.length,
+    documentOnly: personal.every((e) => e.fields.every((f) => !PERSONAL_FIELDS.has(f) || f === 'document-silhouette')),
+    other: other.length,
+    otherTechnicalOnly: other.every((e) => TECHNICAL_CHANNELS.has(e.channel)),
+  };
+}
+
 function useSummary() {
   const { t, locale } = useApp();
   const { left, clearedAt } = useLedger();
-  const fieldName = useFieldName();
-  const kinds = [...new Set(left.flatMap((e) => e.fields))].map(fieldName);
   const date = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(clearedAt);
-  return left.length > 0 ? t('outbound.count', { count: left.length, list: kinds.join(', ') }) : clearedAt !== null ? t('leaving.clearedShort', { date }) : t('leaving.none');
+  if (left.length === 0) return clearedAt !== null ? t('leaving.clearedShort', { date }) : t('leaving.none');
+  const p = summaryParts(left);
+  const parts = [
+    p.personal > 0 ? t(p.documentOnly ? 'leaving.split.document' : 'leaving.split.personal', { count: p.personal }) : t('leaving.split.nothingOfYours'),
+    ...(p.other > 0 ? [t(p.otherTechnicalOnly ? 'leaving.split.technical' : 'leaving.split.general', { count: p.other })] : []),
+  ];
+  return parts.join(' · ');
 }
 
 function useFieldName() {
@@ -222,7 +246,7 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
             ? t('outbound.status.loaded')
             : t('outbound.status.sent', { status: e.httpStatus ?? '' })
           : e.status === 'blocked'
-            ? t(e.error === REFUSED_BY_BROWSER ? 'outbound.status.refusedByBrowser' : 'outbound.status.blocked')
+            ? t(e.error === REFUSED_BY_BROWSER ? 'outbound.status.refusedByBrowser' : e.error === NO_APP_CHECK_TOKEN ? 'outbound.status.noAppCheck' : 'outbound.status.blocked')
             : t('outbound.status.failed', { reason: e.error ?? '' });
 
   return (

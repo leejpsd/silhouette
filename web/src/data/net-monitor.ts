@@ -162,6 +162,26 @@ export function bodyToSend(body: string | null): string | null {
 
 /** Why a request to Firebase AI Logic was stopped before it left (shown in the record). */
 export const BLOCKED_REASON = 'Blocked before sending: no cloud request was expected';
+/** Why a request to Firebase AI Logic was stopped: App Check had no token for it (it never left). */
+export const NO_APP_CHECK_TOKEN = 'Not sent: App Check could not confirm this app, so the request was stopped before it left';
+
+/**
+ * The App Check token a request to Firebase AI Logic carries. When App Check cannot get a token, the
+ * SDK still sends the request, with a placeholder token (base64 of an error, not a JWT) that the
+ * service will refuse. Such a request carries the silhouette for nothing, so it is stopped here.
+ */
+export function lacksAppCheckToken(headers: HeadersInit | undefined): boolean {
+  let token: string | null = null;
+  try {
+    token = new Headers(headers).get('X-Firebase-AppCheck');
+  } catch {
+    return false;
+  }
+  // No App Check on this build (tests, or a build without a site key): nothing to check.
+  if (token === null) return false;
+  return !/^[\w-]+\.[\w-]+\.[\w-]*$/.test(token);
+}
+
 /** Why a request was refused by the browser's content security policy (it never left the browser). */
 export const REFUSED_BY_BROWSER = 'Refused by the browser: this site does not allow it';
 
@@ -271,6 +291,12 @@ export function installNetMonitor(target: MonitorTarget = window): void {
       if (url) {
         let body = typeof init?.body === 'string' ? init.body : null;
         if (url.hostname === AI_LOGIC_HOST) {
+          if (lacksAppCheckToken(init?.headers)) {
+            const info = classify(url, null);
+            const blocked = recordAttempt({ channel: info.channel, fields: info.fields, destination: url.hostname, path: url.pathname, at: Date.now(), bytes: 0 });
+            markBlocked(blocked, NO_APP_CHECK_TOKEN);
+            return Promise.reject(new Error(NO_APP_CHECK_TOKEN));
+          }
           const send = bodyToSend(body);
           if (send === null) {
             // Recorded as blocked: it never left this device.

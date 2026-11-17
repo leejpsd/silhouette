@@ -49,6 +49,18 @@ test.describe('for judges: try it in two minutes', () => {
     for (const english of ['Try it', 'Open the sample', 'Fill in and see', 'Compare what left', 'This browser', 'Three steps']) expect(text).not.toContain(english);
   });
 
+  test('in Spanish the on-device check page is all Spanish, a recording included', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.goto('/#/device-check');
+    await chooseLanguage(page, 'es');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Comprobación en el dispositivo');
+    await page.getByRole('button', { name: `Mostrar la grabación ${latestRecording().label}`, exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Comprobación en el dispositivo grabada');
+    await expect(page.getByTestId('headline-on-device')).toContainText('casos respondidos en este dispositivo');
+    const text = await page.locator('main').innerText();
+    for (const english of ['Recorded', 'cases answered', 'Where each case', 'First attempt', 'Download results', 'Open a run file', 'Runs a fixed set', 'This is a recording']) expect(text).not.toContain(english);
+  });
+
   test('says which steps run on this device when a model is present', async ({ page, context }) => {
     await fakeOnDeviceModel(context, { availability: 'available', replies: {} });
     await page.goto('/#/judges');

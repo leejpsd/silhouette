@@ -40,9 +40,14 @@ test('reCAPTCHA Enterprise and App Check work under the hosting policy; the reco
     expect(seen, part).toContain(part);
   }
   expect(violations).toEqual([]);
-  expect(aiHeaders.length).toBeGreaterThan(0);
-  expect(aiHeaders.every((h) => h === APP_CHECK_TOKEN)).toBe(true);
+  expect(aiHeaders).toEqual([APP_CHECK_TOKEN]);
+  // Exactly one token exchange, before the one request to Firebase AI Logic.
+  expect(recaptcha.exchanges).toEqual([200]);
+  const exchangeAt = recaptcha.requests.findIndex((u) => u.includes('exchangeRecaptchaEnterpriseToken'));
+  expect(exchangeAt).toBeGreaterThan(-1);
 
+  // The count: the one request with the silhouette, apart from the technical checks.
+  await expect(page.getByTestId('leaving-bar').locator('.count-row .count-sub')).toContainText(/^1 sent with your document’s silhouette · \d+ technical checks, no personal data$/);
   // The record: reCAPTCHA in plain words, never a bare host name, and nothing refused.
   await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
   const list = page.getByTestId('outbound-list');
@@ -60,11 +65,13 @@ test('the policy without reCAPTCHA in connect-src is caught: the call is refused
   expect(oldPolicy).not.toBe(POLICY);
   const violations = await serveWithPolicy(page, oldPolicy, new URL(baseURL ?? '').origin);
   await fakeRecaptcha(context, page);
-  await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+  const cloud = await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
   await requireAppCheck(page);
   await judgesStepTwo(page);
   await expect(page.getByTestId('task-error')).toHaveAttribute('data-kind', 'app-check');
   await expect.poll(() => violations.join('\n')).toContain('https://www.google.com/recaptcha/enterprise/clr');
+  // Without a token the silhouette is not sent at all: no request with a placeholder token.
+  expect(cloud.bodies).toEqual([]);
   await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
   const refused = page.getByTestId('outbound-list').locator('li[data-channel="recaptcha"][data-status="blocked"]');
   await expect(refused.first()).toContainText('Not sent: the browser refused it under this site’s security rules');
@@ -74,17 +81,23 @@ test('after a failed App Check exchange, "Try again" works without reloading, an
   await noOnDeviceModel(context);
   await serveWithPolicy(page, POLICY, new URL(baseURL ?? '').origin);
   const recaptcha = await fakeRecaptcha(context, page, [400, 200]);
-  await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+  const cloud = await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
   await requireAppCheck(page);
   await judgesStepTwo(page);
   const error = page.getByTestId('task-error');
   await expect(error).toHaveAttribute('data-kind', 'app-check');
+  // The failed exchange sent no silhouette: no request to Firebase AI Logic left, on the network or in the record.
+  expect(cloud.bodies).toEqual([]);
+  await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
+  await expect(page.getByTestId('outbound-list').locator('li[data-channel="ai-cloud"]:not([data-status="blocked"])')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Hide details' }).click();
   await expect(error).toContainText('is nothing you did');
   await expect(error).not.toContainText('genuine');
   // Straight away: the SDK would still be throttling the failed provider; the app starts it again.
   await page.getByTestId('retry').click();
   await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
   await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
-  expect(recaptcha.exchanges[0]).toBe(400);
-  expect(recaptcha.exchanges.slice(1).every((s) => s === 200)).toBe(true);
+  // One exchange per cloud request (limited-use tokens, no background refresh): the failed one, then one that worked.
+  expect(recaptcha.exchanges).toEqual([400, 200]);
+  expect(cloud.bodies).toHaveLength(1);
 });

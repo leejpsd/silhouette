@@ -72,6 +72,13 @@ export async function fakeOnDeviceModel(
      * wording of one part of a two-part on-device reading.
      */
     systemReplies?: Record<string, string>;
+    /**
+     * Right answers per document, recognised by a line of its silhouette: each part of the on-device
+     * reading gets its own fields (e2e/fixtures/device-check-answers.json).
+     */
+    documentReplies?: { needle: string; core: Record<string, unknown>; deductions: Record<string, unknown> }[];
+    /** The reply to any other prompt (default "{}"). */
+    defaultReply?: string;
     throwMessage?: string;
     initialPromptTooLarge?: boolean;
   },
@@ -93,9 +100,16 @@ export async function fakeOnDeviceModel(
         prompts.push(text);
         constraints.push(JSON.stringify(promptOptions?.responseConstraint ?? null));
         if (opts.throwMessage) throw new DOMException(opts.throwMessage, 'QuotaExceededError');
+        for (const d of opts.documentReplies ?? []) {
+          if (!text.includes(d.needle)) continue;
+          if (this.system.includes('answer only the deductions')) return JSON.stringify(d.deductions);
+          if (this.system.includes('answer only the fields in the schema')) return JSON.stringify(d.core);
+          if (this.system.includes('answer only gross pay')) return JSON.stringify({ grossPay: d.core['grossPay'], ytdGross: d.core['ytdGross'] });
+          return JSON.stringify({ ...d.core, ...d.deductions });
+        }
         for (const [needle, reply] of Object.entries(opts.systemReplies ?? {})) if (this.system.includes(needle) && text.includes('Document type:')) return reply;
         for (const [needle, reply] of Object.entries(opts.replies)) if (text.includes(needle)) return reply;
-        return '{}';
+        return opts.defaultReply ?? '{}';
       }
       destroy() {}
     }

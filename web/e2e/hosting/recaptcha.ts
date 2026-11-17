@@ -5,7 +5,8 @@
 import type { BrowserContext, Page } from '@playwright/test';
 
 export const SITE_KEY = 'e2e-site-key';
-export const APP_CHECK_TOKEN = 'e2e-app-check-token';
+/** Shaped like a real App Check token (a JWT); the app stops requests whose token is not. */
+export const APP_CHECK_TOKEN = 'eyJlMmUiOjF9.eyJhcHAiOiJlMmUifQ.e2e-signature';
 
 /** The release script: grecaptcha.enterprise with ready/render/execute, as App Check uses it. */
 const RELEASE_SCRIPT = `
