@@ -399,5 +399,14 @@
   "pack.draft.short": "Reglas en borrador, leídas el {date}.",
   "official.readOn": "Leído de esta fuente el {date}",
   "official.confirmedOn": "Confirmado con esta fuente el {date}",
-  "official.source": "Fuente oficial"
+  "official.source": "Fuente oficial",
+  "preview.stage.deviceReading": "Leyendo la silueta en este dispositivo…",
+  "preview.stage.deviceGross": "Leyendo de nuevo el pago bruto y el acumulado del año en este dispositivo…",
+  "preview.stage.deviceDeductions": "Leyendo las deducciones en este dispositivo…",
+  "preview.stage.checking": "Comprobando la lectura…",
+  "preview.stage.sendingAfterDevice": "Este dispositivo no pudo leerlo de forma fiable. Enviando la silueta que aprobaste…",
+  "error.on-device-unreliable": "Este dispositivo no pudo leer el documento de forma fiable, así que no se completó nada y no se envió nada. Puedes enviar la silueta (nunca los valores) para que se lea en la nube, o escribir los números tú.",
+  "preview.sendSilhouette": "Enviar la silueta",
+  "review.deductionsNotRead": "Las deducciones no se leyeron en este dispositivo. No hacen falta para el ingreso anual ni para los resultados; puedes añadirlas si quieres.",
+  "review.fieldNotRead": "No se leyó en este dispositivo. Este valor no hace falta para el ingreso anual ni para los resultados."
 }

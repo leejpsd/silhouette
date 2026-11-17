@@ -399,5 +399,14 @@
   "pack.draft.short": "초안 규칙, {date}에 읽음.",
   "official.readOn": "{date}에 이 출처에서 읽음",
   "official.confirmedOn": "{date}에 이 출처와 대조해 확인",
-  "official.source": "공식 출처"
+  "official.source": "공식 출처",
+  "preview.stage.deviceReading": "Reading the silhouette on this device…",
+  "preview.stage.deviceGross": "Reading gross pay and year to date again on this device…",
+  "preview.stage.deviceDeductions": "Reading the deductions on this device…",
+  "preview.stage.checking": "Checking the reading…",
+  "preview.stage.sendingAfterDevice": "This device could not read it reliably. Sending the silhouette you approved…",
+  "error.on-device-unreliable": "This device could not read the document reliably, so nothing was filled in, and nothing was sent. You can send the silhouette (never the values) to be read in the cloud, or type the numbers yourself.",
+  "preview.sendSilhouette": "Send the silhouette",
+  "review.deductionsNotRead": "Deductions were not read on this device. They are not needed for the yearly income or the results; you can add them if you like.",
+  "review.fieldNotRead": "Not read on this device. This value is not needed for the yearly income or the results."
 }

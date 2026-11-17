@@ -1,5 +1,21 @@
 # Contract changelog
 
+## v1.17 — 2026-11-17
+
+From five recorded on-device runs of the Web app in Chrome 157 (`web/eval/results/on-device/`): the last, with each paystub read three times, answered 24 of 24 cases on the device with every yearly-income input right in 15 of 15 readings.
+
+| Change | Why |
+|---|---|
+| **On-device reading in parts** (`validation/DEVICE_READING.md`, `prompts/pointer-extract-device.v1.md`): on a device whose model is available, a paystub is read as a core part, then a deductions part; a gross part is asked again when only gross pay or year to date fail, or when year to date is left out although the document has one place for it; the deductions are asked once more when they do not add up. Each part runs `ONLY_ON_DEVICE` inside the `PREFER_ON_DEVICE` task | Read in one request, the device's answers were right in their core fields but failed as a whole on a short deductions list, and every failure went to the cloud |
+| **A strict response constraint per document and part**: no other keys, every key required, names only W ids, dates only D ids, amounts only N ids of this silhouette, each deduction exactly an N id and a fixed kind | Real answers carried extra keys (`netPayPay`, an echoed `required`) and ids of the wrong kind |
+| **Deterministic checks that only reject**: the core check (references, gross pay present, net pay not above gross, the period, pay-date and year-to-date checks), the same-line and larger-candidate rules for year to date, with amounts compared and only money with cents as candidates; names sharing a placeholder or cut short, and hours or rate on an amount's placeholder, are left out as not read; deductions are optional | The device took a Regular line's year to date for the gross one, and it passed every earlier check. No right reading of the 38 English evaluation paystubs raises any of these alarms |
+| `prompts/pointer-extract.v5.md`: v4's text, word for word, with notes that make "the same prompt on device and in the cloud" and "one page per request" true again: a device request is this prompt plus one part's text, one page each | The device wording is added only on the device |
+| `fixtures/conformance/device-reading.json` (`reference/device-reading.mjs`): 4 constraints, 27 checks, 24 readings part by part (including the real mistakes recorded on the device), and the 38 evaluation paystubs with every right reading (89) for zero false alarms | |
+| 9 copy keys in en and es: the stage lines while the device reads, the unreliable-reading message, "Send the silhouette", and the not-read notes | |
+| Remote Config: `prompt_pointer_extract_v` = 5. Apps that bundle v5 read in parts on the device when the value is 5 or more | |
+
+`pointer-extract.v4.md` remains for the record. Korean copy is not added; `ko.json` falls back to English for these keys.
+
 ## v1.16 — 2026-11-17
 
 | Change | Why |

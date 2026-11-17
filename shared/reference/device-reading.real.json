@@ -1,0 +1,42 @@
+{
+ "$comment": "Device answers (the model's text, placeholder ids only) recorded by the Web app's on-device check in Chrome 157 (web/eval/results/on-device/), per reading and part. Used for the real-mistake cases.",
+ "answers": {
+  "run3-sample": {
+   "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"payFrequency\":\"semimonthly\",\"payDate\":\"D3\",\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N7\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\"}",
+   "deductions": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}, {\"amount\": \"N20\", \"kind\": \"other\"}]}"
+  },
+  "run3-l01": {
+   "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"payFrequency\":\"biweekly\",\"payDate\":\"D3\",\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N7\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\"}",
+   "deductions": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}, {\"amount\": \"N20\", \"kind\": \"state_tax\"}]}"
+  },
+  "run3-l07": {
+   "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"payFrequency\":\"weekly\",\"payDate\":\"D3\",\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"grossPay\":\"N18\",\"netPay\":\"N28\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N2\",\"hourlyRate\":\"N3\"}"
+  },
+  "run3-l10": {
+   "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\",\"W3\"],\"payFrequency\":\"semimonthly\",\"payDate\":\"D3\",\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"grossPay\":\"N18\",\"netPay\":\"N20\",\"ytdGross\":\"N7\",\"hoursWorked\":\"N4\",\"hourlyRate\":\"N5\"}",
+   "deductions": "{\"deductions\": [{\"amount\": \"N9\", \"kind\": \"federal_tax\"}, {\"amount\": \"N10\", \"kind\": \"social_security\"}, {\"amount\": \"N12\", \"kind\": \"medicare\"}]}"
+  },
+  "run4-sample": {
+   "core": "{\"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"semimonthly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N12\", \"netPay\": \"N22\", \"ytdGross\": null, \"hoursWorked\": null, \"hourlyRate\": null}",
+   "deductions": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}]}"
+  },
+  "run4-l01": {
+   "core": "{\"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"biweekly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N12\", \"netPay\": \"N22\", \"ytdGross\": null, \"hoursWorked\": \"N5\", \"hourlyRate\": \"N4\"}",
+   "deductions": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}, {\"amount\": \"N20\", \"kind\": \"state_tax\"}]}"
+  },
+  "run4-l07": {
+   "core": "{\n  \"employerName\": [\n    \"W1\",\n    \"W2\",\n    \"W3\"\n  ],\n  \"employeeName\": [\n    \"W4\",\n    \"W5\"\n  ],\n  \"payFrequency\": \"weekly\",\n  \"payDate\": \"D3\",\n  \"periodStart\": \"D1\",\n  \"periodEnd\": \"D2\",\n  \"grossPay\": \"N18\",\n  \"netPay\": \"N28\",\n  \"ytdGross\": \"N19\",\n  \n  \"hoursWorked\": \"N18\",\n  \"hourlyRate\": \"N3\"\n}",
+   "deductions": "{\"deductions\": [{\"amount\": \"N20\", \"kind\": \"federal_tax\"}, {\"amount\": \"N22\", \"kind\": \"social_security\"}, {\"amount\": \"N24\", \"kind\": \"medicare\"}]}"
+  },
+  "run5-sample-2": {
+   "core": "{\"employerName\": [\"W1\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"semimonthly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N12\", \"netPay\": \"N22\", \"ytdGross\": \"N13\", \"hoursWorked\": \"N13\", \"hourlyRate\": \"N4\"}",
+   "deductions": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}]}",
+   "deductions-again": "{\n  \"deductions\": [\n    {\n      \"amount\": \"N14\",\n      \"kind\": \"federal_tax\"\n    },\n    {\n      \"amount\": \"N16\",\n      \"kind\": \"social_security\"\n    },\n    {\n      \"amount\": \"N18\",\n      \"kind\": \"medicare\"\n    },\n    {\n      \"amount\": \"N20\",\n      \"kind\": \"other\"\n    }\n  ]\n}"
+  },
+  "run5-l07-2": {
+   "core": "{\"employerName\": [\"W1\"], \"employeeName\": [\"W4\"], \"payFrequency\": \"weekly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N18\", \"netPay\": \"N28\", \"ytdGross\": \"N19\", \"hoursWorked\": null, \"hourlyRate\": null}",
+   "deductions": "{\"deductions\": [{\"amount\": \"N20\", \"kind\": \"federal_tax\"}, {\"amount\": \"N22\", \"kind\": \"social_security\"}, {\"amount\": \"N24\", \"kind\": \"medicare\"}]}",
+   "deductions-again": "{\"deductions\": [{\"amount\": \"N20\", \"kind\": \"federal_tax\"}, {\"amount\": \"N22\", \"kind\": \"social_security\"}, {\"amount\": \"N24\", \"kind\": \"medicare\"}]}"
+  }
+ }
+}

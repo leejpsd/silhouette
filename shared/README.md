@@ -11,6 +11,7 @@ Platform apps treat this folder as **read-only**. A change here is a contract ch
 | `skeleton/allowlist/*.json` | Words that survive skeletonization, per language |
 | `schemas/` | JSON Schemas: pointer-extraction output (paystub, lease), generalized profile, and `MODEL_SCHEMA.md`: how a pointer schema becomes the schema sent to a model |
 | `validation/SPEC.md` | Checks on confirmed paystub values and how they become an exact annual income |
+| `validation/DEVICE_READING.md` | How a paystub silhouette is read in parts by the device's own model, the response constraint, and the checks that every on-device answer passes before a person sees it |
 | `rulepacks/SPEC.md` | Rule pack format and the verdict algorithm |
 | `rulepacks/zz-test/` | Synthetic rule pack used only for conformance tests |
 | `rulepacks/us-ca/` | California rule pack, **draft**: seven real programs read from official sources, with a source audit and hand-worked cases. Numbers are confirmed one by one by a person (see its README) |

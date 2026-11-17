@@ -1,0 +1,6367 @@
+{
+  "spec": "validation/DEVICE_READING.md v1",
+  "schema": "schemas/pointer.paystub.json",
+  "jurisdiction": "us-ca",
+  "documents": {
+    "sample": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                         Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧            Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧ ⟦W9⟧, ⟦W10⟧ ⟦N3⟧\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\nPay Frequency: Semi-Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           ⟦N4⟧     ⟦N5⟧     ⟦N6⟧       ⟦N7⟧\nOvertime          ⟦N8⟧     ⟦N9⟧      ⟦N10⟧         ⟦N11⟧\nGross Pay                             ⟦N12⟧       ⟦N13⟧\n\nDeductions                            Current        YTD\nFederal Income Tax                    ⟦N14⟧          ⟦N15⟧\nSocial Security                       ⟦N16⟧          ⟦N17⟧\nMedicare                              ⟦N18⟧          ⟦N19⟧\n⟦W11⟧ ⟦W12⟧                                ⟦N20⟧          ⟦N21⟧\nNet Pay                               ⟦N22⟧\n",
+      "map": {
+        "W1": "NORTHWIND",
+        "W2": "STAFFING",
+        "W3": "LLC",
+        "W4": "Maria",
+        "W5": "Lopez",
+        "N1": "004417",
+        "N2": "1420",
+        "W6": "Juniper",
+        "W7": "Ave",
+        "W8": "Los",
+        "W9": "Angeles",
+        "W10": "CA",
+        "N3": "90011",
+        "D1": "10/01/2026",
+        "D2": "10/15/2026",
+        "D3": "10/20/2026",
+        "N4": "18.50",
+        "N5": "62.00",
+        "N6": "1,147.00",
+        "N7": "21,793.00",
+        "N8": "27.75",
+        "N9": "4.50",
+        "N10": "124.88",
+        "N11": "1,310.25",
+        "N12": "1,271.88",
+        "N13": "23,103.25",
+        "N14": "58.40",
+        "N15": "1,061.10",
+        "N16": "78.86",
+        "N17": "1,432.40",
+        "N18": "18.44",
+        "N19": "335.00",
+        "W11": "CA",
+        "W12": "SDI",
+        "N20": "15.26",
+        "N21": "277.24",
+        "N22": "1,100.92"
+      }
+    },
+    "en-l01-1": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                        Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧            Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧, ⟦W9⟧ ⟦N3⟧\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\nPay Frequency: Bi-Weekly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           ⟦N4⟧     ⟦N5⟧     ⟦N6⟧       ⟦N7⟧\nOvertime          ⟦N8⟧     ⟦N9⟧      ⟦N10⟧         ⟦N11⟧\nGross Pay                             ⟦N12⟧       ⟦N13⟧\n\nDeductions                            Current        YTD\nFederal Income Tax                    ⟦N14⟧         ⟦N15⟧\nSocial Security                       ⟦N16⟧         ⟦N17⟧\nMedicare                              ⟦N18⟧          ⟦N19⟧\nState Income Tax                      ⟦N20⟧         ⟦N21⟧\nNet Pay                               ⟦N22⟧\n",
+      "map": {
+        "W1": "Blueharbor",
+        "W2": "Textiles",
+        "W3": "Inc",
+        "W4": "Aisha",
+        "W5": "Lopez",
+        "N1": "038067",
+        "N2": "2896",
+        "W6": "Kestrel",
+        "W7": "Blvd",
+        "W8": "Riverton",
+        "W9": "WA",
+        "N3": "94675",
+        "D1": "10/29/2026",
+        "D2": "11/11/2026",
+        "D3": "11/16/2026",
+        "N4": "36.90",
+        "N5": "67.00",
+        "N6": "2,472.30",
+        "N7": "58,385.74",
+        "N8": "55.35",
+        "N9": "2.00",
+        "N10": "110.70",
+        "N11": "2,614.30",
+        "N12": "2,583.00",
+        "N13": "61,000.04",
+        "N14": "302.21",
+        "N15": "7,136.95",
+        "N16": "160.15",
+        "N17": "3,782.01",
+        "N18": "37.45",
+        "N19": "884.45",
+        "N20": "136.90",
+        "N21": "3,232.96",
+        "N22": "1,946.29"
+      }
+    },
+    "en-l01-2": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                        Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧             Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧, ⟦W9⟧ ⟦N3⟧\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\nPay Frequency: Semi-Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           ⟦N4⟧     ⟦N5⟧     ⟦N6⟧       ⟦N7⟧\nOvertime          ⟦N8⟧     ⟦N9⟧      ⟦N10⟧          ⟦N11⟧\nGross Pay                             ⟦N12⟧       ⟦N13⟧\n\nDeductions                            Current        YTD\nFederal Income Tax                    ⟦N14⟧         ⟦N15⟧\nSocial Security                       ⟦N16⟧         ⟦N17⟧\nMedicare                              ⟦N18⟧          ⟦N19⟧\nState Income Tax                      ⟦N20⟧         ⟦N21⟧\nNet Pay                               ⟦N22⟧\n",
+      "map": {
+        "W1": "NORTHWIND",
+        "W2": "LOGISTICS",
+        "W3": "LLC",
+        "W4": "Hana",
+        "W5": "Novak",
+        "N1": "089340",
+        "N2": "9315",
+        "W6": "Larkspur",
+        "W7": "Ave",
+        "W8": "Glenwood",
+        "W9": "NV",
+        "N3": "96743",
+        "D1": "05/01/2026",
+        "D2": "05/15/2026",
+        "D3": "05/15/2026",
+        "N4": "38.94",
+        "N5": "76.00",
+        "N6": "2,959.44",
+        "N7": "26,705.92",
+        "N8": "58.41",
+        "N9": "1.00",
+        "N10": "58.41",
+        "N11": "527.13",
+        "N12": "3,017.85",
+        "N13": "27,233.05",
+        "N14": "280.66",
+        "N15": "2,532.66",
+        "N16": "187.11",
+        "N17": "1,688.47",
+        "N18": "43.76",
+        "N19": "394.88",
+        "N20": "162.96",
+        "N21": "1,470.56",
+        "N22": "2,343.36"
+      }
+    },
+    "en-l01-3": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                         Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧          Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧, ⟦W9⟧ ⟦N3⟧\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\nPay Frequency: Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           ⟦N4⟧     ⟦N5⟧    ⟦N6⟧       ⟦N7⟧\nOvertime          ⟦N8⟧     ⟦N9⟧      ⟦N10⟧          ⟦N11⟧\nGross Pay                             ⟦N12⟧       ⟦N13⟧\n\nDeductions                            Current        YTD\nFederal Income Tax                    ⟦N14⟧         ⟦N15⟧\nSocial Security                       ⟦N16⟧         ⟦N17⟧\nMedicare                              ⟦N18⟧          ⟦N19⟧\nState Income Tax                      ⟦N20⟧         ⟦N21⟧\nNet Pay                               ⟦N22⟧\n",
+      "map": {
+        "W1": "QUILLMARK",
+        "W2": "GROCERS",
+        "W3": "CORP",
+        "W4": "Daniel",
+        "W5": "Haddad",
+        "N1": "081318",
+        "N2": "8971",
+        "W6": "Mulberry",
+        "W7": "Rd",
+        "W8": "Ashford",
+        "W9": "NV",
+        "N3": "91447",
+        "D1": "02/01/2026",
+        "D2": "02/28/2026",
+        "D3": "03/02/2026",
+        "N4": "16.45",
+        "N5": "173.50",
+        "N6": "2,854.08",
+        "N7": "5,730.99",
+        "N8": "24.68",
+        "N9": "3.50",
+        "N10": "86.38",
+        "N11": "173.45",
+        "N12": "2,940.46",
+        "N13": "5,904.44",
+        "N14": "288.17",
+        "N15": "578.64",
+        "N16": "182.31",
+        "N17": "366.08",
+        "N18": "42.64",
+        "N19": "85.62",
+        "N20": "111.74",
+        "N21": "224.37",
+        "N22": "2,315.60"
+      }
+    },
+    "en-l02-1": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEARNINGS STATEMENT                Check Date ⟦D1⟧\nName: ⟦W4⟧ ⟦W5⟧         ID ⟦N1⟧\nPeriod Beginning: ⟦D2⟧    Period Ending: ⟦D3⟧\nFrequency: Semimonthly\n\nDescription     Hours    Rate     YTD           Current\nRegular         ⟦N2⟧    ⟦N3⟧    ⟦N4⟧     ⟦N5⟧\nOvertime        ⟦N6⟧     ⟦N7⟧    ⟦N8⟧        ⟦N9⟧\nGross Earnings                    ⟦N10⟧     ⟦N11⟧\n\nWithholdings                      YTD           Current\nFederal Income Tax                ⟦N12⟧      ⟦N13⟧\nSocial Security                   ⟦N14⟧      ⟦N15⟧\nMedicare                          ⟦N16⟧        ⟦N17⟧\nHealth Insurance                  ⟦N18⟧        ⟦N19⟧\nNet Pay                                         ⟦N20⟧\n",
+      "map": {
+        "W1": "IRONBRIDGE",
+        "W2": "CLINIC",
+        "W3": "CORP",
+        "D1": "04-04-2026",
+        "W4": "Kenji",
+        "W5": "Delgado",
+        "N1": "074791",
+        "D2": "03-16-2026",
+        "D3": "03-31-2026",
+        "N2": "87.00",
+        "N3": "33.37",
+        "N4": "17,767.54",
+        "N5": "2,903.19",
+        "N6": "3.00",
+        "N7": "50.06",
+        "N8": "919.08",
+        "N9": "150.18",
+        "N10": "18,686.62",
+        "N11": "3,053.37",
+        "N12": "1,868.69",
+        "N13": "305.34",
+        "N14": "1,158.56",
+        "N15": "189.31",
+        "N16": "270.92",
+        "N17": "44.27",
+        "N18": "629.27",
+        "N19": "102.82",
+        "N20": "2,411.63"
+      }
+    },
+    "en-l02-2": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEARNINGS STATEMENT                Check Date ⟦D1⟧\nName: ⟦W4⟧ ⟦W5⟧         ID ⟦N1⟧\nPeriod Beginning: ⟦D2⟧    Period Ending: ⟦D3⟧\nFrequency: Monthly\n\nDescription     Hours    Rate     YTD           Current\nRegular         ⟦N2⟧   ⟦N3⟧    ⟦N4⟧     ⟦N5⟧\nOvertime        ⟦N6⟧     ⟦N7⟧    ⟦N8⟧      ⟦N9⟧\nGross Earnings                    ⟦N10⟧     ⟦N11⟧\n\nWithholdings                      YTD           Current\nFederal Income Tax                ⟦N12⟧      ⟦N13⟧\nSocial Security                   ⟦N14⟧      ⟦N15⟧\nMedicare                          ⟦N16⟧        ⟦N17⟧\nHealth Insurance                  ⟦N18⟧        ⟦N19⟧\nNet Pay                                         ⟦N20⟧\n",
+      "map": {
+        "W1": "TALLGRASS",
+        "W2": "TEXTILES",
+        "W3": "LLC",
+        "D1": "11-05-2026",
+        "W4": "Aisha",
+        "W5": "Moreau",
+        "N1": "067607",
+        "D2": "10-01-2026",
+        "D3": "10-31-2026",
+        "N2": "175.00",
+        "N3": "25.78",
+        "N4": "46,901.59",
+        "N5": "4,511.50",
+        "N6": "2.50",
+        "N7": "38.67",
+        "N8": "1,005.05",
+        "N9": "96.68",
+        "N10": "47,906.64",
+        "N11": "4,608.18",
+        "N12": "5,557.18",
+        "N13": "534.55",
+        "N14": "2,970.23",
+        "N15": "285.71",
+        "N16": "694.66",
+        "N17": "66.82",
+        "N18": "890.73",
+        "N19": "85.68",
+        "N20": "3,635.42"
+      }
+    },
+    "en-l02-3": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEARNINGS STATEMENT                Check Date ⟦D1⟧\nName: ⟦W4⟧ ⟦W5⟧         ID ⟦N1⟧\nPeriod Beginning: ⟦D2⟧    Period Ending: ⟦D3⟧\nFrequency: Weekly\n\nDescription     Hours    Rate     YTD           Current\nRegular         ⟦N2⟧    ⟦N3⟧    ⟦N4⟧     ⟦N5⟧\nOvertime        ⟦N6⟧     ⟦N7⟧    ⟦N8⟧      ⟦N9⟧\nGross Earnings                    ⟦N10⟧     ⟦N11⟧\n\nWithholdings                      YTD           Current\nFederal Income Tax                ⟦N12⟧      ⟦N13⟧\nSocial Security                   ⟦N14⟧      ⟦N15⟧\nMedicare                          ⟦N16⟧        ⟦N17⟧\nHealth Insurance                  ⟦N18⟧      ⟦N19⟧\nNet Pay                                         ⟦N20⟧\n",
+      "map": {
+        "W1": "TALLGRASS",
+        "W2": "LOGISTICS",
+        "W3": "INC",
+        "D1": "06-17-2026",
+        "W4": "Victor",
+        "W5": "Kowalski",
+        "N1": "086985",
+        "D2": "06-05-2026",
+        "D3": "06-11-2026",
+        "N2": "31.50",
+        "N3": "30.05",
+        "N4": "21,825.29",
+        "N5": "946.58",
+        "N6": "4.00",
+        "N7": "45.08",
+        "N8": "4,157.71",
+        "N9": "180.32",
+        "N10": "25,983.00",
+        "N11": "1,126.90",
+        "N12": "2,130.67",
+        "N13": "92.41",
+        "N14": "1,611.10",
+        "N15": "69.87",
+        "N16": "376.75",
+        "N17": "16.34",
+        "N18": "1,951.07",
+        "N19": "84.62",
+        "N20": "863.66"
+      }
+    },
+    "en-l03-1": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nPay Stub for ⟦W4⟧ ⟦W5⟧\nPay Date ⟦D1⟧   Pay Period ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Monthly\n\nEarnings                      Amount\nSalary                        ⟦N1⟧\nTotal Gross                   ⟦N2⟧\n\nDeductions                    Amount\nFederal Income Tax            ⟦N3⟧\nSocial Security               ⟦N4⟧\nMedicare                      ⟦N5⟧\nState Income Tax              ⟦N6⟧\nHealth Insurance              ⟦N7⟧\nTotal Deductions              ⟦N8⟧\nNet Pay                       ⟦N9⟧\n",
+      "map": {
+        "W1": "BRIGHTWATER",
+        "W2": "FOODS",
+        "W3": "INC",
+        "W4": "Ines",
+        "W5": "Strand",
+        "D1": "02/28/26",
+        "D2": "02/01/26",
+        "D3": "02/28/26",
+        "N1": "4,833.33",
+        "N2": "4,833.33",
+        "N3": "575.17",
+        "N4": "299.67",
+        "N5": "70.08",
+        "N6": "212.67",
+        "N7": "73.59",
+        "N8": "1,231.18",
+        "N9": "3,602.15"
+      }
+    },
+    "en-l03-2": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nPay Stub for ⟦W4⟧ ⟦W5⟧\nPay Date ⟦D1⟧   Pay Period ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Weekly\n\nEarnings                      Amount\nSalary                        ⟦N1⟧\nTotal Gross                   ⟦N2⟧\n\nDeductions                    Amount\nFederal Income Tax            ⟦N3⟧\nSocial Security               ⟦N4⟧\nMedicare                      ⟦N5⟧\nState Income Tax              ⟦N6⟧\nHealth Insurance              ⟦N7⟧\nTotal Deductions              ⟦N8⟧\nNet Pay                       ⟦N9⟧\n",
+      "map": {
+        "W1": "CEDARLINE",
+        "W2": "PRINTING",
+        "W3": "LLC",
+        "W4": "Ethan",
+        "W5": "Lopez",
+        "D1": "06/06/26",
+        "D2": "05/25/26",
+        "D3": "05/31/26",
+        "N1": "1,153.85",
+        "N2": "1,153.85",
+        "N3": "135.00",
+        "N4": "71.54",
+        "N5": "16.73",
+        "N6": "61.15",
+        "N7": "95.06",
+        "N8": "379.48",
+        "N9": "774.37"
+      }
+    },
+    "en-l03-3": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nPay Stub for ⟦W4⟧ ⟦W5⟧\nPay Date ⟦D1⟧   Pay Period ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Bi-Weekly\n\nEarnings                      Amount\nSalary                        ⟦N1⟧\nTotal Gross                   ⟦N2⟧\n\nDeductions                    Amount\nFederal Income Tax            ⟦N3⟧\nSocial Security               ⟦N4⟧\nMedicare                      ⟦N5⟧\nState Income Tax              ⟦N6⟧\nHealth Insurance              ⟦N7⟧\nTotal Deductions              ⟦N8⟧\nNet Pay                       ⟦N9⟧\n",
+      "map": {
+        "W1": "MARIGOLD",
+        "W2": "STAFFING",
+        "W3": "CORP",
+        "W4": "Grace",
+        "W5": "Raman",
+        "D1": "02/15/26",
+        "D2": "01/28/26",
+        "D3": "02/10/26",
+        "N1": "1,384.62",
+        "N2": "1,384.62",
+        "N3": "137.08",
+        "N4": "85.85",
+        "N5": "20.08",
+        "N6": "42.92",
+        "N7": "115.30",
+        "N8": "401.23",
+        "N9": "983.39"
+      }
+    },
+    "en-l04-1": {
+      "skeleton": "Employer: ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEmployee: ⟦W4⟧ ⟦W5⟧\nEmployee Number: ⟦N1⟧\nFrequency: Weekly\nPeriod Start: ⟦D1⟧\nPeriod End: ⟦D2⟧\nPay Date: ⟦D3⟧\nHourly Rate: $⟦N2⟧\nRegular Hours: ⟦N3⟧\nGross Pay: $⟦N4⟧\nFederal Income Tax: $⟦N5⟧\nSocial Security: $⟦N6⟧\nMedicare: $⟦N7⟧\nNet Pay: $⟦N8⟧\nYTD Gross: $⟦N9⟧\n",
+      "map": {
+        "W1": "NORTHWIND",
+        "W2": "BAKERY",
+        "W3": "INC",
+        "W4": "Kenji",
+        "W5": "Okafor",
+        "N1": "041559",
+        "D1": "08/29/2026",
+        "D2": "09/04/2026",
+        "D3": "09/07/2026",
+        "N2": "23.00",
+        "N3": "33.50",
+        "N4": "770.50",
+        "N5": "68.57",
+        "N6": "47.77",
+        "N7": "11.17",
+        "N8": "642.99",
+        "N9": "27,764.95"
+      }
+    },
+    "en-l04-2": {
+      "skeleton": "Employer: ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEmployee: ⟦W4⟧ ⟦W5⟧\nEmployee Number: ⟦N1⟧\nFrequency: Biweekly\nPeriod Start: ⟦D1⟧\nPeriod End: ⟦D2⟧\nPay Date: ⟦D3⟧\nHourly Rate: $⟦N2⟧\nRegular Hours: ⟦N3⟧\nGross Pay: $⟦N4⟧\nFederal Income Tax: $⟦N5⟧\nSocial Security: $⟦N6⟧\nMedicare: $⟦N7⟧\nNet Pay: $⟦N8⟧\nYTD Gross: $⟦N9⟧\n",
+      "map": {
+        "W1": "Cedarline",
+        "W2": "Logistics",
+        "W3": "Corp",
+        "W4": "Ines",
+        "W5": "Moreau",
+        "N1": "090984",
+        "D1": "05/12/2026",
+        "D2": "05/25/2026",
+        "D3": "05/27/2026",
+        "N2": "19.65",
+        "N3": "77.50",
+        "N4": "1,522.88",
+        "N5": "150.77",
+        "N6": "94.42",
+        "N7": "22.08",
+        "N8": "1,255.61",
+        "N9": "17,360.88"
+      }
+    },
+    "en-l04-3": {
+      "skeleton": "Employer: ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nEmployee: ⟦W4⟧ ⟦W5⟧\nEmployee Number: ⟦N1⟧\nFrequency: Semimonthly\nPeriod Start: ⟦D1⟧\nPeriod End: ⟦D2⟧\nPay Date: ⟦D3⟧\nHourly Rate: $⟦N2⟧\nRegular Hours: ⟦N3⟧\nGross Pay: $⟦N4⟧\nFederal Income Tax: $⟦N5⟧\nSocial Security: $⟦N6⟧\nMedicare: $⟦N7⟧\nNet Pay: $⟦N8⟧\nYTD Gross: $⟦N9⟧\n",
+      "map": {
+        "W1": "Redmesa",
+        "W2": "Textiles",
+        "W3": "Corp",
+        "W4": "Priya",
+        "W5": "Novak",
+        "N1": "021765",
+        "D1": "09/01/2026",
+        "D2": "09/15/2026",
+        "D3": "09/16/2026",
+        "N2": "39.45",
+        "N3": "78.50",
+        "N4": "3,096.83",
+        "N5": "257.04",
+        "N6": "192.00",
+        "N7": "44.90",
+        "N8": "2,602.89",
+        "N9": "52,299.23"
+      }
+    },
+    "en-l05-1": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                PAYROLL ADVICE\n⟦W4⟧ ⟦W5⟧   Employee ID ⟦N1⟧\nPay Period ⟦D1⟧ - ⟦D2⟧   Paid ⟦D3⟧   Bi-Weekly\n\nEarnings      Hours     Rate      Amount\nRegular       ⟦N2⟧     ⟦N3⟧     ⟦N4⟧\nOvertime      ⟦N5⟧      ⟦N6⟧     ⟦N7⟧\nGross Pay ⟦N8⟧      YTD Gross ⟦N9⟧\n\nDeductions\nFederal Income Tax    ⟦N10⟧      State Income Tax      ⟦N11⟧\nSocial Security       ⟦N12⟧      Medicare              ⟦N13⟧\n⟦W6⟧ ⟦W7⟧       ⟦N14⟧       \nTotal Deductions ⟦N15⟧\nNet Pay ⟦N16⟧\n",
+      "map": {
+        "W1": "Cedarline",
+        "W2": "Grocers",
+        "W3": "Corp",
+        "W4": "Daniel",
+        "W5": "Lopez",
+        "N1": "076058",
+        "D1": "01/24/2026",
+        "D2": "02/06/2026",
+        "D3": "02/06/2026",
+        "N2": "79.00",
+        "N3": "23.06",
+        "N4": "1,821.74",
+        "N5": "1.50",
+        "N6": "34.59",
+        "N7": "51.89",
+        "N8": "1,873.63",
+        "N9": "5,583.41",
+        "N10": "153.64",
+        "N11": "97.43",
+        "N12": "116.17",
+        "N13": "27.17",
+        "W6": "Retirement",
+        "W7": "Plan",
+        "N14": "74.95",
+        "N15": "469.36",
+        "N16": "1,404.27"
+      }
+    },
+    "en-l05-2": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                PAYROLL ADVICE\n⟦W4⟧ ⟦W5⟧   Employee ID ⟦N1⟧\nPay Period ⟦D1⟧ - ⟦D2⟧   Paid ⟦D3⟧   Semi-Monthly\n\nEarnings      Hours     Rate      Amount\nRegular       ⟦N2⟧     ⟦N3⟧     ⟦N4⟧\nOvertime      ⟦N5⟧      ⟦N6⟧     ⟦N7⟧\nGross Pay ⟦N8⟧      YTD Gross ⟦N9⟧\n\nDeductions\nFederal Income Tax    ⟦N10⟧      State Income Tax      ⟦N11⟧\nSocial Security       ⟦N12⟧      Medicare              ⟦N13⟧\n⟦W6⟧ ⟦W7⟧       ⟦N14⟧      \nTotal Deductions ⟦N15⟧\nNet Pay ⟦N16⟧\n",
+      "map": {
+        "W1": "SILVERPINE",
+        "W2": "FOODS",
+        "W3": "INC",
+        "W4": "Leila",
+        "W5": "Fontaine",
+        "N1": "015735",
+        "D1": "04/01/2026",
+        "D2": "04/15/2026",
+        "D3": "04/19/2026",
+        "N2": "83.00",
+        "N3": "36.73",
+        "N4": "3,048.59",
+        "N5": "6.50",
+        "N6": "55.10",
+        "N7": "358.15",
+        "N8": "3,406.74",
+        "N9": "24,828.30",
+        "N10": "350.89",
+        "N11": "173.74",
+        "N12": "211.22",
+        "N13": "49.40",
+        "W6": "Retirement",
+        "W7": "Plan",
+        "N14": "136.27",
+        "N15": "921.52",
+        "N16": "2,485.22"
+      }
+    },
+    "en-l05-3": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                PAYROLL ADVICE\n⟦W4⟧ ⟦W5⟧   Employee ID ⟦N1⟧\nPay Period ⟦D1⟧ - ⟦D2⟧   Paid ⟦D3⟧   Monthly\n\nEarnings      Hours     Rate      Amount\nRegular       ⟦N2⟧    ⟦N3⟧     ⟦N4⟧\nOvertime      ⟦N5⟧      ⟦N6⟧     ⟦N7⟧\nGross Pay ⟦N8⟧      YTD Gross ⟦N9⟧\n\nDeductions\nFederal Income Tax    ⟦N10⟧      State Income Tax      ⟦N11⟧\nSocial Security       ⟦N12⟧      Medicare              ⟦N13⟧\n⟦W6⟧ ⟦W7⟧       ⟦N14⟧      \nTotal Deductions ⟦N15⟧\nNet Pay ⟦N16⟧\n",
+      "map": {
+        "W1": "NORTHWIND",
+        "W2": "FREIGHT",
+        "W3": "CORP",
+        "W4": "Lucia",
+        "W5": "Strand",
+        "N1": "003871",
+        "D1": "10/01/2026",
+        "D2": "10/31/2026",
+        "D3": "11/06/2026",
+        "N2": "168.50",
+        "N3": "36.73",
+        "N4": "6,189.01",
+        "N5": "8.50",
+        "N6": "55.10",
+        "N7": "468.35",
+        "N8": "6,657.36",
+        "N9": "69,209.88",
+        "N10": "645.76",
+        "N11": "139.80",
+        "N12": "412.76",
+        "N13": "96.53",
+        "W6": "Retirement",
+        "W7": "Plan",
+        "N14": "399.44",
+        "N15": "1,694.29",
+        "N16": "4,963.07"
+      }
+    },
+    "en-l06-1": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦N1⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧, ⟦W7⟧ ⟦N2⟧\n⟦W8⟧ ⟦N3⟧-⟦N4⟧-⟦N5⟧\n\nPay To: ⟦W9⟧ ⟦W10⟧\n⟦N6⟧ ⟦W11⟧ ⟦W12⟧, ⟦W13⟧, ⟦W14⟧ ⟦N7⟧\n\nCheck Number ⟦N8⟧     Pay Date ⟦D1⟧\nPay Period ⟦D2⟧ - ⟦D3⟧     Pay Frequency Semi-Monthly\n\nEarnings                  This Period     Year to Date\nSalary                    ⟦N9⟧        ⟦N10⟧\nGross Pay                 ⟦N11⟧        ⟦N12⟧\nFederal Income Tax        ⟦N13⟧          ⟦N14⟧\nSocial Security           ⟦N15⟧          ⟦N16⟧\nMedicare                  ⟦N17⟧           ⟦N18⟧\nHealth Insurance          ⟦N19⟧           ⟦N20⟧\n⟦W15⟧ ⟦W16⟧           ⟦N21⟧           ⟦N22⟧\nNet Pay                   ⟦N23⟧\n\nDirect Deposit Account ending ⟦N24⟧   Amount $⟦N25⟧\n",
+      "map": {
+        "W1": "Marigold",
+        "W2": "Printing",
+        "W3": "Llc",
+        "N1": "6222",
+        "W4": "Kestrel",
+        "W5": "Ave",
+        "W6": "Ashford",
+        "W7": "CA",
+        "N2": "89239",
+        "W8": "Phone",
+        "N3": "530",
+        "N4": "325",
+        "N5": "6805",
+        "W9": "Daniel",
+        "W10": "Delgado",
+        "N6": "2686",
+        "W11": "Hawthorne",
+        "W12": "St",
+        "W13": "Glenwood",
+        "W14": "WA",
+        "N7": "88409",
+        "N8": "54633",
+        "D1": "11/01/2026",
+        "D2": "10/16/2026",
+        "D3": "10/31/2026",
+        "N9": "2,333.33",
+        "N10": "45,203.60",
+        "N11": "2,333.33",
+        "N12": "45,203.60",
+        "N13": "196.00",
+        "N14": "3,797.07",
+        "N15": "144.67",
+        "N16": "2,802.77",
+        "N17": "33.83",
+        "N18": "655.32",
+        "N19": "71.44",
+        "N20": "1,383.96",
+        "W15": "Retirement",
+        "W16": "Plan",
+        "N21": "70.00",
+        "N22": "1,356.11",
+        "N23": "1,817.39",
+        "N24": "6141",
+        "N25": "1,817.39"
+      }
+    },
+    "en-l06-2": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦N1⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧, ⟦W7⟧ ⟦N2⟧\n⟦W8⟧ ⟦N3⟧-⟦N4⟧-⟦N5⟧\n\nPay To: ⟦W9⟧ ⟦W10⟧\n⟦N6⟧ ⟦W11⟧ ⟦W12⟧, ⟦W13⟧, ⟦W14⟧ ⟦N7⟧\n\nCheck Number ⟦N8⟧     Pay Date ⟦D1⟧\nPay Period ⟦D2⟧ - ⟦D3⟧     Pay Frequency Monthly\n\nEarnings                  This Period     Year to Date\nSalary                    ⟦N9⟧        ⟦N10⟧\nGross Pay                 ⟦N11⟧        ⟦N12⟧\nFederal Income Tax        ⟦N13⟧          ⟦N14⟧\nSocial Security           ⟦N15⟧          ⟦N16⟧\nMedicare                  ⟦N17⟧           ⟦N18⟧\nHealth Insurance          ⟦N19⟧           ⟦N20⟧\n⟦W15⟧ ⟦W16⟧           ⟦N21⟧          ⟦N22⟧\nNet Pay                   ⟦N23⟧\n\nDirect Deposit Account ending ⟦N24⟧   Amount $⟦N25⟧\n",
+      "map": {
+        "W1": "Marigold",
+        "W2": "Grocers",
+        "W3": "Corp",
+        "N1": "1139",
+        "W4": "Mulberry",
+        "W5": "Ave",
+        "W6": "Brookdale",
+        "W7": "AZ",
+        "N2": "85084",
+        "W8": "Phone",
+        "N3": "733",
+        "N4": "690",
+        "N5": "5501",
+        "W9": "Aisha",
+        "W10": "Lindqvist",
+        "N6": "5774",
+        "W11": "Sycamore",
+        "W12": "St",
+        "W13": "Brookdale",
+        "W14": "CA",
+        "N7": "89282",
+        "N8": "17516",
+        "D1": "12/03/2026",
+        "D2": "11/01/2026",
+        "D3": "11/30/2026",
+        "N9": "5,916.67",
+        "N10": "65,024.17",
+        "N11": "5,916.67",
+        "N12": "65,024.17",
+        "N13": "615.33",
+        "N14": "6,762.43",
+        "N15": "366.83",
+        "N16": "4,031.43",
+        "N17": "85.79",
+        "N18": "942.79",
+        "N19": "56.96",
+        "N20": "625.96",
+        "W15": "Retirement",
+        "W16": "Plan",
+        "N21": "295.83",
+        "N22": "3,251.13",
+        "N23": "4,495.93",
+        "N24": "3503",
+        "N25": "4,495.93"
+      }
+    },
+    "en-l06-3": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦N1⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧, ⟦W7⟧ ⟦N2⟧\n⟦W8⟧ ⟦N3⟧-⟦N4⟧-⟦N5⟧\n\nPay To: ⟦W9⟧ ⟦W10⟧\n⟦N6⟧ ⟦W11⟧ ⟦W12⟧, ⟦W13⟧, ⟦W14⟧ ⟦N7⟧\n\nCheck Number ⟦N8⟧     Pay Date ⟦D1⟧\nPay Period ⟦D2⟧ - ⟦D3⟧     Pay Frequency Weekly\n\nEarnings                  This Period     Year to Date\nSalary                    ⟦N9⟧        ⟦N10⟧\nGross Pay                 ⟦N11⟧        ⟦N12⟧\nFederal Income Tax        ⟦N13⟧          ⟦N14⟧\nSocial Security           ⟦N15⟧          ⟦N16⟧\nMedicare                  ⟦N17⟧           ⟦N18⟧\nHealth Insurance          ⟦N19⟧           ⟦N20⟧\n⟦W15⟧ ⟦W16⟧           ⟦N21⟧           ⟦N22⟧\nNet Pay                   ⟦N23⟧\n\nDirect Deposit Account ending ⟦N24⟧   Amount $⟦N25⟧\n",
+      "map": {
+        "W1": "Brightwater",
+        "W2": "Bakery",
+        "W3": "Llc",
+        "N1": "735",
+        "W4": "Hawthorne",
+        "W5": "St",
+        "W6": "Glenwood",
+        "W7": "AZ",
+        "N2": "85211",
+        "W8": "Phone",
+        "N3": "916",
+        "N4": "598",
+        "N5": "6166",
+        "W9": "Lucia",
+        "W10": "Herrera",
+        "N6": "899",
+        "W11": "Kestrel",
+        "W12": "St",
+        "W13": "Ashford",
+        "W14": "NV",
+        "N7": "92683",
+        "N8": "91109",
+        "D1": "03/17/2026",
+        "D2": "03/06/2026",
+        "D3": "03/12/2026",
+        "N9": "1,711.54",
+        "N10": "19,049.44",
+        "N11": "1,711.54",
+        "N12": "19,049.44",
+        "N13": "189.98",
+        "N14": "2,114.48",
+        "N15": "106.12",
+        "N16": "1,181.12",
+        "N17": "24.82",
+        "N18": "276.22",
+        "N19": "46.63",
+        "N20": "519.03",
+        "W15": "Retirement",
+        "W16": "Plan",
+        "N21": "51.35",
+        "N22": "571.55",
+        "N23": "1,292.64",
+        "N24": "4692",
+        "N25": "1,292.64"
+      }
+    },
+    "en-l07-1": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ - Weekly Pay Statement\nEmployee ⟦W4⟧ ⟦W5⟧ (⟦N1⟧)\nWeek ⟦D1⟧ through ⟦D2⟧    Pay Date ⟦D3⟧\nPay Frequency: Weekly\n\nType                Hours    Rate     Current      YTD\nRegular             ⟦N2⟧    ⟦N3⟧    ⟦N4⟧       ⟦N5⟧\nOvertime            ⟦N6⟧     ⟦N7⟧    ⟦N8⟧       ⟦N9⟧\nHoliday             ⟦N10⟧     ⟦N11⟧    ⟦N12⟧       ⟦N13⟧\nShift Differential  ⟦N14⟧     ⟦N15⟧     ⟦N16⟧        ⟦N17⟧\nTotal Gross                           ⟦N18⟧     ⟦N19⟧\n\nFederal Income Tax                    ⟦N20⟧       ⟦N21⟧\nSocial Security                       ⟦N22⟧        ⟦N23⟧\nMedicare                              ⟦N24⟧        ⟦N25⟧\n⟦W6⟧ ⟦W7⟧                       ⟦N26⟧        ⟦N27⟧\nNet Pay                               ⟦N28⟧\n",
+      "map": {
+        "W1": "QUILLMARK",
+        "W2": "FREIGHT",
+        "W3": "CORP",
+        "W4": "Lucia",
+        "W5": "Lindqvist",
+        "N1": "064620",
+        "D1": "03/14/2026",
+        "D2": "03/20/2026",
+        "D3": "03/26/2026",
+        "N2": "39.00",
+        "N3": "21.87",
+        "N4": "852.93",
+        "N5": "9,963.13",
+        "N6": "6.00",
+        "N7": "32.81",
+        "N8": "196.86",
+        "N9": "2,299.51",
+        "N10": "8.00",
+        "N11": "21.87",
+        "N12": "174.96",
+        "N13": "2,043.75",
+        "N14": "9.00",
+        "N15": "1.67",
+        "N16": "15.03",
+        "N17": "175.52",
+        "N18": "1,239.78",
+        "N19": "14,481.91",
+        "N20": "116.54",
+        "N21": "1,361.30",
+        "N22": "76.87",
+        "N23": "897.91",
+        "N24": "17.98",
+        "N25": "210.04",
+        "W6": "Retirement",
+        "W7": "Plan",
+        "N26": "49.59",
+        "N27": "579.24",
+        "N28": "978.80"
+      }
+    },
+    "en-l07-2": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ - Weekly Pay Statement\nEmployee ⟦W4⟧ ⟦W5⟧ (⟦N1⟧)\nWeek ⟦D1⟧ through ⟦D2⟧    Pay Date ⟦D3⟧\nPay Frequency: Weekly\n\nType                Hours    Rate     Current      YTD\nRegular             ⟦N2⟧    ⟦N3⟧    ⟦N4⟧     ⟦N5⟧\nOvertime            ⟦N6⟧     ⟦N7⟧    ⟦N8⟧       ⟦N9⟧\nHoliday             ⟦N10⟧     ⟦N11⟧    ⟦N12⟧       ⟦N13⟧\nShift Differential  ⟦N14⟧    ⟦N15⟧     ⟦N16⟧        ⟦N17⟧\nTotal Gross                           ⟦N18⟧     ⟦N19⟧\n\nFederal Income Tax                    ⟦N20⟧       ⟦N21⟧\nSocial Security                       ⟦N22⟧        ⟦N23⟧\nMedicare                              ⟦N24⟧        ⟦N25⟧\n⟦W6⟧ ⟦W7⟧                       ⟦N26⟧        ⟦N27⟧\nNet Pay                               ⟦N28⟧\n",
+      "map": {
+        "W1": "Blueharbor",
+        "W2": "Motors",
+        "W3": "Inc",
+        "W4": "Priya",
+        "W5": "Okafor",
+        "N1": "059763",
+        "D1": "09/08/2026",
+        "D2": "09/14/2026",
+        "D3": "09/14/2026",
+        "N2": "37.00",
+        "N3": "27.59",
+        "N4": "1,020.83",
+        "N5": "37,917.95",
+        "N6": "4.50",
+        "N7": "41.39",
+        "N8": "186.26",
+        "N9": "6,918.62",
+        "N10": "8.00",
+        "N11": "27.59",
+        "N12": "220.72",
+        "N13": "8,198.32",
+        "N14": "11.00",
+        "N15": "1.45",
+        "N16": "15.95",
+        "N17": "592.31",
+        "N18": "1,443.76",
+        "N19": "53,627.20",
+        "N20": "121.28",
+        "N21": "4,505.00",
+        "N22": "89.51",
+        "N23": "3,324.83",
+        "N24": "20.93",
+        "N25": "777.29",
+        "W6": "Retirement",
+        "W7": "Plan",
+        "N26": "57.75",
+        "N27": "2,145.03",
+        "N28": "1,154.29"
+      }
+    },
+    "en-l07-3": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ - Weekly Pay Statement\nEmployee ⟦W4⟧ ⟦W5⟧ (⟦N1⟧)\nWeek ⟦D1⟧ through ⟦D2⟧    Pay Date ⟦D3⟧\nPay Frequency: Weekly\n\nType                Hours    Rate     Current      YTD\nRegular             ⟦N2⟧    ⟦N3⟧    ⟦N4⟧       ⟦N5⟧\nOvertime            ⟦N6⟧     ⟦N7⟧    ⟦N8⟧        ⟦N9⟧\nHoliday             ⟦N10⟧     ⟦N11⟧    ⟦N12⟧       ⟦N13⟧\nShift Differential  ⟦N14⟧    ⟦N15⟧     ⟦N16⟧        ⟦N17⟧\nTotal Gross                           ⟦N18⟧       ⟦N19⟧\n\nFederal Income Tax                    ⟦N20⟧        ⟦N21⟧\nSocial Security                       ⟦N22⟧        ⟦N23⟧\nMedicare                              ⟦N24⟧        ⟦N25⟧\n⟦W6⟧ ⟦W7⟧                       ⟦N26⟧        ⟦N27⟧\nNet Pay                               ⟦N28⟧\n",
+      "map": {
+        "W1": "REDMESA",
+        "W2": "LAUNDRY",
+        "W3": "LLC",
+        "W4": "Grace",
+        "W5": "Haddad",
+        "N1": "074996",
+        "D1": "11/05/2026",
+        "D2": "11/11/2026",
+        "D3": "11/17/2026",
+        "N2": "36.00",
+        "N3": "16.23",
+        "N4": "584.28",
+        "N5": "26,781.00",
+        "N6": "2.00",
+        "N7": "24.35",
+        "N8": "48.70",
+        "N9": "2,232.42",
+        "N10": "8.00",
+        "N11": "16.23",
+        "N12": "129.84",
+        "N13": "5,951.48",
+        "N14": "14.00",
+        "N15": "2.14",
+        "N16": "29.96",
+        "N17": "1,373.28",
+        "N18": "792.78",
+        "N19": "36,337.74",
+        "N20": "64.22",
+        "N21": "2,943.58",
+        "N22": "49.15",
+        "N23": "2,252.67",
+        "N24": "11.50",
+        "N25": "527.18",
+        "W6": "Retirement",
+        "W7": "Plan",
+        "N26": "23.78",
+        "N27": "1,089.90",
+        "N28": "644.13"
+      }
+    },
+    "en-l08-1": {
+      "skeleton": "PAY STATEMENT\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦W4⟧ ⟦W5⟧                Employee ID ⟦N1⟧\nPay Date: ⟦D1⟧   Period: ⟦D2⟧ - ⟦D3⟧   Pay Frequency: Weekly\n\nRegular         ⟦N2⟧    hours at ⟦N3⟧   ⟦N4⟧\nOvertime        ⟦N5⟧     hours at ⟦N6⟧   ⟦N7⟧\nGross Earnings                            ⟦N8⟧\nFederal Income Tax                        ⟦N9⟧\nSocial Security                           ⟦N10⟧\nMedicare                                  ⟦N11⟧\nState Income Tax                          ⟦N12⟧\nTake Home Pay                             ⟦N13⟧\n\nYear to Date\nGross ⟦N14⟧   Deductions ⟦N15⟧   Net ⟦N16⟧\n",
+      "map": {
+        "W1": "REDMESA",
+        "W2": "ROOFING",
+        "W3": "LLC",
+        "W4": "Hana",
+        "W5": "Kowalski",
+        "N1": "054447",
+        "D1": "02-17-2026",
+        "D2": "02-10-2026",
+        "D3": "02-16-2026",
+        "N2": "35.50",
+        "N3": "19.09",
+        "N4": "677.70",
+        "N5": "4.50",
+        "N6": "28.64",
+        "N7": "128.88",
+        "N8": "806.58",
+        "N9": "64.53",
+        "N10": "50.01",
+        "N11": "11.70",
+        "N12": "42.75",
+        "N13": "637.59",
+        "N14": "5,573.46",
+        "N15": "1,167.69",
+        "N16": "4,405.77"
+      }
+    },
+    "en-l08-2": {
+      "skeleton": "PAY STATEMENT\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦W4⟧ ⟦W5⟧                Employee ID ⟦N1⟧\nPay Date: ⟦D1⟧   Period: ⟦D2⟧ - ⟦D3⟧   Pay Frequency: Bi-Weekly\n\nRegular         ⟦N2⟧    hours at ⟦N3⟧   ⟦N4⟧\nOvertime        ⟦N5⟧     hours at ⟦N6⟧   ⟦N7⟧\nGross Earnings                            ⟦N8⟧\nFederal Income Tax                        ⟦N9⟧\nSocial Security                           ⟦N10⟧\nMedicare                                  ⟦N11⟧\nState Income Tax                          ⟦N12⟧\nTake Home Pay                             ⟦N13⟧\n\nYear to Date\nGross ⟦N14⟧   Deductions ⟦N15⟧   Net ⟦N16⟧\n",
+      "map": {
+        "W1": "Sundale",
+        "W2": "Printing",
+        "W3": "Inc",
+        "W4": "Aisha",
+        "W5": "Haddad",
+        "N1": "076396",
+        "D1": "07-13-2026",
+        "D2": "06-24-2026",
+        "D3": "07-07-2026",
+        "N2": "79.50",
+        "N3": "36.05",
+        "N4": "2,865.98",
+        "N5": "2.00",
+        "N6": "54.08",
+        "N7": "108.16",
+        "N8": "2,974.14",
+        "N9": "276.60",
+        "N10": "184.40",
+        "N11": "43.13",
+        "N12": "110.04",
+        "N13": "2,359.97",
+        "N14": "43,493.84",
+        "N15": "8,981.62",
+        "N16": "34,512.22"
+      }
+    },
+    "en-l08-3": {
+      "skeleton": "PAY STATEMENT\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n⟦W4⟧ ⟦W5⟧                Employee ID ⟦N1⟧\nPay Date: ⟦D1⟧   Period: ⟦D2⟧ - ⟦D3⟧   Pay Frequency: Semi-Monthly\n\nRegular         ⟦N2⟧    hours at ⟦N3⟧   ⟦N4⟧\nOvertime        ⟦N5⟧     hours at ⟦N6⟧   ⟦N7⟧\nGross Earnings                            ⟦N8⟧\nFederal Income Tax                        ⟦N9⟧\nSocial Security                           ⟦N10⟧\nMedicare                                  ⟦N11⟧\nState Income Tax                          ⟦N12⟧\nTake Home Pay                             ⟦N13⟧\n\nYear to Date\nGross ⟦N14⟧   Deductions ⟦N15⟧   Net ⟦N16⟧\n",
+      "map": {
+        "W1": "Willowby",
+        "W2": "Textiles",
+        "W3": "Corp",
+        "W4": "Victor",
+        "W5": "Delgado",
+        "N1": "034969",
+        "D1": "06-21-2026",
+        "D2": "06-01-2026",
+        "D3": "06-15-2026",
+        "N2": "83.50",
+        "N3": "40.51",
+        "N4": "3,382.59",
+        "N5": "2.00",
+        "N6": "60.77",
+        "N7": "121.54",
+        "N8": "3,504.13",
+        "N9": "343.40",
+        "N10": "217.26",
+        "N11": "50.81",
+        "N12": "80.59",
+        "N13": "2,812.07",
+        "N14": "39,561.63",
+        "N15": "7,813.36",
+        "N16": "31,748.27"
+      }
+    },
+    "en-l09-1": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nMonthly Salary Statement\nEmployee: ⟦W4⟧ ⟦W5⟧\nPay Schedule: Monthly    Pay Date: ⟦D1⟧\nCovers ⟦D2⟧ - ⟦D3⟧\n\n                            Current       YTD\nSalary                      ⟦N1⟧      ⟦N2⟧\nGross Pay                   ⟦N3⟧      ⟦N4⟧\nFederal Income Tax          ⟦N5⟧        ⟦N6⟧\nSocial Security             ⟦N7⟧        ⟦N8⟧\nMedicare                    ⟦N9⟧        ⟦N10⟧\nHealth Insurance            ⟦N11⟧         ⟦N12⟧\nNet Pay                     ⟦N13⟧      ⟦N14⟧\n",
+      "map": {
+        "W1": "TALLGRASS",
+        "W2": "LAUNDRY",
+        "W3": "INC",
+        "W4": "Victor",
+        "W5": "Moreau",
+        "D1": "04/05/26",
+        "D2": "03/01/26",
+        "D3": "03/31/26",
+        "N1": "7,333.33",
+        "N2": "22,161.33",
+        "N3": "7,333.33",
+        "N4": "22,161.33",
+        "N5": "696.67",
+        "N6": "2,105.33",
+        "N7": "454.67",
+        "N8": "1,374.01",
+        "N9": "106.33",
+        "N10": "321.33",
+        "N11": "81.04",
+        "N12": "244.90",
+        "N13": "5,994.62",
+        "N14": "18,115.74"
+      }
+    },
+    "en-l09-2": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nMonthly Salary Statement\nEmployee: ⟦W4⟧ ⟦W5⟧\nPay Schedule: Monthly    Pay Date: ⟦D1⟧\nCovers ⟦D2⟧ - ⟦D3⟧\n\n                            Current       YTD\nSalary                      ⟦N1⟧      ⟦N2⟧\nGross Pay                   ⟦N3⟧      ⟦N4⟧\nFederal Income Tax          ⟦N5⟧        ⟦N6⟧\nSocial Security             ⟦N7⟧        ⟦N8⟧\nMedicare                    ⟦N9⟧         ⟦N10⟧\nHealth Insurance            ⟦N11⟧         ⟦N12⟧\nNet Pay                     ⟦N13⟧      ⟦N14⟧\n",
+      "map": {
+        "W1": "Silverpine",
+        "W2": "Textiles",
+        "W3": "Inc",
+        "W4": "Hana",
+        "W5": "Kowalski",
+        "D1": "09/06/26",
+        "D2": "08/01/26",
+        "D3": "08/31/26",
+        "N1": "4,250.00",
+        "N2": "34,714.00",
+        "N3": "4,250.00",
+        "N4": "34,714.00",
+        "N5": "412.25",
+        "N6": "3,367.23",
+        "N7": "263.50",
+        "N8": "2,152.24",
+        "N9": "61.63",
+        "N10": "503.40",
+        "N11": "28.72",
+        "N12": "234.59",
+        "N13": "3,483.90",
+        "N14": "28,456.47"
+      }
+    },
+    "en-l09-3": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧\nMonthly Salary Statement\nEmployee: ⟦W4⟧ ⟦W5⟧\nPay Schedule: Monthly    Pay Date: ⟦D1⟧\nCovers ⟦D2⟧ - ⟦D3⟧\n\n                            Current       YTD\nSalary                      ⟦N1⟧      ⟦N2⟧\nGross Pay                   ⟦N3⟧      ⟦N4⟧\nFederal Income Tax          ⟦N5⟧        ⟦N6⟧\nSocial Security             ⟦N7⟧        ⟦N8⟧\nMedicare                    ⟦N9⟧        ⟦N10⟧\nHealth Insurance            ⟦N11⟧         ⟦N12⟧\nNet Pay                     ⟦N13⟧      ⟦N14⟧\n",
+      "map": {
+        "W1": "Goldleaf",
+        "W2": "Grocers",
+        "W3": "Llc",
+        "W4": "Omar",
+        "W5": "Lindqvist",
+        "D1": "04/02/26",
+        "D2": "03/01/26",
+        "D3": "03/31/26",
+        "N1": "7,416.67",
+        "N2": "21,538.01",
+        "N3": "7,416.67",
+        "N4": "21,538.01",
+        "N5": "637.83",
+        "N6": "1,852.25",
+        "N7": "459.83",
+        "N8": "1,335.35",
+        "N9": "107.54",
+        "N10": "312.30",
+        "N11": "62.96",
+        "N12": "182.84",
+        "N13": "6,148.51",
+        "N14": "17,855.27"
+      }
+    },
+    "en-l10-1": {
+      "skeleton": "            ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n            EIN ⟦N1⟧-⟦N2⟧\n\nEmployee ⟦W4⟧ ⟦W5⟧   ID ⟦N3⟧\nPeriod ⟦D1⟧ to ⟦D2⟧   Paid on ⟦D3⟧   Pay Frequency: Semimonthly\n\nDescription               Hours   Rate     Current      YTD\nRegular                   ⟦N4⟧   ⟦N5⟧    ⟦N6⟧     ⟦N7⟧\nFederal Income Tax                         -⟦N8⟧      -⟦N9⟧\nSocial Security                            -⟦N10⟧       -⟦N11⟧\nMedicare                                   -⟦N12⟧       -⟦N13⟧\nState Income Tax                           -⟦N14⟧       -⟦N15⟧\nHealth Insurance                           -⟦N16⟧       -⟦N17⟧\nGross Pay                                  ⟦N18⟧     ⟦N19⟧\nNet Pay                                    ⟦N20⟧\n",
+      "map": {
+        "W1": "TALLGRASS",
+        "W2": "TEXTILES",
+        "W3": "INC",
+        "N1": "24",
+        "N2": "2966559",
+        "W4": "Victor",
+        "W5": "Raman",
+        "N3": "053100",
+        "D1": "2026-03-01",
+        "D2": "2026-03-15",
+        "D3": "2026-03-19",
+        "N4": "70.00",
+        "N5": "16.87",
+        "N6": "1,180.90",
+        "N7": "5,668.34",
+        "N8": "108.64",
+        "N9": "521.48",
+        "N10": "73.22",
+        "N11": "351.46",
+        "N12": "17.12",
+        "N13": "82.16",
+        "N14": "37.79",
+        "N15": "181.39",
+        "N16": "44.09",
+        "N17": "211.65",
+        "N18": "1,180.90",
+        "N19": "5,668.34",
+        "N20": "900.04"
+      }
+    },
+    "en-l10-2": {
+      "skeleton": "            ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n            EIN ⟦N1⟧-⟦N2⟧\n\nEmployee ⟦W4⟧ ⟦W5⟧   ID ⟦N3⟧\nPeriod ⟦D1⟧ to ⟦D2⟧   Paid on ⟦D3⟧   Pay Frequency: Monthly\n\nDescription               Hours   Rate     Current      YTD\nRegular                   ⟦N4⟧  ⟦N5⟧    ⟦N6⟧     ⟦N7⟧\nFederal Income Tax                         -⟦N8⟧      -⟦N9⟧\nSocial Security                            -⟦N10⟧      -⟦N11⟧\nMedicare                                   -⟦N12⟧       -⟦N13⟧\nState Income Tax                           -⟦N14⟧      -⟦N15⟧\nHealth Insurance                           -⟦N16⟧       -⟦N17⟧\nGross Pay                                  ⟦N18⟧     ⟦N19⟧\nNet Pay                                    ⟦N20⟧\n",
+      "map": {
+        "W1": "Cedarline",
+        "W2": "Foods",
+        "W3": "Llc",
+        "N1": "20",
+        "N2": "6792501",
+        "W4": "Hana",
+        "W5": "Strand",
+        "N3": "026012",
+        "D1": "2026-07-01",
+        "D2": "2026-07-31",
+        "D3": "2026-08-06",
+        "N4": "151.00",
+        "N5": "28.08",
+        "N6": "4,240.08",
+        "N7": "28,891.92",
+        "N8": "402.81",
+        "N9": "2,744.73",
+        "N10": "262.88",
+        "N11": "1,791.26",
+        "N12": "61.48",
+        "N13": "418.90",
+        "N14": "135.68",
+        "N15": "924.50",
+        "N16": "88.35",
+        "N17": "602.01",
+        "N18": "4,240.08",
+        "N19": "28,891.92",
+        "N20": "3,288.88"
+      }
+    },
+    "en-l10-3": {
+      "skeleton": "            ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n            EIN ⟦N1⟧-⟦N2⟧\n\nEmployee ⟦W4⟧ ⟦W5⟧   ID ⟦N3⟧\nPeriod ⟦D1⟧ to ⟦D2⟧   Paid on ⟦D3⟧   Pay Frequency: Weekly\n\nDescription               Hours   Rate     Current      YTD\nRegular                   ⟦N4⟧   ⟦N5⟧    ⟦N6⟧       ⟦N7⟧\nFederal Income Tax                         -⟦N8⟧       -⟦N9⟧\nSocial Security                            -⟦N10⟧       -⟦N11⟧\nMedicare                                   -⟦N12⟧        -⟦N13⟧\nState Income Tax                           -⟦N14⟧       -⟦N15⟧\nHealth Insurance                           -⟦N16⟧       -⟦N17⟧\nGross Pay                                  ⟦N18⟧       ⟦N19⟧\nNet Pay                                    ⟦N20⟧\n",
+      "map": {
+        "W1": "Willowby",
+        "W2": "Roofing",
+        "W3": "Inc",
+        "N1": "71",
+        "N2": "5047121",
+        "W4": "Maria",
+        "W5": "Abara",
+        "N3": "081655",
+        "D1": "2026-05-14",
+        "D2": "2026-05-20",
+        "D3": "2026-05-26",
+        "N4": "35.00",
+        "N5": "17.78",
+        "N6": "622.30",
+        "N7": "12,138.58",
+        "N8": "73.43",
+        "N9": "1,432.31",
+        "N10": "38.58",
+        "N11": "752.60",
+        "N12": "9.02",
+        "N13": "176.03",
+        "N14": "18.67",
+        "N15": "364.09",
+        "N16": "83.79",
+        "N17": "1,634.38",
+        "N18": "622.30",
+        "N19": "12,138.58",
+        "N20": "398.81"
+      }
+    },
+    "en-l11-1": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\n⟦W5⟧ ⟦W6⟧: ⟦W7⟧.⟦W8⟧ ⟦W9⟧ (⟦N1⟧) ⟦N2⟧-⟦N3⟧\n\nEmployee: ⟦W10⟧ ⟦W11⟧        Employee ID: ⟦N4⟧\nPay Date: ⟦D1⟧\nPay Period: ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Every week\n\nEarnings          Hours    Rate     Current      YTD\nRegular           ⟦N5⟧    ⟦N6⟧    ⟦N7⟧       ⟦N8⟧\nOvertime          ⟦N9⟧     ⟦N10⟧    ⟦N11⟧        ⟦N12⟧\nGross Pay                           ⟦N13⟧       ⟦N14⟧\n\nFederal Income Tax                  ⟦N15⟧        ⟦N16⟧\nSocial Security                     ⟦N17⟧        ⟦N18⟧\nMedicare                            ⟦N19⟧        ⟦N20⟧\nState Income Tax                    ⟦N21⟧        ⟦N22⟧\nNet Pay                             ⟦N23⟧\n",
+      "map": {
+        "W1": "Federal",
+        "W2": "Security",
+        "W3": "Services",
+        "W4": "LLC",
+        "W5": "Payroll",
+        "W6": "questions",
+        "W7": "payroll@federal-security-services-llc",
+        "W8": "example",
+        "W9": "or",
+        "N1": "555",
+        "N2": "409",
+        "N3": "9624",
+        "W10": "Jordan",
+        "W11": "Gross",
+        "N4": "082973",
+        "D1": "September 5, 2026",
+        "D2": "August 24, 2026",
+        "D3": "August 30, 2026",
+        "N5": "33.50",
+        "N6": "18.95",
+        "N7": "634.83",
+        "N8": "21,269.43",
+        "N9": "2.50",
+        "N10": "28.43",
+        "N11": "71.08",
+        "N12": "2,381.38",
+        "N13": "705.91",
+        "N14": "23,650.81",
+        "N15": "66.36",
+        "N16": "2,223.32",
+        "N17": "43.77",
+        "N18": "1,466.33",
+        "N19": "10.24",
+        "N20": "343.10",
+        "N21": "29.65",
+        "N22": "993.55",
+        "N23": "555.89"
+      }
+    },
+    "en-l11-2": {
+      "skeleton": "⟦W1⟧ & ⟦W2⟧ ⟦W3⟧\n⟦W4⟧ ⟦W5⟧: ⟦W6⟧.⟦W7⟧ ⟦W8⟧ (⟦N1⟧) ⟦N2⟧-⟦N3⟧\n\nEmployee: ⟦W9⟧ ⟦W10⟧        Employee ID: ⟦N4⟧\nPay Date: ⟦D1⟧\nPay Period: ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Every two weeks\n\nEarnings                            Current      YTD\nSalary                              ⟦N5⟧     ⟦N6⟧\nGross Pay                           ⟦N7⟧     ⟦N8⟧\n\nFederal Income Tax                  ⟦N9⟧       ⟦N10⟧\nSocial Security                     ⟦N11⟧       ⟦N12⟧\nMedicare                            ⟦N13⟧        ⟦N14⟧\nState Income Tax                    ⟦N15⟧       ⟦N16⟧\nNet Pay                             ⟦N17⟧\n",
+      "map": {
+        "W1": "Gross",
+        "W2": "Daughters",
+        "W3": "Bakery",
+        "W4": "Payroll",
+        "W5": "questions",
+        "W6": "payroll@gross-daughters-bakery",
+        "W7": "example",
+        "W8": "or",
+        "N1": "555",
+        "N2": "679",
+        "N3": "5598",
+        "W9": "Bill",
+        "W10": "Rate",
+        "N4": "015008",
+        "D1": "October 14, 2026",
+        "D2": "September 25, 2026",
+        "D3": "October 8, 2026",
+        "N5": "3,461.54",
+        "N6": "76,015.34",
+        "N7": "3,461.54",
+        "N8": "76,015.34",
+        "N9": "356.54",
+        "N10": "7,829.54",
+        "N11": "214.62",
+        "N12": "4,713.02",
+        "N13": "50.19",
+        "N14": "1,102.19",
+        "N15": "200.77",
+        "N16": "4,408.97",
+        "N17": "2,639.42"
+      }
+    },
+    "en-l11-3": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\n⟦W5⟧ ⟦W6⟧: ⟦W7⟧.⟦W8⟧ ⟦W9⟧ (⟦N1⟧) ⟦N2⟧-⟦N3⟧\n\nEmployee: ⟦W10⟧ ⟦W11⟧        Employee ID: ⟦N4⟧\nPay Date: ⟦D1⟧\nPay Period: ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Twice a month\n\nEarnings          Hours    Rate     Current      YTD\nRegular           ⟦N5⟧    ⟦N6⟧    ⟦N7⟧     ⟦N8⟧\nGross Pay                           ⟦N9⟧     ⟦N10⟧\n\nFederal Income Tax                  ⟦N11⟧       ⟦N12⟧\nSocial Security                     ⟦N13⟧       ⟦N14⟧\nMedicare                            ⟦N15⟧        ⟦N16⟧\nState Income Tax                    ⟦N17⟧        ⟦N18⟧\nNet Pay                             ⟦N19⟧\n",
+      "map": {
+        "W1": "Net",
+        "W2": "Health",
+        "W3": "Clinic",
+        "W4": "INC",
+        "W5": "Payroll",
+        "W6": "questions",
+        "W7": "payroll@net-health-clinic-inc",
+        "W8": "example",
+        "W9": "or",
+        "N1": "555",
+        "N2": "511",
+        "N3": "1811",
+        "W10": "Ana",
+        "W11": "Bank",
+        "N4": "014087",
+        "D1": "Apr. 3, 2026",
+        "D2": "Mar. 16, 2026",
+        "D3": "Mar. 31, 2026",
+        "N5": "86.50",
+        "N6": "26.51",
+        "N7": "2,293.12",
+        "N8": "13,896.32",
+        "N9": "2,293.12",
+        "N10": "13,896.32",
+        "N11": "231.61",
+        "N12": "1,403.56",
+        "N13": "142.17",
+        "N14": "861.57",
+        "N15": "33.25",
+        "N16": "201.50",
+        "N17": "98.60",
+        "N18": "597.50",
+        "N19": "1,787.49"
+      }
+    },
+    "en-l11-4": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\n⟦W5⟧ ⟦W6⟧: ⟦W7⟧.⟦W8⟧ ⟦W9⟧ (⟦N1⟧) ⟦N2⟧-⟦N3⟧\n\nEmployee: ⟦W10⟧ ⟦W11⟧        Employee ID: ⟦N4⟧\nPay Date: ⟦D1⟧\nPay Period: ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Once a month\n\nEarnings                            Current      YTD\nSalary                              ⟦N5⟧     ⟦N6⟧\nGross Pay                           ⟦N7⟧     ⟦N8⟧\n\nFederal Income Tax                  ⟦N9⟧       ⟦N10⟧\nSocial Security                     ⟦N11⟧       ⟦N12⟧\nMedicare                            ⟦N13⟧        ⟦N14⟧\nState Income Tax                    ⟦N15⟧       ⟦N16⟧\nNet Pay                             ⟦N17⟧\n",
+      "map": {
+        "W1": "Union",
+        "W2": "Pay",
+        "W3": "Systems",
+        "W4": "CORP",
+        "W5": "Payroll",
+        "W6": "questions",
+        "W7": "payroll@union-pay-systems-corp",
+        "W8": "example",
+        "W9": "or",
+        "N1": "555",
+        "N2": "694",
+        "N3": "2293",
+        "W10": "Robin",
+        "W11": "Federal",
+        "N4": "078972",
+        "D1": "December 1, 2026",
+        "D2": "November 1, 2026",
+        "D3": "November 30, 2026",
+        "N5": "3,333.33",
+        "N6": "37,666.63",
+        "N7": "3,333.33",
+        "N8": "37,666.63",
+        "N9": "326.67",
+        "N10": "3,691.37",
+        "N11": "206.67",
+        "N12": "2,335.37",
+        "N13": "48.33",
+        "N14": "546.13",
+        "N15": "180.00",
+        "N16": "2,034.00",
+        "N17": "2,571.66"
+      }
+    },
+    "en-l11-5": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\n⟦W5⟧ ⟦W6⟧: ⟦W7⟧.⟦W8⟧ ⟦W9⟧ (⟦N1⟧) ⟦N2⟧-⟦N3⟧\n\nEmployee: ⟦W10⟧ ⟦W11⟧        Employee ID: ⟦N4⟧\nPay Date: ⟦D1⟧\nPay Period: ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Every week\n\nEarnings          Hours    Rate     Current      YTD\nRegular           ⟦N5⟧    ⟦N6⟧    ⟦N7⟧     ⟦N8⟧\nOvertime          ⟦N9⟧     ⟦N10⟧    ⟦N11⟧       ⟦N12⟧\nGross Pay                           ⟦N13⟧     ⟦N14⟧\n\nFederal Income Tax                  ⟦N15⟧       ⟦N16⟧\nSocial Security                     ⟦N17⟧       ⟦N18⟧\nMedicare                            ⟦N19⟧        ⟦N20⟧\nState Income Tax                    ⟦N21⟧        ⟦N22⟧\nNet Pay                             ⟦N23⟧\n",
+      "map": {
+        "W1": "State",
+        "W2": "Bank",
+        "W3": "Staffing",
+        "W4": "LLC",
+        "W5": "Payroll",
+        "W6": "questions",
+        "W7": "payroll@state-bank-staffing-llc",
+        "W8": "example",
+        "W9": "or",
+        "N1": "555",
+        "N2": "431",
+        "N3": "2251",
+        "W10": "Sam",
+        "W11": "Holiday",
+        "N4": "058303",
+        "D1": "June 3, 2026",
+        "D2": "May 26, 2026",
+        "D3": "June 1, 2026",
+        "N5": "30.00",
+        "N6": "42.57",
+        "N7": "1,277.10",
+        "N8": "27,452.55",
+        "N9": "8.50",
+        "N10": "63.86",
+        "N11": "542.81",
+        "N12": "11,668.19",
+        "N13": "1,819.91",
+        "N14": "39,120.74",
+        "N15": "169.25",
+        "N16": "3,638.24",
+        "N17": "112.83",
+        "N18": "2,425.35",
+        "N19": "26.39",
+        "N20": "567.35",
+        "N21": "87.36",
+        "N22": "1,877.82",
+        "N23": "1,424.08"
+      }
+    },
+    "en-l11-6": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\n⟦W5⟧ ⟦W6⟧: ⟦W7⟧.⟦W8⟧ ⟦W9⟧ (⟦N1⟧) ⟦N2⟧-⟦N3⟧\n\nEmployee: ⟦W10⟧ ⟦W11⟧        Employee ID: ⟦N4⟧\nPay Date: ⟦D1⟧\nPay Period: ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Every two weeks\n\nEarnings                            Current      YTD\nSalary                              ⟦N5⟧     ⟦N6⟧\nGross Pay                           ⟦N7⟧     ⟦N8⟧\n\nFederal Income Tax                  ⟦N9⟧       ⟦N10⟧\nSocial Security                     ⟦N11⟧       ⟦N12⟧\nMedicare                            ⟦N13⟧        ⟦N14⟧\nState Income Tax                    ⟦N15⟧        ⟦N16⟧\nNet Pay                             ⟦N17⟧\n",
+      "map": {
+        "W1": "Regular",
+        "W2": "Rate",
+        "W3": "Freight",
+        "W4": "INC",
+        "W5": "Payroll",
+        "W6": "questions",
+        "W7": "payroll@regular-rate-freight-inc",
+        "W8": "example",
+        "W9": "or",
+        "N1": "555",
+        "N2": "340",
+        "N3": "1165",
+        "W10": "Pat",
+        "W11": "Sick",
+        "N4": "037344",
+        "D1": "Nov. 5, 2026",
+        "D2": "Oct. 19, 2026",
+        "D3": "Nov. 1, 2026",
+        "N5": "2,307.69",
+        "N6": "50,526.84",
+        "N7": "2,307.69",
+        "N8": "50,526.84",
+        "N9": "274.62",
+        "N10": "6,012.87",
+        "N11": "143.08",
+        "N12": "3,132.64",
+        "N13": "33.46",
+        "N14": "732.55",
+        "N15": "83.08",
+        "N16": "1,818.94",
+        "N17": "1,773.45"
+      }
+    },
+    "en-l11-7": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\n⟦W5⟧ ⟦W6⟧: ⟦W7⟧.⟦W8⟧ ⟦W9⟧ (⟦N1⟧) ⟦N2⟧-⟦N3⟧\n\nEmployee: ⟦W10⟧ ⟦W11⟧        Employee ID: ⟦N4⟧\nPay Date: ⟦D1⟧\nPay Period: ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Twice a month\n\nEarnings          Hours    Rate     Current      YTD\nRegular           ⟦N5⟧    ⟦N6⟧    ⟦N7⟧     ⟦N8⟧\nGross Pay                           ⟦N9⟧     ⟦N10⟧\n\nFederal Income Tax                  ⟦N11⟧       ⟦N12⟧\nSocial Security                     ⟦N13⟧       ⟦N14⟧\nMedicare                            ⟦N15⟧        ⟦N16⟧\nState Income Tax                    ⟦N17⟧        ⟦N18⟧\nNet Pay                             ⟦N19⟧\n",
+      "map": {
+        "W1": "Total",
+        "W2": "Care",
+        "W3": "Medical",
+        "W4": "LLC",
+        "W5": "Payroll",
+        "W6": "questions",
+        "W7": "payroll@total-care-medical-llc",
+        "W8": "example",
+        "W9": "or",
+        "N1": "555",
+        "N2": "469",
+        "N3": "7310",
+        "W10": "Lee",
+        "W11": "Union",
+        "N4": "016665",
+        "D1": "November 4, 2026",
+        "D2": "October 16, 2026",
+        "D3": "October 31, 2026",
+        "N5": "84.50",
+        "N6": "19.24",
+        "N7": "1,625.78",
+        "N8": "32,113.94",
+        "N9": "1,625.78",
+        "N10": "32,113.94",
+        "N11": "136.57",
+        "N12": "2,697.58",
+        "N13": "100.80",
+        "N14": "1,991.11",
+        "N15": "23.57",
+        "N16": "465.51",
+        "N17": "78.04",
+        "N18": "1,541.61",
+        "N19": "1,286.80"
+      }
+    },
+    "en-l11-8": {
+      "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\n⟦W5⟧ ⟦W6⟧: ⟦W7⟧.⟦W8⟧ ⟦W9⟧ (⟦N1⟧) ⟦N2⟧-⟦N3⟧\n\nEmployee: ⟦W10⟧ ⟦W11⟧        Employee ID: ⟦N4⟧\nPay Date: ⟦D1⟧\nPay Period: ⟦D2⟧ to ⟦D3⟧\nPay Frequency: Once a month\n\nEarnings                            Current      YTD\nSalary                              ⟦N5⟧     ⟦N6⟧\nGross Pay                           ⟦N7⟧     ⟦N8⟧\n\nFederal Income Tax                  ⟦N9⟧       ⟦N10⟧\nSocial Security                     ⟦N11⟧       ⟦N12⟧\nMedicare                            ⟦N13⟧        ⟦N14⟧\nState Income Tax                    ⟦N15⟧       ⟦N16⟧\nNet Pay                             ⟦N17⟧\n",
+      "map": {
+        "W1": "Direct",
+        "W2": "Deposit",
+        "W3": "Couriers",
+        "W4": "INC",
+        "W5": "Payroll",
+        "W6": "questions",
+        "W7": "payroll@direct-deposit-couriers-inc",
+        "W8": "example",
+        "W9": "or",
+        "N1": "555",
+        "N2": "753",
+        "N3": "6206",
+        "W10": "Dana",
+        "W11": "Medical",
+        "N4": "006098",
+        "D1": "August 6, 2026",
+        "D2": "July 1, 2026",
+        "D3": "July 31, 2026",
+        "N5": "3,500.00",
+        "N6": "23,555.00",
+        "N7": "3,500.00",
+        "N8": "23,555.00",
+        "N9": "406.00",
+        "N10": "2,732.38",
+        "N11": "217.00",
+        "N12": "1,460.44",
+        "N13": "50.75",
+        "N14": "341.57",
+        "N15": "147.00",
+        "N16": "989.34",
+        "N17": "2,679.25"
+      }
+    }
+  },
+  "constraints": [
+    {
+      "id": "sample-core",
+      "document": "sample",
+      "part": "core",
+      "expected": {
+        "type": "object",
+        "properties": {
+          "employerName": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "W1",
+                "W2",
+                "W3",
+                "W4",
+                "W5",
+                "W6",
+                "W7",
+                "W8",
+                "W9",
+                "W10",
+                "W11",
+                "W12"
+              ]
+            }
+          },
+          "employeeName": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "W1",
+                "W2",
+                "W3",
+                "W4",
+                "W5",
+                "W6",
+                "W7",
+                "W8",
+                "W9",
+                "W10",
+                "W11",
+                "W12"
+              ]
+            }
+          },
+          "payFrequency": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "weekly",
+              "biweekly",
+              "semimonthly",
+              "monthly",
+              null
+            ]
+          },
+          "payDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "D1",
+              "D2",
+              "D3",
+              null
+            ]
+          },
+          "periodStart": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "D1",
+              "D2",
+              "D3",
+              null
+            ]
+          },
+          "periodEnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "D1",
+              "D2",
+              "D3",
+              null
+            ]
+          },
+          "grossPay": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "N1",
+              "N2",
+              "N3",
+              "N4",
+              "N5",
+              "N6",
+              "N7",
+              "N8",
+              "N9",
+              "N10",
+              "N11",
+              "N12",
+              "N13",
+              "N14",
+              "N15",
+              "N16",
+              "N17",
+              "N18",
+              "N19",
+              "N20",
+              "N21",
+              "N22",
+              null
+            ]
+          },
+          "netPay": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "N1",
+              "N2",
+              "N3",
+              "N4",
+              "N5",
+              "N6",
+              "N7",
+              "N8",
+              "N9",
+              "N10",
+              "N11",
+              "N12",
+              "N13",
+              "N14",
+              "N15",
+              "N16",
+              "N17",
+              "N18",
+              "N19",
+              "N20",
+              "N21",
+              "N22",
+              null
+            ]
+          },
+          "ytdGross": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "N1",
+              "N2",
+              "N3",
+              "N4",
+              "N5",
+              "N6",
+              "N7",
+              "N8",
+              "N9",
+              "N10",
+              "N11",
+              "N12",
+              "N13",
+              "N14",
+              "N15",
+              "N16",
+              "N17",
+              "N18",
+              "N19",
+              "N20",
+              "N21",
+              "N22",
+              null
+            ]
+          },
+          "hoursWorked": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "N1",
+              "N2",
+              "N3",
+              "N4",
+              "N5",
+              "N6",
+              "N7",
+              "N8",
+              "N9",
+              "N10",
+              "N11",
+              "N12",
+              "N13",
+              "N14",
+              "N15",
+              "N16",
+              "N17",
+              "N18",
+              "N19",
+              "N20",
+              "N21",
+              "N22",
+              null
+            ]
+          },
+          "hourlyRate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "N1",
+              "N2",
+              "N3",
+              "N4",
+              "N5",
+              "N6",
+              "N7",
+              "N8",
+              "N9",
+              "N10",
+              "N11",
+              "N12",
+              "N13",
+              "N14",
+              "N15",
+              "N16",
+              "N17",
+              "N18",
+              "N19",
+              "N20",
+              "N21",
+              "N22",
+              null
+            ]
+          }
+        },
+        "required": [
+          "employerName",
+          "employeeName",
+          "payFrequency",
+          "payDate",
+          "periodStart",
+          "periodEnd",
+          "grossPay",
+          "netPay",
+          "ytdGross",
+          "hoursWorked",
+          "hourlyRate"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "id": "sample-gross",
+      "document": "sample",
+      "part": "gross",
+      "expected": {
+        "type": "object",
+        "properties": {
+          "grossPay": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "N1",
+              "N2",
+              "N3",
+              "N4",
+              "N5",
+              "N6",
+              "N7",
+              "N8",
+              "N9",
+              "N10",
+              "N11",
+              "N12",
+              "N13",
+              "N14",
+              "N15",
+              "N16",
+              "N17",
+              "N18",
+              "N19",
+              "N20",
+              "N21",
+              "N22",
+              null
+            ]
+          },
+          "ytdGross": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "N1",
+              "N2",
+              "N3",
+              "N4",
+              "N5",
+              "N6",
+              "N7",
+              "N8",
+              "N9",
+              "N10",
+              "N11",
+              "N12",
+              "N13",
+              "N14",
+              "N15",
+              "N16",
+              "N17",
+              "N18",
+              "N19",
+              "N20",
+              "N21",
+              "N22",
+              null
+            ]
+          }
+        },
+        "required": [
+          "grossPay",
+          "ytdGross"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "id": "sample-deductions",
+      "document": "sample",
+      "part": "deductions",
+      "expected": {
+        "type": "object",
+        "properties": {
+          "deductions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string",
+                  "enum": [
+                    "N1",
+                    "N2",
+                    "N3",
+                    "N4",
+                    "N5",
+                    "N6",
+                    "N7",
+                    "N8",
+                    "N9",
+                    "N10",
+                    "N11",
+                    "N12",
+                    "N13",
+                    "N14",
+                    "N15",
+                    "N16",
+                    "N17",
+                    "N18",
+                    "N19",
+                    "N20",
+                    "N21",
+                    "N22"
+                  ]
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "federal_tax",
+                    "state_tax",
+                    "social_security",
+                    "medicare",
+                    "retirement",
+                    "health",
+                    "other"
+                  ]
+                }
+              },
+              "required": [
+                "amount",
+                "kind"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "deductions"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "id": "sample-deductions-again",
+      "document": "sample",
+      "part": "deductions-again",
+      "expected": {
+        "type": "object",
+        "properties": {
+          "deductions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string",
+                  "enum": [
+                    "N1",
+                    "N2",
+                    "N3",
+                    "N4",
+                    "N5",
+                    "N6",
+                    "N7",
+                    "N8",
+                    "N9",
+                    "N10",
+                    "N11",
+                    "N12",
+                    "N13",
+                    "N14",
+                    "N15",
+                    "N16",
+                    "N17",
+                    "N18",
+                    "N19",
+                    "N20",
+                    "N21",
+                    "N22"
+                  ]
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "federal_tax",
+                    "state_tax",
+                    "social_security",
+                    "medicare",
+                    "retirement",
+                    "health",
+                    "other"
+                  ]
+                }
+              },
+              "required": [
+                "amount",
+                "kind"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "deductions"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "checks": [
+    {
+      "id": "sample-key",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [],
+        "deductions": [],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "net-equals-gross",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N12",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "check:net-sum"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "gross-date-placeholder",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "D1",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [
+          "grossPay:bad-reference",
+          "grossPay:missing"
+        ],
+        "deductions": [
+          "deductions:cannot-check"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "gross-unknown-id",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N999",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [
+          "grossPay:bad-reference",
+          "grossPay:missing"
+        ],
+        "deductions": [
+          "deductions:cannot-check"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "gross-missing",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [
+          "grossPay:missing"
+        ],
+        "deductions": [
+          "deductions:cannot-check"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "frequency-not-an-option",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "fortnightly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [
+          "payFrequency:not-an-option"
+        ],
+        "deductions": [],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "name-number-placeholder",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "N1"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [
+          "employerName:bad-reference"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "date-number-placeholder",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "N3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [
+          "payDate:bad-reference"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "several-problems",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "N1"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N22",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "fortnightly"
+      },
+      "expected": {
+        "core": [
+          "employerName:bad-reference",
+          "payFrequency:not-an-option",
+          "check:ytd-gross",
+          "check:ytd-periods",
+          "ytdGross:not-on-gross-line",
+          "ytdGross:ambiguous"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "net-above-gross",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N13",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [
+          "netPay:above-gross"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "ytd-regular-line",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N7",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [
+          "ytdGross:not-on-gross-line",
+          "ytdGross:ambiguous"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "deductions-empty",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": []
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "check:net-sum"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "deductions-word-placeholder",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "W1",
+            "kind": "other"
+          }
+        ]
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:bad-reference",
+          "check:net-sum"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "deductions-missing",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "names-shared",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5",
+          "W3"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [
+            "names:shared-placeholder",
+            "employeeName:incomplete"
+          ],
+          "fields": [
+            "employerName",
+            "employeeName"
+          ]
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "names-cut-short",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1"
+        ],
+        "employeeName": [
+          "W4"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [
+            "employerName:incomplete",
+            "employeeName:incomplete"
+          ],
+          "fields": [
+            "employerName",
+            "employeeName"
+          ]
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "hours-on-gross",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N12",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [
+            "hoursWorked:shares-placeholder"
+          ],
+          "fields": [
+            "hoursWorked"
+          ]
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "ytd-left-out",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": true
+      }
+    },
+    {
+      "id": "real-run3-sample-ytd-regular-line",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N7",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4"
+      },
+      "expected": {
+        "core": [
+          "ytdGross:not-on-gross-line",
+          "ytdGross:ambiguous"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "real-run3-l01-ytd-regular-line",
+      "document": "en-l01-1",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "biweekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N7",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4"
+      },
+      "expected": {
+        "core": [
+          "ytdGross:not-on-gross-line",
+          "ytdGross:ambiguous"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "real-run3-l07-ytd-holiday-line",
+      "document": "en-l07-3",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N28",
+        "ytdGross": "N13",
+        "hoursWorked": "N2",
+        "hourlyRate": "N3"
+      },
+      "expected": {
+        "core": [
+          "check:ytd-periods",
+          "ytdGross:not-on-gross-line",
+          "ytdGross:ambiguous"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "real-run3-l10-names-shared",
+      "document": "en-l10-1",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5",
+          "W3"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N20",
+        "ytdGross": "N7",
+        "hoursWorked": "N4",
+        "hourlyRate": "N5"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [
+            "names:shared-placeholder",
+            "employeeName:incomplete"
+          ],
+          "fields": [
+            "employerName",
+            "employeeName"
+          ]
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "real-run4-sample-ytd-left-out",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N12",
+        "netPay": "N22"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": true
+      }
+    },
+    {
+      "id": "real-run4-l01-ytd-left-out",
+      "document": "en-l01-1",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "biweekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": true
+      }
+    },
+    {
+      "id": "real-run4-l07-hours-on-gross",
+      "document": "en-l07-3",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N28",
+        "ytdGross": "N19",
+        "hoursWorked": "N18",
+        "hourlyRate": "N3"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [
+            "hoursWorked:shares-placeholder"
+          ],
+          "fields": [
+            "hoursWorked"
+          ]
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "real-run5-sample-employer-cut-short",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "payFrequency": "semimonthly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N13",
+        "hourlyRate": "N4"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [
+            "employerName:incomplete",
+            "hoursWorked:shares-placeholder"
+          ],
+          "fields": [
+            "employerName",
+            "hoursWorked"
+          ]
+        },
+        "ytdMissingWithCandidate": false
+      }
+    },
+    {
+      "id": "real-run5-l07-names-cut-short",
+      "document": "en-l07-3",
+      "pointers": {
+        "employerName": [
+          "W1"
+        ],
+        "employeeName": [
+          "W4"
+        ],
+        "payFrequency": "weekly",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "grossPay": "N18",
+        "netPay": "N28",
+        "ytdGross": "N19"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [
+            "employerName:incomplete",
+            "employeeName:incomplete"
+          ],
+          "fields": [
+            "employerName",
+            "employeeName"
+          ]
+        },
+        "ytdMissingWithCandidate": false
+      }
+    }
+  ],
+  "readings": [
+    {
+      "id": "core-right-deductions-right",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "deductions-empty-twice",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[]}",
+        "deductionsAgain": "{\"deductions\":[]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly"
+        },
+        "notRead": [
+          "deductions"
+        ]
+      }
+    },
+    {
+      "id": "deductions-short-then-right",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"}]}",
+        "deductionsAgain": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "deductions-short-twice",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"}]}",
+        "deductionsAgain": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly"
+        },
+        "notRead": [
+          "deductions"
+        ]
+      }
+    },
+    {
+      "id": "deductions-unparseable",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\": [N14"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": false,
+            "problems": [
+              "not-json"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly"
+        },
+        "notRead": [
+          "deductions"
+        ]
+      }
+    },
+    {
+      "id": "core-not-an-option",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"fortnightly\"}"
+      },
+      "expected": {
+        "asked": [
+          "core"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "payFrequency:not-an-option"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "failed",
+        "problems": [
+          "payFrequency:not-an-option"
+        ]
+      }
+    },
+    {
+      "id": "core-unparseable",
+      "document": "sample",
+      "answers": {
+        "core": "{\"grossPay\": N12"
+      },
+      "expected": {
+        "asked": [
+          "core"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": false,
+            "problems": [
+              "not-json"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "failed",
+        "problems": [
+          "not-json"
+        ]
+      }
+    },
+    {
+      "id": "core-not-an-object",
+      "document": "sample",
+      "answers": {
+        "core": "[\"N12\"]"
+      },
+      "expected": {
+        "asked": [
+          "core"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": false,
+            "problems": [
+              "not-json"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "failed",
+        "problems": [
+          "not-json"
+        ]
+      }
+    },
+    {
+      "id": "ytd-regular-line-then-right",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N7\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":\"N13\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "ytdGross:not-on-gross-line",
+              "ytdGross:ambiguous"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "ytd-regular-line-twice",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N7\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":\"N7\"}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "ytdGross:not-on-gross-line",
+              "ytdGross:ambiguous"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [
+              "ytdGross:not-on-gross-line",
+              "ytdGross:ambiguous"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "failed",
+        "problems": [
+          "ytdGross:not-on-gross-line",
+          "ytdGross:ambiguous"
+        ]
+      }
+    },
+    {
+      "id": "ytd-below-gross-twice",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N22\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":\"N22\"}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "check:ytd-gross",
+              "check:ytd-periods",
+              "ytdGross:not-on-gross-line",
+              "ytdGross:ambiguous"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [
+              "check:ytd-gross",
+              "check:ytd-periods",
+              "ytdGross:not-on-gross-line",
+              "ytdGross:ambiguous"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "failed",
+        "problems": [
+          "check:ytd-gross",
+          "check:ytd-periods",
+          "ytdGross:not-on-gross-line",
+          "ytdGross:ambiguous"
+        ]
+      }
+    },
+    {
+      "id": "gross-date-placeholder-then-right",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"D1\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":\"N13\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "grossPay:bad-reference",
+              "grossPay:missing"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "ytd-left-out-then-right",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\",\"ytdGross\":null}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":\"N13\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "ytdGross": "N13",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "ytd-left-out-twice",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\",\"ytdGross\":null}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":null}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [
+              "ytdGross:still-missing"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "ytd-left-out-then-wrong",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\",\"ytdGross\":null}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":\"N7\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [
+              "ytdGross:not-on-gross-line",
+              "ytdGross:ambiguous"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "extra-and-missing-keys",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\",\"netPayPay\":\"N1\",\"required\":[\"grossPay\"]}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [
+              "netPayPay",
+              "required"
+            ],
+            "missingKeys": [
+              "employeeName"
+            ]
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "names-shared",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\",\"W3\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "names:shared-placeholder",
+              "employeeName:incomplete"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": [
+          "employerName",
+          "employeeName"
+        ]
+      }
+    },
+    {
+      "id": "names-cut-short",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\"],\"employeeName\":[\"W4\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "employerName:incomplete",
+              "employeeName:incomplete"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": [
+          "employerName",
+          "employeeName"
+        ]
+      }
+    },
+    {
+      "id": "hours-on-gross",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N12\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "hoursWorked:shares-placeholder"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": [
+          "hoursWorked"
+        ]
+      }
+    },
+    {
+      "id": "real-run4-sample",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"semimonthly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N12\", \"netPay\": \"N22\", \"ytdGross\": null, \"hoursWorked\": null, \"hourlyRate\": null}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":\"N13\"}",
+        "deductions": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}]}",
+        "deductionsAgain": "{\n  \"deductions\": [\n    {\n      \"amount\": \"N14\",\n      \"kind\": \"federal_tax\"\n    },\n    {\n      \"amount\": \"N16\",\n      \"kind\": \"social_security\"\n    },\n    {\n      \"amount\": \"N18\",\n      \"kind\": \"medicare\"\n    },\n    {\n      \"amount\": \"N20\",\n      \"kind\": \"other\"\n    }\n  ]\n}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "payFrequency": "semimonthly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "other"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "real-run4-l07",
+      "document": "en-l07-3",
+      "answers": {
+        "core": "{\n  \"employerName\": [\n    \"W1\",\n    \"W2\",\n    \"W3\"\n  ],\n  \"employeeName\": [\n    \"W4\",\n    \"W5\"\n  ],\n  \"payFrequency\": \"weekly\",\n  \"payDate\": \"D3\",\n  \"periodStart\": \"D1\",\n  \"periodEnd\": \"D2\",\n  \"grossPay\": \"N18\",\n  \"netPay\": \"N28\",\n  \"ytdGross\": \"N19\",\n  \n  \"hoursWorked\": \"N18\",\n  \"hourlyRate\": \"N3\"\n}",
+        "deductions": "{\"deductions\": [{\"amount\": \"N20\", \"kind\": \"federal_tax\"}, {\"amount\": \"N22\", \"kind\": \"social_security\"}, {\"amount\": \"N24\", \"kind\": \"medicare\"}]}",
+        "deductionsAgain": "{\"deductions\": [{\"amount\": \"N20\", \"kind\": \"federal_tax\"}, {\"amount\": \"N22\", \"kind\": \"social_security\"}, {\"amount\": \"N24\", \"kind\": \"medicare\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "hoursWorked:shares-placeholder"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "payFrequency": "weekly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N18",
+          "netPay": "N28",
+          "ytdGross": "N19",
+          "hourlyRate": "N3"
+        },
+        "notRead": [
+          "hoursWorked",
+          "deductions"
+        ]
+      }
+    },
+    {
+      "id": "real-run5-sample-2",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\": [\"W1\"], \"employeeName\": [\"W4\", \"W5\"], \"payFrequency\": \"semimonthly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N12\", \"netPay\": \"N22\", \"ytdGross\": \"N13\", \"hoursWorked\": \"N13\", \"hourlyRate\": \"N4\"}",
+        "deductions": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}]}",
+        "deductionsAgain": "{\n  \"deductions\": [\n    {\n      \"amount\": \"N14\",\n      \"kind\": \"federal_tax\"\n    },\n    {\n      \"amount\": \"N16\",\n      \"kind\": \"social_security\"\n    },\n    {\n      \"amount\": \"N18\",\n      \"kind\": \"medicare\"\n    },\n    {\n      \"amount\": \"N20\",\n      \"kind\": \"other\"\n    }\n  ]\n}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "employerName:incomplete",
+              "hoursWorked:shares-placeholder"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "payFrequency": "semimonthly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hourlyRate": "N4",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "other"
+            }
+          ]
+        },
+        "notRead": [
+          "employerName",
+          "hoursWorked"
+        ]
+      }
+    },
+    {
+      "id": "real-run5-l07-2",
+      "document": "en-l07-3",
+      "answers": {
+        "core": "{\"employerName\": [\"W1\"], \"employeeName\": [\"W4\"], \"payFrequency\": \"weekly\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"grossPay\": \"N18\", \"netPay\": \"N28\", \"ytdGross\": \"N19\", \"hoursWorked\": null, \"hourlyRate\": null}",
+        "deductions": "{\"deductions\": [{\"amount\": \"N20\", \"kind\": \"federal_tax\"}, {\"amount\": \"N22\", \"kind\": \"social_security\"}, {\"amount\": \"N24\", \"kind\": \"medicare\"}]}",
+        "deductionsAgain": "{\"deductions\": [{\"amount\": \"N20\", \"kind\": \"federal_tax\"}, {\"amount\": \"N22\", \"kind\": \"social_security\"}, {\"amount\": \"N24\", \"kind\": \"medicare\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "employerName:incomplete",
+              "employeeName:incomplete"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "payFrequency": "weekly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N18",
+          "netPay": "N28",
+          "ytdGross": "N19"
+        },
+        "notRead": [
+          "employerName",
+          "employeeName",
+          "deductions"
+        ]
+      }
+    },
+    {
+      "id": "real-run3-l01",
+      "document": "en-l01-1",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"payFrequency\":\"biweekly\",\"payDate\":\"D3\",\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N7\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\"}",
+        "gross": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"payFrequency\":\"biweekly\",\"payDate\":\"D3\",\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N7\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\"}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "ytdGross:not-on-gross-line",
+              "ytdGross:ambiguous"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [
+              "ytdGross:not-on-gross-line",
+              "ytdGross:ambiguous"
+            ],
+            "extraKeys": [
+              "employerName",
+              "employeeName",
+              "payFrequency",
+              "payDate",
+              "periodStart",
+              "periodEnd",
+              "netPay",
+              "hoursWorked",
+              "hourlyRate"
+            ],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "failed",
+        "problems": [
+          "ytdGross:not-on-gross-line",
+          "ytdGross:ambiguous"
+        ]
+      }
+    }
+  ],
+  "gold": {
+    "$comment": "Every right reading of the 38 English evaluation paystubs: each combination of the alternatives over base (see device-reading.cases.mjs rightReadings), and each line run of gold name placeholders. Expected: no core problem and nothing left out for every reading; ytdMissingWhenLeftOut gives, per grossPay alternative, whether leaving year to date out asks the gross part again.",
+    "cases": [
+      {
+        "document": "en-l01-1",
+        "base": {
+          "payFrequency": "biweekly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N12"
+          ],
+          "ytdGross": [
+            "N13"
+          ],
+          "hoursWorked": [
+            "N5"
+          ],
+          "hourlyRate": [
+            "N4"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l01-2",
+        "base": {
+          "payFrequency": "semimonthly",
+          "payDate": "D2",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N12"
+          ],
+          "ytdGross": [
+            "N13"
+          ],
+          "hoursWorked": [
+            "N5"
+          ],
+          "hourlyRate": [
+            "N4"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l01-3",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N12"
+          ],
+          "ytdGross": [
+            "N13"
+          ],
+          "hoursWorked": [
+            "N5"
+          ],
+          "hourlyRate": [
+            "N4"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l02-1",
+        "base": {
+          "payFrequency": "semimonthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N11",
+          "netPay": "N20",
+          "ytdGross": "N10",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N11"
+          ],
+          "ytdGross": [
+            "N10"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l02-2",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N11",
+          "netPay": "N20",
+          "ytdGross": "N10",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N11"
+          ],
+          "ytdGross": [
+            "N10"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l02-3",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N11",
+          "netPay": "N20",
+          "ytdGross": "N10",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N11"
+          ],
+          "ytdGross": [
+            "N10"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l03-1",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D1",
+          "grossPay": "N1",
+          "netPay": "N9"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N1",
+            "N2"
+          ],
+          "ytdGross": [],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 2,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            false,
+            false
+          ]
+        }
+      },
+      {
+        "document": "en-l03-2",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N1",
+          "netPay": "N9"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N1",
+            "N2"
+          ],
+          "ytdGross": [],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 2,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            false,
+            false
+          ]
+        }
+      },
+      {
+        "document": "en-l03-3",
+        "base": {
+          "payFrequency": "biweekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N1",
+          "netPay": "N9"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N1",
+            "N2"
+          ],
+          "ytdGross": [],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 2,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            false,
+            false
+          ]
+        }
+      },
+      {
+        "document": "en-l04-1",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N4",
+          "netPay": "N8",
+          "ytdGross": "N9",
+          "hoursWorked": "N3",
+          "hourlyRate": "N2"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N4"
+          ],
+          "ytdGross": [
+            "N9"
+          ],
+          "hoursWorked": [
+            "N3"
+          ],
+          "hourlyRate": [
+            "N2"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l04-2",
+        "base": {
+          "payFrequency": "biweekly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N4",
+          "netPay": "N8",
+          "ytdGross": "N9",
+          "hoursWorked": "N3",
+          "hourlyRate": "N2"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N4"
+          ],
+          "ytdGross": [
+            "N9"
+          ],
+          "hoursWorked": [
+            "N3"
+          ],
+          "hourlyRate": [
+            "N2"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l04-3",
+        "base": {
+          "payFrequency": "semimonthly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N4",
+          "netPay": "N8",
+          "ytdGross": "N9",
+          "hoursWorked": "N3",
+          "hourlyRate": "N2"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N4"
+          ],
+          "ytdGross": [
+            "N9"
+          ],
+          "hoursWorked": [
+            "N3"
+          ],
+          "hourlyRate": [
+            "N2"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l05-1",
+        "base": {
+          "payFrequency": "biweekly",
+          "payDate": "D2",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N8",
+          "netPay": "N16",
+          "ytdGross": "N9",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N8"
+          ],
+          "ytdGross": [
+            "N9"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l05-2",
+        "base": {
+          "payFrequency": "semimonthly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N8",
+          "netPay": "N16",
+          "ytdGross": "N9",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N8"
+          ],
+          "ytdGross": [
+            "N9"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l05-3",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N8",
+          "netPay": "N16",
+          "ytdGross": "N9",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N8"
+          ],
+          "ytdGross": [
+            "N9"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l06-1",
+        "base": {
+          "payFrequency": "semimonthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N9",
+          "netPay": "N23",
+          "ytdGross": "N10"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N9",
+            "N11"
+          ],
+          "ytdGross": [
+            "N10",
+            "N12"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W9",
+              "W10"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l06-2",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N9",
+          "netPay": "N23",
+          "ytdGross": "N10"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N9",
+            "N11"
+          ],
+          "ytdGross": [
+            "N10",
+            "N12"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W9",
+              "W10"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l06-3",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N9",
+          "netPay": "N23",
+          "ytdGross": "N10"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N9",
+            "N11"
+          ],
+          "ytdGross": [
+            "N10",
+            "N12"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W9",
+              "W10"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l07-1",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N18",
+          "netPay": "N28",
+          "ytdGross": "N19",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N18"
+          ],
+          "ytdGross": [
+            "N19"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3",
+            "N11"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 2,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l07-2",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D2",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N18",
+          "netPay": "N28",
+          "ytdGross": "N19",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N18"
+          ],
+          "ytdGross": [
+            "N19"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3",
+            "N11"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 2,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l07-3",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N18",
+          "netPay": "N28",
+          "ytdGross": "N19",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N18"
+          ],
+          "ytdGross": [
+            "N19"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3",
+            "N11"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 2,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l08-1",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N8",
+          "netPay": "N13",
+          "ytdGross": "N14",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N8"
+          ],
+          "ytdGross": [
+            "N14"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            false
+          ]
+        }
+      },
+      {
+        "document": "en-l08-2",
+        "base": {
+          "payFrequency": "biweekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N8",
+          "netPay": "N13",
+          "ytdGross": "N14",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N8"
+          ],
+          "ytdGross": [
+            "N14"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            false
+          ]
+        }
+      },
+      {
+        "document": "en-l08-3",
+        "base": {
+          "payFrequency": "semimonthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N8",
+          "netPay": "N13",
+          "ytdGross": "N14",
+          "hoursWorked": "N2",
+          "hourlyRate": "N3"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N8"
+          ],
+          "ytdGross": [
+            "N14"
+          ],
+          "hoursWorked": [
+            "N2"
+          ],
+          "hourlyRate": [
+            "N3"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            false
+          ]
+        }
+      },
+      {
+        "document": "en-l09-1",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N1",
+          "netPay": "N13",
+          "ytdGross": "N2"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N1",
+            "N3"
+          ],
+          "ytdGross": [
+            "N2",
+            "N4"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l09-2",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N1",
+          "netPay": "N13",
+          "ytdGross": "N2"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N1",
+            "N3"
+          ],
+          "ytdGross": [
+            "N2",
+            "N4"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l09-3",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N1",
+          "netPay": "N13",
+          "ytdGross": "N2"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N1",
+            "N3"
+          ],
+          "ytdGross": [
+            "N2",
+            "N4"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l10-1",
+        "base": {
+          "payFrequency": "semimonthly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N6",
+          "netPay": "N20",
+          "ytdGross": "N7",
+          "hoursWorked": "N4",
+          "hourlyRate": "N5"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N6",
+            "N18"
+          ],
+          "ytdGross": [
+            "N7",
+            "N19"
+          ],
+          "hoursWorked": [
+            "N4"
+          ],
+          "hourlyRate": [
+            "N5"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l10-2",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N6",
+          "netPay": "N20",
+          "ytdGross": "N7",
+          "hoursWorked": "N4",
+          "hourlyRate": "N5"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N6",
+            "N18"
+          ],
+          "ytdGross": [
+            "N7",
+            "N19"
+          ],
+          "hoursWorked": [
+            "N4"
+          ],
+          "hourlyRate": [
+            "N5"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l10-3",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N6",
+          "netPay": "N20",
+          "ytdGross": "N7",
+          "hoursWorked": "N4",
+          "hourlyRate": "N5"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N6",
+            "N18"
+          ],
+          "ytdGross": [
+            "N7",
+            "N19"
+          ],
+          "hoursWorked": [
+            "N4"
+          ],
+          "hourlyRate": [
+            "N5"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W4",
+              "W5"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l11-1",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N13",
+          "netPay": "N23",
+          "ytdGross": "N14",
+          "hoursWorked": "N5",
+          "hourlyRate": "N6"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N13"
+          ],
+          "ytdGross": [
+            "N14"
+          ],
+          "hoursWorked": [
+            "N5"
+          ],
+          "hourlyRate": [
+            "N6"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3",
+              "W4"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W10",
+              "W11"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l11-2",
+        "base": {
+          "payFrequency": "biweekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N5",
+          "netPay": "N17",
+          "ytdGross": "N6"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N5",
+            "N7"
+          ],
+          "ytdGross": [
+            "N6",
+            "N8"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W9",
+              "W10"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l11-3",
+        "base": {
+          "payFrequency": "semimonthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N7",
+          "netPay": "N19",
+          "ytdGross": "N8",
+          "hoursWorked": "N5",
+          "hourlyRate": "N6"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N7",
+            "N9"
+          ],
+          "ytdGross": [
+            "N8",
+            "N10"
+          ],
+          "hoursWorked": [
+            "N5"
+          ],
+          "hourlyRate": [
+            "N6"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3",
+              "W4"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W10",
+              "W11"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l11-4",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N5",
+          "netPay": "N17",
+          "ytdGross": "N6"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N5",
+            "N7"
+          ],
+          "ytdGross": [
+            "N6",
+            "N8"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3",
+              "W4"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W10",
+              "W11"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l11-5",
+        "base": {
+          "payFrequency": "weekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N13",
+          "netPay": "N23",
+          "ytdGross": "N14",
+          "hoursWorked": "N5",
+          "hourlyRate": "N6"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N13"
+          ],
+          "ytdGross": [
+            "N14"
+          ],
+          "hoursWorked": [
+            "N5"
+          ],
+          "hourlyRate": [
+            "N6"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3",
+              "W4"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W10",
+              "W11"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 1,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l11-6",
+        "base": {
+          "payFrequency": "biweekly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N5",
+          "netPay": "N17",
+          "ytdGross": "N6"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N5",
+            "N7"
+          ],
+          "ytdGross": [
+            "N6",
+            "N8"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3",
+              "W4"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W10",
+              "W11"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l11-7",
+        "base": {
+          "payFrequency": "semimonthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N7",
+          "netPay": "N19",
+          "ytdGross": "N8",
+          "hoursWorked": "N5",
+          "hourlyRate": "N6"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N7",
+            "N9"
+          ],
+          "ytdGross": [
+            "N8",
+            "N10"
+          ],
+          "hoursWorked": [
+            "N5"
+          ],
+          "hourlyRate": [
+            "N6"
+          ]
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3",
+              "W4"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W10",
+              "W11"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      },
+      {
+        "document": "en-l11-8",
+        "base": {
+          "payFrequency": "monthly",
+          "payDate": "D1",
+          "periodStart": "D2",
+          "periodEnd": "D3",
+          "grossPay": "N5",
+          "netPay": "N17",
+          "ytdGross": "N6"
+        },
+        "alternatives": {
+          "grossPay": [
+            "N5",
+            "N7"
+          ],
+          "ytdGross": [
+            "N6",
+            "N8"
+          ],
+          "hoursWorked": [],
+          "hourlyRate": []
+        },
+        "names": {
+          "employerName": [
+            [
+              "W1",
+              "W2",
+              "W3",
+              "W4"
+            ]
+          ],
+          "employeeName": [
+            [
+              "W10",
+              "W11"
+            ]
+          ]
+        },
+        "expected": {
+          "readings": 4,
+          "problems": [],
+          "ytdMissingWhenLeftOut": [
+            true,
+            true
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,1633 @@
+{
+ "$comment": "The 38 English evaluation paystubs (synthetic) and their right readings, for the zero-false-alarm cases of the on-device reading checks. alternatives: every placeholder that holds the gold value; base: one right reading of the other core fields; names: each line's run of gold name placeholders.",
+ "docs": [
+  {
+   "id": "en-l01-1",
+   "text": "Blueharbor Textiles Inc                        Earnings Statement\nEmployee: Aisha Lopez            Employee ID: 038067\nAddress: 2896 Kestrel Blvd, Riverton, WA 94675\nPay Period: 10/29/2026 - 11/11/2026      Pay Date: 11/16/2026\nPay Frequency: Bi-Weekly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           36.90     67.00     2,472.30       58,385.74\nOvertime          55.35     2.00      110.70         2,614.30\nGross Pay                             2,583.00       61,000.04\n\nDeductions                            Current        YTD\nFederal Income Tax                    302.21         7,136.95\nSocial Security                       160.15         3,782.01\nMedicare                              37.45          884.45\nState Income Tax                      136.90         3,232.96\nNet Pay                               1,946.29\n",
+   "alternatives": {
+    "grossPay": [
+     "N12"
+    ],
+    "ytdGross": [
+     "N13"
+    ],
+    "hoursWorked": [
+     "N5"
+    ],
+    "hourlyRate": [
+     "N4"
+    ]
+   },
+   "base": {
+    "payFrequency": "biweekly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N12",
+    "netPay": "N22",
+    "ytdGross": "N13",
+    "hoursWorked": "N5",
+    "hourlyRate": "N4"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l01-2",
+   "text": "NORTHWIND LOGISTICS LLC                        Earnings Statement\nEmployee: Hana Novak             Employee ID: 089340\nAddress: 9315 Larkspur Ave, Glenwood, NV 96743\nPay Period: 05/01/2026 - 05/15/2026      Pay Date: 05/15/2026\nPay Frequency: Semi-Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           38.94     76.00     2,959.44       26,705.92\nOvertime          58.41     1.00      58.41          527.13\nGross Pay                             3,017.85       27,233.05\n\nDeductions                            Current        YTD\nFederal Income Tax                    280.66         2,532.66\nSocial Security                       187.11         1,688.47\nMedicare                              43.76          394.88\nState Income Tax                      162.96         1,470.56\nNet Pay                               2,343.36\n",
+   "alternatives": {
+    "grossPay": [
+     "N12"
+    ],
+    "ytdGross": [
+     "N13"
+    ],
+    "hoursWorked": [
+     "N5"
+    ],
+    "hourlyRate": [
+     "N4"
+    ]
+   },
+   "base": {
+    "payFrequency": "semimonthly",
+    "payDate": "D2",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N12",
+    "netPay": "N22",
+    "ytdGross": "N13",
+    "hoursWorked": "N5",
+    "hourlyRate": "N4"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l01-3",
+   "text": "QUILLMARK GROCERS CORP                         Earnings Statement\nEmployee: Daniel Haddad          Employee ID: 081318\nAddress: 8971 Mulberry Rd, Ashford, NV 91447\nPay Period: 02/01/2026 - 02/28/2026      Pay Date: 03/02/2026\nPay Frequency: Monthly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           16.45     173.50    2,854.08       5,730.99\nOvertime          24.68     3.50      86.38          173.45\nGross Pay                             2,940.46       5,904.44\n\nDeductions                            Current        YTD\nFederal Income Tax                    288.17         578.64\nSocial Security                       182.31         366.08\nMedicare                              42.64          85.62\nState Income Tax                      111.74         224.37\nNet Pay                               2,315.60\n",
+   "alternatives": {
+    "grossPay": [
+     "N12"
+    ],
+    "ytdGross": [
+     "N13"
+    ],
+    "hoursWorked": [
+     "N5"
+    ],
+    "hourlyRate": [
+     "N4"
+    ]
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N12",
+    "netPay": "N22",
+    "ytdGross": "N13",
+    "hoursWorked": "N5",
+    "hourlyRate": "N4"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l02-1",
+   "text": "IRONBRIDGE CLINIC CORP\nEARNINGS STATEMENT                Check Date 04-04-2026\nName: Kenji Delgado         ID 074791\nPeriod Beginning: 03-16-2026    Period Ending: 03-31-2026\nFrequency: Semimonthly\n\nDescription     Hours    Rate     YTD           Current\nRegular         87.00    33.37    17,767.54     2,903.19\nOvertime        3.00     50.06    919.08        150.18\nGross Earnings                    18,686.62     3,053.37\n\nWithholdings                      YTD           Current\nFederal Income Tax                1,868.69      305.34\nSocial Security                   1,158.56      189.31\nMedicare                          270.92        44.27\nHealth Insurance                  629.27        102.82\nNet Pay                                         2,411.63\n",
+   "alternatives": {
+    "grossPay": [
+     "N11"
+    ],
+    "ytdGross": [
+     "N10"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3"
+    ]
+   },
+   "base": {
+    "payFrequency": "semimonthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N11",
+    "netPay": "N20",
+    "ytdGross": "N10",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l02-2",
+   "text": "TALLGRASS TEXTILES LLC\nEARNINGS STATEMENT                Check Date 11-05-2026\nName: Aisha Moreau         ID 067607\nPeriod Beginning: 10-01-2026    Period Ending: 10-31-2026\nFrequency: Monthly\n\nDescription     Hours    Rate     YTD           Current\nRegular         175.00   25.78    46,901.59     4,511.50\nOvertime        2.50     38.67    1,005.05      96.68\nGross Earnings                    47,906.64     4,608.18\n\nWithholdings                      YTD           Current\nFederal Income Tax                5,557.18      534.55\nSocial Security                   2,970.23      285.71\nMedicare                          694.66        66.82\nHealth Insurance                  890.73        85.68\nNet Pay                                         3,635.42\n",
+   "alternatives": {
+    "grossPay": [
+     "N11"
+    ],
+    "ytdGross": [
+     "N10"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3"
+    ]
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N11",
+    "netPay": "N20",
+    "ytdGross": "N10",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l02-3",
+   "text": "TALLGRASS LOGISTICS INC\nEARNINGS STATEMENT                Check Date 06-17-2026\nName: Victor Kowalski         ID 086985\nPeriod Beginning: 06-05-2026    Period Ending: 06-11-2026\nFrequency: Weekly\n\nDescription     Hours    Rate     YTD           Current\nRegular         31.50    30.05    21,825.29     946.58\nOvertime        4.00     45.08    4,157.71      180.32\nGross Earnings                    25,983.00     1,126.90\n\nWithholdings                      YTD           Current\nFederal Income Tax                2,130.67      92.41\nSocial Security                   1,611.10      69.87\nMedicare                          376.75        16.34\nHealth Insurance                  1,951.07      84.62\nNet Pay                                         863.66\n",
+   "alternatives": {
+    "grossPay": [
+     "N11"
+    ],
+    "ytdGross": [
+     "N10"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3"
+    ]
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N11",
+    "netPay": "N20",
+    "ytdGross": "N10",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l03-1",
+   "text": "BRIGHTWATER FOODS INC\nPay Stub for Ines Strand\nPay Date 02/28/26   Pay Period 02/01/26 to 02/28/26\nPay Frequency: Monthly\n\nEarnings                      Amount\nSalary                        4,833.33\nTotal Gross                   4,833.33\n\nDeductions                    Amount\nFederal Income Tax            575.17\nSocial Security               299.67\nMedicare                      70.08\nState Income Tax              212.67\nHealth Insurance              73.59\nTotal Deductions              1,231.18\nNet Pay                       3,602.15\n",
+   "alternatives": {
+    "grossPay": [
+     "N1",
+     "N2"
+    ],
+    "ytdGross": [],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D1",
+    "grossPay": "N1",
+    "netPay": "N9"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l03-2",
+   "text": "CEDARLINE PRINTING LLC\nPay Stub for Ethan Lopez\nPay Date 06/06/26   Pay Period 05/25/26 to 05/31/26\nPay Frequency: Weekly\n\nEarnings                      Amount\nSalary                        1,153.85\nTotal Gross                   1,153.85\n\nDeductions                    Amount\nFederal Income Tax            135.00\nSocial Security               71.54\nMedicare                      16.73\nState Income Tax              61.15\nHealth Insurance              95.06\nTotal Deductions              379.48\nNet Pay                       774.37\n",
+   "alternatives": {
+    "grossPay": [
+     "N1",
+     "N2"
+    ],
+    "ytdGross": [],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N1",
+    "netPay": "N9"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l03-3",
+   "text": "MARIGOLD STAFFING CORP\nPay Stub for Grace Raman\nPay Date 02/15/26   Pay Period 01/28/26 to 02/10/26\nPay Frequency: Bi-Weekly\n\nEarnings                      Amount\nSalary                        1,384.62\nTotal Gross                   1,384.62\n\nDeductions                    Amount\nFederal Income Tax            137.08\nSocial Security               85.85\nMedicare                      20.08\nState Income Tax              42.92\nHealth Insurance              115.30\nTotal Deductions              401.23\nNet Pay                       983.39\n",
+   "alternatives": {
+    "grossPay": [
+     "N1",
+     "N2"
+    ],
+    "ytdGross": [],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "biweekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N1",
+    "netPay": "N9"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l04-1",
+   "text": "Employer: NORTHWIND BAKERY INC\nEmployee: Kenji Okafor\nEmployee Number: 041559\nFrequency: Weekly\nPeriod Start: 08/29/2026\nPeriod End: 09/04/2026\nPay Date: 09/07/2026\nHourly Rate: $23.00\nRegular Hours: 33.50\nGross Pay: $770.50\nFederal Income Tax: $68.57\nSocial Security: $47.77\nMedicare: $11.17\nNet Pay: $642.99\nYTD Gross: $27,764.95\n",
+   "alternatives": {
+    "grossPay": [
+     "N4"
+    ],
+    "ytdGross": [
+     "N9"
+    ],
+    "hoursWorked": [
+     "N3"
+    ],
+    "hourlyRate": [
+     "N2"
+    ]
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N4",
+    "netPay": "N8",
+    "ytdGross": "N9",
+    "hoursWorked": "N3",
+    "hourlyRate": "N2"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l04-2",
+   "text": "Employer: Cedarline Logistics Corp\nEmployee: Ines Moreau\nEmployee Number: 090984\nFrequency: Biweekly\nPeriod Start: 05/12/2026\nPeriod End: 05/25/2026\nPay Date: 05/27/2026\nHourly Rate: $19.65\nRegular Hours: 77.50\nGross Pay: $1,522.88\nFederal Income Tax: $150.77\nSocial Security: $94.42\nMedicare: $22.08\nNet Pay: $1,255.61\nYTD Gross: $17,360.88\n",
+   "alternatives": {
+    "grossPay": [
+     "N4"
+    ],
+    "ytdGross": [
+     "N9"
+    ],
+    "hoursWorked": [
+     "N3"
+    ],
+    "hourlyRate": [
+     "N2"
+    ]
+   },
+   "base": {
+    "payFrequency": "biweekly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N4",
+    "netPay": "N8",
+    "ytdGross": "N9",
+    "hoursWorked": "N3",
+    "hourlyRate": "N2"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l04-3",
+   "text": "Employer: Redmesa Textiles Corp\nEmployee: Priya Novak\nEmployee Number: 021765\nFrequency: Semimonthly\nPeriod Start: 09/01/2026\nPeriod End: 09/15/2026\nPay Date: 09/16/2026\nHourly Rate: $39.45\nRegular Hours: 78.50\nGross Pay: $3,096.83\nFederal Income Tax: $257.04\nSocial Security: $192.00\nMedicare: $44.90\nNet Pay: $2,602.89\nYTD Gross: $52,299.23\n",
+   "alternatives": {
+    "grossPay": [
+     "N4"
+    ],
+    "ytdGross": [
+     "N9"
+    ],
+    "hoursWorked": [
+     "N3"
+    ],
+    "hourlyRate": [
+     "N2"
+    ]
+   },
+   "base": {
+    "payFrequency": "semimonthly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N4",
+    "netPay": "N8",
+    "ytdGross": "N9",
+    "hoursWorked": "N3",
+    "hourlyRate": "N2"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l05-1",
+   "text": "Cedarline Grocers Corp                PAYROLL ADVICE\nDaniel Lopez   Employee ID 076058\nPay Period 01/24/2026 - 02/06/2026   Paid 02/06/2026   Bi-Weekly\n\nEarnings      Hours     Rate      Amount\nRegular       79.00     23.06     1,821.74\nOvertime      1.50      34.59     51.89\nGross Pay 1,873.63      YTD Gross 5,583.41\n\nDeductions\nFederal Income Tax    153.64      State Income Tax      97.43\nSocial Security       116.17      Medicare              27.17\nRetirement Plan       74.95       \nTotal Deductions 469.36\nNet Pay 1,404.27\n",
+   "alternatives": {
+    "grossPay": [
+     "N8"
+    ],
+    "ytdGross": [
+     "N9"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3"
+    ]
+   },
+   "base": {
+    "payFrequency": "biweekly",
+    "payDate": "D2",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N8",
+    "netPay": "N16",
+    "ytdGross": "N9",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l05-2",
+   "text": "SILVERPINE FOODS INC                PAYROLL ADVICE\nLeila Fontaine   Employee ID 015735\nPay Period 04/01/2026 - 04/15/2026   Paid 04/19/2026   Semi-Monthly\n\nEarnings      Hours     Rate      Amount\nRegular       83.00     36.73     3,048.59\nOvertime      6.50      55.10     358.15\nGross Pay 3,406.74      YTD Gross 24,828.30\n\nDeductions\nFederal Income Tax    350.89      State Income Tax      173.74\nSocial Security       211.22      Medicare              49.40\nRetirement Plan       136.27      \nTotal Deductions 921.52\nNet Pay 2,485.22\n",
+   "alternatives": {
+    "grossPay": [
+     "N8"
+    ],
+    "ytdGross": [
+     "N9"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3"
+    ]
+   },
+   "base": {
+    "payFrequency": "semimonthly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N8",
+    "netPay": "N16",
+    "ytdGross": "N9",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l05-3",
+   "text": "NORTHWIND FREIGHT CORP                PAYROLL ADVICE\nLucia Strand   Employee ID 003871\nPay Period 10/01/2026 - 10/31/2026   Paid 11/06/2026   Monthly\n\nEarnings      Hours     Rate      Amount\nRegular       168.50    36.73     6,189.01\nOvertime      8.50      55.10     468.35\nGross Pay 6,657.36      YTD Gross 69,209.88\n\nDeductions\nFederal Income Tax    645.76      State Income Tax      139.80\nSocial Security       412.76      Medicare              96.53\nRetirement Plan       399.44      \nTotal Deductions 1,694.29\nNet Pay 4,963.07\n",
+   "alternatives": {
+    "grossPay": [
+     "N8"
+    ],
+    "ytdGross": [
+     "N9"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3"
+    ]
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N8",
+    "netPay": "N16",
+    "ytdGross": "N9",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l06-1",
+   "text": "Marigold Printing Llc\n6222 Kestrel Ave, Ashford, CA 89239\nPhone 530-325-6805\n\nPay To: Daniel Delgado\n2686 Hawthorne St, Glenwood, WA 88409\n\nCheck Number 54633     Pay Date 11/01/2026\nPay Period 10/16/2026 - 10/31/2026     Pay Frequency Semi-Monthly\n\nEarnings                  This Period     Year to Date\nSalary                    2,333.33        45,203.60\nGross Pay                 2,333.33        45,203.60\nFederal Income Tax        196.00          3,797.07\nSocial Security           144.67          2,802.77\nMedicare                  33.83           655.32\nHealth Insurance          71.44           1,383.96\nRetirement Plan           70.00           1,356.11\nNet Pay                   1,817.39\n\nDirect Deposit Account ending 6141   Amount $1,817.39\n",
+   "alternatives": {
+    "grossPay": [
+     "N9",
+     "N11"
+    ],
+    "ytdGross": [
+     "N10",
+     "N12"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "semimonthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N9",
+    "netPay": "N23",
+    "ytdGross": "N10"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W9",
+      "W10"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l06-2",
+   "text": "Marigold Grocers Corp\n1139 Mulberry Ave, Brookdale, AZ 85084\nPhone 733-690-5501\n\nPay To: Aisha Lindqvist\n5774 Sycamore St, Brookdale, CA 89282\n\nCheck Number 17516     Pay Date 12/03/2026\nPay Period 11/01/2026 - 11/30/2026     Pay Frequency Monthly\n\nEarnings                  This Period     Year to Date\nSalary                    5,916.67        65,024.17\nGross Pay                 5,916.67        65,024.17\nFederal Income Tax        615.33          6,762.43\nSocial Security           366.83          4,031.43\nMedicare                  85.79           942.79\nHealth Insurance          56.96           625.96\nRetirement Plan           295.83          3,251.13\nNet Pay                   4,495.93\n\nDirect Deposit Account ending 3503   Amount $4,495.93\n",
+   "alternatives": {
+    "grossPay": [
+     "N9",
+     "N11"
+    ],
+    "ytdGross": [
+     "N10",
+     "N12"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N9",
+    "netPay": "N23",
+    "ytdGross": "N10"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W9",
+      "W10"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l06-3",
+   "text": "Brightwater Bakery Llc\n735 Hawthorne St, Glenwood, AZ 85211\nPhone 916-598-6166\n\nPay To: Lucia Herrera\n899 Kestrel St, Ashford, NV 92683\n\nCheck Number 91109     Pay Date 03/17/2026\nPay Period 03/06/2026 - 03/12/2026     Pay Frequency Weekly\n\nEarnings                  This Period     Year to Date\nSalary                    1,711.54        19,049.44\nGross Pay                 1,711.54        19,049.44\nFederal Income Tax        189.98          2,114.48\nSocial Security           106.12          1,181.12\nMedicare                  24.82           276.22\nHealth Insurance          46.63           519.03\nRetirement Plan           51.35           571.55\nNet Pay                   1,292.64\n\nDirect Deposit Account ending 4692   Amount $1,292.64\n",
+   "alternatives": {
+    "grossPay": [
+     "N9",
+     "N11"
+    ],
+    "ytdGross": [
+     "N10",
+     "N12"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N9",
+    "netPay": "N23",
+    "ytdGross": "N10"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W9",
+      "W10"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l07-1",
+   "text": "QUILLMARK FREIGHT CORP - Weekly Pay Statement\nEmployee Lucia Lindqvist (064620)\nWeek 03/14/2026 through 03/20/2026    Pay Date 03/26/2026\nPay Frequency: Weekly\n\nType                Hours    Rate     Current      YTD\nRegular             39.00    21.87    852.93       9,963.13\nOvertime            6.00     32.81    196.86       2,299.51\nHoliday             8.00     21.87    174.96       2,043.75\nShift Differential  9.00     1.67     15.03        175.52\nTotal Gross                           1,239.78     14,481.91\n\nFederal Income Tax                    116.54       1,361.30\nSocial Security                       76.87        897.91\nMedicare                              17.98        210.04\nRetirement Plan                       49.59        579.24\nNet Pay                               978.80\n",
+   "alternatives": {
+    "grossPay": [
+     "N18"
+    ],
+    "ytdGross": [
+     "N19"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3",
+     "N11"
+    ]
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N18",
+    "netPay": "N28",
+    "ytdGross": "N19",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l07-2",
+   "text": "Blueharbor Motors Inc - Weekly Pay Statement\nEmployee Priya Okafor (059763)\nWeek 09/08/2026 through 09/14/2026    Pay Date 09/14/2026\nPay Frequency: Weekly\n\nType                Hours    Rate     Current      YTD\nRegular             37.00    27.59    1,020.83     37,917.95\nOvertime            4.50     41.39    186.26       6,918.62\nHoliday             8.00     27.59    220.72       8,198.32\nShift Differential  11.00    1.45     15.95        592.31\nTotal Gross                           1,443.76     53,627.20\n\nFederal Income Tax                    121.28       4,505.00\nSocial Security                       89.51        3,324.83\nMedicare                              20.93        777.29\nRetirement Plan                       57.75        2,145.03\nNet Pay                               1,154.29\n",
+   "alternatives": {
+    "grossPay": [
+     "N18"
+    ],
+    "ytdGross": [
+     "N19"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3",
+     "N11"
+    ]
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D2",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N18",
+    "netPay": "N28",
+    "ytdGross": "N19",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l07-3",
+   "text": "REDMESA LAUNDRY LLC - Weekly Pay Statement\nEmployee Grace Haddad (074996)\nWeek 11/05/2026 through 11/11/2026    Pay Date 11/17/2026\nPay Frequency: Weekly\n\nType                Hours    Rate     Current      YTD\nRegular             36.00    16.23    584.28       26,781.00\nOvertime            2.00     24.35    48.70        2,232.42\nHoliday             8.00     16.23    129.84       5,951.48\nShift Differential  14.00    2.14     29.96        1,373.28\nTotal Gross                           792.78       36,337.74\n\nFederal Income Tax                    64.22        2,943.58\nSocial Security                       49.15        2,252.67\nMedicare                              11.50        527.18\nRetirement Plan                       23.78        1,089.90\nNet Pay                               644.13\n",
+   "alternatives": {
+    "grossPay": [
+     "N18"
+    ],
+    "ytdGross": [
+     "N19"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3",
+     "N11"
+    ]
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N18",
+    "netPay": "N28",
+    "ytdGross": "N19",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l08-1",
+   "text": "PAY STATEMENT\nREDMESA ROOFING LLC\nHana Kowalski                Employee ID 054447\nPay Date: 02-17-2026   Period: 02-10-2026 - 02-16-2026   Pay Frequency: Weekly\n\nRegular         35.50    hours at 19.09   677.70\nOvertime        4.50     hours at 28.64   128.88\nGross Earnings                            806.58\nFederal Income Tax                        64.53\nSocial Security                           50.01\nMedicare                                  11.70\nState Income Tax                          42.75\nTake Home Pay                             637.59\n\nYear to Date\nGross 5,573.46   Deductions 1,167.69   Net 4,405.77\n",
+   "alternatives": {
+    "grossPay": [
+     "N8"
+    ],
+    "ytdGross": [
+     "N14"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3"
+    ]
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N8",
+    "netPay": "N13",
+    "ytdGross": "N14",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l08-2",
+   "text": "PAY STATEMENT\nSundale Printing Inc\nAisha Haddad                Employee ID 076396\nPay Date: 07-13-2026   Period: 06-24-2026 - 07-07-2026   Pay Frequency: Bi-Weekly\n\nRegular         79.50    hours at 36.05   2,865.98\nOvertime        2.00     hours at 54.08   108.16\nGross Earnings                            2,974.14\nFederal Income Tax                        276.60\nSocial Security                           184.40\nMedicare                                  43.13\nState Income Tax                          110.04\nTake Home Pay                             2,359.97\n\nYear to Date\nGross 43,493.84   Deductions 8,981.62   Net 34,512.22\n",
+   "alternatives": {
+    "grossPay": [
+     "N8"
+    ],
+    "ytdGross": [
+     "N14"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3"
+    ]
+   },
+   "base": {
+    "payFrequency": "biweekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N8",
+    "netPay": "N13",
+    "ytdGross": "N14",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l08-3",
+   "text": "PAY STATEMENT\nWillowby Textiles Corp\nVictor Delgado                Employee ID 034969\nPay Date: 06-21-2026   Period: 06-01-2026 - 06-15-2026   Pay Frequency: Semi-Monthly\n\nRegular         83.50    hours at 40.51   3,382.59\nOvertime        2.00     hours at 60.77   121.54\nGross Earnings                            3,504.13\nFederal Income Tax                        343.40\nSocial Security                           217.26\nMedicare                                  50.81\nState Income Tax                          80.59\nTake Home Pay                             2,812.07\n\nYear to Date\nGross 39,561.63   Deductions 7,813.36   Net 31,748.27\n",
+   "alternatives": {
+    "grossPay": [
+     "N8"
+    ],
+    "ytdGross": [
+     "N14"
+    ],
+    "hoursWorked": [
+     "N2"
+    ],
+    "hourlyRate": [
+     "N3"
+    ]
+   },
+   "base": {
+    "payFrequency": "semimonthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N8",
+    "netPay": "N13",
+    "ytdGross": "N14",
+    "hoursWorked": "N2",
+    "hourlyRate": "N3"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l09-1",
+   "text": "TALLGRASS LAUNDRY INC\nMonthly Salary Statement\nEmployee: Victor Moreau\nPay Schedule: Monthly    Pay Date: 04/05/26\nCovers 03/01/26 - 03/31/26\n\n                            Current       YTD\nSalary                      7,333.33      22,161.33\nGross Pay                   7,333.33      22,161.33\nFederal Income Tax          696.67        2,105.33\nSocial Security             454.67        1,374.01\nMedicare                    106.33        321.33\nHealth Insurance            81.04         244.90\nNet Pay                     5,994.62      18,115.74\n",
+   "alternatives": {
+    "grossPay": [
+     "N1",
+     "N3"
+    ],
+    "ytdGross": [
+     "N2",
+     "N4"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N1",
+    "netPay": "N13",
+    "ytdGross": "N2"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l09-2",
+   "text": "Silverpine Textiles Inc\nMonthly Salary Statement\nEmployee: Hana Kowalski\nPay Schedule: Monthly    Pay Date: 09/06/26\nCovers 08/01/26 - 08/31/26\n\n                            Current       YTD\nSalary                      4,250.00      34,714.00\nGross Pay                   4,250.00      34,714.00\nFederal Income Tax          412.25        3,367.23\nSocial Security             263.50        2,152.24\nMedicare                    61.63         503.40\nHealth Insurance            28.72         234.59\nNet Pay                     3,483.90      28,456.47\n",
+   "alternatives": {
+    "grossPay": [
+     "N1",
+     "N3"
+    ],
+    "ytdGross": [
+     "N2",
+     "N4"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N1",
+    "netPay": "N13",
+    "ytdGross": "N2"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l09-3",
+   "text": "Goldleaf Grocers Llc\nMonthly Salary Statement\nEmployee: Omar Lindqvist\nPay Schedule: Monthly    Pay Date: 04/02/26\nCovers 03/01/26 - 03/31/26\n\n                            Current       YTD\nSalary                      7,416.67      21,538.01\nGross Pay                   7,416.67      21,538.01\nFederal Income Tax          637.83        1,852.25\nSocial Security             459.83        1,335.35\nMedicare                    107.54        312.30\nHealth Insurance            62.96         182.84\nNet Pay                     6,148.51      17,855.27\n",
+   "alternatives": {
+    "grossPay": [
+     "N1",
+     "N3"
+    ],
+    "ytdGross": [
+     "N2",
+     "N4"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N1",
+    "netPay": "N13",
+    "ytdGross": "N2"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l10-1",
+   "text": "            TALLGRASS TEXTILES INC\n            EIN 24-2966559\n\nEmployee Victor Raman   ID 053100\nPeriod 2026-03-01 to 2026-03-15   Paid on 2026-03-19   Pay Frequency: Semimonthly\n\nDescription               Hours   Rate     Current      YTD\nRegular                   70.00   16.87    1,180.90     5,668.34\nFederal Income Tax                         -108.64      -521.48\nSocial Security                            -73.22       -351.46\nMedicare                                   -17.12       -82.16\nState Income Tax                           -37.79       -181.39\nHealth Insurance                           -44.09       -211.65\nGross Pay                                  1,180.90     5,668.34\nNet Pay                                    900.04\n",
+   "alternatives": {
+    "grossPay": [
+     "N6",
+     "N18"
+    ],
+    "ytdGross": [
+     "N7",
+     "N19"
+    ],
+    "hoursWorked": [
+     "N4"
+    ],
+    "hourlyRate": [
+     "N5"
+    ]
+   },
+   "base": {
+    "payFrequency": "semimonthly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N6",
+    "netPay": "N20",
+    "ytdGross": "N7",
+    "hoursWorked": "N4",
+    "hourlyRate": "N5"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l10-2",
+   "text": "            Cedarline Foods Llc\n            EIN 20-6792501\n\nEmployee Hana Strand   ID 026012\nPeriod 2026-07-01 to 2026-07-31   Paid on 2026-08-06   Pay Frequency: Monthly\n\nDescription               Hours   Rate     Current      YTD\nRegular                   151.00  28.08    4,240.08     28,891.92\nFederal Income Tax                         -402.81      -2,744.73\nSocial Security                            -262.88      -1,791.26\nMedicare                                   -61.48       -418.90\nState Income Tax                           -135.68      -924.50\nHealth Insurance                           -88.35       -602.01\nGross Pay                                  4,240.08     28,891.92\nNet Pay                                    3,288.88\n",
+   "alternatives": {
+    "grossPay": [
+     "N6",
+     "N18"
+    ],
+    "ytdGross": [
+     "N7",
+     "N19"
+    ],
+    "hoursWorked": [
+     "N4"
+    ],
+    "hourlyRate": [
+     "N5"
+    ]
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N6",
+    "netPay": "N20",
+    "ytdGross": "N7",
+    "hoursWorked": "N4",
+    "hourlyRate": "N5"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l10-3",
+   "text": "            Willowby Roofing Inc\n            EIN 71-5047121\n\nEmployee Maria Abara   ID 081655\nPeriod 2026-05-14 to 2026-05-20   Paid on 2026-05-26   Pay Frequency: Weekly\n\nDescription               Hours   Rate     Current      YTD\nRegular                   35.00   17.78    622.30       12,138.58\nFederal Income Tax                         -73.43       -1,432.31\nSocial Security                            -38.58       -752.60\nMedicare                                   -9.02        -176.03\nState Income Tax                           -18.67       -364.09\nHealth Insurance                           -83.79       -1,634.38\nGross Pay                                  622.30       12,138.58\nNet Pay                                    398.81\n",
+   "alternatives": {
+    "grossPay": [
+     "N6",
+     "N18"
+    ],
+    "ytdGross": [
+     "N7",
+     "N19"
+    ],
+    "hoursWorked": [
+     "N4"
+    ],
+    "hourlyRate": [
+     "N5"
+    ]
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N6",
+    "netPay": "N20",
+    "ytdGross": "N7",
+    "hoursWorked": "N4",
+    "hourlyRate": "N5"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W4",
+      "W5"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l11-1",
+   "text": "Federal Security Services LLC\nPayroll questions: payroll@federal-security-services-llc.example or (555) 409-9624\n\nEmployee: Jordan Gross        Employee ID: 082973\nPay Date: September 5, 2026\nPay Period: August 24, 2026 to August 30, 2026\nPay Frequency: Every week\n\nEarnings          Hours    Rate     Current      YTD\nRegular           33.50    18.95    634.83       21,269.43\nOvertime          2.50     28.43    71.08        2,381.38\nGross Pay                           705.91       23,650.81\n\nFederal Income Tax                  66.36        2,223.32\nSocial Security                     43.77        1,466.33\nMedicare                            10.24        343.10\nState Income Tax                    29.65        993.55\nNet Pay                             555.89\n",
+   "alternatives": {
+    "grossPay": [
+     "N13"
+    ],
+    "ytdGross": [
+     "N14"
+    ],
+    "hoursWorked": [
+     "N5"
+    ],
+    "hourlyRate": [
+     "N6"
+    ]
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N13",
+    "netPay": "N23",
+    "ytdGross": "N14",
+    "hoursWorked": "N5",
+    "hourlyRate": "N6"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3",
+      "W4"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W10",
+      "W11"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l11-2",
+   "text": "Gross & Daughters Bakery\nPayroll questions: payroll@gross-daughters-bakery.example or (555) 679-5598\n\nEmployee: Bill Rate        Employee ID: 015008\nPay Date: October 14, 2026\nPay Period: September 25, 2026 to October 8, 2026\nPay Frequency: Every two weeks\n\nEarnings                            Current      YTD\nSalary                              3,461.54     76,015.34\nGross Pay                           3,461.54     76,015.34\n\nFederal Income Tax                  356.54       7,829.54\nSocial Security                     214.62       4,713.02\nMedicare                            50.19        1,102.19\nState Income Tax                    200.77       4,408.97\nNet Pay                             2,639.42\n",
+   "alternatives": {
+    "grossPay": [
+     "N5",
+     "N7"
+    ],
+    "ytdGross": [
+     "N6",
+     "N8"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "biweekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N5",
+    "netPay": "N17",
+    "ytdGross": "N6"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W9",
+      "W10"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l11-3",
+   "text": "Net Health Clinic INC\nPayroll questions: payroll@net-health-clinic-inc.example or (555) 511-1811\n\nEmployee: Ana Bank        Employee ID: 014087\nPay Date: Apr. 3, 2026\nPay Period: Mar. 16, 2026 to Mar. 31, 2026\nPay Frequency: Twice a month\n\nEarnings          Hours    Rate     Current      YTD\nRegular           86.50    26.51    2,293.12     13,896.32\nGross Pay                           2,293.12     13,896.32\n\nFederal Income Tax                  231.61       1,403.56\nSocial Security                     142.17       861.57\nMedicare                            33.25        201.50\nState Income Tax                    98.60        597.50\nNet Pay                             1,787.49\n",
+   "alternatives": {
+    "grossPay": [
+     "N7",
+     "N9"
+    ],
+    "ytdGross": [
+     "N8",
+     "N10"
+    ],
+    "hoursWorked": [
+     "N5"
+    ],
+    "hourlyRate": [
+     "N6"
+    ]
+   },
+   "base": {
+    "payFrequency": "semimonthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N7",
+    "netPay": "N19",
+    "ytdGross": "N8",
+    "hoursWorked": "N5",
+    "hourlyRate": "N6"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3",
+      "W4"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W10",
+      "W11"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l11-4",
+   "text": "Union Pay Systems CORP\nPayroll questions: payroll@union-pay-systems-corp.example or (555) 694-2293\n\nEmployee: Robin Federal        Employee ID: 078972\nPay Date: December 1, 2026\nPay Period: November 1, 2026 to November 30, 2026\nPay Frequency: Once a month\n\nEarnings                            Current      YTD\nSalary                              3,333.33     37,666.63\nGross Pay                           3,333.33     37,666.63\n\nFederal Income Tax                  326.67       3,691.37\nSocial Security                     206.67       2,335.37\nMedicare                            48.33        546.13\nState Income Tax                    180.00       2,034.00\nNet Pay                             2,571.66\n",
+   "alternatives": {
+    "grossPay": [
+     "N5",
+     "N7"
+    ],
+    "ytdGross": [
+     "N6",
+     "N8"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N5",
+    "netPay": "N17",
+    "ytdGross": "N6"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3",
+      "W4"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W10",
+      "W11"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l11-5",
+   "text": "State Bank Staffing LLC\nPayroll questions: payroll@state-bank-staffing-llc.example or (555) 431-2251\n\nEmployee: Sam Holiday        Employee ID: 058303\nPay Date: June 3, 2026\nPay Period: May 26, 2026 to June 1, 2026\nPay Frequency: Every week\n\nEarnings          Hours    Rate     Current      YTD\nRegular           30.00    42.57    1,277.10     27,452.55\nOvertime          8.50     63.86    542.81       11,668.19\nGross Pay                           1,819.91     39,120.74\n\nFederal Income Tax                  169.25       3,638.24\nSocial Security                     112.83       2,425.35\nMedicare                            26.39        567.35\nState Income Tax                    87.36        1,877.82\nNet Pay                             1,424.08\n",
+   "alternatives": {
+    "grossPay": [
+     "N13"
+    ],
+    "ytdGross": [
+     "N14"
+    ],
+    "hoursWorked": [
+     "N5"
+    ],
+    "hourlyRate": [
+     "N6"
+    ]
+   },
+   "base": {
+    "payFrequency": "weekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N13",
+    "netPay": "N23",
+    "ytdGross": "N14",
+    "hoursWorked": "N5",
+    "hourlyRate": "N6"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3",
+      "W4"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W10",
+      "W11"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l11-6",
+   "text": "Regular Rate Freight INC\nPayroll questions: payroll@regular-rate-freight-inc.example or (555) 340-1165\n\nEmployee: Pat Sick        Employee ID: 037344\nPay Date: Nov. 5, 2026\nPay Period: Oct. 19, 2026 to Nov. 1, 2026\nPay Frequency: Every two weeks\n\nEarnings                            Current      YTD\nSalary                              2,307.69     50,526.84\nGross Pay                           2,307.69     50,526.84\n\nFederal Income Tax                  274.62       6,012.87\nSocial Security                     143.08       3,132.64\nMedicare                            33.46        732.55\nState Income Tax                    83.08        1,818.94\nNet Pay                             1,773.45\n",
+   "alternatives": {
+    "grossPay": [
+     "N5",
+     "N7"
+    ],
+    "ytdGross": [
+     "N6",
+     "N8"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "biweekly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N5",
+    "netPay": "N17",
+    "ytdGross": "N6"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3",
+      "W4"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W10",
+      "W11"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l11-7",
+   "text": "Total Care Medical LLC\nPayroll questions: payroll@total-care-medical-llc.example or (555) 469-7310\n\nEmployee: Lee Union        Employee ID: 016665\nPay Date: November 4, 2026\nPay Period: October 16, 2026 to October 31, 2026\nPay Frequency: Twice a month\n\nEarnings          Hours    Rate     Current      YTD\nRegular           84.50    19.24    1,625.78     32,113.94\nGross Pay                           1,625.78     32,113.94\n\nFederal Income Tax                  136.57       2,697.58\nSocial Security                     100.80       1,991.11\nMedicare                            23.57        465.51\nState Income Tax                    78.04        1,541.61\nNet Pay                             1,286.80\n",
+   "alternatives": {
+    "grossPay": [
+     "N7",
+     "N9"
+    ],
+    "ytdGross": [
+     "N8",
+     "N10"
+    ],
+    "hoursWorked": [
+     "N5"
+    ],
+    "hourlyRate": [
+     "N6"
+    ]
+   },
+   "base": {
+    "payFrequency": "semimonthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N7",
+    "netPay": "N19",
+    "ytdGross": "N8",
+    "hoursWorked": "N5",
+    "hourlyRate": "N6"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3",
+      "W4"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W10",
+      "W11"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "en-l11-8",
+   "text": "Direct Deposit Couriers INC\nPayroll questions: payroll@direct-deposit-couriers-inc.example or (555) 753-6206\n\nEmployee: Dana Medical        Employee ID: 006098\nPay Date: August 6, 2026\nPay Period: July 1, 2026 to July 31, 2026\nPay Frequency: Once a month\n\nEarnings                            Current      YTD\nSalary                              3,500.00     23,555.00\nGross Pay                           3,500.00     23,555.00\n\nFederal Income Tax                  406.00       2,732.38\nSocial Security                     217.00       1,460.44\nMedicare                            50.75        341.57\nState Income Tax                    147.00       989.34\nNet Pay                             2,679.25\n",
+   "alternatives": {
+    "grossPay": [
+     "N5",
+     "N7"
+    ],
+    "ytdGross": [
+     "N6",
+     "N8"
+    ],
+    "hoursWorked": [],
+    "hourlyRate": []
+   },
+   "base": {
+    "payFrequency": "monthly",
+    "payDate": "D1",
+    "periodStart": "D2",
+    "periodEnd": "D3",
+    "grossPay": "N5",
+    "netPay": "N17",
+    "ytdGross": "N6"
+   },
+   "names": {
+    "employerName": [
+     [
+      "W1",
+      "W2",
+      "W3",
+      "W4"
+     ]
+    ],
+    "employeeName": [
+     [
+      "W10",
+      "W11"
+     ]
+    ]
+   }
+  }
+ ]
+}

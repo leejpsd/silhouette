@@ -399,5 +399,14 @@
   "pack.draft.short": "Draft rules, read {date}.",
   "official.readOn": "Read from this source on {date}",
   "official.confirmedOn": "Confirmed against this source on {date}",
-  "official.source": "Official source"
+  "official.source": "Official source",
+  "preview.stage.deviceReading": "Reading the silhouette on this device…",
+  "preview.stage.deviceGross": "Reading gross pay and year to date again on this device…",
+  "preview.stage.deviceDeductions": "Reading the deductions on this device…",
+  "preview.stage.checking": "Checking the reading…",
+  "preview.stage.sendingAfterDevice": "This device could not read it reliably. Sending the silhouette you approved…",
+  "error.on-device-unreliable": "This device could not read the document reliably, so nothing was filled in, and nothing was sent. You can send the silhouette (never the values) to be read in the cloud, or type the numbers yourself.",
+  "preview.sendSilhouette": "Send the silhouette",
+  "review.deductionsNotRead": "Deductions were not read on this device. They are not needed for the yearly income or the results; you can add them if you like.",
+  "review.fieldNotRead": "Not read on this device. This value is not needed for the yearly income or the results."
 }
