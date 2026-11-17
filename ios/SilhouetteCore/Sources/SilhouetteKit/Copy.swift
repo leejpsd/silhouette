@@ -1,7 +1,8 @@
 // UI copy: shared/copy/{locale}.json (app-wide), shared/rulepacks/{jurisdiction}/copy/{locale}.json
 // (pack labels; key conventions in shared/rulepacks/SPEC.md section 1) and the app's own
 // copy.local.json for keys not yet in shared/copy.
-// Per-key lookup: shared/{locale} → pack/{locale} → local/{locale} → the same three for en.
+// Per-key lookup: shared/{locale} → pack/{locale} → local/{locale} → the same three for en; a key that
+// names the platform has variants, and `{key}.ios` is looked up first (shared/copy/PLATFORM_VARIANTS.md).
 
 import Foundation
 import SilhouetteCore
@@ -46,9 +47,14 @@ public struct CopyBook: Sendable {
         return nil
     }
 
-    /// The template for `key` with per-key fallback to English, or nil when no table has it.
+    /// This app's platform, for keys that name the platform (`shared/copy/PLATFORM_VARIANTS.md`).
+    public static let platform = "ios"
+
+    /// The template for `key` with per-key fallback to English, or nil when no table has it. A key that
+    /// names the platform is looked up as `{key}.ios` first, then as the plain key.
     public func lookup(_ key: String, _ locale: AppLocale) -> String? {
-        inLocale(locale, key) ?? inLocale(.en, key)
+        let variant = "\(key).\(Self.platform)"
+        return inLocale(locale, variant) ?? inLocale(.en, variant) ?? inLocale(locale, key) ?? inLocale(.en, key)
     }
 
     public func has(_ key: String) -> Bool { lookup(key, .en) != nil }

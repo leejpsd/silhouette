@@ -51,7 +51,8 @@ public struct CloudRequest: Sendable {
     var deviceCall: DeviceCall {
         var text = prompt.text
         if let deviceSchema { text += "\n\nAnswer with JSON that matches this schema:\n" + deviceSchema.jsonText }
-        return DeviceCall(taskId: taskId, system: system.text, prompt: text, maxOutputTokens: maxOutputTokens)
+        return DeviceCall(taskId: taskId, system: system.text, prompt: text, maxOutputTokens: maxOutputTokens,
+                          deterministic: taskId == "document.pointer.extract")
     }
 }
 

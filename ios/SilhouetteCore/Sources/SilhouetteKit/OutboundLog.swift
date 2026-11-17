@@ -21,10 +21,21 @@ public struct OutboundEntry: Sendable, Identifiable {
         case attempted
         /// The request reached the destination; HTTP status of the response.
         case sent(Int)
-        /// Not completed (the reason is an error kind, never a value).
+        /// It left but did not complete (the reason is an error kind, never a value).
         case failed(String)
+        /// Stopped before it left (shared/RECORD.md section 2): `noAppCheck` when no App Check token could be
+        /// obtained, `blocked` when no cloud request was expected. Never counted as sent.
+        case blocked(String)
         /// Answered by the on-device model: nothing left the device.
         case answeredOnDevice
+    }
+
+    /// Whether the request left the device (attempted, sent or failed); blocked and answered entries did not.
+    public var left: Bool {
+        switch status {
+        case .attempted, .sent, .failed: true
+        case .blocked, .answeredOnDevice: false
+        }
     }
 
     public let id: UUID
@@ -79,14 +90,33 @@ public final class OutboundLog: @unchecked Sendable {
         for callback in callbacks { callback(snapshot) }
     }
 
-    /// True once any request has actually left the device (sent or attempted).
-    public var anythingLeft: Bool {
-        entries.contains { e in
-            switch e.status {
-            case .answeredOnDevice: false
-            default: true
-            }
+    /// True once any request has actually left the device (attempted, sent or failed).
+    public var anythingLeft: Bool { entries.contains(where: \.left) }
+
+    /// Fields that carry something of the person's (shared/RECORD.md section 4).
+    public static let personalFields: Set<String> = ["document-silhouette", "profile-silhouette", "county-area", "inline-file"]
+    /// Fields of checks and settings only.
+    public static let technicalFields: Set<String> = ["app-check-token-request", "recaptcha-check", "installation", "remote-config", "other-request"]
+
+    /// The line under the count (RECORD.md section 4): copy keys with their counts, joined with " · ",
+    /// adding up to the number of requests that left. Empty when nothing left (`leaving.none`).
+    public static func split(_ entries: [OutboundEntry]) -> [(key: String, count: Int)] {
+        let left = entries.filter(\.left)
+        guard !left.isEmpty else { return [] }
+        let personal = left.filter { !$0.fields.filter(personalFields.contains).isEmpty }
+        let rest = left.filter { $0.fields.filter(personalFields.contains).isEmpty }
+        var out: [(String, Int)] = []
+        if personal.isEmpty {
+            out.append(("leaving.split.nothingOfYours", 0))
+        } else {
+            let documentOnly = personal.allSatisfy { Set($0.fields.filter(personalFields.contains)) == ["document-silhouette"] }
+            out.append((documentOnly ? "leaving.split.document" : "leaving.split.personal", personal.count))
         }
+        if !rest.isEmpty {
+            let technical = rest.allSatisfy { e in !e.fields.isEmpty && e.fields.allSatisfy(technicalFields.contains) }
+            out.append((technical ? "leaving.split.technical" : "leaving.split.general", rest.count))
+        }
+        return out
     }
 
     public func record(_ entry: OutboundEntry) {

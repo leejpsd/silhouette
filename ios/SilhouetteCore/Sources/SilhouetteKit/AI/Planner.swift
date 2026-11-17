@@ -102,7 +102,7 @@ public enum Planner {
                                   part: String, constraint: JSON) -> DeviceCall {
         let prompt = PromptTemplate.fill(template.user, ["docType": docType, "skeleton": text(skeleton)])
         return DeviceCall(taskId: "document.pointer.extract", system: template.system + "\n\n" + partText, prompt: prompt,
-                          maxOutputTokens: 1024, constraint: constraint, part: part)
+                          maxOutputTokens: 1024, constraint: constraint, part: part, deterministic: true)
     }
 
     // MARK: On-device requests (Raw input)

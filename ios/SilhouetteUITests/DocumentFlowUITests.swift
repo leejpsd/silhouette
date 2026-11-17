@@ -97,7 +97,7 @@ final class DocumentFlowUITests: XCTestCase {
         app.tapButton("preview.sendSilhouette")
         XCTAssertTrue(app.element("review.title").waitForExistence(timeout: 15))
         let status = app.element("leaving.status")
-        XCTAssertTrue(status.label.hasPrefix("1 sent"), status.label)
+        XCTAssertTrue(status.label.hasPrefix("1 sent with your document"), status.label)
     }
 
     /// Hours worked answered with the gross pay's placeholder, and no deductions: both are left out and

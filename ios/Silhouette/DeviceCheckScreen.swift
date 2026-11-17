@@ -19,16 +19,24 @@ struct DeviceCheckScreen: View {
 
     private var available: Bool { model.deviceModelAvailable }
 
-    /// Run files bundled with the app (recordings made elsewhere), newest first.
+    /// Runs recorded on an iPhone and bundled with the app (eval/on-device/: the baseline and the
+    /// latest), newest first.
     static var bundledRecordings: [(name: String, file: JSON)] {
-        let urls = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
+        let urls = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: "Shared/recordings") ?? []
         return urls.filter { $0.lastPathComponent.hasPrefix("device-check-") }
             .compactMap { url in (try? JSON.parse(Data(contentsOf: url))).flatMap { DeviceCheck.isRunFile($0) ? (url.lastPathComponent, $0) : nil } }
             .sorted { ($0.file["date"]?.stringValue ?? "") > ($1.file["date"]?.stringValue ?? "") }
     }
 
+    /// The file being shown: a recording, the finished run, or the run so far.
+    private var shownFile: JSON? {
+        recording?.file ?? run?.file ?? run.map { r in
+            .object(JSONObject([("version", .number(3)), ("platform", .string("iOS")), ("cases", .array(r.cases))]))
+        }
+    }
+
     var body: some View {
-        let shown: JSON? = recording?.file ?? run?.file ?? run.map { r in .object(JSONObject([("version", .number(3)), ("cases", .array(r.cases))])) }
+        let shown = shownFile
         Screen {
             BackLink(label: model.t("nav.home"), id: "deviceCheck.home") { model.goHome() }
                 .padding(.bottom, -8)
@@ -60,13 +68,17 @@ struct DeviceCheckScreen: View {
             if let run, recording == nil {
                 Para(run.running ? model.t("deviceCheck.running", ["n": String(run.current), "total": String(run.total)]) : model.t("deviceCheck.done"), .small)
                     .accessibilityIdentifier("deviceCheck.status")
+                if let saved = run.savedURL, !run.running {
+                    Para(model.t("deviceCheck.saved", ["file": saved.lastPathComponent]), .small)
+                        .accessibilityIdentifier("deviceCheck.saved")
+                }
             }
             if let shown, !(shown["cases"]?.arrayValue ?? []).isEmpty { summary(shown); caseList(shown) }
             recordings
         } actions: {
             if recording != nil {
                 BlockAction(label: model.t("deviceCheck.live"), id: "deviceCheck.live") { recording = nil }
-            } else if let file = run?.file, let url = Self.write(file) {
+            } else if let file = run?.file, let url = run?.savedURL ?? Self.write(file) {
                 ShareLink(item: url) {
                     Label(model.t("deviceCheck.download"), systemImage: "square.and.arrow.up")
                 }
@@ -85,6 +97,11 @@ struct DeviceCheckScreen: View {
             if model.snapshotDeviceCheck == "run" { start() }
             if model.snapshotDeviceCheck == "recording", let r = Self.bundledRecordings.first { recording = (r.file, r.name) }
             model.snapshotDeviceCheck = nil
+            if let repetitions = model.autoRunDeviceCheck, available {
+                model.autoRunDeviceCheck = nil
+                repeatCases = repetitions > 1
+                start()
+            }
         }
         .fileImporter(isPresented: $opening, allowedContentTypes: [.json]) { result in
             guard case .success(let url) = result else { return }
@@ -105,10 +122,9 @@ struct DeviceCheckScreen: View {
         Task { await r.run(repetitions: repeatCases ? 3 : 1) }
     }
 
-    /// Writes a run file to a temporary file named as the Web app names them, for the share sheet.
+    /// Writes a run file to a temporary file, for the share sheet when it could not be saved in Documents.
     static func write(_ file: JSON) -> URL? {
-        let name = DeviceCheck.fileName(date: file["date"]?.stringValue ?? "", browser: file["browser"]?.stringValue ?? "",
-                                        platform: file["platform"]?.stringValue ?? "")
+        let name = DeviceCheck.fileName(file)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
         guard (try? Data((file.jsonText + "\n").utf8).write(to: url)) != nil else { return nil }
         return url
@@ -116,16 +132,21 @@ struct DeviceCheckScreen: View {
 
     // MARK: Parts
 
+    /// The figures shown: every case but those this platform cannot run (the photo case on iOS).
+    private func counted(_ file: JSON) -> DeviceCheck.Summary {
+        DeviceCheck.summarize(DeviceCheck.countedCases(file), version: Int(file["version"]?.numberValue ?? 3))
+    }
+
     private func headlines(_ file: JSON) -> some View {
-        let s = DeviceCheck.summarize(file)
+        let s = counted(file)
         return VStack(alignment: .leading, spacing: 10) {
             headline("\(s.onDevice) / \(s.total)", model.t("deviceCheck.headline.onDevice"))
-            if s.readings > 0 {
-                headline("\(s.incomeRight) / \(s.readings)", model.t("deviceCheck.headline.incomeRight")
-                         + (s.incomeNotFound > 0 ? " " + model.t("deviceCheck.headline.notFound", ["count": String(s.incomeNotFound)]) : ""))
-                if let wrong = s.wrongReachedPerson {
-                    headline("\(wrong) / \(s.readings)", model.t(wrong == 0 ? "deviceCheck.headline.wrongNone" : "deviceCheck.headline.wrong"))
-                }
+            if s.extractionCases > 0, let income = s.income {
+                headline("\(income.allRight) / \(s.extractionCases)", model.t("deviceCheck.headline.incomeRight")
+                         + (income.notFound > 0 ? " " + model.t("deviceCheck.headline.notFound", ["count": String(income.notFound)]) : ""))
+            }
+            if s.extractionCases > 0, let wrong = s.wrongReachedPerson {
+                headline("\(wrong) / \(s.extractionCases)", model.t(wrong == 0 ? "deviceCheck.headline.wrongNone" : "deviceCheck.headline.wrong"))
             }
         }
         .accessibilityElement(children: .contain)
@@ -141,25 +162,35 @@ struct DeviceCheckScreen: View {
     }
 
     private func summary(_ file: JSON) -> some View {
-        let s = DeviceCheck.summarize(file)
+        let s = counted(file)
+        let notAvailable = (file["cases"]?.arrayValue?.count ?? 0) - DeviceCheck.countedCases(file).count
+        let repetitions = Int(file["repetitions"]?.numberValue ?? 1)
         return VStack(alignment: .leading, spacing: 6) {
-            Para(model.t("deviceCheck.summary", ["onDevice": String(s.onDevice), "total": String(s.total), "afterDevice": String(s.afterDevice),
+            Para(model.t("deviceCheck.summary", ["onDevice": String(s.onDevice), "total": String(s.total), "afterDevice": String(s.inCloudAfterDevice),
                                                  "inCloud": String(s.inCloud), "notRun": String(s.notRun)]), .small)
-            if s.readings > 0 {
-                if s.repetitions > 1 { Para(model.t("deviceCheck.summaryRepetitions", ["repetitions": String(s.repetitions)]), .small) }
-                Para(model.t("deviceCheck.summaryIncomeSplit", ["total": String(s.readings), "right": String(s.incomeRight),
-                                                                "notFound": String(s.incomeNotFound), "wrong": String(s.incomeWrong)]), .small)
+            if notAvailable > 0 {
+                Para(model.t("deviceCheck.notCounted", ["count": String(notAvailable)]), .small)
+                    .accessibilityIdentifier("deviceCheck.notCounted")
+            }
+            if s.extractionCases > 0 {
+                if repetitions > 1 { Para(model.t("deviceCheck.summaryRepetitions", ["repetitions": String(repetitions)]), .small) }
+                if let income = s.income {
+                    Para(model.t("deviceCheck.summaryIncomeSplit", ["total": String(s.extractionCases), "right": String(income.allRight),
+                                                                    "notFound": String(income.notFound), "wrong": String(income.wrong)]), .small)
+                }
                 if let wrong = s.wrongReachedPerson {
-                    Para(model.t("deviceCheck.summaryWrong", ["wrong": String(wrong), "total": String(s.readings)]), .small)
+                    Para(model.t("deviceCheck.summaryWrong", ["wrong": String(wrong), "total": String(s.extractionCases)]), .small)
                 }
                 if s.deductionsNotRead > 0 { Para(model.t("deviceCheck.summaryNotRead", ["count": String(s.deductionsNotRead)]), .small) }
                 Para(model.t("deviceCheck.wrongMustBeZero"), .small, muted: true)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("deviceCheck.summary")
     }
 
     private func ranLabel(_ c: JSON, version: Int) -> String {
+        if let file = shownFile, DeviceCheck.notAvailableHere(c, file: file) { return model.t("deviceCheck.ran.notAvailable") }
         let ran = DeviceCheck.finalRan(c, version: version)
         if ran == "IN_CLOUD" && c["final"]?["retried"]?.boolValue == true { return model.t("deviceCheck.ran.afterDevice") }
         return model.t("deviceCheck.ran.\(ran)")

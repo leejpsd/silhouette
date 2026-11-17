@@ -41,7 +41,7 @@ extension AppModel {
     var isOffline: Bool { forceOffline || !network.isOnline }
 
     /// Whether anything has actually left this device (the results lead says so).
-    var anythingLeft: Bool { outbound.contains { if case .answeredOnDevice = $0.status { false } else { true } } }
+    var anythingLeft: Bool { outbound.contains(where: \.left) }
 
     // MARK: Requests with the step before sending
 

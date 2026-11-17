@@ -23,7 +23,6 @@ import SilhouetteKit
 enum FirebaseServices {
     /// True when the Firebase configuration file is bundled and Firebase was configured.
     nonisolated(unsafe) private(set) static var isConfigured = false
-
     static var hasConfiguration: Bool { Bundle.main.url(forResource: "GoogleService-Info", withExtension: "plist") != nil }
 
     /// Call once at launch, before anything else touches Firebase. Makes no network request.
@@ -84,15 +83,43 @@ actor RemoteConfigService {
 
 // MARK: - Model port
 
-final class FirebaseModelPort: ModelPort {
-    private let ai: FirebaseAI
+final class FirebaseModelPort: ModelPort, @unchecked Sendable {
+    static let appCheckHost = "firebaseappcheck.googleapis.com"
 
-    init() {
-        ai = FirebaseAI.firebaseAI(backend: .googleAI())
+    /// Firebase AI Logic needs a configured Firebase app, for the on-device model too. A build without
+    /// the configuration file has none: it runs without models (sample answer keys, typed numbers,
+    /// the rules' own reasons) instead of stopping at launch.
+    ///
+    /// Created on the first model call, not at launch. Its initializer creates the App Check instance;
+    /// automatic token refresh is off (Info.plist `FirebaseAppCheckTokenAutoRefreshEnabled`), so App
+    /// Check makes no request until a cloud request asks for a token (shared/RECORD.md section 1).
+    /// Limited-use tokens: one per cloud request.
+    private var ai: FirebaseAI? {
+        lock.withLock {
+            guard FirebaseServices.isConfigured else { return nil }
+            if let made { return made }
+            let instance = FirebaseAI.firebaseAI(backend: .googleAI(), useLimitedUseAppCheckTokens: true)
+            made = instance
+            return instance
+        }
+    }
+    private var made: FirebaseAI?
+    private let lock = NSLock()
+
+    init() {}
+
+    var appCheckDestination: String? { FirebaseServices.isConfigured ? Self.appCheckHost : nil }
+
+    /// No token, no request: a limited-use App Check token must be obtainable before the cloud request
+    /// is made. The SDK then obtains its own limited-use token for the request (it takes no token from
+    /// the app), so each cloud request makes two token exchanges on iOS.
+    func confirmAppCheck() async throws {
+        _ = try await AppCheck.appCheck().limitedUseToken()
     }
 
     func deviceAvailability() -> DeviceAvailability {
-        switch FirebaseAI.SystemLanguageModel.default.availability {
+        guard FirebaseServices.isConfigured else { return .unavailable }
+        return switch FirebaseAI.SystemLanguageModel.default.availability {
         case .available: .available
         case .unavailable(.deviceNotEligible): .deviceNotEligible
         case .unavailable(.appleIntelligenceNotEnabled): .appleIntelligenceNotEnabled
@@ -103,13 +130,27 @@ final class FirebaseModelPort: ModelPort {
 
     func generateOnDevice(_ call: DeviceCall) async throws -> ModelReply {
         // Never hand a request that must stay on the device to an SDK call when the model is not ready.
-        guard deviceAvailability() == .available else { throw TaskError(.onDeviceUnavailable, "the on-device model is not available") }
+        let availability = deviceAvailability()
+        guard availability == .available else {
+            throw TaskError(.onDeviceUnavailable, "the on-device model is not available (\(availability.rawValue))",
+                            origin: "availability-guard", errorType: "SystemLanguageModel.Availability.\(availability.rawValue)")
+        }
+        // A reading part: the strict response constraint as the on-device schema (DeviceConstraint).
+        var schema: GenerationSchema?
+        if let constraint = call.constraint {
+            do { schema = try DeviceConstraint.schema(constraint) } catch {
+                throw TaskError(.onDeviceUnavailable, "the constraint could not be expressed: \(error)", origin: "constraint-guard",
+                                errorType: String(reflecting: type(of: error)))
+            }
+        }
+        guard let ai else { throw TaskError(.notConfigured, "no Firebase configuration in this build", origin: "configuration-guard") }
         let session = ai.generativeModelSession(model: .systemModel(), instructions: call.system)
-        let options = GenerationOptionsChoice.foundationModels(FirebaseAI.GenerationOptions(maximumResponseTokens: call.maxOutputTokens))
+        // Reading a document: greedy sampling (the most likely token every time), so the same silhouette
+        // gives the same answer. Temperature has no effect under greedy sampling and is left unset.
+        let options = GenerationOptionsChoice.foundationModels(
+            FirebaseAI.GenerationOptions(sampling: call.deterministic ? .greedy : nil, maximumResponseTokens: call.maxOutputTokens))
         do {
-            if let constraint = call.constraint {
-                // A reading part: the strict response constraint as the on-device schema (DeviceConstraint).
-                guard let schema = DeviceConstraint.schema(constraint) else { throw TaskError(.onDeviceUnavailable, "the constraint could not be expressed") }
+            if let schema {
                 let response = try await ConstrainedReply.$schema.withValue(schema) {
                     try await session.respond(to: call.prompt, generating: ConstrainedReply.self, includeSchemaInPrompt: true, options: options.value)
                 }
@@ -120,12 +161,25 @@ final class FirebaseModelPort: ModelPort {
         } catch is CancellationError {
             throw TaskError(.cancelled, "cancelled")
         } catch {
-            throw TaskError(.onDeviceUnavailable, String(describing: type(of: error)))
+            throw Self.deviceError(error)
         }
     }
 
+    /// An error thrown by the SDK or the on-device model, with its real type and message: the
+    /// Foundation Models error case (context window, guardrail, language, unsupported guide, assets…)
+    /// and its debug description. Its messages describe the request, never its text.
+    static func deviceError(_ error: Error) -> TaskError {
+        let ns = error as NSError
+        var message = String(describing: error)
+        if let e = error as? LocalizedError {
+            message += [e.failureReason, e.recoverySuggestion].compactMap { $0 }.map { " | " + $0 }.joined()
+        }
+        message += " | \(ns.domain) \(ns.code)"
+        return TaskError(.onDeviceUnavailable, String(message.prefix(600)), origin: "sdk", errorType: String(reflecting: type(of: error)))
+    }
+
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply {
-        guard FirebaseServices.isConfigured else { throw TaskError(.notConfigured, "no Firebase configuration in this build") }
+        guard let ai else { throw TaskError(.notConfigured, "no Firebase configuration in this build", origin: "configuration-guard") }
         let session = ai.generativeModelSession(model: .geminiModel(name: request.model), instructions: request.system.text)
         let schema = request.responseSchema.flatMap(Self.schema)
         let config = GenerationConfig(maxOutputTokens: request.maxOutputTokens, responseMIMEType: schema == nil ? nil : "application/json",
@@ -227,14 +281,14 @@ struct ConstrainedReply: Generable {
 /// out instead of written as `null`, which the reading treats the same way; a field whose kind has no id
 /// in this silhouette (`{"type": "null"}`) is not offered at all.
 enum DeviceConstraint {
-    static func schema(_ constraint: JSON) -> GenerationSchema? {
+    static func schema(_ constraint: JSON) throws -> GenerationSchema {
         var properties: [DynamicGenerationSchema.Property] = []
         for (name, spec) in constraint["properties"]?.objectValue?.entries ?? [] {
             guard let (schema, optional) = field(name, spec) else { continue }
             properties.append(DynamicGenerationSchema.Property(name: name, schema: schema, isOptional: optional))
         }
         let root = DynamicGenerationSchema(name: "Reading", properties: properties)
-        return try? GenerationSchema(root: root, dependencies: [])
+        return try GenerationSchema(root: root, dependencies: [])
     }
 
     private static func choices(_ spec: JSON?) -> [String] { (spec?["enum"]?.arrayValue ?? []).compactMap(\.stringValue) }

@@ -11,6 +11,8 @@ struct DeviceReadingTests {
     static let fixture = try! Shared.conformance("device-reading.json")
     static let schema = try! Shared.json(fixture["schema"]!.stringValue!)
     static var jurisdiction: String { fixture["jurisdiction"]!.stringValue! }
+    /// The document language the confirmation rules use (section 5.1).
+    static var language: String { fixture["confirmedOnly"]?["language"]?.stringValue ?? "en" }
 
     static func section(_ name: String) -> [FixtureCase] {
         (fixture[name]?.arrayValue ?? []).map { FixtureCase(file: "device-reading.json", json: $0) }
@@ -28,13 +30,13 @@ struct DeviceReadingTests {
         ["constraints", "checks", "readings"].reduce(0) { $0 + section($1).count } + (fixture["gold"]?["cases"]?.arrayValue?.count ?? 0)
     }
 
-    @Test("the fixture has 4 constraints, 27 checks, 24 readings and 38 gold cases (93)")
+    @Test("the fixture has 4 constraints, 39 checks, 34 readings and 38 gold cases (115)")
     func counts() {
         #expect(Self.section("constraints").count == 4)
-        #expect(Self.section("checks").count == 27)
-        #expect(Self.section("readings").count == 24)
+        #expect(Self.section("checks").count == 39)
+        #expect(Self.section("readings").count == 34)
         #expect(Self.fixture["gold"]?["cases"]?.arrayValue?.count == 38)
-        #expect(Self.caseCount == 93)
+        #expect(Self.caseCount == 115)
     }
 
     @Test("constraints", arguments: section("constraints"))
@@ -58,6 +60,10 @@ struct DeviceReadingTests {
         #expect(notRead.fields == Self.strings(e["notRead"]?["fields"]), "\(k.id) not read fields")
         #expect(DeviceReading.ytdMissingWithCandidate(schema: Self.schema, pointers: p, skeleton: doc.skeleton, map: doc.map, jurisdiction: j)
             == e["ytdMissingWithCandidate"]?.boolValue, "\(k.id) trigger")
+        let unconfirmed = DeviceReading.unconfirmedFields(schema: Self.schema, pointers: p, skeleton: doc.skeleton, map: doc.map, jurisdiction: j,
+                                                          language: Self.language)
+        #expect(unconfirmed.problems == Self.strings(e["unconfirmed"]?["problems"]), "\(k.id) unconfirmed problems")
+        #expect(unconfirmed.fields == Self.strings(e["unconfirmed"]?["fields"]), "\(k.id) unconfirmed fields")
     }
 
     @Test("readings with a fake device answering each part", arguments: section("readings"))
@@ -69,7 +75,8 @@ struct DeviceReadingTests {
             let part = try #require(named)
             answers[part] = value.stringValue
         }
-        let r = try await DeviceReading.read(schema: Self.schema, skeleton: doc.skeleton, map: Raw(doc.map), jurisdiction: Self.jurisdiction, answers: answers)
+        let r = try await DeviceReading.read(schema: Self.schema, skeleton: doc.skeleton, map: Raw(doc.map), jurisdiction: Self.jurisdiction,
+                                             language: Self.language, answers: answers)
         let e = try #require(k["expected"])
         #expect(r.asked.map(\.rawValue) == Self.strings(e["asked"]), "\(k.id) asked")
         let expectedPasses = e["passes"]?.arrayValue ?? []
@@ -117,9 +124,15 @@ struct DeviceReadingTests {
         let doc = Self.document(id)
         let readings = Self.rightReadings(g.json)
         #expect(readings.count == Int(g["expected"]?["readings"]?.numberValue ?? -1), "\(id) readings")
+        let goldDeductions = g["deductions"]?.arrayValue ?? []
         for r in readings {
             #expect(DeviceReading.coreProblems(schema: Self.schema, pointers: r, skeleton: doc.skeleton, map: doc.map, jurisdiction: Self.jurisdiction).isEmpty, "\(id) core")
             #expect(DeviceReading.notReadFields(r, skeleton: doc.skeleton).problems.isEmpty, "\(id) not read")
+            // With the gold deductions, every right reading is confirmed: no right value is left out.
+            var withDeductions = r.objectValue ?? JSONObject()
+            if !goldDeductions.isEmpty { withDeductions["deductions"] = .array(goldDeductions) }
+            #expect(DeviceReading.unconfirmedFields(schema: Self.schema, pointers: .object(withDeductions), skeleton: doc.skeleton, map: doc.map,
+                                                    jurisdiction: Self.jurisdiction, language: Self.language).problems.isEmpty, "\(id) unconfirmed")
         }
         for (field, runs) in g["names"]?.objectValue?.entries ?? [] {
             for ids in runs.arrayValue ?? [] {
@@ -150,5 +163,20 @@ struct DeviceReadingTests {
         #expect(by["real-run4-sample-ytd-left-out"]?["ytdMissingWithCandidate"]?.boolValue == true)
         let hours = Self.strings(by["real-run4-l07-hours-on-gross"]?["notRead"]?["fields"])
         #expect(hours == ["hoursWorked"])
+    }
+
+    @Test("a part that gave no answer keeps why: the pass carries the failure, and the reading fails at the core")
+    func failureKept() async throws {
+        let doc = Self.document("sample")
+        let failure = DeviceReading.Failure(origin: "sdk", type: "FoundationModels.LanguageModelSession.GenerationError",
+                                            message: "unsupportedLanguageOrLocale")
+        let reading = try await DeviceReading.read(schema: Self.schema, skeleton: doc.skeleton, map: Raw(doc.map), jurisdiction: Self.jurisdiction) { _ in
+            DeviceReading.PartAnswer(text: nil, error: "on-device-unavailable", seconds: 0.01, failure: failure)
+        }
+        #expect(reading.asked == [.core])
+        #expect(reading.passes.first?.problems == ["error:on-device-unavailable"])
+        #expect(reading.passes.first?.failure == failure)
+        guard case .failed(let problems) = reading.outcome else { Issue.record("not failed"); return }
+        #expect(problems == ["error:on-device-unavailable"])
     }
 }

@@ -27,6 +27,12 @@ public struct SharedBundle: Sendable {
     public let sampleAnswers: JSON
     /// Remote Config defaults: the bundled copy of firebase/remoteconfig.template.json, when present.
     public let remoteConfigTemplate: JSON?
+    /// The judges' prepared household of this pack (`rulepacks/{jurisdiction}/judges-household.json`).
+    public let judgesHousehold: JudgesHousehold?
+    /// The on-device check's fixed cases (`fixtures/device-check/cases.json`).
+    public let deviceCheckCases: JSON?
+    /// The folder the bundle was read from (laid out like shared/).
+    public let directory: URL
 
     /// - Parameters:
     ///   - directory: a folder laid out like shared/ (`copy/`, `rulepacks/`, `bands/`, `design/`).
@@ -69,7 +75,14 @@ public struct SharedBundle: Sendable {
         outputChecks = try json("prompts/output-checks.json")
         sampleAnswers = try json("samples/answers.json")
         remoteConfigTemplate = try? json("remoteconfig.template.json")
+        self.directory = directory
+        let info = packInfo
+        judgesHousehold = (try? json("rulepacks/\(jurisdiction)/judges-household.json")).flatMap { try? JudgesHousehold(json: $0, pack: info) }
+        deviceCheckCases = try? json("fixtures/device-check/cases.json")
     }
+
+    /// A file of the bundle by its path under shared/ (`fixtures/device-check/documents/en-l01-1.txt`).
+    public func data(_ path: String) -> Data? { try? Data(contentsOf: directory.appendingPathComponent(path)) }
 
     /// The allowlist for a document: its language's list ∪ en (skeleton/SPEC.md section 4).
     public func allowlist(for language: AppLocale) throws -> Allowlist {

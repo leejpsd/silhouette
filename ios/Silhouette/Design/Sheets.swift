@@ -207,6 +207,9 @@ private struct RecordSheet: View {
             headline
             Para(model.t("leaving.bodySent"))
             if model.sentCount > 0 && !model.outboundCarriesProfile { Para(model.t("leaving.noValues")) }
+            if model.notCompletedCount > 0 {
+                Para(model.t("leaving.notCompleted", ["count": model.number(Double(model.notCompletedCount))])).accessibilityIdentifier("leaving.notCompleted")
+            }
             if let cleared = model.recordClearedAt { Para(model.t("leaving.cleared", ["date": model.longDate(cleared)]), .small, muted: true) }
         }
         Para(model.t("leaving.sdkNote"), .small, muted: true)
@@ -304,6 +307,7 @@ private struct RecordEntry: View {
             case .sent: Image(systemName: "checkmark").font(.system(size: 13, weight: .heavy))
             case .answeredOnDevice: Image(systemName: "iphone").font(.system(size: 13, weight: .semibold))
             case .failed: Image(systemName: "xmark.circle").font(.system(size: 14, weight: .semibold))
+            case .blocked: Image(systemName: "nosign").font(.system(size: 13, weight: .semibold))
             }
             Text(model.recordStatus(entry)).type(.label, size: 12).fixedSize(horizontal: false, vertical: true)
         }

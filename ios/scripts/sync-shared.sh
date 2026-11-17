@@ -17,7 +17,7 @@ DEST="$1"
 
 # Paths under shared/ that ship in the app bundle.
 # The California pack is the one people see; zz-test is for tests and conformance fixtures only.
-ITEMS="copy rulepacks/us-ca/pack.json rulepacks/us-ca/copy bands/us-ca.json design/tokens.json skeleton/allowlist schemas/pointer.paystub.json samples prompts"
+ITEMS="copy rulepacks/us-ca/pack.json rulepacks/us-ca/copy rulepacks/us-ca/judges-household.json bands/us-ca.json design/tokens.json skeleton/allowlist schemas/pointer.paystub.json samples prompts fixtures/device-check/cases.json fixtures/device-check/documents fixtures/device-check/answers.json"
 
 for item in $ITEMS; do
   if [ ! -e "$SHARED/$item" ]; then
@@ -31,6 +31,13 @@ mkdir -p "$DEST"
 for item in $ITEMS; do
   mkdir -p "$DEST/$(dirname "$item")"
   cp -R "$SHARED/$item" "$DEST/$item"
+done
+
+# The on-device check's recorded runs this app bundles (shared/validation/DEVICE_CHECK.md section 5):
+# its own baseline and latest, the files directly in eval/on-device/ (history/ is not bundled).
+mkdir -p "$DEST/recordings"
+for run in "$IOS_DIR"/eval/on-device/device-check-*.json; do
+  [ -e "$run" ] && cp "$run" "$DEST/recordings/"
 done
 
 # Remote Config defaults: the template the Firebase project is published from.

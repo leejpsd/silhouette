@@ -5,28 +5,6 @@ import SilhouetteCore
 import SilhouetteKit
 import SwiftUI
 
-/// The prepared synthetic household of the judges' path and the on-device check: an invented renter
-/// household of three, a working single parent (head of household) with one child under 6, a yearly
-/// income given as a range, and one private question left unanswered. Answers the pack does not ask,
-/// or would not accept, are left out.
-enum PreparedHousehold {
-    static let answers: [(String, AnswerValue)] = [
-        ("income", .income(.band("C"))),
-        ("householdSize", .integer(3)),
-        ("numQualifyingChildren", .integer(1)),
-        ("hasChildUnder6", .choice("yes")),
-        ("hasEarnedIncome", .choice("yes")),
-        ("ageGroup", .choice("25-64")),
-        ("housing", .choice("renter")),
-        ("benefits", .selection([])),
-        ("energyProvider", .choice("pge")),
-        ("hasElderlyOrDisabledMember", .choice("no")),
-        ("filingStatus", .choice("head-of-household")),
-        ("taxIdType", .choice("ssn-valid-for-work")),
-        ("investmentIncome", .integer(0)),
-    ]
-}
-
 struct JudgesScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
@@ -78,7 +56,8 @@ extension AppModel {
     /// Judges, step 1: the prepared household's answers, then the results. Nothing is sent.
     func runPreparedHousehold() {
         restartForDemo()
-        for (id, value) in PreparedHousehold.answers where session.step(id) != nil { answer(id, value) }
+        // The judges' household of shared/rulepacks/us-ca/judges-household.json (synthetic).
+        for (id, value) in bundle.judgesHousehold?.answers ?? [] where session.step(id) != nil { answer(id, value) }
         showResults()
     }
 

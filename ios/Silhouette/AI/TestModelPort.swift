@@ -21,6 +21,17 @@ final class TestModelPort: ModelPort {
         self.answerKeys = answerKeys
     }
 
+    /// The right answers of the on-device check's documents (shared/fixtures/device-check/answers.json),
+    /// found by a line only that document's silhouette has.
+    static func checkAnswers(_ bundle: SharedBundle) -> [(skeleton: String, pointers: JSON)] {
+        guard let file = bundle.data("fixtures/device-check/answers.json").flatMap({ try? JSON.parse($0) }) else { return [] }
+        return (file["documents"]?.arrayValue ?? []).compactMap { d in
+            guard let needle = d["needle"]?.stringValue, var core = d["core"]?.objectValue else { return nil }
+            if let deductions = d["deductions"]?["deductions"] { core["deductions"] = deductions }
+            return (needle, .object(core))
+        }
+    }
+
     func deviceAvailability() -> DeviceAvailability { mode.hasPrefix("device") ? .available : .appleIntelligenceNotEnabled }
 
     private func pointers(in prompt: String) -> JSON? {

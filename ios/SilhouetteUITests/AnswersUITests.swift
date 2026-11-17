@@ -56,7 +56,8 @@ final class AnswersUITests: XCTestCase {
         XCTAssertTrue(badge.waitForExistence(timeout: 10))
         XCTAssertTrue(badge.label.contains("cloud"), badge.label)
         XCTAssertTrue(app.element("answer.text").label.contains("in general"))
+        // The line under the count: nothing of the person's left, one request with general material.
         let status = app.element("leaving.status")
-        XCTAssertTrue(status.label.hasPrefix("1 sent"), status.label)
+        XCTAssertTrue(status.label.contains("Nothing of yours sent") && status.label.contains("1 checks and general questions"), status.label)
     }
 }

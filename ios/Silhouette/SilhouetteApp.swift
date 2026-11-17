@@ -17,6 +17,10 @@ struct SilhouetteApp: App {
             let bundle = try SharedBundle(directory: shared, jurisdiction: AppModel.jurisdiction, localCopy: local)
             let model = try AppModel(bundle: bundle, store: AnswerStore(), resetOnLaunch: options.resetAll, testModel: options.testModel)
             model.forceOffline = options.offline
+            if let repetitions = options.deviceCheckRun {
+                model.autoRunDeviceCheck = repetitions
+                model.path = [.deviceCheck]
+            }
             return model
         })
         self.options = options
@@ -67,10 +71,19 @@ struct LaunchOptions {
     let testModel: String?
     /// `-UITestOffline`: show the offline state.
     let offline: Bool
+    /// `-DeviceCheckRun 1|3`: open the on-device check and run it at once (each extraction case once or
+    /// three times), for collecting a run without tapping through the app. The run file is saved in the
+    /// app's Documents folder when it finishes.
+    let deviceCheckRun: Int?
 
     init(arguments: [String]) {
         resetAll = arguments.contains("-UITestResetAll")
         offline = arguments.contains("-UITestOffline")
+        if let i = arguments.firstIndex(of: "-DeviceCheckRun"), i + 1 < arguments.count, let n = Int(arguments[i + 1]) {
+            deviceCheckRun = max(1, min(n, 3))
+        } else {
+            deviceCheckRun = nil
+        }
         if let i = arguments.firstIndex(of: "-UITestModel"), i + 1 < arguments.count { testModel = arguments[i + 1] } else { testModel = nil }
         if let i = arguments.firstIndex(of: "-UITestAppearance"), i + 1 < arguments.count {
             colorScheme = arguments[i + 1] == "dark" ? .dark : arguments[i + 1] == "light" ? .light : nil

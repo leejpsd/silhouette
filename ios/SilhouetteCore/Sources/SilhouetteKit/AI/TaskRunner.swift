@@ -73,9 +73,12 @@ public struct ReadingInParts: Sendable {
     let map: Raw<PlaceholderMap>
     let jurisdiction: String
     let docType: String
+    /// The document's language: net-pay labels for the confirmation rules (DEVICE_READING.md section 5.1).
+    let language: String
 
     public init(template: PromptTemplate, parts: [String: String], schema: JSON, skeleton: Skeleton, map: Raw<PlaceholderMap>,
-                jurisdiction: String, docType: String = "paystub") {
+                jurisdiction: String, language: String = "en", docType: String = "paystub") {
+        self.language = language
         self.template = template
         self.parts = parts
         self.schema = schema
@@ -96,19 +99,20 @@ public final class TaskRunner: Sendable {
     let port: any ModelPort
     let log: OutboundLog
     let outputChecks: JSON
-    /// Runs before every cloud request (fetches Remote Config the first time).
-    let beforeCloudRequest: @Sendable () async -> Void
+    /// Runs after every cloud request that left (fetches Remote Config the first time: shared/RECORD.md
+    /// section 1, after the first request the person chose to send).
+    let afterCloudRequest: @Sendable () async -> Void
     /// Fields the first cloud request also carries because the SDK makes them for it.
     let firstRequestFields: [String]
     private let state = Mutex()
 
     public init(port: any ModelPort, log: OutboundLog, outputChecks: JSON, firstRequestFields: [String] = [],
-                beforeCloudRequest: @escaping @Sendable () async -> Void = {}) {
+                afterCloudRequest: @escaping @Sendable () async -> Void = {}) {
         self.port = port
         self.log = log
         self.outputChecks = outputChecks
         self.firstRequestFields = firstRequestFields
-        self.beforeCloudRequest = beforeCloudRequest
+        self.afterCloudRequest = afterCloudRequest
     }
 
     // MARK: Primitive calls
@@ -133,7 +137,8 @@ public final class TaskRunner: Sendable {
     /// A call to the on-device model. Checks availability before any SDK call, so a request that must
     /// stay on the device is never handed to an SDK path that could send it elsewhere.
     private func onDevice(_ call: DeviceCall, kept: String?) async throws(TaskError) -> ModelReply {
-        guard port.deviceAvailability() == .available else { throw TaskError(.onDeviceUnavailable, "the on-device model is not available") }
+        let availability = port.deviceAvailability()
+        guard availability == .available else { throw Self.unavailable(availability) }
         do {
             let reply = try await port.generateOnDevice(call)
             try checkCancelled()
@@ -143,18 +148,42 @@ public final class TaskRunner: Sendable {
             throw e
         } catch {
             if Task.isCancelled { throw TaskError(.cancelled, "cancelled by the person") }
-            throw TaskError(.onDeviceUnavailable, String(describing: type(of: error)))
+            throw TaskError(.onDeviceUnavailable, String(describing: error).prefix(300).description, origin: "sdk",
+                            errorType: String(reflecting: type(of: error)))
         }
     }
 
+    /// The availability guard's error: the state the system reported, before any SDK call.
+    static func unavailable(_ availability: DeviceAvailability) -> TaskError {
+        TaskError(.onDeviceUnavailable, "the on-device model is not available (\(availability.rawValue))",
+                  origin: "availability-guard", errorType: "DeviceAvailability.\(availability.rawValue)")
+    }
+
     private func inCloud(_ request: CloudRequest) async throws(TaskError) -> ModelReply {
-        await beforeCloudRequest()
         try checkCancelled()
+        // No token, no request: the App Check token is obtained first; without one the model request is
+        // recorded as stopped before it left, and not made.
+        if let destination = port.appCheckDestination {
+            let token = OutboundEntry(channel: .appCheck, destination: destination, fields: ["app-check-token-request"], status: .attempted)
+            log.record(token)
+            do {
+                try await port.confirmAppCheck()
+                log.update(token.id, status: .sent(200))
+            } catch {
+                log.update(token.id, status: .failed("App Check"))
+                log.record(OutboundEntry(channel: .aiCloud, destination: Self.cloudDestination, fields: request.fields + ["model-request"],
+                                         payload: request.rendering, status: .blocked("noAppCheck"), model: request.model))
+                throw TaskError(.appCheck, "no App Check token: \(String(describing: error).prefix(200))", origin: "app-check-guard",
+                                errorType: String(reflecting: type(of: error)))
+            }
+            try checkCancelled()
+        }
         let first = state.takeFirstCloudRequest()
         let entry = OutboundEntry(channel: .aiCloud, destination: Self.cloudDestination,
                                   fields: request.fields + (first ? firstRequestFields : []) + ["model-request"],
                                   payload: request.rendering, status: .attempted, model: request.model)
         log.record(entry)
+        defer { Task { await afterCloudRequest() } }
         do {
             let reply = try await port.generateInCloud(request)
             log.update(entry.id, status: .sent(200))
@@ -226,8 +255,12 @@ public final class TaskRunner: Sendable {
     /// explain.personal and ask.freeText: the device only. Without a device model the caller shows
     /// the rule engine's reasons (or the prepared questions) instead.
     public func runPersonal(_ request: DeviceRequest) async throws(TaskError) -> TaskResult {
-        guard port.deviceAvailability() == .available else { throw TaskError(.onDeviceUnavailable, "no device model") }
-        guard !Planner.exceedsDeviceLimit(request.call) else { throw TaskError(.onDeviceUnavailable, "input too long for the device model") }
+        let availability = port.deviceAvailability()
+        guard availability == .available else { throw Self.unavailable(availability) }
+        guard !Planner.exceedsDeviceLimit(request.call) else {
+            throw TaskError(.onDeviceUnavailable, "input longer than \(Planner.onDeviceCharacterBudget) characters", origin: "input-length-guard",
+                            errorType: "Planner.onDeviceCharacterBudget")
+        }
         for _ in 0..<2 {
             // ONLY_ON_DEVICE with Raw input: never recorded as a request, it cannot leave.
             let reply = try await onDevice(request.call, kept: nil)
@@ -259,7 +292,7 @@ public final class TaskRunner: Sendable {
     public func extractPointers(_ request: CloudRequest, inParts: ReadingInParts? = nil, keepOnDevice: Bool = false,
                                 progress: @Sendable (ReadingStage) -> Void = { _ in }) async throws -> PointerOutcome {
         let available = port.deviceAvailability() == .available
-        if keepOnDevice && !available { throw TaskError(.onDeviceUnavailable, "the on-device model is not available") }
+        if keepOnDevice && !available { throw Self.unavailable(port.deviceAvailability()) }
         if available, let inParts, inParts.hasListField {
             let reading = try await readInParts(inParts, progress: progress)
             switch reading.outcome {
@@ -301,7 +334,8 @@ public final class TaskRunner: Sendable {
 
     /// The parts of DEVICE_READING.md section 3, each `ONLY_ON_DEVICE` with its strict constraint.
     private func readInParts(_ plan: ReadingInParts, progress: @Sendable (ReadingStage) -> Void) async throws -> DeviceReading.Reading {
-        try await DeviceReading.read(schema: plan.schema, skeleton: plan.skeleton.text, map: plan.map, jurisdiction: plan.jurisdiction) { part in
+        try await DeviceReading.read(schema: plan.schema, skeleton: plan.skeleton.text, map: plan.map, jurisdiction: plan.jurisdiction,
+                                     language: plan.language) { part in
             switch part {
             case .core, .whole: progress(.deviceReading)
             case .gross: progress(.deviceGross)
@@ -317,7 +351,9 @@ public final class TaskRunner: Sendable {
                 return DeviceReading.PartAnswer(text: reply.text, seconds: Date().timeIntervalSince(started))
             } catch {
                 if error.kind == .cancelled { throw error }
-                return DeviceReading.PartAnswer(text: nil, error: error.kind.rawValue, seconds: Date().timeIntervalSince(started))
+                return DeviceReading.PartAnswer(text: nil, error: error.kind.rawValue, seconds: Date().timeIntervalSince(started),
+                                                failure: DeviceReading.Failure(origin: error.origin ?? "app", type: error.errorType ?? "TaskError",
+                                                                               message: error.detail))
             }
         }
     }

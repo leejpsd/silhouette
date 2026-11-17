@@ -2,7 +2,7 @@
 // and the inverted bottom block with the screen's one main action above the "Leaving your device"
 // count row. The block follows the keyboard; while a text field has focus the count row shrinks to the
 // number. When the block would cover more than 40 % of the screen, its actions scroll with the content
-// and only the count row stays pinned.
+// and only the count row stays pinned. The scroll view ends where the block begins.
 
 import SilhouetteCore
 import SilhouetteKit
@@ -29,33 +29,35 @@ struct Screen<Content: View, Actions: View>: View {
     private var tall: Bool { mode != .compact && actionsHeight + countHeight + 34 > fullHeight * 0.4 }
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    AppHeader()
-                    DemoLine()
-                    VStack(alignment: .leading, spacing: theme.space("md")) { content }
-                        .padding(.top, theme.space("md"))
-                        .padding(.bottom, theme.space("xl"))
-                        .padding(.horizontal, theme.gutter)
-                    if tall && !typing {
-                        blockActions
-                            .padding(.bottom, theme.space("md"))
-                            .background(UnevenRoundedRectangle(topLeadingRadius: theme.radius("block"), topTrailingRadius: theme.radius("block"))
-                                .fill(theme.block))
+        // The block sits below the scroll view, not over it: content never runs under the pinned block,
+        // so nothing on the page can be covered by it (or tapped through it).
+        VStack(spacing: 0) {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        AppHeader()
+                        DemoLine()
+                        VStack(alignment: .leading, spacing: theme.space("md")) { content }
+                            .padding(.top, theme.space("md"))
+                            .padding(.bottom, theme.space("xl"))
+                            .padding(.horizontal, theme.gutter)
+                        if tall && !typing {
+                            blockActions
+                                .padding(.bottom, theme.space("md"))
+                                .background(UnevenRoundedRectangle(topLeadingRadius: theme.radius("block"), topTrailingRadius: theme.radius("block"))
+                                    .fill(theme.block))
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .scrollDismissesKeyboard(.interactively)
+                .onChange(of: scrollTo?.wrappedValue) { _, target in
+                    guard let target else { return }
+                    withAnimation(theme.curve("standard", duration: "medium")) { proxy.scrollTo(target, anchor: .center) }
+                    scrollTo?.wrappedValue = nil
+                }
             }
-            .scrollDismissesKeyboard(.interactively)
-            .onChange(of: scrollTo?.wrappedValue) { _, target in
-                guard let target else { return }
-                withAnimation(theme.curve("standard", duration: "medium")) { proxy.scrollTo(target, anchor: .center) }
-                scrollTo?.wrappedValue = nil
-            }
-        }
-        .background(theme.ground)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+            .background(theme.ground)
             VStack(spacing: 0) {
                 if mode != .compact && (!tall || typing) {
                     blockActions
@@ -74,6 +76,7 @@ struct Screen<Content: View, Actions: View>: View {
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("bottom.block")
         }
+        .background(theme.ground)
         .background {
             Color.clear.ignoresSafeArea()
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { fullHeight = $0 }

@@ -5,7 +5,7 @@ import Testing
 
 /// A model port that never calls a model: scripted replies, and a record of every call.
 final class FakePort: ModelPort, @unchecked Sendable {
-    enum Call: Equatable { case device(String), cloud(String) }
+    enum Call: Equatable { case device(String), cloud(String), appCheck }
     private let lock = NSLock()
     var availability: DeviceAvailability
     var deviceReplies: [Result<String, TaskError>]
@@ -13,6 +13,12 @@ final class FakePort: ModelPort, @unchecked Sendable {
     private(set) var calls: [Call] = []
     private(set) var cloudRequests: [CloudRequest] = []
     private(set) var deviceCalls: [DeviceCall] = []
+    /// Errors the SDK throws (not TaskErrors), one per device call, before any scripted reply.
+    var sdkErrors: [Error] = []
+    /// Availability answers given before `availability` (the model can stop being ready mid-reading).
+    var availabilityQueue: [DeviceAvailability] = []
+    /// App Check before a cloud request: nil (no App Check), or whether a token can be obtained.
+    var appCheckToken: Bool?
     /// Entries in the outgoing record at the moment each cloud call was made.
     var log: OutboundLog?
     private(set) var recordedBeforeCloud: [Int] = []
@@ -23,15 +29,28 @@ final class FakePort: ModelPort, @unchecked Sendable {
         cloudReplies = cloud
     }
 
-    func deviceAvailability() -> DeviceAvailability { availability }
+    func deviceAvailability() -> DeviceAvailability {
+        lock.withLock { availabilityQueue.isEmpty ? availability : availabilityQueue.removeFirst() }
+    }
 
     func generateOnDevice(_ call: DeviceCall) async throws -> ModelReply {
-        let next: Result<String, TaskError> = lock.withLock {
+        let (sdkError, next): (Error?, Result<String, TaskError>) = lock.withLock {
             calls.append(.device(call.taskId))
             deviceCalls.append(call)
-            return deviceReplies.isEmpty ? .failure(TaskError(.onDeviceUnavailable, "no script")) : deviceReplies.removeFirst()
+            if !sdkErrors.isEmpty { return (sdkErrors.removeFirst(), .success("")) }
+            return (nil, deviceReplies.isEmpty ? .failure(TaskError(.onDeviceUnavailable, "no script")) : deviceReplies.removeFirst())
         }
+        if let sdkError { throw sdkError }
         return ModelReply(text: try next.get(), modelVersion: TaskRunner.onDeviceModelVersion)
+    }
+
+    var appCheckDestination: String? { appCheckToken == nil ? nil : "firebaseappcheck.googleapis.com" }
+
+    struct NoToken: Error {}
+
+    func confirmAppCheck() async throws {
+        lock.withLock { calls.append(.appCheck) }
+        if appCheckToken == false { throw NoToken() }
     }
 
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply {
@@ -78,12 +97,68 @@ struct AnswerTaskTests {
     func runner(_ port: FakePort, log: OutboundLog = OutboundLog()) throws -> TaskRunner {
         port.log = log
         return TaskRunner(port: port, log: log, outputChecks: try Fixture().bundle.outputChecks,
-                          firstRequestFields: ["app-check-token-request", "installation"])
+                          firstRequestFields: ["installation"])
     }
 
     func explainRequest(long: Bool = false) throws -> CloudRequest {
         let f = try Fixture()
         return Planner.explain(try f.facts(), locale: .en, long: long, template: f.explainTemplate, config: f.config)
+    }
+
+    @Test("no App Check token, no request: the model request is recorded as stopped before it left, not as sent")
+    func noTokenNoRequest() async throws {
+        let log = OutboundLog()
+        let port = FakePort(availability: .unavailable, cloud: [.success("Program facts.")])
+        port.appCheckToken = false
+        await #expect(throws: TaskError.self) { _ = try await runner(port, log: log).runText(try explainRequest()) }
+        #expect(port.calls == [.appCheck], "the model request was not made")
+        #expect(log.entries.map(\.fields) == [["app-check-token-request"], ["program-facts", "model-request"]])
+        #expect(log.entries.last?.status == .blocked("noAppCheck") && log.entries.last?.left == false)
+        #expect(log.entries.filter(\.left).count == 1, "only the token request left")
+    }
+
+    @Test("with a token: the token request, then the model request; Remote Config only after the first request that left")
+    func tokenThenRequest() async throws {
+        let log = OutboundLog()
+        let port = FakePort(availability: .unavailable, cloud: [.success("Program facts.")])
+        port.appCheckToken = true
+        let fetched = CallCounter()
+        let r = TaskRunner(port: port, log: log, outputChecks: try Fixture().bundle.outputChecks, afterCloudRequest: { fetched.add() })
+        port.log = log
+        #expect(fetched.value == 0)
+        _ = try await r.runText(try explainRequest())
+        #expect(port.calls == [.appCheck, .cloud("explain.short")])
+        #expect(log.entries.map(\.status) == [.sent(200), .sent(200)])
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(fetched.value == 1)
+    }
+
+    @Test("device-only work makes no request: no App Check, no Remote Config")
+    func deviceOnlyMakesNoRequest() async throws {
+        let log = OutboundLog()
+        let port = FakePort(device: [.success("This program lowers food costs.")])
+        port.appCheckToken = true
+        let fetched = CallCounter()
+        let r = TaskRunner(port: port, log: log, outputChecks: try Fixture().bundle.outputChecks, afterCloudRequest: { fetched.add() })
+        _ = try await r.runText(try explainRequest())
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(port.calls == [.device("explain.short")] && fetched.value == 0 && !log.anythingLeft)
+    }
+
+    @Test("the line under the count: what carried something of the person's, then the rest (RECORD.md section 4)")
+    func countLine() {
+        func entry(_ fields: [String], _ status: OutboundEntry.Status = .sent(200)) -> OutboundEntry {
+            OutboundEntry(channel: .aiCloud, destination: "x", fields: fields, status: status)
+        }
+        #expect(OutboundLog.split([entry(["kept:document"], .answeredOnDevice)]).isEmpty)
+        let document = OutboundLog.split([entry(["app-check-token-request"]), entry(["document-silhouette", "model-request"]),
+                                          entry(["remote-config", "installation"])])
+        #expect(document.map(\.key) == ["leaving.split.document", "leaving.split.technical"] && document.map(\.count) == [1, 2])
+        let general = OutboundLog.split([entry(["app-check-token-request"]), entry(["program-facts", "model-request"]),
+                                         entry(["program-facts", "model-request"], .blocked("noAppCheck"))])
+        #expect(general.map(\.key) == ["leaving.split.nothingOfYours", "leaving.split.general"] && general.map(\.count) == [0, 2])
+        let personal = OutboundLog.split([entry(["profile-silhouette", "model-request"]), entry(["document-silhouette"], .failed("HTTP 500"))])
+        #expect(personal.map(\.key) == ["leaving.split.personal"] && personal.map(\.count) == [2])
     }
 
     @Test("Remote Config defaults are exactly the template's")
@@ -133,7 +208,7 @@ struct AnswerTaskTests {
         #expect(log.entries.first?.status == .sent(200))
         #expect(log.entries.first?.fields.contains("program-facts") == true)
         #expect(log.entries.first?.fields.contains("profile-silhouette") == false, "nothing about the person")
-        #expect(log.entries.first?.fields.contains("app-check-token-request") == true, "the first request names the SDK's own traffic")
+        #expect(log.entries.first?.fields.contains("installation") == true, "the first request names the SDK's own traffic")
     }
 
     @Test("without a device model, device-first requests go to the cloud and say why; a cloud failure is not retried")
@@ -146,7 +221,7 @@ struct AnswerTaskTests {
         await #expect(throws: TaskError.self) { try await r.runText(try explainRequest()) }
         #expect(port.calls == [.cloud("explain.short"), .cloud("explain.short")])
         #expect(log.entries.last?.status == .failed("HTTP 429"))
-        #expect(log.entries.last?.fields.contains("app-check-token-request") == false, "only the first request names them")
+        #expect(log.entries.last?.fields.contains("installation") == false, "only the first request names them")
     }
 
     @Test("PREFER_IN_CLOUD uses the device only when the cloud cannot be reached")
@@ -408,6 +483,68 @@ struct DeviceReadingTaskTests {
         #expect(!port.calls.contains(.cloud("document.pointer.extract")))
     }
 
+    /// An error of the kind the on-device model throws before it answers (as the Foundation Models
+    /// framework does for a prompt it will not take): fails at once, with a type and a message.
+    enum FakeGenerationError: Error, CustomStringConvertible {
+        case unsupportedLanguageOrLocale(String)
+        var description: String {
+            switch self { case .unsupportedLanguageOrLocale(let d): "unsupportedLanguageOrLocale(debugDescription: \(d))" }
+        }
+    }
+
+    @Test("a part the SDK fails before answering is recorded with where it stopped, the error type and its message")
+    func sdkFailureRecorded() async throws {
+        let p = try plan()
+        let port = FakePort(cloud: [.success(#"{"grossPay":"N12"}"#)])
+        port.sdkErrors = [FakeGenerationError.unsupportedLanguageOrLocale("Unsupported language")]
+        let outcome = try await runner(port, log: OutboundLog()).extractPointers(p.request, inParts: p.parts)
+        #expect(outcome.source == .inCloud && outcome.reason == .onDeviceFailed)
+        let core = try #require(outcome.attempt?.passes.first)
+        #expect(core.part == .core && core.problems == ["error:on-device-unavailable"] && core.value == nil)
+        let failure = try #require(core.failure)
+        #expect(failure.origin == "sdk")
+        #expect(failure.type.hasSuffix("FakeGenerationError"))
+        #expect(failure.message.contains("unsupportedLanguageOrLocale") && failure.message.contains("Unsupported language"))
+    }
+
+    @Test("an SDK error the port already classified keeps its origin, type and message")
+    func classifiedFailureRecorded() async throws {
+        let p = try plan()
+        let thrown = TaskError(.onDeviceUnavailable, "exceededContextWindowSize: 4,210 tokens", origin: "sdk",
+                               errorType: "FoundationModels.LanguageModelSession.GenerationError")
+        let port = FakePort(device: [.failure(thrown)], cloud: [.success(#"{"grossPay":"N12"}"#)])
+        let outcome = try await runner(port, log: OutboundLog()).extractPointers(p.request, inParts: p.parts)
+        let failure = try #require(outcome.attempt?.passes.first?.failure)
+        #expect(failure == DeviceReading.Failure(origin: "sdk", type: "FoundationModels.LanguageModelSession.GenerationError",
+                                                 message: "exceededContextWindowSize: 4,210 tokens"))
+    }
+
+    @Test("the availability guard stops a part before any SDK call, and says so")
+    func guardFailureRecorded() async throws {
+        let p = try plan()
+        let port = FakePort(cloud: [.success(#"{"grossPay":"N12"}"#)])
+        // Ready when the reading starts, not ready when the core part is asked.
+        port.availabilityQueue = [.available, .modelNotReady]
+        let outcome = try await runner(port, log: OutboundLog()).extractPointers(p.request, inParts: p.parts)
+        #expect(!port.calls.contains(.device("document.pointer.extract")), "no SDK call")
+        let failure = try #require(outcome.attempt?.passes.first?.failure)
+        #expect(failure.origin == "availability-guard" && failure.type == "DeviceAvailability.modelNotReady")
+    }
+
+    @Test("reading a document asks for greedy sampling; written answers do not")
+    func deterministicReading() async throws {
+        let p = try plan()
+        let port = FakePort(device: try answers("core-right-deductions-right").map { .success($0) })
+        _ = try await runner(port, log: OutboundLog()).extractPointers(p.request, inParts: p.parts)
+        #expect(!port.deviceCalls.isEmpty && port.deviceCalls.allSatisfy(\.deterministic))
+        #expect(p.request.deviceCall.deterministic)
+        let f = try Fixture()
+        let program = try #require(f.bundle.packInfo.programs.first?.id)
+        let facts = try #require(AnswerInputs.programFacts(f.bundle, programId: program, locale: .en))
+        let explain = Planner.explain(facts, locale: .en, long: false, template: try #require(f.bundle.prompts["explain.v5"]), config: f.config)
+        #expect(!explain.deviceCall.deterministic)
+    }
+
     @Test("ONLY_ON_DEVICE without a device model: no SDK call at all, on the device or in the cloud")
     func onlyOnDeviceGuard() async throws {
         let p = try plan()
@@ -455,4 +592,12 @@ enum Shared {
             return cases["base"]?.objectValue ?? JSONObject()
         }
     }
+}
+
+/// Counts calls from any task.
+final class CallCounter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var n = 0
+    func add() { lock.withLock { n += 1 } }
+    var value: Int { lock.withLock { n } }
 }

@@ -26,12 +26,12 @@ bundle.
 | `Silhouette/Design/` | The design system: theme and type from the tokens, the screen frame with the bottom block, sheets, controls, paper, markers, bars, grain and motion |
 | `Silhouette/Resources/Fonts/` | Darker Grotesque, Hanken Grotesk and DM Mono (TTF) with their SIL Open Font License texts; registered in `Silhouette/Info.plist` |
 | `Silhouette/AI/` | Firebase AI Logic, App Check and Remote Config (the only code that imports Firebase), the network monitor, and the scripted model used by UI tests |
-| `Silhouette/Resources/copy.local.json` | App strings not in `shared/copy/`: the draft-rules sheet, the judges' path and the on-device check (never shadows a shared key, a test checks this) |
-| `Silhouette/Resources/DeviceCheck/` | The on-device check's fixed synthetic paystubs with their expected values, and a recorded run shown when this device has no model |
+| `Silhouette/Resources/copy.local.json` | App strings not in `shared/copy/`: three lines of the on-device check that only iOS shows (where the run file was saved, the case this platform cannot run). Never shadows a shared key (a test checks this) |
+| `eval/on-device/` | The on-device check's runs recorded on an iPhone: the baseline and the latest are bundled; earlier runs in `history/` (see its README) |
 | `SilhouetteUITests/` | XCUITests for the Quick Check, document and answer flows (including reading kept on the device), and a screenshot tour |
 | `Silhouette/Snapshots.swift`, `scripts/snapshots.sh` | Fast snapshots: the app sets each screen's state itself and writes PNG files (`make snapshots`) |
 | `project.yml` | XcodeGen spec; `Silhouette.xcodeproj` is generated from it |
-| `scripts/sync-shared.sh` | Build phase: copies `shared/copy`, `shared/rulepacks/us-ca` (the pack and its copy), `shared/bands/us-ca.json`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, `shared/schemas/pointer.paystub.json`, `shared/samples` and `shared/prompts` into the app bundle under `Shared/` |
+| `scripts/sync-shared.sh` | Build phase: copies `shared/copy`, `shared/rulepacks/us-ca` (the pack, its copy and the judges' household), `shared/bands/us-ca.json`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, `shared/schemas/pointer.paystub.json`, `shared/samples`, `shared/prompts` and the on-device check's cases, documents and right answers (`shared/fixtures/device-check/`) into the app bundle under `Shared/`, and the iPhone's recorded runs (`eval/on-device/*.json`) under `Shared/recordings/` |
 | `scripts/copy-firebase-config.sh` | Build phase: copies `Silhouette/GoogleService-Info.plist` into the bundle when it exists |
 | `scripts/routing-proof.sh` | Type-checks the probes in `RoutingProof/` |
 | `scripts/gen-edge-cases.mjs` | Regenerates `ios-edge-cases.json` from `shared/reference/silhouette.mjs` |
@@ -50,11 +50,17 @@ No signing team is needed for simulator builds.
 ### Firebase configuration
 
 `Silhouette/GoogleService-Info.plist` is not in the repository. Without it the app builds (the
-build prints a warning) and runs on the device only: cloud requests report that the build has no
-Firebase configuration. To enable them, download the configuration of the iOS app
+build prints a warning) and runs without models: Firebase AI Logic needs a configured Firebase app
+for the on-device model too, so the app shows the rules' own reasons, reads the built-in samples by
+their answer keys and takes typed numbers, and makes no request. To enable them, download the configuration of the iOS app
 `app.silhouette.benefits` from the Firebase console into `Silhouette/`.
 
-App Check uses the debug provider in debug builds. On the first run the SDK prints
+App Check starts only when a cloud request is about to be sent (shared/RECORD.md): automatic token
+refresh is off (`FirebaseAppCheckTokenAutoRefreshEnabled` in `Info.plist`), and before each cloud
+request the app obtains a limited-use token; without one the request is not made and the record
+shows it as stopped before it left. The SDK then obtains its own limited-use token for the request
+(it takes none from the app), so a cloud request makes two token exchanges on iOS. App Check uses
+the debug provider in debug builds. On the first run the SDK prints
 `Firebase App Check debug token: …` in the Xcode console; register that token in the Firebase
 console under App Check, Apps, Manage debug tokens. Release builds use App Attest, which needs a
 signing team with the App Attest capability.
@@ -95,11 +101,14 @@ make project         # xcodegen generate
 - **Encrypted at rest.** Answers are sealed with AES-GCM using a 256-bit key kept in the
   Keychain (this device only). The file has complete file protection and is excluded from
   backup. *Delete everything* removes the file, the key and the language setting.
-- **Leaving your device.** The count row at the bottom of every screen reads `OutboundLog`; its
-  record ("3 sent, 1 kept.") opens as a sheet. Every request the app makes is recorded before it
-  is made (sending), then marked sent with the response status, or not completed with the reason;
-  an answer written on this device is recorded as "Answered on this device", with no host and no
-  body, and counted as kept, never as sent. A recorded
+- **Leaving your device** (`shared/RECORD.md`). The count row at the bottom of every screen reads
+  `OutboundLog`; the line under it splits the requests that left into what carried something of the
+  person's and the rest (technical checks, general questions); its record ("3 sent, 1 kept.") opens
+  as a sheet. Every request the app makes is recorded before it is made (sending), then marked sent
+  with the response status, or not completed with the reason; a request stopped before it left (no
+  App Check token) is recorded as not sent and never counted. An answer written on this device is
+  recorded as "Answered on this device", with no host and no body, and counted as kept, never as
+  sent. Work on the device makes no request: Remote Config is fetched after the first cloud request. A recorded
   request is a `CloudText`, so only cloud-safe content can appear there. The details say what the
   app cannot see: the Firebase SDK renews App Check and installation tokens in the background, and
   iOS updates the system model.
@@ -141,7 +150,9 @@ make project         # xcodegen generate
   one) the device reads in parts (`shared/prompts/DEVICE_READING.md`): the core fields, the gross
   pay when needed, the deductions, and the deductions again; the screen names the part being read.
   Each part is checked; fields that fail their check are left out and shown as "Not read on this
-  device". When the reading fails and the person chose to keep everything on the device, nothing is
+  device". Values that feed no result (hours, rate, net pay, a pay date before the period end) are
+  shown only when a deterministic check confirms them (DEVICE_READING.md v2 section 5.1). Reading a
+  document asks the on-device model for greedy sampling, so the same silhouette gives the same answer. When the reading fails and the person chose to keep everything on the device, nothing is
   filled in and nothing is sent; they can send the silhouette or type the numbers.
   Without a device model and without the network, a built-in sample is read by its answer key
   (`shared/samples/answers.json`, labelled "Sample answers, no AI", reason `sample-answer-key`);
@@ -174,15 +185,21 @@ read). `-SnapshotCapture <folder>` (with a scripted model only) writes the fast 
 
 ### The judges' path and the on-device check
 
-Both open from the draft-rules sheet only. *For judges* runs the prepared synthetic household,
+Both open from the draft-rules sheet only. *For judges* runs the prepared synthetic household
+(`shared/rulepacks/us-ca/judges-household.json`),
 opens the sample paystub and shows the record of what left the device. *Check the on-device model*
-runs fixed synthetic cases through Firebase AI Logic: five paystubs read in parts, explanations and
-prepared questions in English and Spanish, and the two device-only tasks. For each case it shows
-where it finally ran, the time of each part, and whether the yearly-income inputs were right, not
-found or wrong. The run can be repeated three times, and the run file (`silhouette-device-check`,
-version 3, the same format as the web app's) is shared through the share sheet. Without a device
-model the screen says so and can show a bundled recorded run, labelled as a recording, or open a
-run file.
+runs the fixed synthetic cases of `shared/validation/DEVICE_CHECK.md` through Firebase AI Logic: five
+paystubs read in parts, explanations and prepared questions in English and Spanish, and the two
+device-only tasks. Reading a photo is not available on iPhone (the on-device model takes text only):
+the case stays in the run file and is left out of the figures, with a note. For each case the screen
+shows where it finally ran, the time of each part, and whether the yearly-income inputs were right,
+not found or wrong; a part that stopped before the model answered records where and why
+(`failure:{origin}:{type}: {message}` in its problems). The extraction cases can be repeated three
+times. The run file (`shared/schemas/device-check-run.v3.json`, with the `device` block) is saved in
+the app's Documents folder as soon as the run finishes (Files, On My iPhone, Silhouette) and can be
+shared; the launch argument `-DeviceCheckRun 1` (or `3`) opens the check and runs it without
+tapping. Without a device model the screen says so and can show the bundled iPhone runs, labelled as
+recordings, or open a run file.
 
 ### Snapshots
 
@@ -233,7 +250,8 @@ weight, with open leading and line breaks between words.
 - When a task may run on the device only and the device has no model, the app stops before any SDK
   call; the SDK's system-model session has no cloud fallback of its own.
 - Remote Config: defaults are the bundled copy of `firebase/remoteconfig.template.json`. Nothing
-  is fetched at start; the first model request fetches once (and is recorded).
+  is fetched at start or for work on the device; the first cloud request is followed by one fetch
+  (recorded).
 - Before a cloud-capable request the app shows the step before sending: the silhouette lines,
   the request object as the app builds it (the SDK writes the bytes), where it would run and why.
   Consent is per silhouette and destination; agreeing to "may be sent if this device can't" does

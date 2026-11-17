@@ -10,10 +10,12 @@ public enum ReadingScore {
 
     static func near(_ a: Double, _ b: Double) -> Bool { abs(a - b) < 0.005 }
 
+    /// Numbers within 0.005, anything else exactly (shared/validation/DEVICE_CHECK.md section 2).
     static func same(_ value: JSON?, _ want: JSON) -> Bool {
         switch (value, want) {
         case (.number(let a)?, .number(let b)): near(a, b)
-        case (.string(let a)?, .string(let b)): a.split(whereSeparator: \.isWhitespace) == b.split(whereSeparator: \.isWhitespace)
+        case (.string(let a)?, .string(let b)): a.exactlyEquals(b)
+        case (.bool(let a)?, .bool(let b)): a == b
         default: false
         }
     }
@@ -25,25 +27,34 @@ public enum ReadingScore {
         return w.count == g.count && w.allSatisfy { a in g.contains { near($0, a) } }
     }
 
-    /// Field-by-field outcome of an answer against the expected values (as the review would show it).
+    /// Field-by-field status of an answer against the gold answers, by value (DEVICE_CHECK.md section 2,
+    /// reference `fieldStatuses`): a gold field that is missing or null expects no value; a gold list,
+    /// even an empty one, expects a list.
     public static func statuses(schema: JSON, pointers: JSON, map: Raw<PlaceholderMap>, gold: Raw<JSON>) -> [(field: String, status: Status)] {
-        let values = Rehydrator.rehydrate(schema: schema, pointers: pointers, map: map).value
-        let gold = gold.value
-        return (schema["properties"]?.objectValue?.keys ?? []).map { field in
+        statuses(schema: schema, values: Rehydrator.rehydrate(schema: schema, pointers: pointers, map: map).value, gold: gold.value)
+    }
+
+    static func statuses(schema: JSON, values: JSON, gold: JSON) -> [(field: String, status: Status)] {
+        (schema["properties"]?.objectValue?.keys ?? []).map { field in
             let isList = schema["properties"]?[field]?["x-kind"]?.stringValue == "list"
             let got = values[field]
-            let has = isList ? !(got?.arrayValue ?? []).isEmpty : got != nil
-            guard let want = gold[field], !want.isNull, !(isList && (want.arrayValue ?? []).isEmpty) else { return (field, has ? .spurious : .absent) }
+            let has = isList ? !(got?.arrayValue ?? []).isEmpty : (got != nil && !(got?.isNull ?? true))
+            guard let want = gold[field], !want.isNull else { return (field, has ? .spurious : .absent) }
             guard has else { return (field, .missing) }
             let right = isList ? sameDeductions(got?.arrayValue ?? [], want.arrayValue ?? []) : same(got, want)
             return (field, right ? .correct : .wrong)
         }
     }
 
-    /// Fields right out of the fields with an expected value (optionally only some fields).
-    public static func score(_ statuses: [(field: String, status: Status)], only fields: Set<String>? = nil) -> (correct: Int, total: Int) {
-        let counted = statuses.filter { s in (fields?.contains(s.field) ?? true) && s.status != .absent && s.status != .spurious }
-        return (counted.filter { $0.status == .correct }.count, counted.count)
+    /// Fields right out of the fields the gold answers have (reference `scoreFields`), optionally only some fields.
+    public static func score(_ statuses: [(field: String, status: Status)], gold: Raw<JSON>, only fields: Set<String>? = nil) -> (correct: Int, total: Int) {
+        score(statuses, gold: gold.value, only: fields)
+    }
+
+    static func score(_ statuses: [(field: String, status: Status)], gold: JSON, only fields: Set<String>? = nil) -> (correct: Int, total: Int) {
+        let expected = (gold.objectValue?.entries ?? []).filter { !$0.value.isNull && (fields?.contains($0.key) ?? true) }.map(\.key)
+        let byField = Dictionary(statuses.map { ($0.field, $0.status) }, uniquingKeysWith: { a, _ in a })
+        return (expected.filter { byField[$0] == .correct }.count, expected.count)
     }
 
     /// Every placeholder that holds the expected value of each field.

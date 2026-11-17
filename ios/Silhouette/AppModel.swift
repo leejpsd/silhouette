@@ -72,6 +72,8 @@ final class AppModel {
     @ObservationIgnored var forceOffline = false
     /// The fast snapshot capture: open the on-device check running (`run`) or on its recording (`recording`).
     @ObservationIgnored var snapshotDeviceCheck: String?
+    /// `-DeviceCheckRun`: the on-device check starts by itself with this many repetitions.
+    @ObservationIgnored var autoRunDeviceCheck: Int?
 
     @ObservationIgnored private let store: AnswerStore
     @ObservationIgnored private let defaults: UserDefaults
@@ -95,14 +97,14 @@ final class AppModel {
         sampleKey = try? SampleAnswerKeyExtractor(bundle: bundle)
         self.testModel = testModel
         port = testModel.map { mode in
-            TestModelPort(mode: mode, answerKeys: (try? SampleAnswerKeyExtractor(bundle: bundle))?.entries.map { ($0.skeleton.text, $0.pointers) } ?? [])
+            TestModelPort(mode: mode, answerKeys: ((try? SampleAnswerKeyExtractor(bundle: bundle))?.entries.map { ($0.skeleton.text, $0.pointers) } ?? [])
+                + TestModelPort.checkAnswers(bundle))
         } ?? FirebaseModelPort()
         let rc = RemoteConfigService(defaults: bundle.remoteConfigTemplate.map(AppConfig.defaultValues) ?? [:])
         remoteConfig = rc
         let log = OutboundLog.shared
         runner = TaskRunner(port: port, log: log, outputChecks: bundle.outputChecks,
-                            firstRequestFields: testModel == nil ? ["app-check-token-request", "installation"] : [],
-                            beforeCloudRequest: { await rc.fetchOnce(log: log) })
+                            afterCloudRequest: { await rc.fetchOnce(log: log) })
         locale = defaults.string(forKey: Self.localeKey).flatMap(AppLocale.init(rawValue:))
             ?? AppLocale.preferred(from: Locale.preferredLanguages)
         outbound = OutboundLog.shared.entries
@@ -140,18 +142,19 @@ final class AppModel {
         return bundle.copy.has("outbound.field.\(field)") ? t("outbound.field.\(field)") : field
     }
 
-    /// "Nothing has left this device." or "{count} sent: {kinds}" (requests answered on this device
-    /// are listed in the details but did not leave).
+    /// The line under the count (shared/RECORD.md section 4): what carried something of the person's,
+    /// then the rest, adding up to the number that left; "Nothing has left this device." when none did.
+    /// Answers written on the device and requests stopped before they left are not counted.
     var outboundSummary: String {
-        let left = outbound.filter { if case .answeredOnDevice = $0.status { false } else { true } }
-        guard !left.isEmpty else { return t("leaving.none") }
-        var kinds: [String] = []
-        for field in left.flatMap(\.fields) where !kinds.contains(field) { kinds.append(field) }
-        return t("outbound.count", ["count": String(left.count), "list": kinds.map(outboundFieldName).joined(separator: ", ")])
+        let parts = OutboundLog.split(outbound)
+        guard !parts.isEmpty else { return t("leaving.none") }
+        return parts.map { t($0.key, ["count": number(Double($0.count))]) }.joined(separator: " · ")
     }
 
-    /// Requests that left the device (`leaving.sentCount`).
-    var sentCount: Int { outbound.filter { !$0.isAnsweredOnDevice }.count }
+    /// Requests that left the device (`leaving.sentCount`): attempted, sent or not completed.
+    var sentCount: Int { outbound.filter(\.left).count }
+    /// Requests that left and did not complete (`leaving.notCompleted`).
+    var notCompletedCount: Int { outbound.filter { if case .failed = $0.status { true } else { false } }.count }
     /// Answers written on the device that never left (`leaving.keptCount`).
     var keptCount: Int { outbound.filter(\.isAnsweredOnDevice).count }
 
@@ -163,7 +166,7 @@ final class AppModel {
 
     /// Whether anything that left carried the profile silhouette (otherwise no answer or value left).
     var outboundCarriesProfile: Bool {
-        outbound.contains { !$0.isAnsweredOnDevice && ($0.fields.contains("profile-silhouette") || $0.fields.contains("county-area")) }
+        outbound.contains { $0.left && ($0.fields.contains("profile-silhouette") || $0.fields.contains("county-area")) }
     }
 
     /// The status line in the record: answered on the device has no host and no body.
@@ -251,6 +254,7 @@ final class AppModel {
         case .attempted: t("outbound.status.attempted")
         case .sent(let status): t("outbound.status.sent", ["status": String(status)])
         case .failed(let reason): t("outbound.status.failed", ["reason": reason])
+        case .blocked(let reason): t(reason == "noAppCheck" ? "outbound.status.noAppCheck" : "outbound.status.blocked")
         case .answeredOnDevice: t("outbound.status.answeredOnDevice")
         }
     }
@@ -461,18 +465,16 @@ final class AppModel {
             path.append(.documentReview)
             return
         }
-        // Remote Config is fetched before the first cloud request only; keeping everything on the device sends nothing.
-        if !keepOnDevice {
-            await remoteConfig.fetchOnce(log: OutboundLog.shared)
-            lastConfig = await remoteConfig.current()
-        }
+        // Remote Config is fetched after the first cloud request (shared/RECORD.md section 1); until then the
+        // bundled defaults apply. Keeping everything on the device sends nothing.
+        lastConfig = await remoteConfig.current()
         let version = lastConfig?.promptPointerExtractV ?? currentConfig.promptPointerExtractV
         guard let template = pointerTemplate(version: version),
               let request = try? Planner.pointers(silhouette.skeleton, language: document.language, template: template, pointerSchema: bundle.paystubSchema)
         else { documentError = TaskError(.unknown, "no pointer prompt"); return }
         let inParts: ReadingInParts? = template.id == "pointer-extract.v5" && version >= 5 && !bundle.prompts.deviceParts.isEmpty
             ? ReadingInParts(template: template, parts: bundle.prompts.deviceParts, schema: bundle.paystubSchema, skeleton: silhouette.skeleton,
-                             map: silhouette.map, jurisdiction: bundle.packInfo.jurisdiction)
+                             map: silhouette.map, jurisdiction: bundle.packInfo.jurisdiction, language: document.language.rawValue)
             : nil
         do {
             let outcome = try await runner.extractPointers(request, inParts: inParts, keepOnDevice: keepOnDevice) { stage in

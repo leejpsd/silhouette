@@ -46,14 +46,19 @@ public struct DeviceCall: Sendable {
     public let constraint: JSON?
     /// The reading part (`core`, `gross`, `deductions`, `deductions-again`), when the call is one.
     public let part: String?
+    /// Reading a document: the same silhouette should always give the same answer, so the port picks
+    /// the most likely token at every step (greedy) where its on-device API allows it.
+    public let deterministic: Bool
 
-    init(taskId: String, system: String, prompt: String, maxOutputTokens: Int, constraint: JSON? = nil, part: String? = nil) {
+    init(taskId: String, system: String, prompt: String, maxOutputTokens: Int, constraint: JSON? = nil, part: String? = nil,
+         deterministic: Bool = false) {
         self.taskId = taskId
         self.system = system
         self.prompt = prompt
         self.maxOutputTokens = maxOutputTokens
         self.constraint = constraint
         self.part = part
+        self.deterministic = deterministic
     }
 }
 
@@ -62,6 +67,16 @@ public protocol ModelPort: Sendable {
     func deviceAvailability() -> DeviceAvailability
     func generateOnDevice(_ call: DeviceCall) async throws -> ModelReply
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply
+    /// Where the App Check token for a cloud request comes from, or nil when the port needs none.
+    var appCheckDestination: String? { get }
+    /// Obtains the App Check token a cloud request needs, right before it. Throws when there is none:
+    /// the request is then not made ("no token, no request", shared/RECORD.md section 1).
+    func confirmAppCheck() async throws
+}
+
+public extension ModelPort {
+    var appCheckDestination: String? { nil }
+    func confirmAppCheck() async throws {}
 }
 
 /// A failed task, by kind (shown with shared copy). Messages never contain user values.
@@ -91,11 +106,18 @@ public struct TaskError: Error, Sendable, CustomStringConvertible {
     public let detail: String
     /// HTTP status when the cloud answered with an error.
     public let status: Int?
+    /// Where the call stopped: an app guard (`availability-guard`, `input-length-guard`,
+    /// `constraint-guard`) before any SDK call, or `sdk` when the SDK or the model threw.
+    public let origin: String?
+    /// The type of the error the SDK threw (`FoundationModels.LanguageModelSession.GenerationError`…).
+    public let errorType: String?
 
-    public init(_ kind: Kind, _ detail: String, status: Int? = nil) {
+    public init(_ kind: Kind, _ detail: String, status: Int? = nil, origin: String? = nil, errorType: String? = nil) {
         self.kind = kind
         self.detail = detail
         self.status = status
+        self.origin = origin
+        self.errorType = errorType
     }
 
     public var description: String { "\(kind.rawValue): \(detail)" }

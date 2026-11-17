@@ -1,97 +1,16 @@
-// The on-device check: a fixed set of synthetic cases run through Firebase AI Logic and the app's own
-// tasks, recording where each one finally ran, the time of each part, and the yearly-income inputs
-// right, not found or wrong. It produces a run file in the format of the Web app's check (version 3,
-// kind `silhouette-device-check`), which can be shared from the phone and kept next to the Web's runs.
-// Every input is synthetic: the bundled sample paystub, four generated evaluation paystubs and an
-// invented household. Placeholder ids and field names only are recorded; never a document value.
+// The on-device check (shared/validation/DEVICE_CHECK.md): the fixed cases of
+// shared/fixtures/device-check/cases.json run through Firebase AI Logic and the app's own tasks,
+// recording where each one finally ran, the time of each part, and the yearly-income inputs right, not
+// found or wrong. The run file (version 3, shared/schemas/device-check-run.v3.json) is saved in the
+// app's Documents folder when the run finishes and can be shared. Every input is synthetic: the bundled
+// sample paystub, four evaluation paystubs and the judges' household. Placeholder ids and field names
+// only are recorded; never a document value.
 
 import Foundation
 import Observation
 import SilhouetteCore
 import SilhouetteKit
 import UIKit
-
-enum DeviceCheck {
-    static let kind = "silhouette-device-check"
-    static let version = 3
-    /// The fields the yearly income is worked out from.
-    static let incomeInputs = ["grossPay", "ytdGross", "payFrequency", "periodStart", "periodEnd", "payDate"]
-
-    /// The extraction cases: the bundled sample and four evaluation paystubs (as in the Web check).
-    static let extractionCases: [(id: String, file: String?)] = [
-        ("pointers: bundled sample", nil),
-        ("pointers: evaluation paystub L01", "en-l01-1"),
-        ("pointers: evaluation paystub L04", "en-l04-2"),
-        ("pointers: evaluation paystub L07", "en-l07-3"),
-        ("pointers: evaluation paystub L10", "en-l10-1"),
-    ]
-
-    /// The ids a pointer answer gives for a field.
-    static func answeredIds(_ value: JSON?) -> [String] {
-        switch value {
-        case .string(let s)?: s.range(of: #"^[NDW][0-9]+$"#, options: .regularExpression) != nil ? [s] : []
-        case .array(let items)?: items.flatMap { answeredIds($0) }
-        case .object(let o)?: o.entries.flatMap { answeredIds($0.value) }
-        default: []
-        }
-    }
-
-    /// "device-check-2026-11-17T1012-silhouette0-ios265.json": UTC date and time, app and platform.
-    static func fileName(date: String, browser: String, platform: String) -> String {
-        func slug(_ s: String) -> String { s.lowercased().filter { $0.isLetter || $0.isNumber }.filter(\.isASCII) }
-        let parts = browser.split(separator: " ")
-        let name = parts.first.map(String.init) ?? "app"
-        let major = parts.dropFirst().first.map { String($0.split(separator: ".").first ?? "") } ?? ""
-        var stamp = String(date.prefix(10))
-        if let t = date.range(of: #"T(\d{2}):(\d{2})"#, options: .regularExpression) {
-            stamp += "T" + date[t].dropFirst().replacingOccurrences(of: ":", with: "")
-        }
-        return "device-check-\(stamp)-\(slug(name))\(major)-\(slug(platform)).json"
-    }
-
-    /// Whether a parsed JSON value is a run file this screen can show (versions 1 to 3).
-    static func isRunFile(_ json: JSON) -> Bool {
-        json["kind"]?.stringValue == kind && json["cases"]?.arrayValue != nil && json["date"]?.stringValue != nil
-            && [1, 2, 3].contains(Int(json["version"]?.numberValue ?? 0))
-    }
-
-    /// Where a case was finally answered, in a file of any version.
-    static func finalRan(_ c: JSON, version: Int) -> String {
-        version >= 3 ? (c["ran"]?.stringValue ?? "not-run") : (c["final"]?["ran"]?.stringValue ?? c["ran"]?.stringValue ?? "not-run")
-    }
-
-    struct Summary {
-        var total = 0, onDevice = 0, afterDevice = 0, inCloud = 0, notRun = 0
-        var readings = 0, incomeRight = 0, incomeNotFound = 0, incomeWrong = 0
-        var wrongReachedPerson: Int?
-        var deductionsNotRead = 0
-        var repetitions = 1
-    }
-
-    static func summarize(_ file: JSON) -> Summary {
-        let version = Int(file["version"]?.numberValue ?? 3)
-        let cases = file["cases"]?.arrayValue ?? []
-        var s = Summary()
-        s.total = cases.count
-        s.repetitions = Int(file["repetitions"]?.numberValue ?? 1)
-        for c in cases {
-            let ran = finalRan(c, version: version)
-            let after = c["final"]?["retried"]?.boolValue == true && ran == "IN_CLOUD"
-            if ran == "ON_DEVICE" { s.onDevice += 1 } else if after { s.afterDevice += 1 } else if ran == "IN_CLOUD" { s.inCloud += 1 } else { s.notRun += 1 }
-            if c["final"]?["deductionsNotRead"]?.boolValue == true { s.deductionsNotRead += 1 }
-            guard c["task"]?.stringValue == "document.pointer.extract" else { continue }
-            s.readings += 1
-            if let income = c["final"]?["incomeInputs"] {
-                let notFound = income["notFound"]?.arrayValue?.count ?? 0, wrong = income["wrong"]?.arrayValue?.count ?? 0
-                if wrong > 0 { s.incomeWrong += 1 } else if notFound > 0 { s.incomeNotFound += 1 } else { s.incomeRight += 1 }
-            }
-            if let wrong = c["final"]?["wrongFields"]?.arrayValue {
-                s.wrongReachedPerson = (s.wrongReachedPerson ?? 0) + (wrong.isEmpty ? 0 : 1)
-            }
-        }
-        return s
-    }
-}
 
 /// A live run of the check on this iPhone.
 @MainActor
@@ -102,7 +21,10 @@ final class DeviceCheckRun {
     private(set) var current = 0
     private(set) var total = 0
     private(set) var file: JSON?
+    /// Where the finished run was saved in the app's Documents folder (visible in the Files app).
+    private(set) var savedURL: URL?
     @ObservationIgnored private var started = Date()
+    @ObservationIgnored private var availabilityBefore = DeviceAvailability.unavailable
 
     private let model: AppModel
     init(model: AppModel) { self.model = model }
@@ -116,14 +38,45 @@ final class DeviceCheckRun {
         return f.string(from: date)
     }
 
-    /// The device and system, as the run file names them.
-    static var environment: (browser: String, platform: String, userAgent: String) {
+    /// The Firebase Apple SDK the app is built with (pinned in project.yml).
+    static let sdkVersion = "12.19.3"
+
+    /// The device model identifier ("iPhone18,1"); on the simulator, the simulated device's.
+    static var modelIdentifier: String {
+        if let simulated = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] { return simulated }
         var info = utsname()
         uname(&info)
-        let machine = withUnsafeBytes(of: &info.machine) { String(decoding: $0.prefix { $0 != 0 }, as: UTF8.self) }
+        return withUnsafeBytes(of: &info.machine) { String(decoding: $0.prefix { $0 != 0 }, as: UTF8.self) }
+    }
+
+    static var appVersion: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
+        return "\(version) (\(build))"
+    }
+
+    /// The device and system, as the run file names them.
+    static var environment: (browser: String, platform: String, userAgent: String) {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
         let system = "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)"
-        return ("Silhouette \(version)", system, "Silhouette/\(version) (\(machine); \(system); Firebase AI Logic 12.19.3)")
+        return ("Silhouette \(version)", system, "Silhouette/\(version) (\(modelIdentifier); \(system); Firebase AI Logic \(sdkVersion))")
+    }
+
+    /// The run file's device block: what ran the check, as far as iOS exposes it. The system names no
+    /// version of its on-device model; the SDK calls it `apple-foundation-models-system-language-model`.
+    static var deviceBlock: JSON {
+        DeviceCheck.deviceBlock(os: UIDevice.current.systemName, osVersion: UIDevice.current.systemVersion, model: modelIdentifier,
+                                onDeviceModel: "Apple Foundation Models (\(TaskRunner.onDeviceModelVersion))",
+                                sdk: "Firebase AI Logic \(sdkVersion)", appVersion: appVersion)
+    }
+
+    /// Saves a run file in the app's Documents folder (shown in the Files app under On My iPhone,
+    /// Silhouette) and returns where.
+    static func save(_ file: JSON) -> URL? {
+        guard let folder = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+        let url = folder.appendingPathComponent(DeviceCheck.fileName(file))
+        guard (try? Data((file.jsonText + "\n").utf8).write(to: url, options: .atomic)) != nil else { return nil }
+        return url
     }
 
     func run(repetitions: Int) async {
@@ -131,7 +84,9 @@ final class DeviceCheckRun {
         running = true
         cases = []
         file = nil
+        savedURL = nil
         started = Date()
+        availabilityBefore = model.port.deviceAvailability()
         let jobs = jobs(repetitions: repetitions)
         total = jobs.count
         for (i, job) in jobs.enumerated() {
@@ -139,26 +94,20 @@ final class DeviceCheckRun {
             cases.append(await job())
         }
         let env = Self.environment
-        var f = JSONObject()
-        f["kind"] = .string(DeviceCheck.kind)
-        f["version"] = .number(Double(DeviceCheck.version))
-        f["date"] = .string(Self.iso(started))
-        f["browser"] = .string(env.browser)
-        f["platform"] = .string(env.platform)
-        f["userAgent"] = .string(env.userAgent)
-        f["availability"] = .object(JSONObject([("systemLanguageModel", .string(model.port.deviceAvailability().rawValue))]))
-        f["jurisdiction"] = .string(bundle.packInfo.jurisdiction)
-        f["repetitions"] = .number(Double(repetitions))
-        f["cases"] = .array(cases)
-        file = .object(f)
+        let finished = DeviceCheck.runFile(date: Self.iso(started), browser: env.browser, platform: env.platform, userAgent: env.userAgent,
+                                           availability: [("systemLanguageModel", availabilityBefore.rawValue)],
+                                           jurisdiction: bundle.packInfo.jurisdiction, repetitions: repetitions, device: Self.deviceBlock, cases: cases)
+        file = finished
+        // Saved as soon as the run finishes, so it can be collected without the share sheet.
+        savedURL = Self.save(finished)
         running = false
     }
 
     private func jobs(repetitions: Int) -> [() async -> JSON] {
         var out: [() async -> JSON] = []
         for r in 0..<max(1, repetitions) {
-            for c in DeviceCheck.extractionCases {
-                out.append { [unowned self] in await self.extraction(id: c.id, file: c.file, repetition: repetitions > 1 ? r + 1 : nil) }
+            for c in extractionCases {
+                out.append { [unowned self] in await self.extraction(id: c.id, document: c.document, gold: c.gold, repetition: repetitions > 1 ? r + 1 : nil) }
             }
         }
         for locale in [AppLocale.en, .es] { out.append { [unowned self] in await self.explanation(locale) } }
@@ -171,6 +120,15 @@ final class DeviceCheckRun {
         return out
     }
 
+    /// The extraction cases of shared/fixtures/device-check/cases.json: id, document and gold paths.
+    private var extractionCases: [(id: String, document: String, gold: String?)] {
+        (bundle.deviceCheckCases?["extraction"]?.arrayValue ?? []).compactMap { c in
+            guard let id = c["id"]?.stringValue, let document = c["document"]?.stringValue else { return nil }
+            let gold = c["gold"]?.stringValue
+            return (id, document, gold?.hasSuffix(".json") == true ? gold : nil)
+        }
+    }
+
     private func ms(_ since: Date) -> JSON { .number((Date().timeIntervalSince(since) * 1000).rounded()) }
 
     private func base(_ id: String, task: String, mode: String, repetition: Int? = nil) -> JSONObject {
@@ -180,28 +138,29 @@ final class DeviceCheckRun {
     }
 
     private func failure(_ error: Error, into o: inout JSONObject) {
-        let e = (error as? DeviceReadingFailed)?.error ?? (error as? TaskError) ?? TaskError(.unknown, "error")
+        let e = (error as? DeviceReadingFailed)?.error ?? (error as? TaskError) ?? TaskError(.unknown, String(describing: error))
         o["ran"] = .string("not-run")
         o["outputCheck"] = e.kind == .blocked ? .string("blocked") : .null
-        o["error"] = .string(String("\(e.kind.rawValue): \(e.detail)".prefix(300)))
+        // The kind, then where it stopped (an app guard or the SDK) and the error type, when known.
+        let origin = [e.origin, e.errorType].compactMap { $0 }.joined(separator: ", ")
+        o["error"] = .string(String("\(e.kind.rawValue): \(e.detail)\(origin.isEmpty ? "" : " (\(origin))")".prefix(600)))
     }
 
     // MARK: Extraction
 
-    /// The text and the expected values of an extraction case (synthetic, kept as Raw like any document).
-    private func document(_ file: String?) -> (text: Raw<String>, gold: Raw<JSON>)? {
-        guard let file else { return ReadingScore.sampleGold(bundle, sampleId: "paystub-en-01") }
-        guard let textURL = Bundle.main.url(forResource: file, withExtension: "txt"),
-              let goldURL = Bundle.main.url(forResource: "\(file).gold", withExtension: "json"),
-              let text = try? String(contentsOf: textURL, encoding: .utf8),
-              let gold = try? JSON.parse(Data(contentsOf: goldURL)) else { return nil }
+    /// The text and the expected values of an extraction case (synthetic, kept as Raw like any document):
+    /// the bundled sample with its answer key, or a check document with its gold file.
+    private func document(_ path: String, gold goldPath: String?) -> (text: Raw<String>, gold: Raw<JSON>)? {
+        guard let goldPath else { return ReadingScore.sampleGold(bundle, sampleId: "paystub-en-01") }
+        guard let text = bundle.data(path).map({ String(decoding: $0, as: UTF8.self) }),
+              let gold = bundle.data(goldPath).flatMap({ try? JSON.parse($0) }) else { return nil }
         return (Raw(text), Raw(gold))
     }
 
-    private func extraction(id: String, file: String?, repetition: Int?) async -> JSON {
+    private func extraction(id: String, document path: String, gold goldPath: String?, repetition: Int?) async -> JSON {
         var o = base(id, task: "document.pointer.extract", mode: "PREFER_ON_DEVICE", repetition: repetition)
         let started = Date()
-        guard let doc = document(file), let allowlist = try? bundle.allowlist(for: .en) else {
+        guard let doc = document(path, gold: goldPath), let allowlist = try? bundle.allowlist(for: .en) else {
             o["ran"] = .string("not-run"); o["latencyMs"] = .null; o["outputCheck"] = .null; o["note"] = .string("the case could not be loaded")
             return .object(o)
         }
@@ -219,7 +178,7 @@ final class DeviceCheckRun {
         }
         let inParts = template.id == "pointer-extract.v5" && version >= 5
             ? ReadingInParts(template: template, parts: bundle.prompts.deviceParts, schema: schema, skeleton: silhouette.skeleton,
-                             map: silhouette.map, jurisdiction: bundle.packInfo.jurisdiction)
+                             map: silhouette.map, jurisdiction: bundle.packInfo.jurisdiction, language: "en")
             : nil
 
         // Everything the device answered, including deductions then left out as not read.
@@ -233,7 +192,7 @@ final class DeviceCheckRun {
         func diagnose(_ attempt: DeviceAttempt) -> JSON {
             let answer = deviceAnswer(attempt)
             let statuses = answer.map(statusesOf) ?? noAnswer
-            let core = ReadingScore.score(statuses, only: coreFields)
+            let core = ReadingScore.score(statuses, gold: gold, only: coreFields)
             let deductionsAsked = attempt.passes.contains { $0.part == .deductions }
             let deductions = deductionsAsked ? (statuses.first { $0.field == "deductions" }?.status.rawValue ?? "absent") : "not-asked"
             let corePass = attempt.passes.first
@@ -251,16 +210,7 @@ final class DeviceCheckRun {
             })
             d["core"] = .object(JSONObject([("correct", .number(Double(core.correct))), ("total", .number(Double(core.total)))]))
             d["deductions"] = .string(deductions)
-            d["passes"] = .array(attempt.passes.map { p in
-                var r = JSONObject([("part", .string(p.part.rawValue)), ("rawText", .string(String(p.text.prefix(4000)))), ("parsed", .bool(p.parsed))])
-                if let v = p.value { r["parsedValue"] = v }
-                r["problems"] = .array(p.problems.map(JSON.string))
-                if !p.marked.isEmpty { r["marked"] = .array(p.marked.map(JSON.string)) }
-                r["extraKeys"] = .array(p.extraKeys.map(JSON.string))
-                r["missingKeys"] = .array(p.missingKeys.map(JSON.string))
-                r["latencyMs"] = .number(((p.seconds ?? 0) * 1000).rounded())
-                return .object(r)
-            })
+            d["passes"] = .array(attempt.passes.map(DeviceCheck.passRecord))
             return .object(d)
         }
         func fields(_ s: (correct: Int, total: Int)) -> JSON {
@@ -269,11 +219,9 @@ final class DeviceCheckRun {
         do {
             let outcome = try await model.runner.extractPointers(request, inParts: inParts)
             let finalStatuses = statusesOf(outcome.pointers)
-            let finalScore = ReadingScore.score(finalStatuses)
-            let firstScore = outcome.attempt.map { a in deviceAnswer(a).map { ReadingScore.score(statusesOf($0)) } ?? (0, finalScore.total) } ?? finalScore
-            let byField = Dictionary(finalStatuses.map { ($0.field, $0.status) }, uniquingKeysWith: { a, _ in a })
-            let inputs = DeviceCheck.incomeInputs
-            func of(_ want: [ReadingScore.Status?]) -> JSON { .array(inputs.filter { want.contains(byField[$0]) }.map(JSON.string)) }
+            let finalScore = ReadingScore.score(finalStatuses, gold: gold)
+            let firstScore = outcome.attempt.map { a in deviceAnswer(a).map { ReadingScore.score(statusesOf($0), gold: gold) } ?? (0, finalScore.total) } ?? finalScore
+            let income = DeviceCheck.incomeInputs(finalStatuses)
             let ran = outcome.source == .onDevice ? "ON_DEVICE" : "IN_CLOUD"
             o["ran"] = .string(ran)
             o["latencyMs"] = ms(started)
@@ -285,9 +233,10 @@ final class DeviceCheckRun {
             final["retried"] = .bool(outcome.reason == .onDeviceFailed)
             final["deductionsNotRead"] = .bool(outcome.notRead.contains("deductions"))
             final["notRead"] = .array(outcome.notRead.map(JSON.string))
-            final["incomeInputsCorrect"] = .bool(inputs.allSatisfy { [nil, .correct, .absent].contains(byField[$0]) })
-            final["incomeInputs"] = .object(JSONObject([("right", of([.correct, .absent, nil])), ("notFound", of([.missing])), ("wrong", of([.wrong, .spurious]))]))
-            final["wrongFields"] = .array(finalStatuses.filter { $0.status == .wrong || $0.status == .spurious }.map { .string($0.field) })
+            final["incomeInputsCorrect"] = .bool(income.notFound.isEmpty && income.wrong.isEmpty)
+            final["incomeInputs"] = .object(JSONObject([("right", .array(income.right.map(JSON.string))), ("notFound", .array(income.notFound.map(JSON.string))),
+                                                        ("wrong", .array(income.wrong.map(JSON.string)))]))
+            final["wrongFields"] = .array(DeviceCheck.wrongFields(finalStatuses).map(JSON.string))
             o["final"] = .object(final)
             if let attempt = outcome.attempt { o["device"] = diagnose(attempt) }
             o["note"] = .string(outcome.reason.rawValue)
@@ -295,8 +244,8 @@ final class DeviceCheckRun {
             failure(error, into: &o)
             o["latencyMs"] = ms(started)
             if let attempt = (error as? DeviceReadingFailed)?.attempt {
-                let total = ReadingScore.score(noAnswer).total
-                let first = deviceAnswer(attempt).map { ReadingScore.score(statusesOf($0)) } ?? (0, total)
+                let total = ReadingScore.score(noAnswer, gold: gold).total
+                let first = deviceAnswer(attempt).map { ReadingScore.score(statusesOf($0), gold: gold) } ?? (0, total)
                 o["first"] = .object(JSONObject([("ran", .string("ON_DEVICE")), ("fields", fields(first))]))
                 o["device"] = diagnose(attempt)
             }
@@ -351,7 +300,7 @@ final class DeviceCheckRun {
         do {
             let steps = try QuickCheck.steps(pack: bundle.packInfo, bands: bundle.bands)
             var session = QuickCheckSession(steps: steps)
-            for (id, value) in PreparedHousehold.answers where session.step(id) != nil { _ = session.answer(id, with: value) }
+            for (id, value) in bundle.judgesHousehold?.answers ?? [] where session.step(id) != nil { _ = session.answer(id, with: value) }
             let verdict = try session.verdicts(pack: bundle.pack, bands: bundle.bands).first { $0.programId == firstProgram }?.verdict ?? .depends
             let personal = AnswerInputs.personalResult(bundle, programId: firstProgram, verdict: verdict,
                                                        reasons: session.reasons(pack: bundle.pack, bands: bundle.bands, programId: firstProgram), locale: .en)
@@ -366,13 +315,15 @@ final class DeviceCheckRun {
         return .object(o)
     }
 
-    /// Reading a photo needs an on-device model that takes images; this app does not read photos yet.
+    /// Reading a photo needs an on-device model that takes images. On iPhone the on-device model takes
+    /// text only, so the case is not available on this platform: kept in the file (`not-run`, with its
+    /// note), and left out of the figures the screen shows.
     private func photo() -> JSON {
         var o = base("photo of the sample (en)", task: "document.photo.read", mode: "ONLY_ON_DEVICE")
         o["ran"] = .string("not-run")
         o["latencyMs"] = .null
         o["outputCheck"] = .null
-        o["note"] = .string("skipped: this app does not read photos (the on-device model is used for text only)")
+        o["note"] = .string("not available on this platform: the on-device model on iPhone takes text only, so photos are not read")
         return .object(o)
     }
 }

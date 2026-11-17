@@ -11,7 +11,7 @@ struct ConformanceTests {
     /// Files this suite knows how to run. A new file in the folder fails the suite until a runner
     /// is added.
     static let knownFiles: Set<String> = [
-        "device-reading.json", "evaluator.json", "generalize.json", "model-schema.json", "output-check.json", "rehydrate.json", "silhouette-verdict.json",
+        "device-check.json", "device-reading.json", "evaluator.json", "judges-household.json", "generalize.json", "model-schema.json", "output-check.json", "rehydrate.json", "silhouette-verdict.json",
         "skeleton.json", "validate.json", "verdict.json",
     ]
 
@@ -20,8 +20,10 @@ struct ConformanceTests {
         let files = Set(try Shared.files(in: Shared.conformanceDir))
         #expect(files.subtracting(Self.knownFiles).isEmpty, "no runner for: \(files.subtracting(Self.knownFiles).sorted())")
         #expect(Self.knownFiles.subtracting(files).isEmpty, "missing fixture files: \(Self.knownFiles.subtracting(files).sorted())")
-        // device-reading.json has sections instead of `cases` (DeviceReadingTests runs them).
-        for file in files where file != "device-reading.json" { #expect(try !Shared.cases(file).isEmpty, "\(file) has no cases") }
+        // These have sections instead of `cases`: device-reading.json (DeviceReadingTests), device-check.json
+        // (SilhouetteKit's DeviceCheckConformanceTests: scoring needs the Kit) and judges-household.json (below).
+        let sectioned: Set<String> = ["device-reading.json", "device-check.json", "judges-household.json"]
+        for file in files where !sectioned.contains(file) { #expect(try !Shared.cases(file).isEmpty, "\(file) has no cases") }
         #expect(DeviceReadingTests.caseCount > 0)
     }
 
@@ -153,6 +155,30 @@ struct ConformanceTests {
         }
         let result = try RulesEngine.verdicts(pack: pack, bands: bands, answers: Raw(answers))
         expectIdentical(.array(result.map(\.json)), k["expected"], k.id)
+    }
+
+    // MARK: judges-household.json
+
+    @Test("judges-household.json: the results before and after the sample paystub, and its yearly income")
+    func judgesHousehold() throws {
+        let file = try Shared.conformance("judges-household.json")
+        let pack = try RulePack(json: Shared.json(try #require(file["pack"]?.stringValue)))
+        let bands = try Bands(json: Shared.json(try #require(file["bands"]?.stringValue)))
+        for stage in ["before", "after"] {
+            let answers = try #require(file[stage]?["engineAnswers"])
+            let result = try RulesEngine.verdicts(pack: pack, bands: bands, answers: Raw(answers))
+            expectIdentical(.array(result.map(\.json)), file[stage]?["expected"], "judges-household \(stage)")
+        }
+        let values = try #require(file["paystub"]?["values"])
+        let validation = try Validator.validatePaystubs(Raw([values]), jurisdiction: pack.jurisdiction)
+        #expect(validation.annualization.map { Double($0.annualIncome) } == file["paystub"]?["annualIncome"]?.numberValue)
+        // The household file gives the "before" answers: the income band as incomeBand, every other answer by question id.
+        let household = try Shared.json(try #require(file["household"]?.stringValue))
+        var engine = JSONObject()
+        for (id, value) in household["answers"]?.objectValue?.entries ?? [] {
+            if id == "income" { engine["incomeBand"] = value["bandId"] ?? .null } else { engine[id] = value }
+        }
+        expectIdentical(.object(engine), file["before"]?["engineAnswers"], "judges-household engine answers")
     }
 
     // MARK: validate.json

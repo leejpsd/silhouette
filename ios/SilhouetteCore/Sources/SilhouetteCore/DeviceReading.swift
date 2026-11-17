@@ -324,6 +324,62 @@ public enum DeviceReading {
         return amounts.count == 1
     }
 
+    // MARK: - Shown only when confirmed (section 5.1)
+
+    /// Labels that mark net pay, per document language (words the Skeletonizer keeps visible).
+    public static let netPayLabels: [String: [String]] = ["en": ["net", "take home"], "es": ["neto", "neta", "líquido", "liquido"],
+                                                          "ko": ["실수령", "실지급", "차인지급"]]
+    private static let asciiLabel = try! NSRegularExpression(pattern: "^[a-z ]+\\z")
+
+    /// Whether the placeholder sits on a line whose visible text has a net-pay label.
+    static func netLabelled(_ skeleton: String, _ id: String, language: String) -> Bool {
+        guard let line = skeleton.components(separatedBy: "\n").first(where: { $0.contains("\u{27E6}\(id)\u{27E7}") }) else { return false }
+        let visible = placeholder.stringByReplacingMatches(in: line, range: NSRange(location: 0, length: (line as NSString).length), withTemplate: " ")
+        let text = visible.lowercased()
+        let labels = (netPayLabels[language] ?? []) + (language == "en" ? [] : netPayLabels["en"]!)
+        return labels.contains { label in
+            if asciiLabel.firstMatch(in: label, range: NSRange(location: 0, length: (label as NSString).length)) != nil {
+                let word = try! NSRegularExpression(pattern: "(^|[^a-z])" + NSRegularExpression.escapedPattern(for: label) + "([^a-z]|\\z)")
+                return word.firstMatch(in: text, range: NSRange(location: 0, length: (text as NSString).length)) != nil
+            }
+            return text.contains(label)
+        }
+    }
+
+    /// Fields of a reading about to be used that no check confirms, and why (section 5.1).
+    public static func unconfirmedFields(schema: JSON, pointers: JSON, skeleton: String, map: PlaceholderMap, jurisdiction: String,
+                                         language: String) -> (problems: [String], fields: [String]) {
+        let v = values(schema, pointers, map)
+        var problems: [String] = []
+        if pointers["hoursWorked"] != nil || pointers["hourlyRate"] != nil {
+            var confirmed = false
+            if let h = v["hoursWorked"]?.numberValue, let r = v["hourlyRate"]?.numberValue, let g = v["grossPay"]?.numberValue {
+                confirmed = placeholderIds(skeleton)["N"]!.contains { id in
+                    let text = map[id] ?? ""
+                    guard isMoneyWithCents(text), let m = Rehydrator.parseNumber(text) else { return false }
+                    return m <= g + 0.005 && abs(r * h - m) <= 0.01 + 1e-9
+                }
+            }
+            if !confirmed { problems += ["hoursWorked:unconfirmed", "hourlyRate:unconfirmed"] }
+        }
+        if let net = pointers["netPay"]?.stringValue {
+            let byDeductions = pointers["deductions"]?.arrayValue != nil
+                && deductionsProblems(schema: schema, pointers: pointers, map: map, jurisdiction: jurisdiction).isEmpty
+            if !byDeductions && !netLabelled(skeleton, net, language: language) { problems.append("netPay:unconfirmed") }
+        }
+        if let payText = v["payDate"]?.stringValue, let pay = Validator.parseDate(payText, jurisdiction: jurisdiction) {
+            let start = v["periodStart"]?.stringValue.flatMap { Validator.parseDate($0, jurisdiction: jurisdiction) }
+            let end = v["periodEnd"]?.stringValue.flatMap { Validator.parseDate($0, jurisdiction: jurisdiction) }
+            if (start.map { pay.dayNumber <= $0.dayNumber } ?? false) || (end.map { pay.dayNumber < $0.dayNumber } ?? false) {
+                problems.append("payDate:before-period-end")
+            }
+        }
+        let kept = problems.filter { pointers[String($0.split(separator: ":")[0])] != nil }
+        var fields: [String] = []
+        for p in kept { let f = String(p.split(separator: ":")[0]); if !fields.contains(f) { fields.append(f) } }
+        return (kept, fields)
+    }
+
     // MARK: - 3. The reading, part by part
 
     /// One answer of the device: the model's text, parsed and limited to the part's fields.
@@ -341,6 +397,8 @@ public enum DeviceReading {
         public var text: String = ""
         /// Seconds the part took on the device, when known.
         public var seconds: Double?
+        /// Why the call gave no answer, when it gave none.
+        public var failure: Failure?
     }
 
     public static func readPass(schema: JSON, part: Part, text: String) -> Pass {
@@ -382,17 +440,34 @@ public enum DeviceReading {
         public let text: String?
         public let error: String?
         public let seconds: Double?
+        /// Why the call gave no answer: where it stopped, the error type and its message.
+        public let failure: Failure?
 
-        public init(text: String?, error: String? = nil, seconds: Double? = nil) {
+        public init(text: String?, error: String? = nil, seconds: Double? = nil, failure: Failure? = nil) {
             self.text = text
             self.error = error
             self.seconds = seconds
+            self.failure = failure
+        }
+    }
+
+    /// A call that ended without an answer, as recorded: the app guard or `sdk`, the error type, and
+    /// the error's message (never document values).
+    public struct Failure: Sendable, Equatable {
+        public let origin: String
+        public let type: String
+        public let message: String
+
+        public init(origin: String, type: String, message: String) {
+            self.origin = origin
+            self.type = type
+            self.message = message
         }
     }
 
     /// The reading of section 3. `ask` returns the device's answer for a part; a call that failed is a
     /// pass with the problem `error:{kind}`. An error thrown by `ask` (cancellation) ends the reading.
-    public static func read(schema: JSON, skeleton: String, map rawMap: Raw<PlaceholderMap>, jurisdiction: String,
+    public static func read(schema: JSON, skeleton: String, map rawMap: Raw<PlaceholderMap>, jurisdiction: String, language: String = "en",
                             ask: (Part) async throws -> PartAnswer) async throws -> Reading {
         let map = rawMap.value
         func pass(_ part: Part) async throws -> Pass {
@@ -404,6 +479,7 @@ public enum DeviceReading {
                 p = Pass(part: part, parsed: false, value: nil, problems: ["error:\(answer.error ?? "unknown")"], extraKeys: [], missingKeys: [])
             }
             p.seconds = answer.seconds
+            p.failure = answer.failure
             return p
         }
         func checkCore(_ v: JSON) -> [String] { coreProblems(schema: schema, pointers: v, skeleton: skeleton, map: map, jurisdiction: jurisdiction) }
@@ -450,14 +526,20 @@ public enum DeviceReading {
         }
         let deductionsNotRead = deductions.pass.value == nil || !deductions.pass.problems.isEmpty
         if deductionsNotRead { notRead.append("deductions") }
-        return Reading(asked: passes.map(\.part), passes: passes,
-                       outcome: .onDevice(pointers: deductionsNotRead ? kept : deductions.merged, notRead: notRead))
+        // Shown only when confirmed (section 5.1): values that feed no result and that no check confirms are
+        // left out, whatever the gross part repaired.
+        let used = deductionsNotRead ? kept : deductions.merged
+        let unconfirmed = unconfirmedFields(schema: schema, pointers: used, skeleton: skeleton, map: map, jurisdiction: jurisdiction, language: language)
+        notRead += unconfirmed.fields
+        passes[0].marked += unconfirmed.problems
+        let value = JSON.object(JSONObject((used.objectValue?.entries ?? []).filter { !unconfirmed.fields.contains($0.key) }.map { ($0.key, $0.value) }))
+        return Reading(asked: passes.map(\.part), passes: passes, outcome: .onDevice(pointers: value, notRead: notRead))
     }
 
     /// The same reading with the answers given as text per part (tests and recorded runs).
-    public static func read(schema: JSON, skeleton: String, map: Raw<PlaceholderMap>, jurisdiction: String,
+    public static func read(schema: JSON, skeleton: String, map: Raw<PlaceholderMap>, jurisdiction: String, language: String = "en",
                             answers: [Part: String]) async throws -> Reading {
-        try await read(schema: schema, skeleton: skeleton, map: map, jurisdiction: jurisdiction) { part in
+        try await read(schema: schema, skeleton: skeleton, map: map, jurisdiction: jurisdiction, language: language) { part in
             guard let text = answers[part] else { throw MissingAnswer(part: part) }
             return PartAnswer(text: text)
         }
