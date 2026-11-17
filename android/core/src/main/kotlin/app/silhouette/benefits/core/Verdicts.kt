@@ -35,12 +35,28 @@ public data class Question(
     val sensitive: Boolean,
 )
 
-/** The displayable part of a program: name, the period its figures apply to, and caveat copy keys. */
+/** An official source of a program: an https link, its title and the date a person checked it (null until then). */
+public data class ProgramSource(val url: String, val title: String, val checkedAt: String?)
+
+/**
+ * The displayable part of a program: name, the period its figures apply to, caveat copy keys, and
+ * the official information (https links only; anything else in the pack is not shown).
+ */
 public data class ProgramInfo(
     val id: String,
     val name: String,
     val period: String?,
     val caveats: List<String>,
+    val applyUrl: String? = null,
+    val docsRequired: List<String> = emptyList(),
+    val sources: List<ProgramSource> = emptyList(),
+    /** Criterion ids in pack order. */
+    val criterionIds: List<String> = emptyList(),
+    /**
+     * The answers the criteria read (`requires`), `annualIncome` first, then in pack question order
+     * (rulepacks/SPEC.md section 2.1).
+     */
+    val uses: List<String> = emptyList(),
 )
 
 /**
@@ -52,6 +68,14 @@ public class RulePack private constructor(
     public val jurisdiction: String,
     /** The sign-off date, or null while the pack is not verified. */
     public val verifiedOn: String?,
+    /** `draft` for a pack whose numbers were read from official sources but are not all confirmed by a person. */
+    public val status: String?,
+    /** When a draft pack's numbers were read from their sources (YYYY-MM-DD). */
+    public val sourcesReadOn: String?,
+    /** ISO 4217 code; amounts, limits and income ranges are money when present. */
+    public val currency: String?,
+    /** BCP 47 tag of the jurisdiction's number conventions (money is written this way in every language). */
+    public val numberFormat: String?,
     internal val constants: Any?,
     internal val hasConstants: Boolean,
     public val questions: List<Question>,
@@ -61,6 +85,9 @@ public class RulePack private constructor(
     internal val programs: List<ProgramRule>,
 ) {
     public val questionIds: List<String> get() = questions.map { it.id }
+
+    /** A draft pack (shared/rulepacks/SPEC.md section 2): it shows its notice on every screen. */
+    public val isDraft: Boolean get() = status == "draft"
 
     public companion object {
         /** Reads a rule pack. Throws IllegalArgumentException when its structure is malformed. */
@@ -110,22 +137,40 @@ public class RulePack private constructor(
                 json = root,
                 jurisdiction = root["jurisdiction"].text("jurisdiction"),
                 verifiedOn = root["verifiedOn"].textOrNull("verifiedOn"),
+                status = root["status"].textOrNull("status"),
+                sourcesReadOn = root["sourcesReadOn"].textOrNull("sourcesReadOn"),
+                currency = root["currency"].textOrNull("currency"),
+                numberFormat = root["numberFormat"].textOrNull("numberFormat"),
                 // Required since v1.3; use {} when a pack has none.
                 constants = (root["constants"] as? JsonObject ?: malformed("constants")).toValue(),
                 hasConstants = true,
                 questions = questions,
                 questionOrder = if (root.containsKey("questionOrder")) root["questionOrder"].texts("questionOrder") else null,
                 programInfo = programJson.map { p ->
+                    val criteria = p["criteria"].objects("criteria")
+                    val required = criteria.flatMap { it["requires"].texts("criteria.requires") }.toSet()
                     ProgramInfo(
                         id = p["id"].text("programs.id"),
                         name = p["name"].text("programs.name"),
                         period = p["period"].textOrNull("programs.period"),
                         caveats = p["caveats"].texts("programs.caveats"),
+                        applyUrl = (p["applyUrl"] as? JsonPrimitive)?.takeIf { it.isString }?.content?.takeIf(::isHttps),
+                        docsRequired = (p["docsRequired"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.takeIf { x -> x.isString }?.content }.orEmpty(),
+                        sources = (p["sources"] as? JsonArray).orEmpty().mapNotNull { s ->
+                            val o = s as? JsonObject ?: return@mapNotNull null
+                            val url = (o["url"] as? JsonPrimitive)?.takeIf { it.isString }?.content?.takeIf(::isHttps) ?: return@mapNotNull null
+                            val title = (o["title"] as? JsonPrimitive)?.takeIf { it.isString }?.content ?: url
+                            ProgramSource(url, title, (o["checkedAt"] as? JsonPrimitive)?.takeIf { it.isString }?.content)
+                        },
+                        criterionIds = criteria.map { it["id"].text("criteria.id") },
+                        uses = (listOf("annualIncome") + questions.map { it.id }).filter { it in required },
                     )
                 },
                 programs = programs,
             )
         }
+
+        private fun isHttps(url: String): Boolean = url.startsWith("https://")
 
         private fun malformed(what: String): Nothing = throw IllegalArgumentException("malformed rule pack: $what")
     }

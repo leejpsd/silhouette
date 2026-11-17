@@ -22,6 +22,10 @@ import app.silhouette.benefits.document.PhotoSource
 import app.silhouette.benefits.document.ReadingPlace
 import app.silhouette.benefits.document.errorKey
 import app.silhouette.benefits.ai.ExtractorUnavailable
+import app.silhouette.benefits.ai.ExtractOptions
+import app.silhouette.benefits.ai.OnDeviceUnreliable
+import app.silhouette.benefits.ai.DeviceReadingUnavailable
+import kotlinx.coroutines.CancellationException
 import app.silhouette.benefits.ai.PointerExtraction
 import app.silhouette.benefits.ai.PointerRequest
 import app.silhouette.benefits.ai.PointerResult
@@ -45,6 +49,7 @@ import app.silhouette.benefits.document.ReviewState
 import app.silhouette.benefits.document.RowStatus
 import app.silhouette.benefits.document.SourceKind
 import app.silhouette.benefits.document.initialReview
+import app.silhouette.benefits.quickcheck.preparedAnswers
 import app.silhouette.benefits.document.parseReviewNumber
 import app.silhouette.benefits.document.toValues
 import app.silhouette.benefits.data.AnswerRepository
@@ -84,6 +89,12 @@ sealed interface Route {
 
     /** Review of the found values, checks and the yearly income. */
     data object Review : Route
+
+    /** "For judges: try it in two minutes". */
+    data object Judges : Route
+
+    /** The on-device check. */
+    data object DeviceCheck : Route
 }
 
 /**
@@ -108,6 +119,8 @@ class AppController(
     val textTasks: TextTasks? = null,
     val personalTasks: PersonalTasks? = null,
     private val explainSettings: ExplainSettings? = null,
+    /** The on-device check's page, or null where it is not built (tests). */
+    val deviceCheck: app.silhouette.benefits.devicecheck.DeviceCheckController? = null,
 ) {
     val programs: ProgramContext = ProgramContext(content)
 
@@ -142,6 +155,14 @@ class AppController(
     var notice: String? by mutableStateOf(null)
         private set
 
+    /** Incremented to open the record of what left (the two-minute path's last step). */
+    var recordOpenRequests: Int by mutableStateOf(0)
+        private set
+
+    fun openRecord() {
+        recordOpenRequests++
+    }
+
     var document: DocumentSession by mutableStateOf(DocumentSession(language = strings.language.tag))
         private set
 
@@ -162,7 +183,7 @@ class AppController(
             val stored = withContext(io) { runCatching { repository.load() }.getOrNull() }
             val ledger = withContext(io) { runCatching { repository.loadLedger() }.getOrNull() }
             answers = decodeAnswers(steps, stored)
-            outbound.restore(OutboundLog.decode(ledger))
+            outbound.restoreState(ledger)
             loaded = true
         }
     }
@@ -188,6 +209,23 @@ class AppController(
         if (!started) return navigate(Route.Question(steps.first().id))
         val open = firstOpenStep(steps, answers)
         navigate(if (open < steps.size) Route.Question(steps[open].id) else Route.Results)
+    }
+
+    /**
+     * The two-minute path, step 1: the Quick Check filled with the judges' prepared household
+     * (invented), then its results.
+     */
+    fun fillPreparedHousehold() {
+        val household = content.judgesHousehold ?: return
+        answers = preparedAnswers(steps, household["answers"] as JsonObject)
+        persist()
+        navigate(Route.Results)
+    }
+
+    /** The two-minute path, step 2: the sample paystub's silhouette. */
+    fun openSamplePaystub() {
+        val sample = content.samples.firstOrNull { it.id == "paystub-en-01" } ?: return
+        acceptSample(sample)
     }
 
     /** "Start over": forget the answers and ask the first question. */
@@ -228,6 +266,7 @@ class AppController(
             Route.Document -> navigate(if (started) Route.Results else Route.Start)
             Route.Preview -> navigate(Route.Document)
             Route.Review -> navigate(if (document.skeleton != null) Route.Preview else Route.Document)
+            Route.Judges, Route.DeviceCheck -> navigate(Route.Start)
         }
         return true
     }
@@ -298,27 +337,63 @@ class AppController(
     val canExtract: Boolean
         get() = document.skeleton?.let { extraction.extractorFor(it.skeleton, document.language) != null } == true
 
-    /** Hands the silhouette to the pointer extractor, then opens the review. */
-    fun send() {
+    /**
+     * Hands the silhouette to the pointer extractor, then opens the review. With [deviceOnly] (the
+     * person chose to keep everything on this device) the device reads it and nothing is ever sent.
+     */
+    fun send(deviceOnly: Boolean = false) {
         val skeleton = document.skeleton ?: return
-        document = document.copy(sending = true, error = null)
+        document = document.copy(sending = true, error = null, stage = null)
         scope.launch {
             try {
-                val result = extraction.extract(PointerRequest(skeleton.skeleton, DocType.PAYSTUB, document.language))
+                val options = ExtractOptions(
+                    deviceOnly = deviceOnly,
+                    document = skeleton,
+                    jurisdiction = content.pack.jurisdiction,
+                    onStage = { stage -> document = document.copy(stage = stage) },
+                )
+                val result = extraction.extract(PointerRequest(skeleton.skeleton, DocType.PAYSTUB, document.language), options)
                 val schema = content.pointerSchemas.getValue(DocType.PAYSTUB.schemaFile)
                 val fields = buildReview(schema, result.pointers, skeleton)
-                document = document.copy(sending = false, extraction = Extraction(fields, result.source(), result.reason))
-                review = initialReview(schema, fields)
+                document = document.copy(
+                    sending = false,
+                    stage = null,
+                    extraction = Extraction(fields, result.source(), result.reason, result.notRead, result.noDeviceModel),
+                )
+                review = initialReview(schema, fields, result.notRead)
+                typingAnyway = false
                 navigate(Route.Review)
+            } catch (e: CancellationException) {
+                throw e
             } catch (_: ExtractorUnavailable) {
-                document = document.copy(sending = false, error = "preview.noExtractor")
+                document = document.copy(sending = false, stage = null, error = "preview.noExtractor")
+            } catch (_: OnDeviceUnreliable) {
+                // Nothing was filled in and nothing was sent: the person can send the silhouette or type the numbers.
+                document = document.copy(sending = false, stage = null, error = "error.on-device-unreliable")
+            } catch (_: DeviceReadingUnavailable) {
+                document = document.copy(sending = false, stage = null)
+                typeInstead()
+            } catch (e: app.silhouette.benefits.ai.CloudRetryFailed) {
+                document = document.copy(sending = false, stage = null, error = errorKey(e.failure))
             } catch (e: ModelFailure) {
-                document = document.copy(sending = false, error = errorKey(e))
+                document = document.copy(sending = false, stage = null, error = errorKey(e))
             } catch (_: Exception) {
-                document = document.copy(sending = false, error = "error.unknown")
+                document = document.copy(sending = false, stage = null, error = "error.unknown")
             }
         }
     }
+
+    /**
+     * "Keep everything on this device": read the silhouette with the device's own model when there
+     * is one (nothing is sent either way); otherwise type the numbers.
+     */
+    fun keepOnDevice() {
+        if (canReadOnDevice) send(deviceOnly = true) else typeInstead()
+    }
+
+    /** Whether this silhouette can be read on this device (a ready model, a language it is validated for). */
+    val canReadOnDevice: Boolean
+        get() = readingPlace == ReadingPlace.DEVICE_FIRST
 
     private fun PointerResult.source() = inferenceSource
 
@@ -357,6 +432,14 @@ class AppController(
     fun downloadDeviceModel() {
         val model = deviceModel ?: return
         scope.launch { model.download() }
+    }
+
+    /** The person chose to type the values although the device found nothing (not a paystub). */
+    var typingAnyway: Boolean by mutableStateOf(false)
+        private set
+
+    fun typeAnyway() {
+        typingAnyway = true
     }
 
     /** "Type the numbers yourself": an empty review, nothing sent. */
@@ -438,9 +521,13 @@ class AppController(
         answers = QuickCheckAnswers()
         document = DocumentSession(language = strings.language.tag)
         review = ReviewState()
-        outbound.clear()
+        outbound.clear(clearedAt = System.currentTimeMillis())
         scope.launch {
-            withContext(io) { repository.deleteAll() }
+            withContext(io) {
+                repository.deleteAll()
+                // The record keeps only the date it was deleted, so the bar can say so.
+                runCatching { repository.saveLedger(outbound.encodeState().toString()) }
+            }
             languageStore.clear()
             strings = strings.withLanguage(languageStore.current())
             document = DocumentSession(language = strings.language.tag)

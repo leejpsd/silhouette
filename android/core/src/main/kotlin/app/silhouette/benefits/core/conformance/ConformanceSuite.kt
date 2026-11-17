@@ -32,6 +32,7 @@ import app.silhouette.benefits.core.generalizedProfileFromJson
 import app.silhouette.benefits.core.silhouetteVerdicts
 import app.silhouette.benefits.core.OutputChecks
 import app.silhouette.benefits.core.OutputScope
+import app.silhouette.benefits.core.Verdict
 import app.silhouette.benefits.core.modelTextIsBlocked
 import app.silhouette.benefits.core.skeletonize
 import app.silhouette.benefits.core.toValue
@@ -85,6 +86,9 @@ public object ConformanceSuite {
         "model-schema.json" to { c -> modelSchemaCases(c) },
         "silhouette-verdict.json" to { c -> silhouetteVerdictCases(c) },
         "output-check.json" to { c -> outputCheckCases(c) },
+        "device-reading.json" to { c -> DeviceReadingCases.cases(c.source, c.file, c.fixture) },
+        "device-check.json" to { c -> DeviceCheckCases.deviceCheck(c.source, c.file, c.fixture) },
+        "judges-household.json" to { c -> DeviceCheckCases.judgesHousehold(c.source, c.file, c.fixture) },
     )
 
     /** The conformance files this suite knows how to run. */
@@ -255,7 +259,8 @@ public object ConformanceSuite {
         return nonEmpty(c, c.fixture.cases().map { k ->
             ConformanceCase(c.file, k.str("id")) {
                 val scope = OutputScope.entries.find { it.wire == k.str("scope") } ?: fail("unknown scope")
-                val blocked = modelTextIsBlocked(k.str("text"), k.str("locale"), scope, checks)
+                val verdict = (k["verdict"] as? JsonPrimitive)?.content?.let { v -> Verdict.entries.find { it.wire == v } ?: fail("unknown verdict $v") }
+                val blocked = modelTextIsBlocked(k.str("text"), k.str("locale"), scope, checks, verdict)
                 equal((k["blocked"] as JsonPrimitive).content.toBoolean(), blocked, "blocked")
             }
         })

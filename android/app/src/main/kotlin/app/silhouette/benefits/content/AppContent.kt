@@ -9,6 +9,7 @@ import app.silhouette.benefits.core.Raw
 import app.silhouette.benefits.core.RulePack
 import app.silhouette.benefits.i18n.AppLanguage
 import app.silhouette.benefits.i18n.CopyTable
+import app.silhouette.benefits.i18n.MoneyFormat
 import app.silhouette.benefits.i18n.Strings
 import app.silhouette.benefits.quickcheck.Step
 import app.silhouette.benefits.quickcheck.buildSteps
@@ -51,6 +52,8 @@ class AppContent(
     val samples: List<SampleDocument>,
     /** Bundled versions of shared/prompts/pointer-extract.v{n}.md. */
     val pointerPrompts: PointerPrompts,
+    /** shared/prompts/pointer-extract-device.v1.md: the part texts of the on-device reading. */
+    val devicePartPrompts: app.silhouette.benefits.ai.DevicePartPrompts,
     /** shared/prompts/photo-read.v1.md. */
     val photoPrompt: PromptTemplate,
     /** Pointer answers of the built-in samples by sample id (shared/samples/answers.json). */
@@ -59,6 +62,10 @@ class AppContent(
     val prompts: Map<String, String>,
     /** shared/prompts/output-checks.json. */
     val outputChecks: OutputChecks,
+    /** rulepacks/{jurisdiction}/judges-household.json: the judges' prepared household, when the pack has one. */
+    val judgesHousehold: JsonObject? = null,
+    /** Reads further bundled files (the on-device check's documents and recordings). */
+    val source: ContentSource? = null,
 ) {
     /** The allowlist for a document: its language ∪ `en` (shared/skeleton/SPEC.md section 4). */
     fun allowlist(language: String): Allowlist =
@@ -67,13 +74,18 @@ class AppContent(
     /** Synthetic packs used only for tests and demos; the app shows a banner while one is active. */
     val isDemoPack: Boolean get() = pack.jurisdiction in DEMO_JURISDICTIONS
 
-    fun strings(language: AppLanguage): Strings = Strings(language, sharedCopy, packCopy)
+    fun strings(language: AppLanguage): Strings =
+        Strings(language, sharedCopy, packCopy, moneyFormat = pack.currency?.let { MoneyFormat(it, pack.numberFormat) })
+
+    /** A draft pack (shared/rulepacks/SPEC.md section 2): its notice is shown on every screen. */
+    val isDraftPack: Boolean get() = pack.isDraft
 
     companion object {
-        const val JURISDICTION: String = "zz-test"
+        /** The pack people see. `zz-test` is for tests and the conformance fixtures only. */
+        const val JURISDICTION: String = "us-ca"
 
         /** Prompt files the explanation and question tasks use (shared/prompts/). */
-        val PROMPT_FILES: List<String> = listOf("explain.v3.md", "ask.v2.md", "explain-personal.v1.md", "ask-personal.v1.md")
+        val PROMPT_FILES: List<String> = listOf("explain.v5.md", "ask.v4.md", "explain-personal.v1.md", "ask-personal.v1.md")
         val DEMO_JURISDICTIONS: Set<String> = setOf("zz-test")
 
         fun load(source: ContentSource, jurisdiction: String = JURISDICTION): AppContent {
@@ -94,6 +106,7 @@ class AppContent(
                     PointerPrompts.BUNDLED.associateWith { v -> PromptTemplate.parse("pointer-extract.v$v", required("prompts/pointer-extract.v$v.md")) },
                 ),
                 photoPrompt = PromptTemplate.parse("photo-read.v1", required("prompts/photo-read.v1.md")),
+                devicePartPrompts = app.silhouette.benefits.ai.DevicePartPrompts.parse(required("prompts/pointer-extract-device.v1.md")),
                 sampleAnswers = ((Json.parseToJsonElement(required("samples/answers.json")) as JsonObject)["samples"] as JsonObject)
                     .map { (file, v) -> file.removeSuffix(".txt") to ((v as JsonObject)["pointers"] as JsonObject) }.toMap(),
                 prompts = PROMPT_FILES.associateWith { required("prompts/$it") },
@@ -104,6 +117,8 @@ class AppContent(
                 sharedCopy = tables("copy"),
                 packCopy = tables("rulepacks/$jurisdiction/copy"),
                 tokens = DesignTokens.parse(required("design/tokens.json")),
+                judgesHousehold = source.text("rulepacks/$jurisdiction/judges-household.json")?.let { Json.parseToJsonElement(it) as JsonObject },
+                source = source,
             )
         }
 

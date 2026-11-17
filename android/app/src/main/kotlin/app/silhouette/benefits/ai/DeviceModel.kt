@@ -29,3 +29,12 @@ interface DeviceModel {
     /** Downloads the model when it is downloadable, then warms it up. */
     suspend fun download()
 }
+
+/** A build or device with no on-device model at all. */
+object NoDeviceModel : DeviceModel {
+    override val state: StateFlow<DeviceModelState> = kotlinx.coroutines.flow.MutableStateFlow(DeviceModelState.Unavailable)
+
+    override suspend fun refresh() = Unit
+
+    override suspend fun download() = Unit
+}

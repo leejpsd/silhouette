@@ -24,13 +24,22 @@ class ModelCall(
     val schema: SchemaNode?,
     val maxOutputTokens: Int,
     val fields: List<String> = listOf("document-silhouette"),
+    /**
+     * The device attempt of a `PREFER_ON_DEVICE` call: run with `ONLY_ON_DEVICE`, so the SDK cannot
+     * fall back to the cloud by itself; the app decides about the cloud (and App Check) on its own.
+     */
+    val deviceAttempt: Boolean = false,
 ) {
     init {
         require(mode != CallMode.ONLY_ON_DEVICE) { "an on-device-only task does not use ModelCall" }
+        require(!deviceAttempt || mode == CallMode.PREFER_ON_DEVICE) { "only a device-first call has a device attempt" }
     }
 
     /** The same request with another mode (the cloud retry of `onDeviceFailure`). */
     fun withMode(next: CallMode): ModelCall = ModelCall(task, next, system, user, payload, schema, maxOutputTokens, fields)
+
+    /** This device-first call's attempt on the device only. */
+    fun onDeviceAttempt(): ModelCall = ModelCall(task, mode, system, user, payload, schema, maxOutputTokens, fields, deviceAttempt = true)
 }
 
 /** A model's answer text and where it ran. */
@@ -58,15 +67,19 @@ enum class FailureKind {
 /** A failed model call, classified. [reason] is a short code for the outbound log. */
 class ModelFailure(val kind: FailureKind, val reason: String, cause: Throwable? = null) : Exception(reason, cause)
 
-/** Runs [prepare] (fetching Remote Config) once, before the first request any task makes. */
+/**
+ * Runs [prepare] (fetching Remote Config) once, after the first request that went to the cloud
+ * (shared/RECORD.md section 1): device-only work never triggers it.
+ */
 class PreparedModelPort(private val inner: ModelPort, private val prepare: suspend () -> Unit) : ModelPort {
     private var prepared = false
 
     override suspend fun generate(call: ModelCall): ModelReply {
-        if (!prepared) {
+        val reply = inner.generate(call)
+        if (!prepared && reply.source == InferenceSource.IN_CLOUD) {
             prepared = true
             runCatching { prepare() }
         }
-        return inner.generate(call)
+        return reply
     }
 }

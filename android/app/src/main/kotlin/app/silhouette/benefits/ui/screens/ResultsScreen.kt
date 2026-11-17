@@ -54,7 +54,7 @@ fun ResultsContent(app: AppController) {
     Lead(t(if (entries.any { it.status != OutboundLog.Status.KEPT_ON_DEVICE }) "results.leadAfterSend" else "results.lead"))
     (app.answers[INCOME_STEP] as? AnswerValue.ExactIncome)?.takeIf { it.fromDocument }?.let {
         Panel(Modifier.testTag("income-from-document")) {
-            Text(t("results.fromDocument", "amount" to t.decimal(it.amount)), style = MaterialTheme.typography.bodyLarge)
+            Text(t("results.fromDocument", "amount" to t.money(it.amount)), style = MaterialTheme.typography.bodyLarge)
         }
     }
     for ((verdict, programs) in groupByVerdict(app.results)) {
@@ -108,7 +108,7 @@ private fun ProgramCard(app: AppController, t: Strings, verdict: Verdict, result
                 }
                 val amount = result.estimatedAmount
                 if (amount != null && amount > 0) {
-                    Text(t("results.estimate", "amount" to t.number(amount.toLong())), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
+                    Text(t("results.estimate", "amount" to t.money(amount)), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
                 }
                 Text(t("results.open") + " ›", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
             }

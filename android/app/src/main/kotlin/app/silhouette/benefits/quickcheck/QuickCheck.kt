@@ -228,6 +228,9 @@ fun draftToValue(step: Step, draft: Draft): AnswerValue? = when (step) {
         val text = draft.text.trim()
         when {
             text.isEmpty() -> null
+            // An amount of money is typed as money (skeleton/SPEC.md section 5.1) and kept in whole units.
+            isMoneyVariable(step.id) -> parseTypedAmount(text)?.takeIf { it <= Int.MAX_VALUE }?.let { AnswerValue.Count(Math.round(it).toInt()) }
+                ?: AnswerValue.Count(Int.MIN_VALUE)
             DIGITS.matches(text) -> AnswerValue.Count(text.toBigInteger().min(Int.MAX_VALUE.toBigInteger()).toInt())
             else -> AnswerValue.Count(Int.MIN_VALUE)
         }
@@ -247,6 +250,13 @@ fun draftToValue(step: Step, draft: Draft): AnswerValue? = when (step) {
         else -> AnswerValue.IncomeBandChoice(draft.choice)
     }
 }
+
+/**
+ * Answers that are amounts of money: the reserved yearly income, and answers named like `…Income`
+ * that are not yes/no questions (`investmentIncome`). Asked as a typed amount and shown as money.
+ */
+fun isMoneyVariable(variable: String): Boolean =
+    variable == "annualIncome" || Regex("^(?!has).*income$", RegexOption.IGNORE_CASE).matches(variable)
 
 /** The stepper's next value: from the current text, or [Step.IntQuestion.min] when it does not parse. */
 fun stepCount(step: Step.IntQuestion, text: String, delta: Int): String {
@@ -315,5 +325,39 @@ private fun decodeValue(step: Step, element: JsonElement): AnswerValue? {
                 else -> null
             }
         }
+    }
+}
+
+/**
+ * A prepared household's answers (rulepacks/us-ca/judges-household.json, keyed by question id in the
+ * Quick Check's form: income as a band or an exact amount). Answers that do not fit a step are left out.
+ */
+fun preparedAnswers(steps: List<Step>, answers: JsonObject): QuickCheckAnswers {
+    val out = LinkedHashMap<String, AnswerValue?>()
+    for (step in steps) {
+        val element = answers[step.id] ?: continue
+        val value: AnswerValue? = when (step) {
+            is Step.Income -> (element as? JsonObject)?.let { o ->
+                when ((o["kind"] as? JsonPrimitive)?.content) {
+                    "band" -> (o["bandId"] as? JsonPrimitive)?.content?.let { AnswerValue.IncomeBandChoice(it) }
+                    "exact" -> (o["amount"] as? JsonPrimitive)?.doubleOrNull?.let { AnswerValue.ExactIncome(it) }
+                    else -> null
+                }
+            }
+            else -> decodeValuePublic(step, element)
+        }
+        if (value != null && validateAnswer(step, value) == null) out[step.id] = value
+    }
+    return QuickCheckAnswers(out)
+}
+
+private fun decodeValuePublic(step: Step, element: JsonElement): AnswerValue? {
+    val primitive = element as? JsonPrimitive
+    return when (step) {
+        is Step.IntQuestion -> primitive?.takeIf { !it.isString }?.intOrNull?.let { AnswerValue.Count(it) }
+        is Step.EnumQuestion -> primitive?.takeIf { it.isString }?.content?.let { AnswerValue.Choice(it) }
+        is Step.BoolQuestion -> primitive?.takeIf { !it.isString }?.booleanOrNull?.let { AnswerValue.Flag(it) }
+        is Step.MultiQuestion -> (element as? JsonArray)?.map { (it as? JsonPrimitive)?.content ?: return null }?.let { AnswerValue.Picks(it) }
+        is Step.Income -> null
     }
 }

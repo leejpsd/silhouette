@@ -7,7 +7,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.Column
+import app.silhouette.benefits.core.ProgramInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.silhouette.benefits.quickcheck.stepForVariable
@@ -54,9 +57,9 @@ fun ProgramContent(app: AppController, route: Route.Program) {
     }
     val amount = result.estimatedAmount
     if (amount != null && amount > 0) {
-        Text(t("detail.amount", "amount" to t.number(amount.toLong())), style = MaterialTheme.typography.titleMedium)
+        Text(t("detail.amount", "amount" to t.money(amount)), style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("program-amount"))
     }
-    info.period?.let { Meta(t("detail.period", "period" to it)) }
+    info.period?.let { Meta(t("detail.period", "period" to t.packPeriod(it)), Modifier.testTag("program-period")) }
     if (info.caveats.isNotEmpty()) {
         Panel {
             SectionHeading(t("detail.caveats"))
@@ -81,6 +84,45 @@ fun ProgramContent(app: AppController, route: Route.Program) {
     AboutSection(app, result)
     FreeTextQuestion(app, result)
 
-    Meta(app.content.pack.verifiedOn?.let { t("rules.verifiedOn", "date" to it) } ?: t("detail.unverified"))
+    // A draft pack shows its notice where a confirmed pack would show the unverified note, never both.
+    val pack = app.content.pack
+    Meta(
+        when {
+            pack.verifiedOn != null -> t("rules.verifiedOn", "date" to pack.verifiedOn!!)
+            pack.isDraft && pack.sourcesReadOn != null -> t("pack.draft.notice", "date" to t.packDate(pack.sourcesReadOn!!))
+            else -> t("detail.unverified")
+        },
+        Modifier.testTag("rules-status"),
+    )
+    OfficialInfo(app, info)
     QuietButton(t("detail.back"), onClick = { app.navigate(Route.Results) }, modifier = Modifier.testTag("detail-back"))
+}
+
+/** The program's official information from the rule pack: where to apply, the papers, and each source with its date. */
+@Composable
+fun OfficialInfo(app: AppController, info: ProgramInfo) {
+    val t = app.strings
+    val uri = LocalUriHandler.current
+    val pack = app.content.pack
+    SectionHeading(t("official.title"))
+    if (info.sources.isEmpty() && info.applyUrl == null && info.docsRequired.isEmpty()) {
+        Meta(t("official.none"))
+        return
+    }
+    info.applyUrl?.let { url -> SecondaryButton(t("official.apply"), onClick = { runCatching { uri.openUri(url) } }, modifier = Modifier.testTag("official-apply")) }
+    for (source in info.sources) {
+        Column(Modifier.testTag("official-source")) {
+            QuietButton(source.title, onClick = { runCatching { uri.openUri(source.url) } })
+            val date = when {
+                source.checkedAt != null -> t("official.confirmedOn", "date" to t.packDate(source.checkedAt!!))
+                pack.isDraft && pack.sourcesReadOn != null -> t("official.readOn", "date" to t.packDate(pack.sourcesReadOn!!))
+                else -> null
+            }
+            date?.let { Meta(it, Modifier.testTag("source-read-on")) }
+        }
+    }
+    if (info.docsRequired.isNotEmpty()) {
+        Meta(t("official.docs"))
+        BulletList(info.docsRequired)
+    }
 }

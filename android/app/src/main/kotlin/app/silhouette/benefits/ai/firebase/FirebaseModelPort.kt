@@ -35,7 +35,7 @@ class FirebaseModelPort(private val cloudModel: String = CLOUD_MODEL) : ModelPor
     private val models = ConcurrentHashMap<String, GenerativeModel>()
 
     override suspend fun generate(call: ModelCall): ModelReply {
-        val model = models.getOrPut("${call.task}|${call.mode}|${call.system.hashCode()}|${call.schema.hashCode()}|${call.maxOutputTokens}") { create(call) }
+        val model = models.getOrPut("${call.task}|${call.mode}|${call.deviceAttempt}|${call.system.hashCode()}|${call.schema.hashCode()}|${call.maxOutputTokens}") { create(call) }
         val response = try {
             model.generateContent(call.user.text)
         } catch (e: Exception) {
@@ -46,7 +46,8 @@ class FirebaseModelPort(private val cloudModel: String = CLOUD_MODEL) : ModelPor
         return ModelReply(text, source, cloudModel)
     }
 
-    private fun create(call: ModelCall): GenerativeModel = Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
+    // Cloud requests use limited-use App Check tokens (shared/RECORD.md: no token, no request).
+    private fun create(call: ModelCall): GenerativeModel = Firebase.ai(backend = GenerativeBackend.googleAI(), useLimitedUseAppCheckTokens = true).generativeModel(
         modelName = cloudModel,
         generationConfig = generationConfig {
             maxOutputTokens = call.maxOutputTokens
@@ -57,9 +58,11 @@ class FirebaseModelPort(private val cloudModel: String = CLOUD_MODEL) : ModelPor
         },
         systemInstruction = content { text(call.system.text) },
         onDeviceConfig = OnDeviceConfig(
-            mode = when (call.mode) {
-                CallMode.PREFER_ON_DEVICE -> InferenceMode.PREFER_ON_DEVICE
-                CallMode.PREFER_IN_CLOUD -> InferenceMode.PREFER_IN_CLOUD
+            // The app decides where a device-first call runs (LoggedModelPort): the device attempt is
+            // on-device only, and its cloud request goes through App Check first.
+            mode = if (call.deviceAttempt) InferenceMode.ONLY_ON_DEVICE else when (call.mode) {
+                CallMode.PREFER_ON_DEVICE -> InferenceMode.ONLY_IN_CLOUD
+                CallMode.PREFER_IN_CLOUD -> InferenceMode.ONLY_IN_CLOUD
                 CallMode.ONLY_IN_CLOUD -> InferenceMode.ONLY_IN_CLOUD
                 CallMode.ONLY_ON_DEVICE -> InferenceMode.ONLY_ON_DEVICE
             },

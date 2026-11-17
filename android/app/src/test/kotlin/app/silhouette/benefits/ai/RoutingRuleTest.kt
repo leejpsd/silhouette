@@ -38,14 +38,14 @@ class RoutingRuleTest {
     @Test
     fun `only the Firebase adapters talk to Firebase AI Logic`() {
         val users = sources.filterValues { it.contains("import com.google.firebase.ai.") }.keys.map { File(it).name }.toSet()
-        assertEquals(setOf("FirebaseModelPort.kt", "FirebaseDeviceModel.kt", "FirebasePhotoReader.kt", "FirebaseOnDeviceText.kt"), users)
+        assertEquals(setOf("FirebaseModelPort.kt", "FirebaseDeviceModel.kt", "FirebasePhotoReader.kt", "FirebaseOnDeviceText.kt", "FirebaseDeviceText.kt"), users)
     }
 
     @Test
     fun `the on-device-only mode is used only for photos and the person's own result, which never go to the cloud`() {
         val onlyOnDevice = sources.filterValues { it.contains("InferenceMode.ONLY_ON_DEVICE") }.keys.map { File(it).name }.toSet()
-        assertEquals(setOf("FirebaseModelPort.kt", "FirebasePhotoReader.kt", "FirebaseOnDeviceText.kt"), onlyOnDevice)
-        for (name in listOf("FirebasePhotoReader.kt", "FirebaseOnDeviceText.kt")) {
+        assertEquals(setOf("FirebaseModelPort.kt", "FirebasePhotoReader.kt", "FirebaseOnDeviceText.kt", "FirebaseDeviceText.kt"), onlyOnDevice)
+        for (name in listOf("FirebasePhotoReader.kt", "FirebaseOnDeviceText.kt", "FirebaseDeviceText.kt")) {
             val source = sources.entries.single { it.key.endsWith(name) }.value
             assertFalse(name, source.contains("PREFER_ON_DEVICE"))
             assertFalse(name, source.contains("PREFER_IN_CLOUD"))
@@ -71,7 +71,8 @@ class RoutingRuleTest {
     @Test
     fun `the person's own result is carried only by on-device-only code`() {
         val users = sources.filterValues { Regex("\\bPersonalRequest\\b").containsMatchIn(it) }.keys.map { File(it).name }.toSet()
-        assertEquals(setOf("PersonalTasks.kt", "FirebaseOnDeviceText.kt"), users)
+        // OnDeviceGuard.kt: the hard stop and the record around the on-device-only adapter.
+        assertEquals(setOf("PersonalTasks.kt", "FirebaseOnDeviceText.kt", "OnDeviceGuard.kt"), users)
         val results = sources.filterValues { Regex("\\bPersonalResult\\b").containsMatchIn(it) }.keys.map { File(it).name }.toSet()
         assertEquals(setOf("PersonalTasks.kt", "ProgramContext.kt"), results)
         // The on-device-only adapter never builds a ModelCall.
@@ -106,20 +107,23 @@ class RoutingRuleTest {
         }
         val sites = sources.flatMap { (path, text) -> arguments(text).map { "${File(path).name}: $it" } }.sorted()
         val expected = listOf(
-            "ExplainTasks.kt: labels.joinToString(\"; \").ifEmpty { \"none\" }",
             "ExplainTasks.kt: languageName(input.locale)",
             "ExplainTasks.kt: prompt.system",
             "ExplainTasks.kt: prompt.user",
             "ExplainTasks.kt: words.toString()",
-            "PointerRequestBuilder.kt: \"JSON schema of the answer:\\n${'$'}deviceSchema\"",
+            "PointerRequestBuilder.kt: \"${'$'}{DeviceReadingTask.SCHEMA_LINE}\\n${'$'}deviceSchema\"",
+            "DeviceReadingTask.kt: \"${'$'}{prompt.system}\\n\\n${'$'}{parts.forPart(part)}\"",
+            "DeviceReadingTask.kt: prompt.user",
+            "DeviceReadingTask.kt: request.docType.wire",
+            "DeviceReadingTask.kt: \"${'$'}SCHEMA_LINE\\n${'$'}constraint\"",
             "PointerRequestBuilder.kt: prompt.system",
             "PointerRequestBuilder.kt: prompt.user",
             "PointerRequestBuilder.kt: request.docType.wire",
             // A prepared question: copy text (`ask.chip.*`), never typed text.
             "ProgramAnswers.kt: question",
-            "ProgramContext.kt: sentences.joinToString(\" \")",
+            "DeviceCheckRunner.kt: question",
+            "ProgramContext.kt: lines.joinToString(\"\\n\")",
             "ProgramContext.kt: t.programName(info.id, info.name)",
-            "ProgramContext.kt: v",
         ).sorted()
         assertEquals(expected, sites)
     }

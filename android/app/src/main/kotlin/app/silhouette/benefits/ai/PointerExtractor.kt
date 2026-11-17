@@ -23,9 +23,42 @@ class PointerRequest(val skeleton: Skeleton, val docType: DocType, val language:
 
 /**
  * The model's pointer JSON (untrusted; the Rehydrator validates every reference), where it ran,
- * and the routing reason key from shared/routing.json (or `sample-answer-key`).
+ * and the routing reason key from shared/routing.json (or `sample-answer-key`). [notRead]: fields the
+ * device left out as not read (DEVICE_READING.md sections 5 and 5.1, `deductions` when the deductions
+ * did not hold up). [noDeviceModel]: a device-first document read in the cloud because this phone has
+ * no model. [deviceAttempt]: the on-device reading, whether it was used or repeated in the cloud.
  */
-class PointerResult(val pointers: JsonObject, val inferenceSource: InferenceSource, val reason: String)
+class PointerResult(
+    val pointers: JsonObject,
+    val inferenceSource: InferenceSource,
+    val reason: String,
+    val notRead: List<String> = emptyList(),
+    val noDeviceModel: Boolean = false,
+    val deviceAttempt: app.silhouette.benefits.core.DeviceReadingResult? = null,
+) {
+    val deductionsNotRead: Boolean get() = "deductions" in notRead
+}
+
+/**
+ * How a reading runs. [deviceOnly]: the person chose to keep everything on this device, so nothing is
+ * ever sent and a failed on-device reading is reported instead of repeated in the cloud. [document]
+ * is the silhouette with its values, for the checks of the on-device reading (they run on the device).
+ */
+class ExtractOptions(
+    val deviceOnly: Boolean = false,
+    val document: app.silhouette.benefits.core.SkeletonResult? = null,
+    val jurisdiction: String = "us-ca",
+    val onStage: (ReadingStage) -> Unit = {},
+)
+
+/** The person kept everything on this device and the device could not read the silhouette reliably: nothing was filled in or sent. */
+class OnDeviceUnreliable(val attempt: app.silhouette.benefits.core.DeviceReadingResult?) : Exception("on-device-unreliable")
+
+/** The cloud retry after a failed on-device reading failed too; [attempt] is the device's reading. */
+class CloudRetryFailed(val attempt: app.silhouette.benefits.core.DeviceReadingResult, val failure: ModelFailure) : Exception(failure.reason, failure)
+
+/** The person kept everything on this device but no on-device reading is possible here. */
+class DeviceReadingUnavailable : Exception("on-device-unavailable")
 
 /** Reads pointers from a document silhouette. Implementations: a model, or the sample answer key. */
 interface PointerExtractor {
@@ -35,7 +68,7 @@ interface PointerExtractor {
     /** Whether this extractor can read [skeleton] at all (without sending anything). */
     fun canRead(skeleton: Skeleton, language: String): Boolean
 
-    suspend fun extract(request: PointerRequest): PointerResult
+    suspend fun extract(request: PointerRequest, options: ExtractOptions = ExtractOptions()): PointerResult
 }
 
 /** Raised when no extractor can read a document. */
@@ -50,8 +83,8 @@ class PointerExtraction(private val extractors: List<PointerExtractor>) {
 
     fun extractorFor(skeleton: Skeleton, language: String): PointerExtractor? = extractors.firstOrNull { it.canRead(skeleton, language) }
 
-    suspend fun extract(request: PointerRequest): PointerResult {
+    suspend fun extract(request: PointerRequest, options: ExtractOptions = ExtractOptions()): PointerResult {
         val extractor = extractorFor(request.skeleton, request.language) ?: throw ExtractorUnavailable()
-        return extractor.extract(request)
+        return extractor.extract(request, options)
     }
 }

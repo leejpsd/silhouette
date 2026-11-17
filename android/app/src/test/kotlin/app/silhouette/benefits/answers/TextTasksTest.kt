@@ -48,7 +48,7 @@ class TextTasksTest {
         port: ModelPort = FakeModelPort(),
         answers: app.silhouette.benefits.quickcheck.QuickCheckAnswers = People.first,
     ): TextPlan {
-        val input = People.programs.explainInput(People.strings(language), People.silhouette(answers), program)
+        val input = People.programs.explainInput(People.strings(language), program)
         return tasks(port, settings).planExplain(input, length)
     }
 
@@ -79,7 +79,7 @@ class TextTasksTest {
 
     @Test
     fun `a prepared question prefers the device`() {
-        val input = People.programs.explainInput(People.strings(), People.silhouette(People.first), program)
+        val input = People.programs.explainInput(People.strings(), program)
         val chip = tasks(FakeModelPort()).planAskChip(input, Public.of("How do I apply?"))
         assertEquals(TextTasks.ASK_CHIP, chip.task)
         assertEquals(CallMode.PREFER_ON_DEVICE, chip.call.mode)
@@ -143,16 +143,17 @@ class TextTasksTest {
     }
 
     @Test
-    fun `the request carries the silhouette and silhouette-only criterion states, never a result`() {
+    fun `the request carries the program's public information and nothing about the person`() {
         val p = plan()
         val text = p.call.user.text
-        val verdict = People.silhouette(People.first).verdicts.value.first { it.programId == program }
-        // The silhouette alone cannot settle the income limit, so it is listed as unknown.
-        assertEquals(CriterionState.MIXED, verdict.criteria.first { it.id == "income-limit" }.state)
-        assertTrue(text.contains(People.silhouette(People.first).canonical.value))
-        assertTrue(text.contains(People.strings()("criterion.food-help.income-limit")))
         val t = People.strings()
+        // {programFacts}: what the program uses and checks, from the pack and its copy.
+        assertTrue(text.contains(t("answers.facts.checks")))
+        assertTrue(text.contains(t("criterion.food-help.income-limit")))
+        assertFalse(text.contains(People.silhouette(People.first).canonical.value))
         for (v in Verdict.entries) assertFalse(v.wire, text.contains(t("verdict.${v.wire}")))
+        for (state in CriterionState.entries) assertFalse(state.wire, text.contains("\"${state.wire}\""))
+        assertEquals(listOf("program-facts"), p.call.fields)
     }
 
     /**
@@ -169,7 +170,7 @@ class TextTasksTest {
         for (language in AppLanguage.entries) {
             val t = People.strings(language)
             val bodies = listOf(People.first, People.second).map { answers ->
-                val input = People.programs.explainInput(t, People.silhouette(answers), program)
+                val input = People.programs.explainInput(t, program)
                 val task = tasks(FakeModelPort())
                 val plans = ExplainLength.entries.map { task.planExplain(input, it) } +
                     listOf("apply", "documents", "change", "offer").map { task.planAskChip(input, Public.of(t("ask.chip.$it"))) }

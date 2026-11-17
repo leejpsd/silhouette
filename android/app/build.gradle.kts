@@ -7,8 +7,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     // Reads app/google-services.json, which each developer adds locally (it is not in the repository).
-    alias(libs.plugins.google.services)
+    alias(libs.plugins.google.services) apply false
 }
+
+// Without google-services.json the app builds and runs without models (Firebase is not configured).
+if (file("google-services.json").exists()) apply(plugin = "com.google.gms.google-services")
 
 android {
     namespace = "app.silhouette.benefits"
@@ -42,9 +45,21 @@ android {
 // JVM unit tests read the shared contract in place, like :core.
 val sharedPath: String = layout.settingsDirectory.dir("../shared").asFile.absolutePath
 
+android.testOptions.unitTests.isIncludeAndroidResources = true
+
+// Snapshots of every screen and state (src/test/.../snapshots, Robolectric): only with -Psnapshots,
+// so the ordinary unit tests stay fast. Images go to app/build/snapshots/.
+val snapshots = project.hasProperty("snapshots")
+val snapshotDir: String = layout.buildDirectory.dir("snapshots").get().asFile.absolutePath
+
 android.testOptions.unitTests.all { test ->
     test.systemProperty("silhouette.shared", sharedPath)
+    test.systemProperty("silhouette.snapshots", snapshotDir)
+    // Robolectric renders with the platform's real graphics, so Compose can capture what it drew.
+    test.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
     test.inputs.dir(sharedPath).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("shared")
+    if (snapshots) test.filter.includeTestsMatching("*.snapshots.*") else test.exclude("**/snapshots/**")
+    test.maxHeapSize = "3g"
 }
 
 dependencies {
@@ -64,6 +79,12 @@ dependencies {
 
     testImplementation(libs.junit4)
     testImplementation(libs.kotlinx.coroutines.test)
+    // Snapshot capture on the JVM: Compose rendered by Robolectric's native graphics.
+    testImplementation(libs.robolectric)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.ext.junit)
 
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)
@@ -113,7 +134,9 @@ abstract class SyncSharedContract : DefaultTask() {
     companion object {
         val INCLUDES = listOf(
             "copy/*.json",
-            "rulepacks/zz-test/**",
+            "rulepacks/us-ca/pack.json",
+            "rulepacks/us-ca/copy/*.json",
+            "rulepacks/us-ca/judges-household.json",
             "bands/*.json",
             "design/tokens.json",
             "skeleton/allowlist/*.json",
@@ -122,11 +145,14 @@ abstract class SyncSharedContract : DefaultTask() {
             "prompts/*.md",
             "prompts/output-checks.json",
             "samples/answers.json",
+            // The on-device check: its cases, documents, right answers and the reference recording.
+            "fixtures/device-check/**",
+            "schemas/device-check-run.v3.json",
         )
         val REQUIRED = listOf(
             "copy/en.json",
-            "rulepacks/zz-test/pack.json",
-            "bands/zz-test.json",
+            "rulepacks/us-ca/pack.json",
+            "bands/us-ca.json",
             "design/tokens.json",
             "skeleton/allowlist/en.json",
             "schemas/pointer.paystub.json",
@@ -212,7 +238,7 @@ val syncConformanceFixtures = tasks.register<SyncConformanceFixtures>("syncConfo
 
 val syncSharedContract = tasks.register<SyncSharedContract>("syncSharedContract") {
     group = "build"
-    description = "Copies shared/copy, shared/rulepacks/zz-test, shared/bands, shared/design/tokens.json, shared/skeleton/allowlist, the pointer schemas, the sample documents and the prompts into generated assets."
+    description = "Copies shared/copy, shared/rulepacks/us-ca, shared/bands, shared/design/tokens.json, shared/skeleton/allowlist, the pointer schemas, the sample documents and the prompts into generated assets."
     sharedDir.set(layout.settingsDirectory.dir("../shared"))
     outputDir.set(layout.buildDirectory.dir("generated/sharedContract/assets"))
 }

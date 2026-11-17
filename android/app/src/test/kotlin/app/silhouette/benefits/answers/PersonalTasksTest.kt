@@ -70,7 +70,7 @@ class PersonalTasksTest {
         val request = tasks(FakeDevice()).askRequest("x".repeat(2_000), result())
         assertTrue(request.user.contains("x".repeat(500)))
         assertFalse(request.user.contains("x".repeat(501)))
-        val long = result().let { PersonalResult(it.locale, it.programName, "fact ".repeat(4_000), it.verdictLabel, it.criteriaLines) }
+        val long = result().let { PersonalResult(it.locale, it.programName, "fact ".repeat(4_000), it.verdict, it.verdictLabel, it.criteriaLines) }
         val fitted = tasks(FakeDevice()).explainRequest(long)
         assertTrue(PersonalTasks.estimateTokens(fitted.system + fitted.user) <= PersonalTasks.MAX_INPUT_TOKENS)
         assertTrue(fitted.user.contains(long.criteriaLines))

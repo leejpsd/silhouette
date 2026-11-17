@@ -76,7 +76,8 @@ fun WhySection(app: AppController, result: ProgramVerdict) {
                     for ((limit, yours) in row.limits) {
                         Text(t("why.limitYours", "limit" to limit, "value" to yours), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("why-limit"))
                     }
-                    Text(t("state.${row.state.wire}"), style = MaterialTheme.typography.bodyMedium, color = LocalSilhouetteColors.current.textMuted)
+                    for (note in row.notes) Text(note, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("why-note"))
+                    Text(row.stateText, style = MaterialTheme.typography.bodyMedium, color = LocalSilhouetteColors.current.textMuted)
                 }
             }
         }
@@ -97,45 +98,48 @@ fun WhySection(app: AppController, result: ProgramVerdict) {
     }
 }
 
-/** "About this program": the general explanation and prepared questions, from the silhouette only. */
+/** "About this program": the program's own information, then a general explanation and prepared questions given nothing about the person. */
 @Composable
 fun AboutSection(app: AppController, result: ProgramVerdict) {
     val t = app.strings
     val d = LocalDimens.current
-    val tasks = app.textTasks ?: return
-    val silhouette = app.silhouette ?: return
-    val input = app.programs.explainInput(t, silhouette, result.programId)
-    val content = silhouette.canonical.value
-    val baseLines = ProgramContext.silhouetteLines(t, app.content, silhouette.profile.value) + t("send.line.program", "value" to input.program.name.value)
-    // When the silhouette alone gives a different verdict, the answer says it only knows the silhouette.
-    val differs = silhouette.verdicts.value.find { it.programId == result.programId }?.verdict != result.verdict
-
+    val copy = app.programs.programCopy(t, result.programId)
     SectionHeading(t("about.title"))
-    Meta(t("about.lead"), Modifier.testTag("about-lead"))
-    val shortKey = AnswerSession.key("explain-short", t.language.tag, content, result.programId)
-    val longKey = AnswerSession.key("explain-long", t.language.tag, content, result.programId)
+    for (key in ProgramContext.PROGRAM_COPY_KEYS) copy[key]?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("program-copy-$key")) }
+    val tasks = app.textTasks ?: return
+    val input = app.programs.explainInput(t, result.programId)
+    // Public information only: one consent covers every program's general explanation.
+    val content = PUBLIC_PROGRAM_INFO
+    val baseLines = listOf(t("send.linePublic"), t("send.line.program", "value" to input.program.name.value))
+
+    Meta(t("about.leadPublic"), Modifier.testTag("about-lead"))
+    val shortKey = AnswerSession.key("explain-short", t.language.tag, result.programId)
+    val longKey = AnswerSession.key("explain-long", t.language.tag, result.programId)
     val short = app.requests.state(shortKey)
     val long = app.requests.state(longKey)
     fun ask(key: String, length: ExplainLength) = app.requests.startText(key, tasks.planExplain(input, length), content)
     if (short.canStart()) SecondaryButton(t("about.explain"), onClick = { ask(shortKey, ExplainLength.SHORT) }, modifier = Modifier.testTag("about-explain"))
-    RequestRegion(app, shortKey, short, baseLines, notListed = true, onRetry = { ask(shortKey, ExplainLength.SHORT) }, silhouetteNote = differs)
+    RequestRegion(app, shortKey, short, baseLines, notListed = false, onRetry = { ask(shortKey, ExplainLength.SHORT) })
     if (short is RequestState.Done && long.canStart()) {
         QuietButton(t("answers.explainLong"), onClick = { ask(longKey, ExplainLength.LONG) }, modifier = Modifier.testTag("about-long"))
     }
-    if (long !is RequestState.Idle) RequestRegion(app, longKey, long, baseLines, notListed = true, onRetry = { ask(longKey, ExplainLength.LONG) }, silhouetteNote = differs)
+    if (long !is RequestState.Idle) RequestRegion(app, longKey, long, baseLines, notListed = false, onRetry = { ask(longKey, ExplainLength.LONG) })
 
     SectionHeading(t("ask.chips"))
     Column(verticalArrangement = Arrangement.spacedBy(d.xs)) {
         for (chip in CHIPS) {
             val question = t("ask.chip.$chip")
-            val key = AnswerSession.key("ask-chip", t.language.tag, content, result.programId, chip)
+            val key = AnswerSession.key("ask-chip", t.language.tag, result.programId, chip)
             val state = app.requests.state(key)
             fun askChip() = app.requests.startText(key, tasks.planAskChip(input, Public.of(question)), content)
             SecondaryButton(question, onClick = { if (state !is RequestState.Loading) askChip() }, modifier = Modifier.testTag("chip-$chip"))
-            RequestRegion(app, key, state, baseLines + t("send.line.question", "value" to question), notListed = true, onRetry = ::askChip, silhouetteNote = differs)
+            RequestRegion(app, key, state, baseLines + t("send.line.question", "value" to question), notListed = false, onRetry = ::askChip)
         }
     }
 }
+
+/** The consent key of requests that carry only public program information. */
+const val PUBLIC_PROGRAM_INFO: String = "public:program-info"
 
 /** A typed question: answered on this device only, because what is typed may be personal. */
 @Composable
@@ -190,7 +194,6 @@ private fun RequestRegion(
     lines: List<String>,
     notListed: Boolean,
     onRetry: (() -> Unit)?,
-    silhouetteNote: Boolean = false,
 ) {
     val t = app.strings
     val d = LocalDimens.current
@@ -202,7 +205,7 @@ private fun RequestRegion(
             if (state.slow) Meta(t("answers.slow"), Modifier.testTag("answer-slow"))
             QuietButton(t("answers.cancel"), onClick = { app.requests.cancel(key) }, modifier = Modifier.testTag("answer-cancel"))
         }
-        is RequestState.Done -> AnswerView(t, state, silhouetteNote)
+        is RequestState.Done -> AnswerView(t, state)
         is RequestState.Failed -> Column(verticalArrangement = Arrangement.spacedBy(d.xs), modifier = Modifier.testTag("answer-error")) {
             Text(t(state.errorKey), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive })
             if (state.canRetry && onRetry != null) QuietButton(t("answers.retry"), onClick = onRetry)
@@ -213,7 +216,7 @@ private fun RequestRegion(
 }
 
 @Composable
-private fun AnswerView(t: Strings, state: RequestState.Done, silhouetteNote: Boolean) {
+private fun AnswerView(t: Strings, state: RequestState.Done) {
     Panel(Modifier.testTag("answer")) {
         if (state.sentBefore) Meta(t("send.once"))
         when (val a = state.answer) {
@@ -221,7 +224,6 @@ private fun AnswerView(t: Strings, state: RequestState.Done, silhouetteNote: Boo
                 for (para in a.text.split(Regex("\n{2,}"))) Text(para, style = MaterialTheme.typography.bodyLarge)
                 InferenceBadge(t, a.source, a.reason.key, detail = provenanceDetail(t, a))
                 if (a.reason == RoutingReason.ON_DEVICE_FAILED) Meta(t("answers.retried"))
-                if (silhouetteNote) Meta(t("answers.silhouetteNote"))
             }
             is PersonalAnswer -> {
                 for (para in a.text.split(Regex("\n{2,}"))) Text(para, style = MaterialTheme.typography.bodyLarge)
@@ -261,8 +263,10 @@ private fun SendPanel(t: Strings, plan: TextPlan, lines: List<String>, notListed
         }
         Meta(t("send.notSent"))
         Meta(t("leaving.network"))
-        QuietButton(t("send.showJson"), onClick = { showJson = !showJson }, modifier = Modifier.testTag("send-show-json"))
+        QuietButton(t("send.showRequest"), onClick = { showJson = !showJson }, modifier = Modifier.testTag("send-show-json"))
         if (showJson) {
+            // The SDK serializes the request itself: this is the app's rendering of the same request, and says so.
+            Meta(t("send.requestAsBuilt"), Modifier.testTag("send-as-built"))
             Text(
                 plan.requestBody,
                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),

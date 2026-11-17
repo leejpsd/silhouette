@@ -12,5 +12,9 @@ object TestContent {
 
     val source = ContentSource { path -> File(sharedDir, path).takeIf { it.isFile }?.readText(Charsets.UTF_8) }
 
-    val content: AppContent by lazy { AppContent.load(source) }
+    /** The invented zz-test pack: the tests' fixed programs and limits. */
+    val content: AppContent by lazy { AppContent.load(source, "zz-test") }
+
+    /** The pack people see: the California draft. */
+    val california: AppContent by lazy { AppContent.load(source) }
 }

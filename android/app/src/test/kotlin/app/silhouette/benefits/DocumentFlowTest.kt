@@ -70,7 +70,7 @@ class DocumentFlowTest {
         val seen = mutableListOf<Skeleton>()
         override val destination = "recorder.test"
         override fun canRead(skeleton: Skeleton, language: String) = true
-        override suspend fun extract(request: PointerRequest): PointerResult {
+        override suspend fun extract(request: PointerRequest, options: app.silhouette.benefits.ai.ExtractOptions): PointerResult {
             seen += request.skeleton
             return PointerResult(JsonObject(emptyMap()), InferenceSource.IN_CLOUD, "document-silhouette-only")
         }
@@ -79,7 +79,7 @@ class DocumentFlowTest {
     private val dispatcher = StandardTestDispatcher()
     private val scope = TestScope(dispatcher)
     private val repository = MemoryRepository()
-    private val log = OutboundLog { repository.saveLedger(OutboundLog.encode(it).toString()) }
+    private val log = OutboundLog(onChange = { repository.saveLedger(it.encodeState().toString()) })
 
     private fun sampleKey() = SampleAnswerKeyExtractor(
         content.samples.map {
@@ -233,7 +233,10 @@ class DocumentFlowTest {
         app.deleteEverything()
         scope.advanceUntilIdle()
         assertNull(app.document.text)
-        assertNull(repository.ledger)
+        // The record keeps only the date it was deleted.
+        val stored = kotlinx.serialization.json.Json.parseToJsonElement(repository.ledger!!) as kotlinx.serialization.json.JsonObject
+        assertEquals(kotlinx.serialization.json.JsonArray(emptyList()), stored["entries"])
+        assertNotNull(log.clearedAt.value)
         assertTrue(log.entries.value.isEmpty())
     }
 }

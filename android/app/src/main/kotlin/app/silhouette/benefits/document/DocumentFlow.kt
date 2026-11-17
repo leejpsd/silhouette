@@ -41,6 +41,7 @@ fun errorKey(failure: app.silhouette.benefits.ai.ModelFailure): String {
     val reason = failure.reason
     return when {
         reason == "quota-daily" -> "error.quotaDaily"
+        reason == app.silhouette.benefits.ai.LoggedModelPort.NO_APP_CHECK -> "error.appCheckTryAgain"
         reason.contains("Quota", ignoreCase = true) -> "error.quota"
         reason == "bad-output" || reason == "empty-response" || reason.contains("Serialization") -> "error.bad-output"
         reason.contains("ServiceDisabled") || reason.contains("APINotConfigured") -> "error.api-not-enabled"
@@ -51,8 +52,18 @@ fun errorKey(failure: app.silhouette.benefits.ai.ModelFailure): String {
     }
 }
 
-/** What the extractor answered, ready for review. */
-class Extraction(val fields: List<ReviewField>, val source: InferenceSource, val reason: String)
+/**
+ * What the extractor answered, ready for review. [notRead]: fields the device left out as not read
+ * (`deductions` when the deductions did not hold up). [noDeviceModel]: read in the cloud because this
+ * phone has no on-device model (the reason chip says so).
+ */
+class Extraction(
+    val fields: List<ReviewField>,
+    val source: InferenceSource,
+    val reason: String,
+    val notRead: List<String> = emptyList(),
+    val noDeviceModel: Boolean = false,
+)
 
 /**
  * The document being worked on. Holds Raw document text in memory only; it is never stored.
@@ -68,6 +79,8 @@ data class DocumentSession(
     /** Copy key of the last error, or null. */
     val error: String? = null,
     val sending: Boolean = false,
+    /** Where a reading is, while it runs (`preview.stage.*`). */
+    val stage: app.silhouette.benefits.ai.ReadingStage? = null,
     val readingPhoto: Boolean = false,
     /** Set when the text was read from a photo on this device. */
     val photoSource: PhotoSource? = null,
@@ -86,7 +99,7 @@ data class DocumentSession(
 
 enum class RowStatus { PENDING, CONFIRMED, EMPTY }
 
-/** One reviewed field. [text] is what the user sees and edits. */
+/** One reviewed field. [text] is what the user sees and edits. [notRead]: left out by the device as not read. */
 data class ReviewRow(
     val name: String,
     val kind: FieldKind,
@@ -94,6 +107,7 @@ data class ReviewRow(
     val text: String,
     val status: RowStatus,
     val source: List<List<SourceSegment>>,
+    val notRead: Boolean = false,
 ) {
     override fun toString(): String = "ReviewRow($name, $status)"
 }
@@ -109,6 +123,8 @@ data class ReviewState(
     val result: ValidationResult? = null,
     /** True when the user types everything (no extraction). */
     val manual: Boolean = true,
+    /** The device left the deductions out as not read: the net-sum check is not shown while none was added. */
+    val deductionsNotRead: Boolean = false,
 ) {
     val pending: Int get() = rows.count { it.status == RowStatus.PENDING } + deductions.count { it.status == RowStatus.PENDING }
 
@@ -119,7 +135,7 @@ data class ReviewState(
 fun parseReviewNumber(text: String): Double? = parseTypedAmount(text)
 
 /** The rows of the paystub schema, filled from an extraction or empty for typing. */
-fun initialReview(schema: JsonObject, fields: List<ReviewField>?): ReviewState {
+fun initialReview(schema: JsonObject, fields: List<ReviewField>?, notRead: List<String> = emptyList()): ReviewState {
     val properties = schema["properties"] as JsonObject
     val rows = ArrayList<ReviewRow>()
     var deductions = emptyList<DeductionRow>()
@@ -142,9 +158,9 @@ fun initialReview(schema: JsonObject, fields: List<ReviewField>?): ReviewState {
         }
         val text = field?.let(::displayText) ?: ""
         val options = (spec["enum"] as? JsonArray)?.map { (it as JsonPrimitive).content } ?: emptyList()
-        rows += ReviewRow(name, kind, options, text, if (text.isEmpty()) RowStatus.EMPTY else RowStatus.PENDING, field?.source.orEmpty())
+        rows += ReviewRow(name, kind, options, text, if (text.isEmpty()) RowStatus.EMPTY else RowStatus.PENDING, field?.source.orEmpty(), notRead = name in notRead)
     }
-    return ReviewState(rows, deductions, null, manual = fields == null)
+    return ReviewState(rows, deductions, null, manual = fields == null, deductionsNotRead = "deductions" in notRead)
 }
 
 /** The text shown for a found value: the highlighted document token when there is exactly one. */
@@ -177,3 +193,31 @@ fun toValues(state: ReviewState): PaystubValues {
         },
     )
 }
+
+/** What decides the yearly income: shown first. The date is the pay date, or the period end without one. */
+val LEAD_FIELDS: List<String> = listOf("grossPay", "ytdGross", "payDate", "payFrequency")
+
+/** The values each check compares; a value a check flags is shown with the leading values. */
+val CHECK_FIELDS: Map<String, List<String>> = mapOf(
+    "net-sum" to listOf("grossPay", "netPay", "deductions"),
+    "rate-hours" to listOf("hoursWorked", "hourlyRate", "grossPay"),
+    "period-length" to listOf("periodStart", "periodEnd", "payFrequency"),
+    "pay-date" to listOf("payDate", "periodEnd"),
+    "ytd-gross" to listOf("ytdGross", "grossPay"),
+    "ytd-periods" to listOf("ytdGross", "payDate", "payFrequency"),
+    "dates-parsed" to listOf("payDate", "periodStart", "periodEnd"),
+)
+
+/**
+ * The review's rows split into what decides the result (shown first, with any row a check flags)
+ * and the rest (folded under "More values").
+ */
+fun leadAndRest(state: ReviewState, flagged: Set<String>): Pair<List<ReviewRow>, List<ReviewRow>> {
+    val date = if (state.rows.find { it.name == "payDate" }?.text.isNullOrEmpty()) "periodEnd" else "payDate"
+    val order = (LEAD_FIELDS.map { if (it == "payDate") date else it } + state.rows.map { it.name }.filter { it in flagged }).distinct()
+    val lead = order.mapNotNull { n -> state.rows.find { it.name == n } }
+    return lead to state.rows.filter { it.name !in order }
+}
+
+/** Whether a reading found nothing at all (not a paystub): every field empty. */
+fun nothingFound(fields: List<ReviewField>): Boolean = fields.all { it.value == null && it.items.isEmpty() }

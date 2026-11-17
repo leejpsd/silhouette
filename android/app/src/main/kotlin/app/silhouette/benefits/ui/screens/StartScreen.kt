@@ -32,12 +32,14 @@ fun StartContent(app: AppController) {
     app.notice?.let { key ->
         Panel(Modifier.testTag("notice").semantics { liveRegion = LiveRegionMode.Polite }) {
             Text(t(key), style = MaterialTheme.typography.bodyLarge)
+            // After "Delete everything": what was erased, without claiming the SDK's own caches.
+            if (key == "delete.done") Text(t("delete.erasedDevice"), style = MaterialTheme.typography.bodyMedium)
         }
     }
     SilhouetteMark(MarkKind.Brand, 88.dp)
     ScreenHeading(t("start.title"))
     Lead(t("start.lead"))
-    BulletList(listOf(t("promise.line1"), t("promise.line2")))
+    Text(t("start.promise"), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("start-promise"))
     Meta(t("start.rules", "name" to t("pack.${app.content.pack.jurisdiction}.name")))
     Column(verticalArrangement = Arrangement.spacedBy(d.sm)) {
         PrimaryButton(

@@ -77,7 +77,10 @@ class CopyTest {
         val en = content.strings(AppLanguage.EN)
         assertEquals("28,000.50", en.decimal(28000.5))
         assertEquals("32,000", en.decimal(32000.0))
-        assertEquals("1,271.88", en.money(127188))
+        // Money in the pack's currency, written the jurisdiction's way in every language.
+        assertEquals("$1,271.88", en.money(127188))
+        assertEquals("$34,000", en.money(34000.0))
+        assertEquals("$34,000", content.strings(AppLanguage.ES).money(34000.0))
         assertEquals("Understood as 28,000.50 a year.", en("q.amountUnderstood", "amount" to en.decimal(28000.5)))
     }
 
@@ -85,8 +88,26 @@ class CopyTest {
     fun `band labels use the language's number format`() {
         val bands = content.bands.annualIncome
         val en = content.strings(AppLanguage.EN)
-        assertEquals("Less than 15,000", en.bandLabel(bands.first()))
-        assertEquals("60,000 or more", en.bandLabel(bands.last()))
+        assertEquals("Less than $15,000", en.bandLabel(bands.first()))
+        assertEquals("$60,000 or more", en.bandLabel(bands.last()))
         assertTrue(en.bandLabel(bands[1]).contains("15,000") && en.bandLabel(bands[1]).contains("29,999"))
+    }
+
+    @Test
+    fun `a key that names the platform uses its Android variant`() {
+        val en = TestContent.california.strings(AppLanguage.EN)
+        assertTrue(en("deviceCheck.noModel").startsWith("This phone has no on-device model"))
+        assertEquals(en("deviceCheck.download.android"), en("deviceCheck.download"))
+        assertTrue(TestContent.california.strings(AppLanguage.ES)("judges.withModel").isNotEmpty())
+    }
+
+    @Test
+    fun `every literal copy key in the app's code exists in the copy`() {
+        val en = TestContent.california.strings(AppLanguage.EN)
+        val pattern = Regex("""\b(?:t|strings|english)\("([a-zA-Z][a-zA-Z0-9_\-]*(?:\.[a-zA-Z0-9_\-]+)+)"""")
+        val missing = java.io.File("src/main/kotlin").walk().filter { it.extension == "kt" }.flatMap { f ->
+            pattern.findAll(f.readText()).map { it.groupValues[1] }.filter { !en.has(it) }.map { "${f.name}: $it" }
+        }.toList()
+        assertEquals(emptyList<String>(), missing)
     }
 }

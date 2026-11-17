@@ -1,19 +1,16 @@
 package app.silhouette.benefits.ai
 
-import app.silhouette.benefits.core.CriterionState
-import app.silhouette.benefits.core.Generalized
 import app.silhouette.benefits.core.OutputChecks
 import app.silhouette.benefits.core.OutputScope
 import app.silhouette.benefits.core.Public
-import app.silhouette.benefits.core.SilhouetteVerdict
 import app.silhouette.benefits.core.modelTextIsBlocked
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 // The general explanation (`explain.short`, `explain.long`) and prepared questions (`ask.chip`):
-// cloud-capable tasks that know the profile silhouette and the program's public facts only, never a
-// result (shared/rulepacks/SPEC.md section 7, prompts explain.v3 and ask.v2).
+// cloud-capable tasks given the program's public information only, nothing about the person
+// (shared/routing.json input `Public`; prompts explain.v5 and ask.v4).
 
 /** Remote Config values the explanation tasks read. */
 interface ExplainSettings {
@@ -24,24 +21,22 @@ interface ExplainSettings {
     val onDeviceLocales: Set<String>
 }
 
-/** Program facts from the rule pack and its copy, in the UI language. Static app content. */
+/**
+ * A program's public information from the rule pack and its copy, in the answer language: its name
+ * and `{programFacts}` (shared/rulepacks/SPEC.md section 2.1, one item per line). Static app content.
+ */
 class ProgramFacts(
     val programId: String,
     val name: Public<String>,
-    /** What the program checks, its period and caveats, as sentences. */
     val facts: Public<String>,
-    /** Criterion labels by criterion id. */
-    val criteria: Map<String, Public<String>>,
 )
 
 /**
- * What a general explanation or a prepared question is given: the canonical profile silhouette, the
- * criterion states the engine reaches from that silhouette alone, and the program's facts. Never a
- * verdict, exact values or answers to private questions.
+ * What a general explanation or a prepared question is given (explain.v5, ask.v4): the program's
+ * public information and the answer language. Nothing about the person: no profile, no criterion
+ * state, no verdict. The type holds only [Public] values, so nothing else fits.
  */
 class ExplainInput(
-    val profile: Generalized<String>,
-    val verdicts: Generalized<List<SilhouetteVerdict>>,
     val program: ProgramFacts,
     val locale: String,
 )
@@ -135,11 +130,11 @@ class TextTasks(
         val task = route.task
         val mode = if (task == EXPLAIN_SHORT) CallMode.PREFER_ON_DEVICE else CallMode.PREFER_IN_CLOUD
         val reason = if (task == EXPLAIN_SHORT) RoutingReason.SHORT_TEXT else RoutingReason.LONG_OR_UNSUPPORTED_LOCALE
-        return plan(task, mode, reason, "explain.v3.md", input, route.words, null, route, listOf("profile-silhouette", "program-facts"))
+        return plan(task, mode, reason, EXPLAIN_PROMPT, input, route.words, null, route, listOf("program-facts"))
     }
 
     fun planAskChip(input: ExplainInput, question: Public<String>): TextPlan =
-        plan(ASK_CHIP, CallMode.PREFER_ON_DEVICE, RoutingReason.PREPARED_QUESTION, "ask.v2.md", input, ASK_WORDS, question, null, listOf("profile-silhouette", "program-facts", "prepared-question"))
+        plan(ASK_CHIP, CallMode.PREFER_ON_DEVICE, RoutingReason.PREPARED_QUESTION, ASK_PROMPT, input, ASK_WORDS, question, null, listOf("program-facts", "prepared-question"))
 
     private fun plan(
         task: String,
@@ -153,18 +148,9 @@ class TextTasks(
         fields: List<String>,
     ): TextPlan {
         val prompt = PromptTemplate.parse(promptFile, prompts.getValue(promptFile))
-        val verdict = input.verdicts.value.first { it.programId == input.program.programId }
-        fun list(states: Set<CriterionState>): Public<String> {
-            val labels = verdict.criteria.filter { it.state in states }.map { input.program.criteria[it.id]?.value ?: it.id }
-            return Public.of(labels.joinToString("; ").ifEmpty { "none" })
-        }
         val values = buildMap<String, app.silhouette.benefits.core.CloudSafe> {
-            put("generalizedProfileCanonicalJson", input.profile)
             put("programName", input.program.name)
-            put("programSummaryFromRulePack", input.program.facts)
-            put("passedCriteriaLabels", list(setOf(CriterionState.PASS)))
-            put("failedCriteriaLabels", list(setOf(CriterionState.FAIL)))
-            put("unknownCriteriaLabels", list(setOf(CriterionState.UNKNOWN, CriterionState.MIXED)))
+            put("programFacts", input.program.facts)
             put("maxWords", Public.of(words.toString()))
             if (question != null) put("question", question)
         }
@@ -173,7 +159,7 @@ class TextTasks(
             mode = mode,
             system = CloudText.fill(Public.of(prompt.system), mapOf("locale" to Public.of(languageName(input.locale)))),
             user = CloudText.fill(Public.of(prompt.user), values),
-            payload = input.profile,
+            payload = input.program.facts,
             schema = null,
             // Room for the words asked for, in any of the app's languages.
             maxOutputTokens = maxOf(256, words * 4),
@@ -210,6 +196,10 @@ class TextTasks(
         const val EXPLAIN_LONG: String = "explain.long"
         const val ASK_CHIP: String = "ask.chip"
         const val ASK_WORDS: Int = 80
+
+        /** The bundled prompts: only versions that send nothing about the person (Remote Config `prompt_explain_v` 5, `prompt_ask_v` 4). */
+        const val EXPLAIN_PROMPT: String = "explain.v5.md"
+        const val ASK_PROMPT: String = "ask.v4.md"
 
         private val LANGUAGE_NAMES = mapOf("en" to "English", "es" to "Spanish", "ko" to "Korean")
 

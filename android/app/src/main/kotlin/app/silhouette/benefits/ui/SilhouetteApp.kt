@@ -16,6 +16,8 @@ import app.silhouette.benefits.ui.screens.DocumentContent
 import app.silhouette.benefits.ui.screens.PreviewContent
 import app.silhouette.benefits.ui.screens.ProgramContent
 import app.silhouette.benefits.ui.screens.ReviewContent
+import app.silhouette.benefits.ui.screens.JudgesContent
+import app.silhouette.benefits.ui.screens.DeviceCheckContent
 import app.silhouette.benefits.ui.screens.QuestionContent
 import app.silhouette.benefits.ui.screens.ResultsContent
 import app.silhouette.benefits.ui.screens.StartContent
@@ -36,7 +38,16 @@ fun SilhouetteApp(app: AppController) {
                     // A new composition per screen, so drafts and scroll position never leak between screens.
                     key(route) {
                         Screen(paneTitle = paneTitle(app, route), modifier = Modifier.testTag("screen")) {
-                            if (app.content.isDemoPack) DemoBanner(t)
+                            if (app.content.isDemoPack || app.content.isDraftPack) {
+                                DemoBanner(
+                                    t,
+                                    draft = !app.content.isDemoPack && app.content.isDraftPack,
+                                    sourcesReadOn = app.content.pack.sourcesReadOn,
+                                    onDelete = { app.deleteEverything() },
+                                    onJudges = if (app.content.judgesHousehold != null) ({ app.navigate(Route.Judges) }) else null,
+                                    onDeviceCheck = if (app.deviceCheck != null) ({ app.navigate(Route.DeviceCheck) }) else null,
+                                )
+                            }
                             when (route) {
                                 Route.Start -> StartContent(app)
                                 is Route.Question -> QuestionContent(app, route)
@@ -45,13 +56,15 @@ fun SilhouetteApp(app: AppController) {
                                 Route.Document -> DocumentContent(app)
                                 Route.Preview -> PreviewContent(app)
                                 Route.Review -> ReviewContent(app)
+                                Route.Judges -> JudgesContent(app)
+                                Route.DeviceCheck -> DeviceCheckContent(app)
                             }
                             Footer(t, onDelete = { app.deleteEverything() })
                         }
                     }
                 }
             }
-            LeavingBar(t, app.outbound)
+            LeavingBar(t, app.outbound, onDelete = { app.deleteEverything() }, openRequest = app.recordOpenRequests)
         }
         }
     }
@@ -67,5 +80,7 @@ private fun paneTitle(app: AppController, route: Route): String {
         Route.Document -> t("doc.title")
         Route.Preview -> t("preview.title")
         Route.Review -> t("review.title")
+        Route.Judges -> t("judges.title")
+        Route.DeviceCheck -> t("deviceCheck.title")
     }
 }

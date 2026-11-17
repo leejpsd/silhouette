@@ -50,7 +50,7 @@ class AnswersControllerTest {
 
     private fun plan(length: ExplainLength, answers: QuickCheckAnswers = People.first): Pair<TextPlan, String> {
         val silhouette = People.silhouette(answers)
-        val input = People.programs.explainInput(People.strings(), silhouette, "food-help")
+        val input = People.programs.explainInput(People.strings(), "food-help")
         return tasks.planExplain(input, length) to silhouette.canonical.value
     }
 
@@ -148,7 +148,7 @@ class AnswersControllerTest {
         start("a", ExplainLength.LONG)
         controller.send("a")
         scope.advanceUntilIdle()
-        assertEquals(RequestState.Failed("error.quotaDaily", canRetry = false), controller.state("a"))
+        assertEquals(RequestState.Failed("error.quotaDailyAnswers", canRetry = false), controller.state("a"))
 
         port.failure = ModelFailure(FailureKind.CLOUD, "IOException")
         start("b", ExplainLength.LONG)

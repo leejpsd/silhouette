@@ -21,6 +21,8 @@ kotlin {
 
 dependencies {
     api(libs.kotlinx.serialization.json)
+    // The on-device reading asks the device part by part (suspending calls).
+    api(libs.kotlinx.coroutines.core)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)

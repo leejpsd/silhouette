@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LoggedModelPortTest {
@@ -38,11 +39,53 @@ class LoggedModelPortTest {
     }
 
     @Test
-    fun `an answer from the device is recorded as answered on this device`() = runBlocking {
+    fun `a device-first call on a device with a model runs there only and makes no request`() = runBlocking {
         val log = OutboundLog()
-        LoggedModelPort(FakeModelPort(FakeModelPort.reply("{}", InferenceSource.ON_DEVICE)), log, "m").generate(call)
-        assertEquals(OutboundLog.Status.KEPT_ON_DEVICE, log.entries.value.single().status)
+        val inner = FakeModelPort(FakeModelPort.reply("{}", InferenceSource.ON_DEVICE))
+        var gated = 0
+        LoggedModelPort(inner, log, "m", gate = { gated++; true }, deviceAvailable = { true }).generate(call)
+        assertTrue(inner.calls.single().deviceAttempt)
+        assertEquals(0, gated)
+        val entry = log.entries.value.single()
+        assertEquals(OutboundLog.Status.KEPT_ON_DEVICE, entry.status)
+        assertEquals("", entry.destination)
+        assertNull(entry.payload)
         assertEquals(emptyList<OutboundLog.Entry>(), log.leftDevice)
+    }
+
+    @Test
+    fun `a device failure is not repeated in the cloud by the port`() {
+        val log = OutboundLog()
+        val inner = FakeModelPort(FakeModelPort.fail(FailureKind.CLOUD, "IOException"))
+        val failure = assertThrows(ModelFailure::class.java) { runBlocking { LoggedModelPort(inner, log, "m", deviceAvailable = { true }).generate(call) } }
+        assertEquals(FailureKind.DEVICE_FAILED, failure.kind)
+        assertEquals(1, inner.calls.size)
+        assertTrue(log.entries.value.isEmpty())
+    }
+
+    @Test
+    fun `no App Check token, no request`() {
+        val log = OutboundLog()
+        val inner = FakeModelPort(FakeModelPort.reply("{}", InferenceSource.IN_CLOUD))
+        val port = LoggedModelPort(inner, log, "m", gate = { false })
+        val failure = assertThrows(ModelFailure::class.java) { runBlocking { port.generate(call) } }
+        assertEquals(LoggedModelPort.NO_APP_CHECK, failure.reason)
+        assertTrue(inner.calls.isEmpty())
+        val entry = log.entries.value.single()
+        assertEquals(OutboundLog.Status.BLOCKED, entry.status)
+        assertEquals(OutboundLog.NO_APP_CHECK, entry.failureReason)
+        assertTrue(log.leftDevice.isEmpty())
+    }
+
+    @Test
+    fun `a device-first call without a device model goes to the cloud through the gate`() = runBlocking {
+        val log = OutboundLog()
+        val inner = FakeModelPort(FakeModelPort.reply("{}", InferenceSource.IN_CLOUD))
+        var gated = 0
+        LoggedModelPort(inner, log, "m", gate = { gated++; true }, deviceAvailable = { false }).generate(call)
+        assertEquals(1, gated)
+        assertEquals(CallMode.ONLY_IN_CLOUD, inner.calls.single().mode)
+        assertEquals(OutboundLog.Status.SENT, log.entries.value.single().status)
     }
 
     @Test

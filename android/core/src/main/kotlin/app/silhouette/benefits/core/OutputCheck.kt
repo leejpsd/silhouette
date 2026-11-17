@@ -10,11 +10,17 @@ import java.util.Locale
 // Checks on model text. Contract: shared/prompts/OUTPUT_CHECKS.md, phrases in
 // shared/prompts/output-checks.json. A model explains; it never decides.
 
-/** Which phrases apply: `general` (the model only knows the silhouette) also blocks hedged results. */
+/** Which phrases apply: `general` (the model knows nothing about the person) blocks every list. */
 public enum class OutputScope(public val wire: String) { GENERAL("general"), PERSONAL("personal") }
 
 /** The phrase lists of one language. */
-public class OutputPhrases(public val allowBefore: List<String>, public val definite: List<String>, public val overall: List<String>)
+public class OutputPhrases(
+    public val allowBefore: List<String>,
+    public val definite: List<String>,
+    public val positive: List<String>,
+    public val negative: List<String>,
+    public val criterion: List<String>,
+)
 
 /** shared/prompts/output-checks.json */
 public class OutputChecks(private val locales: Map<String, OutputPhrases>) {
@@ -25,7 +31,7 @@ public class OutputChecks(private val locales: Map<String, OutputPhrases>) {
             val locales = ((json as JsonObject)["locales"] as JsonObject).mapValues { (_, v) ->
                 val o = v as JsonObject
                 fun list(key: String) = (o[key] as? JsonArray)?.map { (it as JsonPrimitive).content } ?: emptyList()
-                OutputPhrases(list("allowBefore"), list("definite"), list("overall"))
+                OutputPhrases(list("allowBefore"), list("definite"), list("positive"), list("negative"), list("criterion"))
             }
             require("en" in locales) { "output checks need an en entry" }
             return OutputChecks(locales)
@@ -33,21 +39,31 @@ public class OutputChecks(private val locales: Map<String, OutputPhrases>) {
     }
 }
 
+/** Soft hyphen, zero-width characters, word joiner and byte-order mark, removed before matching. */
+private val INVISIBLE = Regex("[\\u00AD\\u200B-\\u200D\\u2060\\uFEFF]")
+
 /** JavaScript's `\s`: Unicode white space and line terminators, plus U+FEFF. */
 private val WHITE_SPACE = Regex("[\\t\\n\\u000B\\f\\r \\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF]+")
 
 /**
  * True when [text] states a result that only the rules may state (OUTPUT_CHECKS.md "Matching"):
- * normalized to NFC, lowercased locale-independently, curly apostrophes made straight and white
- * space collapsed; any occurrence of a phrase blocks unless the text before it ends with one of
- * `allowBefore`.
+ * normalized to NFC, lowercased locale-independently, invisible characters removed, curly
+ * apostrophes made straight and white space collapsed; any occurrence of a phrase blocks unless the
+ * text before it ends with one of `allowBefore`. [locale] is the answer language of the request.
+ * For scope `personal`, [verdict] is the verdict on screen: a hedge that contradicts it is blocked.
  */
-public fun modelTextIsBlocked(text: String, locale: String, scope: OutputScope, checks: OutputChecks): Boolean {
+public fun modelTextIsBlocked(text: String, locale: String, scope: OutputScope, checks: OutputChecks, verdict: Verdict? = null): Boolean {
     val rules = checks.forLocale(locale)
     val haystack = Normalizer.normalize(text, Normalizer.Form.NFC).lowercase(Locale.ROOT)
+        .replace(INVISIBLE, "")
         .replace('‘', '\'').replace('’', '\'')
         .replace(WHITE_SPACE, " ")
-    val phrases = if (scope == OutputScope.GENERAL) rules.definite + rules.overall else rules.definite
+    val phrases = when {
+        scope == OutputScope.GENERAL -> rules.definite + rules.positive + rules.negative + rules.criterion
+        verdict == Verdict.UNLIKELY -> rules.definite + rules.positive
+        verdict == Verdict.LIKELY -> rules.definite + rules.negative
+        else -> rules.definite
+    }
     for (phrase in phrases) {
         var at = haystack.indexOf(phrase)
         while (at != -1) {

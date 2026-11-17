@@ -126,7 +126,7 @@ class AnswersController(
                 states[key] = RequestState.Failed("answers.blocked", canRetry = false)
             } catch (failure: ModelFailure) {
                 val key2 = errorKey(failure)
-                states[key] = RequestState.Failed(key2, canRetry = key2 != "error.quotaDaily")
+                states[key] = RequestState.Failed(key2, canRetry = key2 != "error.quotaDailyAnswers")
             } catch (_: Exception) {
                 states[key] = RequestState.Failed("answers.error", canRetry = true)
             } finally {
@@ -144,7 +144,7 @@ class AnswersController(
 
         /** The copy key for a failed answer. Reasons are SDK error names or short codes, never user values. */
         fun errorKey(failure: ModelFailure): String = when {
-            failure.reason == "quota-daily" -> "error.quotaDaily"
+            failure.reason == "quota-daily" -> "error.quotaDailyAnswers"
             failure.reason.contains("Quota", ignoreCase = true) -> "error.quota"
             failure.kind != FailureKind.CLOUD -> "error.on-device-unavailable"
             failure.reason.contains("Timeout") || failure.reason.contains("IOException") || failure.reason.contains("UnknownHost") -> "error.network"

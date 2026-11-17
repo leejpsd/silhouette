@@ -34,7 +34,7 @@ class PointerRequestBuilderTest {
 
     @Test
     fun `the cloud schema is the derived model schema, every field required and nullable`() {
-        val call = builder.build(PointerRequest(skeleton, DocType.PAYSTUB, "en"), CallMode.ONLY_IN_CLOUD, 3)
+        val call = builder.build(PointerRequest(skeleton, DocType.PAYSTUB, "en"), CallMode.PREFER_ON_DEVICE, 3)
         val schema = call.schema as SchemaNode.Obj
         val pointer = content.pointerSchemas.getValue("pointer.paystub.json")
         val fields = (pointer["properties"] as JsonObject).keys.toList()
@@ -48,7 +48,9 @@ class PointerRequestBuilderTest {
         val deductions = schema.properties.getValue("deductions") as SchemaNode.Arr
         assertEquals(listOf("amount"), (deductions.items as SchemaNode.Obj).required)
         // The on-device model gets the same schema as text (JSON Schema dialect).
-        val text = call.user.text.substringAfter("JSON schema of the answer:\n")
+        val text = call.user.text.substringAfter("Answer with JSON that matches this schema:\n")
+        // A cloud request carries the prompt alone (shared/prompts/pointer-extract.v5.md).
+        assertFalse(builder.build(PointerRequest(skeleton, DocType.PAYSTUB, "en"), CallMode.ONLY_IN_CLOUD, 5).user.text.contains("Answer with JSON"))
         assertEquals(JsonArray(fields.map { JsonPrimitive(it) }), (Json.parseToJsonElement(text) as JsonObject)["required"])
     }
 

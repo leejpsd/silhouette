@@ -44,6 +44,8 @@ import app.silhouette.benefits.quickcheck.parseIncomeAmount
 import app.silhouette.benefits.quickcheck.Step
 import app.silhouette.benefits.quickcheck.draftToValue
 import app.silhouette.benefits.quickcheck.incomeAmountError
+import app.silhouette.benefits.quickcheck.isMoneyVariable
+import app.silhouette.benefits.core.typedAmountHasTooManyDecimals
 import app.silhouette.benefits.quickcheck.initialDraft
 import app.silhouette.benefits.quickcheck.stepCount
 import app.silhouette.benefits.quickcheck.validateAnswer
@@ -85,8 +87,17 @@ fun QuestionContent(app: AppController, route: Route.Question) {
         }
         if (problem != null) {
             // A refused typed income says which rule it broke.
-            val shown = if (problem == AnswerError.AMOUNT && step is Step.Income && choice == EXACT_CHOICE) incomeAmountError(text) else problem
-            errorText = if (step is Step.IntQuestion) t(shown.copyKey, "min" to step.min, "max" to step.max) else t(shown.copyKey)
+            val money = step is Step.IntQuestion && isMoneyVariable(step.id)
+            val shown = when {
+                problem == AnswerError.AMOUNT && step is Step.Income && choice == EXACT_CHOICE -> incomeAmountError(text)
+                money && text.isNotBlank() && typedAmountHasTooManyDecimals(text) -> AnswerError.AMOUNT_DECIMALS
+                else -> problem
+            }
+            errorText = when {
+                step is Step.IntQuestion && money -> t(shown.copyKey, "min" to t.money(step.min.toDouble()), "max" to t.money(step.max.toDouble()))
+                step is Step.IntQuestion -> t(shown.copyKey, "min" to step.min, "max" to step.max)
+                else -> t(shown.copyKey)
+            }
             return
         }
         app.answer(step.id, value)
@@ -98,7 +109,30 @@ fun QuestionContent(app: AppController, route: Route.Question) {
     if (step.sensitive) PrivateNote(t("sensitive.note"), Modifier.testTag("sensitive-note"))
 
     when (step) {
-        is Step.IntQuestion -> Stepper(
+        is Step.IntQuestion -> if (isMoneyVariable(step.id)) {
+            // An amount of money is typed, and shown as understood.
+            OutlinedTextField(
+                value = text,
+                onValueChange = {
+                    text = it
+                    errorText = null
+                },
+                label = { Text(t("question.${step.id}.label")) },
+                singleLine = true,
+                isError = errorText != null,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { submit() }),
+                textStyle = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.fillMaxWidth().testTag("amount-field"),
+            )
+            parseIncomeAmount(text)?.takeIf { text.isNotBlank() }?.let { amount ->
+                Text(
+                    t("review.understood", "amount" to t.money(Math.round(amount).toDouble())),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.testTag("amount-understood").semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
+        } else Stepper(
             t = t,
             step = step,
             text = text,
@@ -157,7 +191,7 @@ fun QuestionContent(app: AppController, route: Route.Question) {
                 // Show the amount exactly as understood, so a misplaced separator is caught before continuing.
                 parseIncomeAmount(text)?.takeIf { text.isNotBlank() && it <= MAX_EXACT_INCOME }?.let { amount ->
                     Text(
-                        t("q.amountUnderstood", "amount" to t.decimal(amount)),
+                        t("q.amountUnderstood", "amount" to t.money(amount)),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .testTag("amount-understood")

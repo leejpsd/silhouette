@@ -31,9 +31,46 @@ class PointerPrompts(private val versions: Map<Int, PromptTemplate>) {
         require(versions.isNotEmpty()) { "no bundled pointer prompt" }
     }
 
-    fun forVersion(version: Int?): PromptTemplate = versions[version] ?: versions.getValue(versions.keys.max())
+    fun forVersion(version: Int?): PromptTemplate = versions.getValue(resolve(version))
+
+    /** The bundled version Remote Config names, or the newest bundled one for a value the app does not bundle. */
+    fun resolve(version: Int?): Int = if (version != null && version in versions) version else versions.keys.max()
 
     companion object {
-        val BUNDLED: List<Int> = listOf(2, 3, 4)
+        val BUNDLED: List<Int> = listOf(2, 3, 4, 5)
+
+        /** From this version on, a paystub is read in parts on a device whose model is available (DEVICE_READING.md). */
+        const val READS_IN_PARTS_FROM: Int = 5
+    }
+}
+
+/**
+ * The texts of shared/prompts/pointer-extract-device.v1.md, one per part of the on-device reading.
+ * Each is added to the pointer-extract system instruction after a blank line. They are exact and
+ * value-free.
+ */
+class DevicePartPrompts(val core: String, val gross: String, val deductions: String, val deductionsAgain: String) {
+    fun forPart(part: app.silhouette.benefits.core.DevicePart): String = when (part) {
+        app.silhouette.benefits.core.DevicePart.CORE -> core
+        app.silhouette.benefits.core.DevicePart.GROSS -> gross
+        app.silhouette.benefits.core.DevicePart.DEDUCTIONS -> deductions
+        app.silhouette.benefits.core.DevicePart.DEDUCTIONS_AGAIN -> deductionsAgain
+        app.silhouette.benefits.core.DevicePart.WHOLE -> ""
+    }
+
+    companion object {
+        fun parse(markdown: String): DevicePartPrompts {
+            fun section(title: String): String {
+                val start = markdown.indexOf("\n## $title\n")
+                require(start >= 0) { "pointer-extract-device: missing section \"$title\"" }
+                val body = markdown.substring(start + title.length + 5)
+                val end = body.indexOf("\n## ").let { if (it < 0) body.length else it }
+                return body.substring(0, end).trim()
+            }
+            val deductions = section("Deductions part")
+            // "The text of the deductions part, a line break, then:" followed by a blank line and the added sentence.
+            val again = section("Deductions part, asked again").substringAfter("\n\n").trim()
+            return DevicePartPrompts(section("Core part"), section("Gross part"), deductions, "$deductions\n$again")
+        }
     }
 }

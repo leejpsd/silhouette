@@ -23,7 +23,7 @@ class SampleAnswerKeyExtractor(private val samples: List<Sample>) : PointerExtra
 
     /** The sample documents' fixed answers make no request. */
 
-    override suspend fun extract(request: PointerRequest): PointerResult {
+    override suspend fun extract(request: PointerRequest, options: ExtractOptions): PointerResult {
         val sample = samples.firstOrNull { it.skeleton == request.skeleton && it.language == request.language } ?: throw ExtractorUnavailable()
         return PointerResult(sample.pointers, InferenceSource.SAMPLE_ANSWER_KEY, REASON)
     }

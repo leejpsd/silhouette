@@ -42,6 +42,10 @@ import app.silhouette.benefits.core.CheckStatus
 import app.silhouette.benefits.core.FieldKind
 import app.silhouette.benefits.core.SourceSegment
 import app.silhouette.benefits.document.RowStatus
+import app.silhouette.benefits.document.CHECK_FIELDS
+import app.silhouette.benefits.document.leadAndRest
+import app.silhouette.benefits.document.nothingFound
+import app.silhouette.benefits.ui.Route
 import app.silhouette.benefits.i18n.Strings
 import app.silhouette.benefits.ui.AppController
 import app.silhouette.benefits.ui.ChoiceRow
@@ -72,112 +76,32 @@ fun ReviewContent(app: AppController) {
     val review = app.review
     val extraction = app.document.extraction
 
+    // The device read nothing at all: this is probably not a paystub.
+    if (extraction != null && !review.manual && nothingFound(extraction.fields) && !app.typingAnyway) {
+        ScreenHeading(t("review.notDocument.title"))
+        InferenceBadge(t, extraction.source, extraction.reason, detail = extraction.noDeviceModel.takeIf { it }?.let { t("reason.detail.noDeviceModel") })
+        Lead(t("review.notDocument.body"))
+        PrimaryButton(t("review.notDocument.typeIn"), onClick = app::typeAnyway, modifier = Modifier.testTag("not-document-type"))
+        SecondaryButton(t("review.notDocument.another"), onClick = { app.navigate(Route.Document) })
+        return
+    }
     ScreenHeading(t("review.title"))
-    extraction?.let { InferenceBadge(t, it.source, it.reason) }
+    extraction?.let { InferenceBadge(t, it.source, it.reason, detail = it.noDeviceModel.takeIf { b -> b }?.let { t("reason.detail.noDeviceModel") }) }
     Lead(if (review.manual) t("review.manualLead") else t("review.lead"))
     if (!review.manual && review.pending > 0) {
-        SecondaryButton(t("review.confirmAll"), onClick = app::confirmAll, modifier = Modifier.testTag("confirm-all"))
+        SecondaryButton(t("review.confirmAllCount", "count" to review.pending), onClick = app::confirmAll, modifier = Modifier.testTag("confirm-all"))
+        Meta(t("review.pending", "count" to review.pending))
     }
-
-    for (row in review.rows) {
-        var editing by rememberSaveable(row.name) { mutableStateOf(false) }
-        var draft by rememberSaveable(row.name) { mutableStateOf(row.text) }
-        var invalid by rememberSaveable(row.name) { mutableStateOf(false) }
-        val label = t("field.paystub.${row.name}")
-        Panel(Modifier.testTag("field-${row.name}")) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(d.xs)) {
-                Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                if (row.status == RowStatus.CONFIRMED) {
-                    Text(
-                        "✓ " + t("review.confirmed"),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = LocalSilhouetteColors.current.verdictLikely,
-                        modifier = Modifier.testTag("confirmed-${row.name}"),
-                    )
-                }
-            }
-            if (editing) {
-                if (row.kind == FieldKind.ENUM) {
-                    Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(d.xs)) {
-                        for (option in listOf("") + row.options) {
-                            ChoiceRow(
-                                if (option.isEmpty()) t("option.none") else t("option.payFrequency.$option"),
-                                selected = draft == option,
-                                onSelect = { draft = option },
-                                modifier = Modifier.testTag("edit-${row.name}-${option.ifEmpty { "none" }}"),
-                            )
-                        }
-                    }
-                } else {
-                    OutlinedTextField(
-                        value = draft,
-                        onValueChange = {
-                            draft = it
-                            invalid = false
-                        },
-                        label = { Text(label) },
-                        singleLine = true,
-                        isError = invalid,
-                        keyboardOptions = KeyboardOptions(keyboardType = if (row.kind == FieldKind.NUMBER) KeyboardType.Decimal else KeyboardType.Text),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("edit-${row.name}")
-                            .semantics { if (invalid) error(t("review.invalidNumber")) },
-                    )
-                }
-                if (invalid) {
-                    Text(
-                        t("review.invalidNumber"),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
-                    )
-                }
-                PrimaryButton(t("review.save"), onClick = {
-                    if (app.saveRow(row.name, draft)) editing = false else invalid = true
-                }, modifier = Modifier.testTag("save-${row.name}"))
-                QuietButton(t("review.cancel"), onClick = { editing = false })
-            } else {
-                Text(
-                    when {
-                        row.text.isEmpty() -> t("review.notFound")
-                        row.kind == FieldKind.ENUM -> t("option.payFrequency.${row.text}")
-                        else -> row.text
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (row.text.isEmpty()) FontWeight.Normal else FontWeight.SemiBold,
-                    color = if (row.text.isEmpty()) LocalSilhouetteColors.current.textMuted else MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.testTag("value-${row.name}"),
-                )
-                SourceLines(t, row.source)
-                Row(horizontalArrangement = Arrangement.spacedBy(d.xs)) {
-                    if (row.status == RowStatus.PENDING) {
-                        SecondaryButton(
-                            t("review.confirm"),
-                            onClick = { app.confirmRow(row.name) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .testTag("confirm-${row.name}")
-                                .semantics { contentDescription = "${t("review.confirm")}: $label" },
-                        )
-                    }
-                    QuietButton(
-                        t("review.edit"),
-                        onClick = {
-                            draft = row.text
-                            invalid = false
-                            editing = true
-                        },
-                        modifier = Modifier
-                            .testTag("edit-button-${row.name}")
-                            .semantics { contentDescription = "${t("review.edit")}: $label" },
-                    )
-                }
-            }
-        }
-    }
-
+    // What decides the yearly income first; everything else behind "More values", opened when it needs attention.
+    val flagged = review.result?.checks?.lastOrNull().orEmpty().filter { it.status == CheckStatus.WARN }.flatMap { CHECK_FIELDS[it.id].orEmpty() }.toSet()
+    val (leadRows, restRows) = leadAndRest(review, flagged)
+    var moreOpen by rememberSaveable { mutableStateOf(false) }
+    for (row in leadRows) FieldRow(app, row)
+    QuietButton(t("review.moreValues", "count" to restRows.size + review.deductions.size), onClick = { moreOpen = !moreOpen }, modifier = Modifier.testTag("more-values"))
+    if (moreOpen || "deductions" in flagged) {
+    for (row in restRows) FieldRow(app, row)
     SectionHeading(t("field.paystub.deductions"))
+    if (review.deductionsNotRead && review.deductions.isEmpty()) Meta(t("review.deductionsNotRead"), Modifier.testTag("deductions-not-read"))
     review.deductions.forEachIndexed { index, deduction ->
         Panel(Modifier.testTag("deduction-$index")) {
             OutlinedTextField(
@@ -201,6 +125,7 @@ fun ReviewContent(app: AppController) {
         }
     }
     QuietButton(t("review.addDeduction"), onClick = app::addDeduction, modifier = Modifier.testTag("add-deduction"))
+    }
 
     if (review.pending > 0) {
         Meta(t("review.pending", "count" to review.pending), Modifier.testTag("review-pending").semantics { liveRegion = LiveRegionMode.Polite })
@@ -208,7 +133,10 @@ fun ReviewContent(app: AppController) {
     PrimaryButton(t("review.continue"), onClick = { if (review.pending == 0) app.checkReview() }, modifier = Modifier.testTag("review-check"))
 
     review.result?.let { result ->
-        val current = result.checks.lastOrNull().orEmpty().filter { it.status != CheckStatus.SKIPPED }
+        // Deductions not read on this device: the net-sum check is not shown while none was added.
+        val current = result.checks.lastOrNull().orEmpty()
+            .filter { it.status != CheckStatus.SKIPPED }
+            .filterNot { review.deductionsNotRead && review.deductions.isEmpty() && it.id == "net-sum" }
         Panel(Modifier.testTag("checks")) {
             SectionHeading(t("review.checksTitle"))
             for (check in current) {
@@ -229,7 +157,7 @@ fun ReviewContent(app: AppController) {
         result.annualization?.let { annual ->
             Panel(Modifier.testTag("annual")) {
                 SectionHeading(t("review.annualTitle"))
-                val amount = t.number(annual.annualIncome)
+                val amount = t.money(annual.annualIncome.toDouble())
                 Text(amount, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.testTag("annual-amount"))
                 Text(basisLine(t, annual.basis, amount), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("annual-basis"))
                 Meta(t("review.stubsCount", "count" to (app.document.confirmedStubs.size + 1)))
@@ -310,4 +238,108 @@ private fun DeductionKind(t: Strings, kinds: List<String>, selected: String, onS
             }
         }
     }
+}
+
+/** One reviewed value next to its source line: confirm, change, or type it. */
+@Composable
+private fun FieldRow(app: AppController, row: app.silhouette.benefits.document.ReviewRow) {
+    val t = app.strings
+    val d = LocalDimens.current
+        var editing by rememberSaveable(row.name) { mutableStateOf(false) }
+        var draft by rememberSaveable(row.name) { mutableStateOf(row.text) }
+        var invalid by rememberSaveable(row.name) { mutableStateOf(false) }
+        val label = t("field.paystub.${row.name}")
+        Panel(Modifier.testTag("field-${row.name}")) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(d.xs)) {
+                Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                if (row.status == RowStatus.CONFIRMED) {
+                    Text(
+                        "✓ " + t("review.confirmed"),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = LocalSilhouetteColors.current.verdictLikely,
+                        modifier = Modifier.testTag("confirmed-${row.name}"),
+                    )
+                }
+            }
+            if (editing) {
+                if (row.kind == FieldKind.ENUM) {
+                    Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(d.xs)) {
+                        for (option in listOf("") + row.options) {
+                            ChoiceRow(
+                                if (option.isEmpty()) t("option.none") else t("option.payFrequency.$option"),
+                                selected = draft == option,
+                                onSelect = { draft = option },
+                                modifier = Modifier.testTag("edit-${row.name}-${option.ifEmpty { "none" }}"),
+                            )
+                        }
+                    }
+                } else {
+                    OutlinedTextField(
+                        value = draft,
+                        onValueChange = {
+                            draft = it
+                            invalid = false
+                        },
+                        label = { Text(label) },
+                        singleLine = true,
+                        isError = invalid,
+                        keyboardOptions = KeyboardOptions(keyboardType = if (row.kind == FieldKind.NUMBER) KeyboardType.Decimal else KeyboardType.Text),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("edit-${row.name}")
+                            .semantics { if (invalid) error(t("review.invalidNumber")) },
+                    )
+                }
+                if (invalid) {
+                    Text(
+                        t("review.invalidNumber"),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+                    )
+                }
+                PrimaryButton(t("review.save"), onClick = {
+                    if (app.saveRow(row.name, draft)) editing = false else invalid = true
+                }, modifier = Modifier.testTag("save-${row.name}"))
+                QuietButton(t("review.cancel"), onClick = { editing = false })
+            } else {
+                if (row.notRead && row.text.isEmpty()) Meta(t("review.fieldNotRead"), Modifier.testTag("not-read-${row.name}"))
+                Text(
+                    when {
+                        row.text.isEmpty() -> t("review.notFound")
+                        row.kind == FieldKind.ENUM -> t("option.payFrequency.${row.text}")
+                        else -> row.text
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (row.text.isEmpty()) FontWeight.Normal else FontWeight.SemiBold,
+                    color = if (row.text.isEmpty()) LocalSilhouetteColors.current.textMuted else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.testTag("value-${row.name}"),
+                )
+                SourceLines(t, row.source)
+                Row(horizontalArrangement = Arrangement.spacedBy(d.xs)) {
+                    if (row.status == RowStatus.PENDING) {
+                        SecondaryButton(
+                            t("review.confirm"),
+                            onClick = { app.confirmRow(row.name) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("confirm-${row.name}")
+                                .semantics { contentDescription = "${t("review.confirm")}: $label" },
+                        )
+                    }
+                    QuietButton(
+                        t("review.edit"),
+                        onClick = {
+                            draft = row.text
+                            invalid = false
+                            editing = true
+                        },
+                        modifier = Modifier
+                            .testTag("edit-button-${row.name}")
+                            .semantics { contentDescription = "${t("review.edit")}: $label" },
+                    )
+                }
+            }
+        }
+    
 }

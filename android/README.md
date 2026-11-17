@@ -9,6 +9,11 @@ and tests itself against the shared fixtures, read in place.
 
 What works today:
 
+- the **California rule pack** (`shared/rulepacks/us-ca`), shown as a labelled draft: a notice on
+  every screen with the date its numbers were read from official sources, each program's official
+  sources with that date, money in the pack's currency and number format in every language, and
+  periods and tax years in the reader's language. The invented `zz-test` pack is used only by the
+  tests and the conformance fixtures;
 - the **Quick Check**: a few questions, one per screen, then verdicts for every program in the
   rule pack, decided on the device by the deterministic rules engine;
 - the **document flow**: add a paystub (shared or pasted text, a text PDF, a photo read on the
@@ -20,7 +25,7 @@ Models run through **Firebase AI Logic** with hybrid inference:
 
 | Task (shared/routing.json) | Mode | Input |
 |---|---|---|
-| `document.pointer.extract` | `PREFER_ON_DEVICE`; an on-device failure is retried once with `ONLY_IN_CLOUD` (reason `on-device-failed`) | `Skeleton` only |
+| `document.pointer.extract` | `PREFER_ON_DEVICE`. On a phone whose model is available (and Remote Config `prompt_pointer_extract_v` 5 or more), a paystub is read in parts on the device, each part `ONLY_ON_DEVICE`, every answer checked by deterministic code (`shared/validation/DEVICE_READING.md`). A reading that does not hold up is repeated once with `ONLY_IN_CLOUD` (reason `on-device-failed`), only after "Send"; with "Keep everything on this device" nothing is sent | `Skeleton` only |
 | `document.photo.read` | `ONLY_ON_DEVICE`, one Bitmap per request; a result reported from the cloud is discarded | the photo (Raw), never sent |
 
 Every model result on screen carries the `ON_DEVICE` / `IN_CLOUD` badge and the routing reason. The
@@ -50,7 +55,9 @@ model can be reached (no network and no on-device model).
 | `JsonValues.kt` | JSON trees as engine values, with JavaScript number formatting so output is byte-identical across platforms |
 | `OutputCheck.kt` | `modelTextIsBlocked()`: refuses a model answer that states a result (`shared/prompts/OUTPUT_CHECKS.md`, `output-checks.json`) |
 | `Reasons.kt` | "Why this result": each criterion's state with the limit it compares and the person's value, from the rule engine |
-| `conformance/ConformanceSuite.kt` | Every case of the nine files in `shared/fixtures/conformance/` and of `shared/fixtures/canary/`, plus a check that the safe-character list and month names equal those of `shared/reference/silhouette.mjs`. The same suite runs on the JVM and on an Android runtime |
+| `DeviceReading.kt` | The on-device reading in parts: the response constraint, the checks of each part, fields left out as not read, values shown only when confirmed (`shared/validation/DEVICE_READING.md`) |
+| `DeviceCheck.kt` | The on-device check's scoring by value, summary, run-file name and schema check (`shared/validation/DEVICE_CHECK.md`) |
+| `conformance/ConformanceSuite.kt` | Every case of the twelve files in `shared/fixtures/conformance/` and of `shared/fixtures/canary/`, plus a check that the safe-character list and month names equal those of `shared/reference/silhouette.mjs`. The same suite runs on the JVM and on an Android runtime |
 
 How the routing rule is enforced:
 
@@ -108,14 +115,38 @@ Program detail, below the result:
 
 App chrome:
 
-- **Demo banner** whenever a synthetic rule pack (`zz-test`) is active.
-- **"Leaving your device" bar** on every screen. It reads only `OutboundLog`, which records every
-  request before it is made (attempted), then sent with its response, failed with a reason, or
-  answered on this device, with the request path, the model and the exact cloud-safe payload. It
-  is stored encrypted. App Check token requests are recorded when the SDK reports a new token;
-  Remote Config fetches are recorded like model requests. Nothing is requested at start-up.
+- **Draft or demo notice** under the header; "More" opens a sheet with the whole notice, "For
+  judges: try it in two minutes", "Check the on-device model" and "Delete everything".
+- **"Leaving your device" bar** on every screen (`shared/RECORD.md`). It reads only `OutboundLog`.
+  Work on the device makes no request at all. App Check exists only from the first cloud request
+  the person chose to send, and every cloud request first obtains a limited-use App Check token;
+  without one the request is not made and is recorded as stopped. Statuses: sending, sent, not
+  completed (with the reason), stopped before it left, and answered on this device (kept: no host,
+  no body, never counted as sent). The number is what left; the line under it splits it into what
+  carried something of the person's and the rest. Remote Config is fetched after the first request
+  that went to the cloud. The record is stored encrypted, with the date it was last deleted.
 - **"Delete everything"**, behind a confirmation. It deletes the stored answers, the Keystore key,
   the language choice and the outbound log.
+
+The two-minute path (`judges`): fill the Quick Check with the prepared household
+(`shared/rulepacks/us-ca/judges-household.json`), open the sample paystub's silhouette, open the
+record.
+
+The on-device check (`shared/validation/DEVICE_CHECK.md`): the 14 synthetic cases run through the
+app's own tasks; the run file (version 3) is saved in the app's storage
+(`files/device-check/device-check-….json`) when the run finishes and can be shared. Without a
+device model the page says so and can show the bundled reference recording, labelled as a
+recording with its date, client and platform. A launch extra opens the check and starts it, with
+one or three repetitions:
+
+```bash
+adb shell am start -n app.silhouette.benefits/.MainActivity --ei deviceCheck 3
+adb shell run-as app.silhouette.benefits ls files/device-check
+adb exec-out run-as app.silhouette.benefits cat files/device-check/<file>.json > <file>.json
+```
+
+A build without `app/google-services.json` builds and runs without models: Firebase is not
+configured, so documents are typed or read from the samples' answer keys.
 
 Answers:
 
@@ -137,19 +168,19 @@ Accessibility:
   use the right voice.
 - UI tests run the Accessibility Test Framework checks on every action.
 
-The build task `syncSharedContract` copies `shared/copy`, `shared/rulepacks/zz-test`,
-`shared/bands`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, the pointer schemas and
-`shared/samples` and the prompts into generated assets
+The build task `syncSharedContract` copies `shared/copy`, `shared/rulepacks/us-ca`,
+`shared/bands`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, the pointer schemas,
+`shared/samples`, the prompts and the on-device check's fixtures into generated assets
 (`assets/shared/…`). `syncConformanceFixtures` does the same for the instrumented-test APK. Nothing
 is copied by hand.
 
 ## Firebase setup
 
 - Add `app/google-services.json` for the Firebase project (it is git-ignored and never committed).
-- App Check: debug builds use the debug provider, release builds Play Integrity. On the first run
-  of a debug build, logcat prints `Firebase App Check debug token: …`
-  (`adb logcat | grep "App Check debug token"`). Register that token in the Firebase console under
-  App Check → Apps → Manage debug tokens. Never put the token in the repository.
+- App Check: debug builds use the debug provider, release builds Play Integrity. The provider is
+  installed before the first cloud request. On that first request of a debug build, logcat prints
+  `Firebase App Check debug token: …`; register it in the Firebase console under App Check → Apps →
+  Manage debug tokens. Never put the token in the repository.
 - Dependencies: Firebase BoM 35.2.0 (`firebase-ai` 18.2.0, `firebase-config` 24.0.1,
   `firebase-appcheck-playintegrity` / `firebase-appcheck-debug` 20.1.0),
   `firebase-ai-ondevice` 16.0.0-beta08 (not in the BoM yet; it brings the platform's on-device
@@ -169,6 +200,7 @@ is copied by hand.
 ./gradlew :core:test                 # conformance, canary, number format, data types, routing proof (JVM)
 ./gradlew :app:testDebugUnitTest     # Quick Check, documents, model routing and explanations with fakes, consent, Remote Config, routing rule (JVM)
 ./gradlew :app:assembleDebug         # app/build/outputs/apk/debug/app-debug.apk
+./gradlew :app:testDebugUnitTest -Psnapshots   # every screen and state as PNGs, no device (below)
 ./gradlew :app:connectedDebugAndroidTest   # on a device or emulator, see below
 ```
 
@@ -196,7 +228,25 @@ is copied by hand.
 # adb shell settings put system font_scale 2.0
 ```
 
+## Snapshots
+
+`./gradlew :app:testDebugUnitTest -Psnapshots` renders every screen and state on the JVM
+(Robolectric with native graphics; synthetic data and fake models) in English and Spanish, light
+and dark, at the default and the largest font scale, into one folder:
+`app/build/snapshots/{nn}-{state}-{language}-{light|dark}-font{100|200}.png`. The window is
+411 × 2800 dp at 1×, so a whole screen fits in one image; an open dialog or menu is drawn over the
+dimmed screen. The ordinary unit tests leave the snapshots out.
+
 ## Known limits
+
+- Firebase AI Logic's on-device path on Android (`firebase-ai-ondevice` 16.0.0-beta08) takes no
+  response schema: a request carries text only, and `generateObject` needs a class generated at
+  compile time, which cannot hold this document's placeholder ids. The strict constraint of each
+  part is therefore written into the request after the line `Answer with JSON that matches this
+  schema:`; the device is not forced to follow it, and the checks of
+  `shared/validation/DEVICE_READING.md` apply to every answer unchanged.
+- A device reading is not started ahead while the preview is open; it starts with "Send" or "Keep
+  everything on this device".
 
 - Design tokens are read leniently: a value the app cannot use as a number is skipped. Headline
   sizes are capped for phone screens (screen titles 30, section headings 22) and tap targets are

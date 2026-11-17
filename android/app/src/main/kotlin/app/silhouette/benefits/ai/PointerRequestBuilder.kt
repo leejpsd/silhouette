@@ -15,18 +15,22 @@ import kotlinx.serialization.json.JsonObject
  * into the user content. The answer is untrusted either way: the Rehydrator validates every pointer.
  */
 class PointerRequestBuilder(private val prompts: PointerPrompts, private val pointerSchemas: Map<String, JsonObject>) {
+    /** The bundled prompt version in effect for a Remote Config value. */
+    fun resolve(version: Int?): Int = prompts.resolve(version)
 
     fun build(request: PointerRequest, mode: CallMode, promptVersion: Int?): ModelCall {
         val prompt = prompts.forVersion(promptVersion)
         val pointerSchema = pointerSchemas.getValue(request.docType.schemaFile)
         val cloudSchema = ModelSchema.toModelSchema(pointerSchema, requiredNullable = true, dialect = SchemaDialect.OPENAPI)
         val deviceSchema = ModelSchema.toModelSchema(pointerSchema, requiredNullable = true, dialect = SchemaDialect.JSONSCHEMA)
-        val user = CloudText.join(
-            listOf(
-                CloudText.fill(Public.of(prompt.user), mapOf("docType" to Public.of(request.docType.wire), "skeleton" to request.skeleton)),
-                CloudText.of(Public.of("JSON schema of the answer:\n$deviceSchema")),
-            ),
-        )
+        val content = CloudText.fill(Public.of(prompt.user), mapOf("docType" to Public.of(request.docType.wire), "skeleton" to request.skeleton))
+        // A cloud request carries the prompt alone; the schema goes in its generation config. A
+        // device-first request may run on the device, which takes text only, so it carries the schema too.
+        val user = if (mode == CallMode.PREFER_ON_DEVICE) {
+            CloudText.join(listOf(content, CloudText.of(Public.of("${DeviceReadingTask.SCHEMA_LINE}\n$deviceSchema"))))
+        } else {
+            content
+        }
         return ModelCall(
             task = TASK,
             mode = mode,

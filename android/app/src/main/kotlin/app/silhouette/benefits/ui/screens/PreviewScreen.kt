@@ -127,16 +127,29 @@ fun PreviewContent(app: AppController) {
     doc.error?.takeIf { it != "preview.noExtractor" }?.let {
         Text(t(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("preview-error").semantics { liveRegion = LiveRegionMode.Assertive })
     }
-    if (doc.sending) Meta(t("preview.sending"), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-    if (place != ReadingPlace.NOWHERE) {
-        PrimaryButton(
-            if (place == ReadingPlace.SAMPLE_ANSWERS) t("preview.sampleButton") else t("leaving.send"),
-            onClick = { if (!doc.sending) app.send() },
-            modifier = Modifier.testTag("preview-send"),
-        )
-        SecondaryButton(t("leaving.skip"), onClick = app::typeInstead, modifier = Modifier.testTag("preview-type"))
-    } else {
-        PrimaryButton(t("doc.manual"), onClick = app::typeInstead, modifier = Modifier.testTag("preview-type"))
+    // While a reading runs, the status line says which step it is on.
+    if (doc.sending) Meta(doc.stage?.let { t(it.copyKey) } ?: t("preview.sending"), Modifier.testTag("preview-stage").semantics { liveRegion = LiveRegionMode.Polite })
+    when {
+        doc.error == "error.on-device-unreliable" -> {
+            // Nothing was filled in and nothing was sent: send the silhouette, or type the numbers.
+            PrimaryButton(t("preview.sendSilhouette"), onClick = { if (!doc.sending) app.send() }, modifier = Modifier.testTag("preview-send-silhouette"))
+            SecondaryButton(t("error.typeInstead"), onClick = app::typeInstead, modifier = Modifier.testTag("preview-type"))
+        }
+        doc.error != null && doc.error != "preview.noExtractor" -> {
+            // A daily limit does not recover by trying again now.
+            if (doc.error != "error.quotaDaily") PrimaryButton(t("error.retry"), onClick = { if (!doc.sending) app.send() }, modifier = Modifier.testTag("preview-retry"))
+            SecondaryButton(t("error.typeInstead"), onClick = app::typeInstead, modifier = Modifier.testTag("preview-type"))
+        }
+        place != ReadingPlace.NOWHERE -> {
+            PrimaryButton(
+                if (place == ReadingPlace.SAMPLE_ANSWERS) t("preview.sampleButton") else t("leaving.send"),
+                onClick = { if (!doc.sending) app.send() },
+                modifier = Modifier.testTag("preview-send"),
+            )
+            // With a device model, keeping everything here still reads the silhouette on this device.
+            SecondaryButton(t("leaving.skip"), onClick = { if (!doc.sending) app.keepOnDevice() }, modifier = Modifier.testTag("preview-keep"))
+        }
+        else -> PrimaryButton(t("doc.manual"), onClick = app::typeInstead, modifier = Modifier.testTag("preview-type"))
     }
     QuietButton(t("q.back"), onClick = { app.navigate(Route.Document) })
 }

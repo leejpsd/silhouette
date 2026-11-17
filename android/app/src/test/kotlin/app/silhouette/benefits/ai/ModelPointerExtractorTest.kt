@@ -23,8 +23,8 @@ class ModelPointerExtractorTest {
     private val backoffs = mutableListOf<Int>()
     private var prepared = 0
 
-    private fun extractor(port: ModelPort) =
-        ModelPointerExtractor(port, builder, settings, reachable = { true }, backoff = { backoffs += it }, beforeFirstRequest = { prepared++ })
+    private fun extractor(port: ModelPort, available: Boolean = true) =
+        ModelPointerExtractor(port, builder, settings, reachable = { true }, backoff = { backoffs += it }, beforeFirstRequest = { prepared++ }, deviceAvailable = { available })
 
     private fun request(language: String = "en") = PointerRequest(skeleton, DocType.PAYSTUB, language)
 
@@ -39,10 +39,22 @@ class ModelPointerExtractorTest {
     }
 
     @Test
-    fun `the SDK's own cloud fallback keeps the task's reason`() = runTest {
-        val result = extractor(FakeModelPort(reply(POINTERS, InferenceSource.IN_CLOUD))).extract(request())
+    fun `without a device model a device-first document goes to the cloud, and says why`() = runTest {
+        val port = FakeModelPort(reply(POINTERS, InferenceSource.IN_CLOUD))
+        val result = extractor(port, available = false).extract(request())
+        assertEquals(listOf(CallMode.ONLY_IN_CLOUD), port.calls.map { it.mode })
         assertEquals(InferenceSource.IN_CLOUD, result.inferenceSource)
         assertEquals("document-silhouette-only", result.reason)
+        assertTrue(result.noDeviceModel)
+    }
+
+    @Test
+    fun `keeping everything on the device without a device model sends nothing`() = runTest {
+        val port = FakeModelPort()
+        assertThrows(DeviceReadingUnavailable::class.java) {
+            kotlinx.coroutines.runBlocking { extractor(port, available = false).extract(request(), ExtractOptions(deviceOnly = true)) }
+        }
+        assertTrue(port.calls.isEmpty())
     }
 
     @Test
@@ -52,9 +64,9 @@ class ModelPointerExtractorTest {
         assertEquals(listOf(CallMode.PREFER_ON_DEVICE, CallMode.ONLY_IN_CLOUD), port.calls.map { it.mode })
         assertEquals(InferenceSource.IN_CLOUD, result.inferenceSource)
         assertEquals("on-device-failed", result.reason)
-        // The retry sends the same silhouette, nothing more.
+        // The retry sends the same silhouette, nothing more: the prompt alone, without the device's schema line.
         assertEquals(port.calls[0].payload, port.calls[1].payload)
-        assertEquals(port.calls[0].user, port.calls[1].user)
+        assertTrue(port.calls[0].user.text.startsWith(port.calls[1].user.text))
     }
 
     @Test
@@ -95,6 +107,7 @@ class ModelPointerExtractorTest {
         val result = extractor(port).extract(request("es"))
         assertEquals(listOf(CallMode.ONLY_IN_CLOUD), port.calls.map { it.mode })
         assertEquals("document-silhouette-only", result.reason)
+        assertTrue(!result.noDeviceModel)
         assertTrue(extractor(port).prefersDevice("ko"))
     }
 }

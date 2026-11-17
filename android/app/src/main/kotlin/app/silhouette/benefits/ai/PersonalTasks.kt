@@ -2,6 +2,7 @@ package app.silhouette.benefits.ai
 
 import app.silhouette.benefits.core.OutputChecks
 import app.silhouette.benefits.core.OutputScope
+import app.silhouette.benefits.core.Verdict
 import app.silhouette.benefits.core.modelTextIsBlocked
 
 // The person's own result: `explain.personal` and typed questions (`ask.freeText`), both
@@ -14,7 +15,10 @@ import app.silhouette.benefits.core.modelTextIsBlocked
 class PersonalResult(
     val locale: String,
     val programName: String,
+    /** `{programFacts}` (rulepacks/SPEC.md section 2.1), given as `{programSummaryFromRulePack}`. */
     val facts: String,
+    /** The verdict on screen: a reply whose hedge contradicts it is blocked (OUTPUT_CHECKS.md scope `personal`). */
+    val verdict: Verdict,
     val verdictLabel: String,
     /** `- {label}: {state}` lines, with ` (limit {limit}, yours {value})` where the rules compare with a limit. */
     val criteriaLines: String,
@@ -64,16 +68,16 @@ class PersonalTasks(private val model: OnDeviceText, private val prompts: Map<St
     }
 
     suspend fun explain(result: PersonalResult): PersonalAnswer =
-        run(explainRequest(result), result.locale, RoutingReason.YOUR_RESULT_STAYS_ON_DEVICE)
+        run(explainRequest(result), result, RoutingReason.YOUR_RESULT_STAYS_ON_DEVICE)
 
     suspend fun ask(question: String, result: PersonalResult): PersonalAnswer =
-        run(askRequest(question, result), result.locale, RoutingReason.TYPED_TEXT_MAY_BE_PERSONAL)
+        run(askRequest(question, result), result, RoutingReason.TYPED_TEXT_MAY_BE_PERSONAL)
 
-    /** One retry when the reply states a result as fact, then refused (scope `personal`). */
-    private suspend fun run(request: PersonalRequest, locale: String, reason: RoutingReason): PersonalAnswer {
+    /** One retry when the reply states a result as fact or contradicts the verdict on screen, then refused (scope `personal`). */
+    private suspend fun run(request: PersonalRequest, result: PersonalResult, reason: RoutingReason): PersonalAnswer {
         repeat(2) {
             val text = model.generate(request).trim()
-            if (!modelTextIsBlocked(text, locale, OutputScope.PERSONAL, checks)) return PersonalAnswer(text, reason)
+            if (!modelTextIsBlocked(text, result.locale, OutputScope.PERSONAL, checks, result.verdict)) return PersonalAnswer(text, reason)
         }
         throw AnswerBlocked()
     }
