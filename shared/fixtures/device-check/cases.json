@@ -103,7 +103,7 @@
       "id": "your own result (en)",
       "task": "explain.personal",
       "mode": "ONLY_ON_DEVICE",
-      "input": "the prepared household's own result for the pack's first program (fixtures/judges/household.us-ca.json), locale en"
+      "input": "the prepared household's own result for the pack's first program (rulepacks/us-ca/judges-household.json), locale en"
     },
     {
       "id": "typed question (en)",
