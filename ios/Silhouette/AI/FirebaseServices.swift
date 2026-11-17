@@ -15,6 +15,8 @@ import FirebaseAppCheck
 import FirebaseCore
 import FirebaseRemoteConfig
 import Foundation
+// Only for the response constraint's type (GenerationSchema); every call goes through Firebase AI Logic.
+import FoundationModels
 import SilhouetteCore
 import SilhouetteKit
 
@@ -100,10 +102,20 @@ final class FirebaseModelPort: ModelPort {
     }
 
     func generateOnDevice(_ call: DeviceCall) async throws -> ModelReply {
+        // Never hand a request that must stay on the device to an SDK call when the model is not ready.
+        guard deviceAvailability() == .available else { throw TaskError(.onDeviceUnavailable, "the on-device model is not available") }
         let session = ai.generativeModelSession(model: .systemModel(), instructions: call.system)
+        let options = GenerationOptionsChoice.foundationModels(FirebaseAI.GenerationOptions(maximumResponseTokens: call.maxOutputTokens))
         do {
-            let response = try await session.respond(
-                to: call.prompt, options: .foundationModels(FirebaseAI.GenerationOptions(maximumResponseTokens: call.maxOutputTokens)))
+            if let constraint = call.constraint {
+                // A reading part: the strict response constraint as the on-device schema (DeviceConstraint).
+                guard let schema = DeviceConstraint.schema(constraint) else { throw TaskError(.onDeviceUnavailable, "the constraint could not be expressed") }
+                let response = try await ConstrainedReply.$schema.withValue(schema) {
+                    try await session.respond(to: call.prompt, generating: ConstrainedReply.self, includeSchemaInPrompt: true, options: options.value)
+                }
+                return ModelReply(text: response.content.content.jsonString, modelVersion: response.rawResponse.modelVersion)
+            }
+            let response = try await session.respond(to: call.prompt, options: options.value)
             return ModelReply(text: response.content, modelVersion: response.rawResponse.modelVersion)
         } catch is CancellationError {
             throw TaskError(.cancelled, "cancelled")
@@ -183,5 +195,79 @@ final class FirebaseModelPort: ModelPort {
                            propertyOrdering: props.keys, description: description, nullable: nullable)
         default: return nil
         }
+    }
+}
+
+/// Options for an on-device call (a value wrapper so both respond calls take the same options).
+private enum GenerationOptionsChoice {
+    case foundationModels(FirebaseAI.GenerationOptions)
+    var value: FirebaseAI.GenerationOptions { switch self { case .foundationModels(let o): o } }
+}
+
+// MARK: - The response constraint on the device
+
+/// The reply of a reading part, generated under a schema built for this silhouette. The SDK takes the
+/// schema of a `Generable` type; this type's schema is the one set for the current call.
+struct ConstrainedReply: Generable {
+    @TaskLocal static var schema: GenerationSchema?
+    static var generationSchema: GenerationSchema { schema ?? GeneratedContent.generationSchema }
+
+    let content: GeneratedContent
+    init(_ content: GeneratedContent) throws { self.content = content }
+    var generatedContent: GeneratedContent { content }
+}
+
+/// The strict response constraint of a reading part (JSON Schema, shared/validation/DEVICE_READING.md
+/// section 2) as an on-device generation schema, without loosening it:
+/// - no other keys: the generated object has only the declared properties;
+/// - names only W ids, dates only D ids, amounts only N ids of this silhouette, enums only their
+///   options: string choices; a name is a list of at least one W id;
+/// - each deduction exactly `{amount, kind}`, an N id and a fixed kind.
+/// What cannot be expressed: "every key present, `null` allowed". A field the document lacks is left
+/// out instead of written as `null`, which the reading treats the same way; a field whose kind has no id
+/// in this silhouette (`{"type": "null"}`) is not offered at all.
+enum DeviceConstraint {
+    static func schema(_ constraint: JSON) -> GenerationSchema? {
+        var properties: [DynamicGenerationSchema.Property] = []
+        for (name, spec) in constraint["properties"]?.objectValue?.entries ?? [] {
+            guard let (schema, optional) = field(name, spec) else { continue }
+            properties.append(DynamicGenerationSchema.Property(name: name, schema: schema, isOptional: optional))
+        }
+        let root = DynamicGenerationSchema(name: "Reading", properties: properties)
+        return try? GenerationSchema(root: root, dependencies: [])
+    }
+
+    private static func choices(_ spec: JSON?) -> [String] { (spec?["enum"]?.arrayValue ?? []).compactMap(\.stringValue) }
+
+    private static func types(_ spec: JSON) -> [String] {
+        if let t = spec["type"]?.stringValue { return [t] }
+        return (spec["type"]?.arrayValue ?? []).compactMap(\.stringValue)
+    }
+
+    /// The schema of one field and whether it may be left out (`null` allowed).
+    private static func field(_ name: String, _ spec: JSON) -> (DynamicGenerationSchema, Bool)? {
+        let t = types(spec)
+        let nullable = t.contains("null")
+        if t == ["null"] { return nil }
+        if t.contains("array") {
+            let items = spec["items"] ?? .null
+            if items["type"]?.stringValue == "object" {
+                var props: [DynamicGenerationSchema.Property] = []
+                for (key, sub) in items["properties"]?.objectValue?.entries ?? [] {
+                    let options = choices(sub)
+                    guard !options.isEmpty else { return (DynamicGenerationSchema(arrayOf: DynamicGenerationSchema(name: "\(name)Item", properties: []),
+                                                                                  minimumElements: 0, maximumElements: 0), nullable) }
+                    props.append(DynamicGenerationSchema.Property(name: key, schema: DynamicGenerationSchema(name: "\(name)\(key)", anyOf: options)))
+                }
+                return (DynamicGenerationSchema(arrayOf: DynamicGenerationSchema(name: "\(name)Item", properties: props)), nullable)
+            }
+            let options = choices(items)
+            guard !options.isEmpty else { return nil }
+            let minimum = spec["minItems"]?.numberValue.map { Int($0) }
+            return (DynamicGenerationSchema(arrayOf: DynamicGenerationSchema(name: "\(name)Id", anyOf: options), minimumElements: minimum), nullable)
+        }
+        let options = choices(spec)
+        guard !options.isEmpty else { return nil }
+        return (DynamicGenerationSchema(name: "\(name)Choice", anyOf: options), nullable)
     }
 }

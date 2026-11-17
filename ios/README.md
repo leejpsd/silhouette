@@ -26,10 +26,12 @@ bundle.
 | `Silhouette/Design/` | The design system: theme and type from the tokens, the screen frame with the bottom block, sheets, controls, paper, markers, bars, grain and motion |
 | `Silhouette/Resources/Fonts/` | Darker Grotesque, Hanken Grotesk and DM Mono (TTF) with their SIL Open Font License texts; registered in `Silhouette/Info.plist` |
 | `Silhouette/AI/` | Firebase AI Logic, App Check and Remote Config (the only code that imports Firebase), the network monitor, and the scripted model used by UI tests |
-| `Silhouette/Resources/copy.local.json` | App strings not yet in `shared/copy/` (currently none; never shadows a shared key, a test checks this) |
-| `SilhouetteUITests/` | XCUITests for the Quick Check, document and answer flows, and a screenshot tour |
+| `Silhouette/Resources/copy.local.json` | App strings not in `shared/copy/`: the draft-rules sheet, the judges' path and the on-device check (never shadows a shared key, a test checks this) |
+| `Silhouette/Resources/DeviceCheck/` | The on-device check's fixed synthetic paystubs with their expected values, and a recorded run shown when this device has no model |
+| `SilhouetteUITests/` | XCUITests for the Quick Check, document and answer flows (including reading kept on the device), and a screenshot tour |
+| `Silhouette/Snapshots.swift`, `scripts/snapshots.sh` | Fast snapshots: the app sets each screen's state itself and writes PNG files (`make snapshots`) |
 | `project.yml` | XcodeGen spec; `Silhouette.xcodeproj` is generated from it |
-| `scripts/sync-shared.sh` | Build phase: copies `shared/copy`, `shared/rulepacks/zz-test`, `shared/bands`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, `shared/schemas/pointer.paystub.json`, `shared/samples` and `shared/prompts` into the app bundle under `Shared/` |
+| `scripts/sync-shared.sh` | Build phase: copies `shared/copy`, `shared/rulepacks/us-ca` (the pack and its copy), `shared/bands/us-ca.json`, `shared/design/tokens.json`, `shared/skeleton/allowlist`, `shared/schemas/pointer.paystub.json`, `shared/samples` and `shared/prompts` into the app bundle under `Shared/` |
 | `scripts/copy-firebase-config.sh` | Build phase: copies `Silhouette/GoogleService-Info.plist` into the bundle when it exists |
 | `scripts/routing-proof.sh` | Type-checks the probes in `RoutingProof/` |
 | `scripts/gen-edge-cases.mjs` | Regenerates `ios-edge-cases.json` from `shared/reference/silhouette.mjs` |
@@ -64,6 +66,8 @@ make test            # swift test in SilhouetteCore (macOS)
 make test-ios        # the same package tests on the iOS simulator (the Skeletonizer uses the OS's ICU)
 make ui-test         # XCUITests: Quick Check, document and answer flows (scripted model)
 make screenshots     # screenshot tour into SCREENSHOT_DIR (default build/screenshots, git-ignored)
+make snapshots       # fast snapshots of every screen and state into SNAPSHOT_DIR (default build/snapshots)
+make snapshots-device  # the same with a scripted on-device model, into build/snapshots-device
 make routing-proof   # compile-time routing check
 make build           # xcodebuild for SIMULATOR (default "iPhone 18 Pro")
 make project         # xcodegen generate
@@ -118,8 +122,12 @@ make project         # xcodegen generate
   up to the token cap (1.3×) and then relies on the size steps. Targets are at least 44 pt.
   Markers, bars and the count have spoken equivalents (verdict text, "hidden word", "hidden
   number", "hidden date", the count's subline).
-- **Demo notice.** Shown on every screen while the synthetic `zz-test` pack is in use; "More" opens
-  the demo rules, which also offer *Delete everything*.
+- **Rules.** The California pack `us-ca` (federal and California programs) is the default. It is a
+  draft: every screen says "Draft rules, read November 12, 2026." and "More" opens the draft-rules
+  sheet (what the draft means, *Delete everything*, the judges' path and the on-device check). A
+  program's page links to its official sources with the date each was read, the documents it asks
+  for and how to apply. Periods ("tax year 2026") are written in the reader's language. Investment
+  income is asked as an amount of money.
 - **Document flow.** A paystub comes from pasted or shared text, a PDF's text layer (PDFKit; no
   OCR), a built-in sample, or the numbers typed by hand. A photo needs an on-device model and
   says so. The document's language decides its allowlist (that language ∪ English), independent
@@ -127,14 +135,22 @@ make project         # xcodegen generate
   this phone; tapping a visible word hides it everywhere (its phrase too), with undo and the
   count of hidden numbers, dates and words.
 - **Pointer extraction.** `PointerExtractor` takes a `Skeleton` and nothing else. A model reads it
-  (`document.pointer.extract`, device first) after the person taps Send under the silhouette.
+  (`document.pointer.extract`, device first) after the person taps Send under the silhouette, or on
+  the device alone after *Keep everything on this device*. With prompt version 5 or later
+  (`prompt_pointer_extract_v`; a version the app does not bundle falls back to the newest bundled
+  one) the device reads in parts (`shared/prompts/DEVICE_READING.md`): the core fields, the gross
+  pay when needed, the deductions, and the deductions again; the screen names the part being read.
+  Each part is checked; fields that fail their check are left out and shown as "Not read on this
+  device". When the reading fails and the person chose to keep everything on the device, nothing is
+  filled in and nothing is sent; they can send the silhouette or type the numbers.
   Without a device model and without the network, a built-in sample is read by its answer key
   (`shared/samples/answers.json`, labelled "Sample answers, no AI", reason `sample-answer-key`);
   any other document is typed by hand.
 - **Review.** Each value sits next to the document line it came from and can be changed (amounts
   follow the typed-amount rule) or typed when not found. The checks of
   `shared/validation/SPEC.md` are listed in plain words, the yearly income is shown with its
-  arithmetic, and using it updates the Quick Check income and lists the verdicts that changed.
+  arithmetic and the date it was worked out from, and using it updates the Quick Check income and
+  lists the verdicts that changed.
 - **Document data stays `Raw`.** The text, the placeholder map, the values and the hidden words
   live in `Raw<DocumentDraft>`, are saved only in the encrypted store (a second sealed record),
   and are removed by *Delete everything*.
@@ -142,15 +158,40 @@ make project         # xcodegen generate
 - **Why this result.** Each criterion of a program with its state and, where the rules compare an
   answer with a limit, the limit and the person's value. From the rules on the device; no model.
   With a device model, "Explain my result on this device" puts it into words (`explain.personal`).
-- **About this program.** A general explanation (`explain.short` or `explain.long`) and prepared
-  questions (`ask.chip`), written by a model that is given the silhouette, the program facts and
-  the criterion states the rules reach from the silhouette alone, never a result. A typed question
+- **About this program.** A general explanation (`explain.short` or `explain.long`, prompt version
+  5) and prepared questions (`ask.chip`, version 4), written by a model that is given public
+  program information only (`{programFacts}`: the program's own text, limits and amounts), nothing
+  about the person and never a result. Replies are checked against the verdict the rules reached
+  (`shared/prompts/OUTPUT_CHECKS.md` version 2). A typed question
   (`ask.freeText`) is answered on the device only.
 
 UI tests and screenshots use launch arguments that are ignored otherwise: `-UITestResetAll`
 (start from a clean state), `-UITestAppearance dark|light`, `-UITestOffline` (show the offline
 state), and `-UITestModel none|device|cloud` (a scripted model instead of Firebase: no model
-call, no network; `cloud-slow`, `cloud-quota`, `cloud-blocked` script those request states).
+call, no network; `cloud-slow`, `cloud-quota`, `cloud-blocked` script those request states;
+`device-unreliable` a device reading that fails its checks; `device-notread` fields left out as not
+read). `-SnapshotCapture <folder>` (with a scripted model only) writes the fast snapshots.
+
+### The judges' path and the on-device check
+
+Both open from the draft-rules sheet only. *For judges* runs the prepared synthetic household,
+opens the sample paystub and shows the record of what left the device. *Check the on-device model*
+runs fixed synthetic cases through Firebase AI Logic: five paystubs read in parts, explanations and
+prepared questions in English and Spanish, and the two device-only tasks. For each case it shows
+where it finally ran, the time of each part, and whether the yearly-income inputs were right, not
+found or wrong. The run can be repeated three times, and the run file (`silhouette-device-check`,
+version 3, the same format as the web app's) is shared through the share sheet. Without a device
+model the screen says so and can show a bundled recorded run, labelled as a recording, or open a
+run file.
+
+### Snapshots
+
+`make snapshots` builds the app, installs it on `SIMULATOR` and launches it in capture mode: the app
+sets the state of every screen itself (no UI automation) and writes each one in light and dark,
+English and Spanish, default and largest text, long screens page by page. One configuration takes
+about 40 seconds (76 images); all eight about 5 minutes. `SNAPSHOT_CONFIGS=en-light,es-dark-ax5`
+and `SNAPSHOT_SCENES=results,program-caleitc` limit the run. `make snapshots-device` captures the
+scenes that need an on-device model with a scripted one.
 
 ### Fonts
 
@@ -172,8 +213,8 @@ weight, with open leading and line breaks between words.
 | Task (`shared/routing.json`) | Input | Where it runs |
 |---|---|---|
 | `document.pointer.extract` | `Skeleton` | Device first; if the device fails, the same silhouette once in the cloud (`on-device-failed`) |
-| `explain.short`, `ask.chip` | `Generalized`, `Public` | Device first; in the cloud when this device has no model |
-| `explain.long` | `Generalized`, `Public` | Cloud first; the device only when the cloud cannot be reached |
+| `explain.short`, `ask.chip` | `Public` | Device first; in the cloud when this device has no model |
+| `explain.long` | `Public` | Cloud first; the device only when the cloud cannot be reached |
 | `explain.personal`, `ask.freeText` | `Raw` | The device only; never the cloud |
 | `document.photo.read` | `Raw` (photo) | Not offered: the on-device model takes text only |
 
@@ -182,8 +223,15 @@ weight, with open leading and line breaks between words.
   decides device or cloud itself (instead of the SDK's `HybridModel`) so that every cloud request
   is recorded and agreed to before it is made.
 - Structured output: the model schema derived from the pointer schema (`ModelSchema.derive`) is
-  the cloud request's response schema; on the device it is appended to the prompt after
-  `Answer with JSON that matches this schema:`. The reply is validated and rehydrated by the core.
+  the cloud request's response schema. On the device, each reading part's strict constraint
+  (`DeviceReading.constraint`) is turned into a generation schema for the system model (a
+  `Generable` reply type whose schema is built at run time with `DynamicGenerationSchema`):
+  placeholder ids as enums, the deductions list with its item shape and minimum size. The
+  constraint's "every key present, null allowed" cannot be expressed there, so fields are optional
+  and a field whose only allowed value is null is left out; the core's checks treat a missing field
+  as null. The reply is validated and rehydrated by the core.
+- When a task may run on the device only and the device has no model, the app stops before any SDK
+  call; the SDK's system-model session has no cloud fallback of its own.
 - Remote Config: defaults are the bundled copy of `firebase/remoteconfig.template.json`. Nothing
   is fetched at start; the first model request fetches once (and is recorded).
 - Before a cloud-capable request the app shows the step before sending: the silhouette lines,

@@ -64,14 +64,13 @@ struct Fixture {
         return s
     }
 
-    func explainInput(_ s: QuickCheckSession, program: String = "food-help", locale: AppLocale = .en) throws -> ExplainInput {
-        let silhouette = try #require(s.silhouette(pack: bundle.pack, packInfo: bundle.packInfo, bands: bundle.bands))
-        return ExplainInput(profile: silhouette.profile, silhouetteVerdicts: silhouette.verdicts,
-                            program: try #require(AnswerInputs.programFacts(bundle, programId: program, locale: locale)), locale: locale)
+    /// The program's public information: all a general explanation is given.
+    func facts(_ program: String = "food-help", locale: AppLocale = .en) throws -> Public<ProgramFacts> {
+        try #require(AnswerInputs.programFacts(bundle, programId: program, locale: locale))
     }
 
-    var explainTemplate: PromptTemplate { bundle.prompts.versioned("explain", version: config.promptExplainV, among: 3...3)! }
-    var askTemplate: PromptTemplate { bundle.prompts["ask.v2"]! }
+    var explainTemplate: PromptTemplate { bundle.prompts.versioned("explain", version: config.promptExplainV, among: 5...5)! }
+    var askTemplate: PromptTemplate { bundle.prompts.versioned("ask", version: config.promptAskV, among: 4...4)! }
 }
 
 @Suite("Answer tasks: routing, record, checks, consent")
@@ -84,17 +83,19 @@ struct AnswerTaskTests {
 
     func explainRequest(long: Bool = false) throws -> CloudRequest {
         let f = try Fixture()
-        let s = try f.session([("householdSize", .integer(3)), ("income", .income(.band("B")))])
-        return Planner.explain(try f.explainInput(s), long: long, template: f.explainTemplate, config: f.config)
+        return Planner.explain(try f.facts(), locale: .en, long: long, template: f.explainTemplate, config: f.config)
     }
 
     @Test("Remote Config defaults are exactly the template's")
     func configDefaults() throws {
         let f = try Fixture()
         #expect(f.config == AppConfig(values: ["route_short_text_max_words": "80", "route_ondevice_locales_ios": #"["en","es","ko"]"#,
-                                               "prompt_pointer_extract_v": "4", "prompt_explain_v": "5"]))
-        #expect(f.bundle.prompts.versioned("pointer-extract", version: 2, among: 2...4)?.id == "pointer-extract.v2")
-        #expect(f.bundle.prompts.versioned("pointer-extract", version: 99, among: 2...4)?.id == "pointer-extract.v4")
+                                               "prompt_pointer_extract_v": "5", "prompt_explain_v": "5", "prompt_ask_v": "4"]))
+        #expect(f.bundle.prompts.versioned("pointer-extract", version: 2, among: 2...5)?.id == "pointer-extract.v2")
+        // A version the app does not bundle falls back to the newest bundled one.
+        #expect(f.bundle.prompts.versioned("pointer-extract", version: 99, among: 2...5)?.id == "pointer-extract.v5")
+        #expect(Set(f.bundle.prompts.deviceParts.keys) == ["core", "gross", "deductions", "deductions-again"])
+        #expect(f.bundle.prompts.deviceParts["deductions-again"]?.hasSuffix("including the last one.") == true)
     }
 
     @Test("explain routes: short and a device language → explain.short; long → explain.long")
@@ -117,6 +118,7 @@ struct AnswerTaskTests {
         #expect(result.source == .onDevice && result.reason == .shortText)
         #expect(port.calls == [.device("explain.short")])
         #expect(log.entries.map(\.status) == [.answeredOnDevice])
+        #expect(log.entries.first?.fields == ["kept:about"], "an answer written on the device is recorded as kept")
         #expect(!log.anythingLeft)
     }
 
@@ -129,7 +131,8 @@ struct AnswerTaskTests {
         #expect(port.calls == [.device("explain.short"), .cloud("explain.short")])
         #expect(port.recordedBeforeCloud == [1], "the cloud request was in the record before the call")
         #expect(log.entries.first?.status == .sent(200))
-        #expect(log.entries.first?.fields.contains("profile-silhouette") == true)
+        #expect(log.entries.first?.fields.contains("program-facts") == true)
+        #expect(log.entries.first?.fields.contains("profile-silhouette") == false, "nothing about the person")
         #expect(log.entries.first?.fields.contains("app-check-token-request") == true, "the first request names the SDK's own traffic")
     }
 
@@ -194,35 +197,41 @@ struct AnswerTaskTests {
     func deviceInputLimit() throws {
         let f = try Fixture()
         let r = try personal(f).map { PersonalResult(locale: $0.locale, programName: $0.programName, facts: String(repeating: "x", count: 9000),
-                                                     verdictLabel: $0.verdictLabel, criteriaLines: $0.criteriaLines) }
+                                                     verdict: $0.verdict, verdictLabel: $0.verdictLabel, criteriaLines: $0.criteriaLines) }
         let request = Planner.explainPersonal(r, template: f.bundle.prompts["explain-personal.v1"]!)
         #expect(!request.call.prompt.contains("xxxx"))
         #expect(!Planner.exceedsDeviceLimit(request.call))
     }
 
-    @Test("two people with the same silhouette but different exact incomes, private answers and results send identical requests")
-    func sameSilhouetteSameRequest() throws {
+    @Test("the general explanation and prepared questions carry nothing about the person (explain v5, ask v4)")
+    func nothingAboutThePerson() throws {
         let f = try Fixture()
-        let a = try f.session([("householdSize", .integer(3)), ("income", .income(.exact(30100))), ("residentStatus", .choice("eligible")),
-                               ("housing", .choice("renter"))])
-        let b = try f.session([("householdSize", .integer(3)), ("income", .income(.exact(44000))), ("residentStatus", .choice("not-eligible")),
-                               ("housing", .choice("renter")), ("hasEarnedIncome", .choice("yes"))])
+        let a = try f.session([("householdSize", .integer(3)), ("income", .income(.exact(30100))), ("residentStatus", .choice("eligible"))])
+        let b = try f.session([("householdSize", .integer(1)), ("income", .income(.exact(44000))), ("residentStatus", .choice("not-eligible"))])
         let va = try a.verdicts(pack: f.bundle.pack, bands: f.bundle.bands)[program: "food-help"]?.verdict
         let vb = try b.verdicts(pack: f.bundle.pack, bands: f.bundle.bands)[program: "food-help"]?.verdict
         #expect(va != vb, "the results on screen differ")
-        for long in [false, true] {
-            let ra = Planner.explain(try f.explainInput(a), long: long, template: f.explainTemplate, config: f.config)
-            let rb = Planner.explain(try f.explainInput(b), long: long, template: f.explainTemplate, config: f.config)
-            #expect(ra.rendering == rb.rendering)
-        }
-        let question = Public<String>("How do I apply?")
-        #expect(Planner.askChip(try f.explainInput(a), question: question, template: f.askTemplate).rendering
-            == Planner.askChip(try f.explainInput(b), question: question, template: f.askTemplate).rendering)
-        // The person-specific part of the request (the system instruction is the shared prompt text).
-        let text = Planner.explain(try f.explainInput(a), long: false, template: f.explainTemplate, config: f.config).prompt.text
-        for leak in ["30100", "30,100", "44000", "44,000", "not-eligible", "residentStatus", "Probably not", "You may qualify"] {
+        // The requests are built from the program alone, so they cannot differ between the two people.
+        let request = Planner.explain(try f.facts(), locale: .en, long: false, template: f.explainTemplate, config: f.config)
+        #expect(request.fields == ["program-facts"])
+        let chip = Planner.askChip(try f.facts(), question: Public<String>("How do I apply?"), locale: .en, template: f.askTemplate)
+        #expect(chip.fields == ["program-facts", "prepared-question"])
+        let text = request.prompt.text + chip.prompt.text
+        for leak in ["30100", "30,100", "44000", "44,000", "not-eligible", "residentStatus", "Probably not", "You may qualify", "incomeBand", "householdSize"] {
             #expect(!text.contains(leak), "\(leak) in the request")
         }
+        #expect(text.contains("Program: Test Food Help") && text.contains("Question: How do I apply?"))
+    }
+
+    @Test("{programFacts}: program copy, then the answers it uses, then what it checks, one item per line")
+    func programFactsLines() throws {
+        let f = try Fixture()
+        let facts = try f.facts().value.facts.components(separatedBy: "\n")
+        let uses = try #require(facts.firstIndex { $0.hasPrefix("This program uses: ") })
+        let checks = try #require(facts.firstIndex { $0.hasPrefix("This program checks: ") })
+        #expect(uses < checks && checks == facts.count - 1)
+        #expect(facts[uses].hasPrefix("This program uses: Yearly income"), "annualIncome first")
+        #expect(uses >= 1, "the program copy comes first")
     }
 
     @Test("canary strings never appear in a pointer request, on the device or in the cloud")
@@ -297,5 +306,153 @@ struct AnswerTaskTests {
         let lines = AnswerInputs.silhouetteLines(f.bundle, silhouette, locale: .en).joined(separator: "\n")
         #expect(lines.contains("(C)") && !lines.contains("30524") && !lines.contains("eligible"))
         #expect(!silhouette.canonical.contains("30524"))
+    }
+
+    @Test("Why this result on the California pack: a criterion met another way says which; an uncertain state says what it depends on")
+    func whyNotesCalifornia() throws {
+        let bundle = try SharedBundle(directory: Repo.shared, jurisdiction: "us-ca", localCopy: JSON.parse(Data(contentsOf: Repo.localCopy)))
+        let base = try Shared.us.base()
+        var a = base
+        a["annualIncome"] = .number(100_000)
+        a["benefits"] = .array([.string("medi-cal")])
+        let reasons = try RulesEngine.criterionReasons(pack: bundle.pack, bands: bundle.bands, answers: Raw(.object(a)), programId: "ca-lifeline")
+        let rows = AnswerInputs.whyRows(bundle, programId: "ca-lifeline", reasons: reasons, locale: .en, currency: "USD", format: "en-US")
+        let row = try #require(rows.first { $0.id == "income-or-program" })
+        #expect(row.state == .pass)
+        #expect(row.limits.isEmpty, "the income limit did not decide it")
+        #expect(row.notes.first?.hasPrefix("Met through: ") == true, "\(row.notes)")
+        // CalFresh over the gross limit, with someone 60 or older or disabled: possible, because of that answer.
+        var b = base
+        b["annualIncome"] = .number(200_000)
+        b["hasElderlyOrDisabledMember"] = .string("yes")
+        let calfreshReasons = try RulesEngine.criterionReasons(pack: bundle.pack, bands: bundle.bands, answers: Raw(.object(b)), programId: "calfresh")
+        let calfresh = AnswerInputs.whyRows(bundle, programId: "calfresh", reasons: calfreshReasons, locale: .en)
+        let gross = try #require(calfresh.first { $0.id == "gross-income-limit" })
+        #expect(gross.state == .mixed)
+        #expect(gross.stateText.hasPrefix("Over this limit, but still possible because of: "), "\(gross.stateText)")
+    }
+}
+
+@Suite("Reading a paystub in parts on the device (DEVICE_READING.md)")
+struct DeviceReadingTaskTests {
+    static let fixture = try! JSON.parse(Data(contentsOf: Repo.shared.appendingPathComponent("fixtures/conformance/device-reading.json")))
+
+    struct Plan {
+        let request: CloudRequest
+        let parts: ReadingInParts
+    }
+
+    /// The bundled sample's silhouette from the fixture, the v5 prompt and its device parts.
+    func plan() throws -> Plan {
+        let f = try Fixture()
+        let doc = try #require(Self.fixture["documents"]?["sample"])
+        let skeleton = Skeleton(text: try #require(doc["skeleton"]?.stringValue))
+        let map = PlaceholderMap((doc["map"]?.objectValue?.entries ?? []).map { ($0.key, $0.value.stringValue ?? "") })
+        let template = try #require(f.bundle.prompts["pointer-extract.v5"])
+        let request = try Planner.pointers(skeleton, language: .en, template: template, pointerSchema: f.bundle.paystubSchema)
+        return Plan(request: request, parts: ReadingInParts(template: template, parts: f.bundle.prompts.deviceParts, schema: f.bundle.paystubSchema,
+                                                           skeleton: skeleton, map: Raw(map), jurisdiction: "us-ca"))
+    }
+
+    func answers(_ id: String) throws -> [String] {
+        let reading = try #require(Self.fixture["readings"]?.arrayValue?.first { $0["id"]?.stringValue == id })
+        let a = try #require(reading["answers"])
+        return ["core", "gross", "deductions", "deductionsAgain"].compactMap { a[$0]?.stringValue }
+    }
+
+    func runner(_ port: FakePort, log: OutboundLog) throws -> TaskRunner {
+        port.log = log
+        return TaskRunner(port: port, log: log, outputChecks: try Fixture().bundle.outputChecks)
+    }
+
+    @Test("a reading that passes stays on the device: each part ONLY_ON_DEVICE with its constraint, recorded once as kept")
+    func passes() async throws {
+        let p = try plan()
+        let port = FakePort(device: try answers("core-right-deductions-right").map { .success($0) })
+        let log = OutboundLog()
+        let outcome = try await runner(port, log: log).extractPointers(p.request, inParts: p.parts)
+        #expect(outcome.source == .onDevice && outcome.reason == .documentSilhouetteOnly)
+        #expect(port.calls == [.device("document.pointer.extract"), .device("document.pointer.extract")])
+        #expect(port.deviceCalls.map(\.part) == ["core", "deductions"])
+        #expect(port.deviceCalls.allSatisfy { $0.constraint?["additionalProperties"]?.boolValue == false })
+        #expect(port.deviceCalls[0].system.hasSuffix(try #require(Fixture().bundle.prompts.deviceParts["core"])))
+        #expect(log.entries.map(\.fields) == [["kept:document"]] && !log.anythingLeft)
+        #expect(outcome.attempt?.passes.count == 2)
+    }
+
+    @Test("a core that does not hold up is a failed attempt: once in the cloud with v5 alone, reason on-device-failed")
+    func failsThenCloud() async throws {
+        let p = try plan()
+        let port = FakePort(device: try answers("core-not-an-option").map { .success($0) }, cloud: [.success(#"{"grossPay":"N12"}"#)])
+        let log = OutboundLog()
+        let stages = StageLog()
+        let outcome = try await runner(port, log: log).extractPointers(p.request, inParts: p.parts) { stages.add($0) }
+        #expect(outcome.source == .inCloud && outcome.reason == .onDeviceFailed)
+        #expect(port.calls.last == .cloud("document.pointer.extract"))
+        let cloud = try #require(port.cloudRequests.first)
+        #expect(!cloud.system.text.contains("On this device the reading is done in two parts"), "no device wording in the cloud")
+        #expect(stages.all.first == .deviceReading && stages.all.last == .sendingAfterDevice)
+    }
+
+    @Test("kept on the device by the person's choice: a failed reading sends nothing and fills in nothing")
+    func keepOnDevice() async throws {
+        let p = try plan()
+        let port = FakePort(device: try answers("core-not-an-option").map { .success($0) })
+        do {
+            _ = try await runner(port, log: OutboundLog()).extractPointers(p.request, inParts: p.parts, keepOnDevice: true)
+            Issue.record("did not fail")
+        } catch let failed as DeviceReadingFailed {
+            #expect(failed.error.kind == .onDeviceUnreliable)
+            #expect(failed.error.copyKey == "error.on-device-unreliable")
+        }
+        #expect(!port.calls.contains(.cloud("document.pointer.extract")))
+    }
+
+    @Test("ONLY_ON_DEVICE without a device model: no SDK call at all, on the device or in the cloud")
+    func onlyOnDeviceGuard() async throws {
+        let p = try plan()
+        let port = FakePort(availability: .modelNotReady, device: [.success("{}")], cloud: [.success("{}")])
+        await #expect(throws: TaskError.self) {
+            _ = try await runner(port, log: OutboundLog()).extractPointers(p.request, inParts: p.parts, keepOnDevice: true)
+        }
+        #expect(port.calls.isEmpty)
+        let f = try Fixture()
+        let s = try f.session([("householdSize", .integer(3)), ("income", .income(.exact(30524)))])
+        let verdict = try #require(try s.verdicts(pack: f.bundle.pack, bands: f.bundle.bands)[program: "food-help"])
+        let personal = AnswerInputs.personalResult(f.bundle, programId: "food-help", verdict: verdict.verdict,
+                                                   reasons: s.reasons(pack: f.bundle.pack, bands: f.bundle.bands, programId: "food-help"), locale: .en)
+        let request = Planner.explainPersonal(personal, template: f.bundle.prompts["explain-personal.v1"]!)
+        await #expect(throws: TaskError.self) { _ = try await runner(port, log: OutboundLog()).runPersonal(request) }
+        #expect(port.calls.isEmpty, "a Raw request is never handed to the SDK when the device model is not available")
+    }
+
+    @Test("personal scope takes the verdict on screen: a hedge that contradicts it is blocked")
+    func verdictAwareCheck() async throws {
+        let f = try Fixture()
+        let s = try f.session([("householdSize", .integer(1)), ("income", .income(.exact(90000)))])
+        let verdict = try #require(try s.verdicts(pack: f.bundle.pack, bands: f.bundle.bands)[program: "food-help"])
+        #expect(verdict.verdict == .unlikely)
+        let personal = AnswerInputs.personalResult(f.bundle, programId: "food-help", verdict: verdict.verdict,
+                                                   reasons: s.reasons(pack: f.bundle.pack, bands: f.bundle.bands, programId: "food-help"), locale: .en)
+        let request = Planner.explainPersonal(personal, template: f.bundle.prompts["explain-personal.v1"]!)
+        let port = FakePort(device: [.success("You may qualify for this program."), .success("You may qualify for this program.")])
+        await #expect(throws: TaskError.self) { _ = try await runner(port, log: OutboundLog()).runPersonal(request) }
+    }
+}
+
+final class StageLog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stages: [ReadingStage] = []
+    func add(_ s: ReadingStage) { lock.withLock { stages.append(s) } }
+    var all: [ReadingStage] { lock.withLock { stages } }
+}
+
+enum Shared {
+    enum us {
+        /// The base answers of the California pack's hand-worked households.
+        static func base() throws -> JSONObject {
+            let cases = try JSON.parse(Data(contentsOf: Repo.shared.appendingPathComponent("rulepacks/us-ca/cases.json")))
+            return cases["base"]?.objectValue ?? JSONObject()
+        }
     }
 }

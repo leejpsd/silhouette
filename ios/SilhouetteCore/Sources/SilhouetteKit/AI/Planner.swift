@@ -46,24 +46,11 @@ public enum Planner {
 
     private static func text(_ value: some CloudSafe) -> String { CloudBoundary.outbound(value).text }
 
-    /// Placeholder values of explain.v3 and ask.v2: `pass` and `fail` states go to the first two
-    /// lists, `unknown` and `mixed` to the third; an empty list is written as `none`.
-    static func explainValues(_ input: ExplainInput, maxWords: Int, question: Public<String>?) -> [String: String] {
-        let facts = input.program.value
-        let states = input.silhouetteVerdicts.value.first { $0.programId == facts.programId }?.criteria ?? []
-        func list(_ wanted: Set<CriterionState>) -> String {
-            let labels = states.filter { wanted.contains($0.state) }.map { facts.criteria[$0.id] ?? $0.id }
-            return labels.isEmpty ? "none" : labels.joined(separator: "; ")
-        }
-        var values = [
-            "generalizedProfileCanonicalJson": text(input.profile),
-            "programName": facts.name,
-            "programSummaryFromRulePack": facts.facts,
-            "passedCriteriaLabels": list([.pass]),
-            "failedCriteriaLabels": list([.fail]),
-            "unknownCriteriaLabels": list([.unknown, .mixed]),
-            "maxWords": String(maxWords),
-        ]
+    /// Placeholder values of explain.v5 and ask.v4: the program's name and its public information,
+    /// and the question. Nothing about the person.
+    static func explainValues(_ program: Public<ProgramFacts>, maxWords: Int, question: Public<String>?) -> [String: String] {
+        let facts = program.value
+        var values = ["programName": facts.name, "programFacts": facts.facts, "maxWords": String(maxWords)]
         if let question { values["question"] = text(question) }
         return values
     }
@@ -78,17 +65,20 @@ public enum Planner {
                             checks: .general, route: route, locale: locale)
     }
 
-    /// explain.short or explain.long (explain.v3): what the program is and what it checks. Never a result.
-    public static func explain(_ input: ExplainInput, long: Bool, template: PromptTemplate, config: AppConfig) -> CloudRequest {
-        let route = explainRoute(words: long ? explainWords.long : explainWords.short, locale: input.locale, config: config)
-        return textRequest(taskId: route.taskId, template: template, values: explainValues(input, maxWords: route.words, question: nil),
-                           locale: input.locale, maxWords: route.words, fields: ["profile-silhouette", "program-facts"], route: route)
+    /// explain.short or explain.long (explain.v5): what the program is and what it checks, from its
+    /// public information only. Nothing about the person; never a result.
+    public static func explain(_ program: Public<ProgramFacts>, locale: AppLocale, long: Bool, template: PromptTemplate,
+                               config: AppConfig) -> CloudRequest {
+        let route = explainRoute(words: long ? explainWords.long : explainWords.short, locale: locale, config: config)
+        return textRequest(taskId: route.taskId, template: template, values: explainValues(program, maxWords: route.words, question: nil),
+                           locale: locale, maxWords: route.words, fields: ["program-facts"], route: route)
     }
 
-    /// ask.chip (ask.v2): a prepared question about the program. Never a result.
-    public static func askChip(_ input: ExplainInput, question: Public<String>, template: PromptTemplate) -> CloudRequest {
-        textRequest(taskId: "ask.chip", template: template, values: explainValues(input, maxWords: askWords, question: question),
-                    locale: input.locale, maxWords: askWords, fields: ["profile-silhouette", "program-facts", "prepared-question"], route: nil)
+    /// ask.chip (ask.v4): a prepared question about the program, from its public information only.
+    public static func askChip(_ program: Public<ProgramFacts>, question: Public<String>, locale: AppLocale,
+                               template: PromptTemplate) -> CloudRequest {
+        textRequest(taskId: "ask.chip", template: template, values: explainValues(program, maxWords: askWords, question: question),
+                    locale: locale, maxWords: askWords, fields: ["program-facts", "prepared-question"], route: nil)
     }
 
     /// document.pointer.extract: the document silhouette and nothing else, with structured output
@@ -105,15 +95,25 @@ public enum Planner {
                             route: nil, locale: language)
     }
 
+    /// One part of a paystub read on the device (pointer-extract-device.v1.md): the pointer prompt's
+    /// system instruction, a blank line and the part's text; the user content unchanged; the part's
+    /// strict response constraint. The device wording never goes into a cloud request.
+    public static func devicePart(_ skeleton: Skeleton, docType: String = "paystub", template: PromptTemplate, partText: String,
+                                  part: String, constraint: JSON) -> DeviceCall {
+        let prompt = PromptTemplate.fill(template.user, ["docType": docType, "skeleton": text(skeleton)])
+        return DeviceCall(taskId: "document.pointer.extract", system: template.system + "\n\n" + partText, prompt: prompt,
+                          maxOutputTokens: 1024, constraint: constraint, part: part)
+    }
+
     // MARK: On-device requests (Raw input)
 
     static func personalValues(_ r: PersonalResult, includeFacts: Bool) -> [String: String] {
-        ["programName": r.programName, "programSummaryFromRulePack": includeFacts ? r.facts : "",
+        ["programName": r.programName, "programSummaryFromRulePack": includeFacts ? r.facts : "", "programFacts": includeFacts ? r.facts : "",
          "verdictLabel": r.verdictLabel, "criteriaLines": r.criteriaLines, "maxWords": String(personalWords)]
     }
 
     private static func deviceRequest(taskId: String, template: PromptTemplate, values: (Bool) -> [String: String],
-                                      locale: AppLocale) -> DeviceRequest {
+                                      locale: AppLocale, verdict: String) -> DeviceRequest {
         let (_, reason) = task(taskId)
         let system = PromptTemplate.fill(template.system, ["locale": languageNames[locale] ?? "English"])
         // Keep the whole request under the on-device input limit: drop the program facts first.
@@ -121,13 +121,14 @@ public enum Planner {
         if system.count + prompt.count > onDeviceCharacterBudget { prompt = PromptTemplate.fill(template.user, values(false)) }
         return DeviceRequest(taskId: taskId, reason: reason,
                              call: DeviceCall(taskId: taskId, system: system, prompt: prompt, maxOutputTokens: personalWords * 4),
-                             checks: .personal, locale: locale)
+                             checks: .personal, locale: locale, verdict: verdict)
     }
 
     /// explain.personal (explain-personal.v1): the person's own result, on the device only.
     public static func explainPersonal(_ result: Raw<PersonalResult>, template: PromptTemplate) -> DeviceRequest {
         let r = result.value
-        return deviceRequest(taskId: "explain.personal", template: template, values: { personalValues(r, includeFacts: $0) }, locale: r.locale)
+        return deviceRequest(taskId: "explain.personal", template: template, values: { personalValues(r, includeFacts: $0) }, locale: r.locale,
+                             verdict: r.verdict)
     }
 
     /// ask.freeText (ask-personal.v1): a typed question, on the device only.
@@ -139,7 +140,7 @@ public enum Planner {
             v["question"] = q
             v["maxWords"] = String(min(askWords, personalWords))
             return v
-        }, locale: r.locale)
+        }, locale: r.locale, verdict: r.verdict)
     }
 
     /// True when a request is too long for the on-device input limit.

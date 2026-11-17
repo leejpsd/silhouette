@@ -50,8 +50,8 @@ private struct WhyRowView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(row.label).type(.label).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
             if row.limits.isEmpty {
-                HStack {
-                    Text(model.t("state.\(row.state.rawValue)")).type(.small).foregroundStyle(theme.inkMuted)
+                HStack(alignment: .firstTextBaseline) {
+                    Text(row.stateText).type(.small).foregroundStyle(theme.inkMuted).fixedSize(horizontal: false, vertical: true)
                     Spacer()
                     StateIcon(state: row.state)
                 }
@@ -61,14 +61,17 @@ private struct WhyRowView: View {
                     LimitLine(label: model.t("detail.you"), value: l.yours, state: row.state)
                 }
                 if row.state != .pass && row.state != .fail {
-                    Text(model.t("state.\(row.state.rawValue)")).type(.small).foregroundStyle(theme.inkMuted)
+                    Text(row.stateText).type(.small).foregroundStyle(theme.inkMuted).fixedSize(horizontal: false, vertical: true)
                 }
+            }
+            ForEach(row.notes, id: \.self) { note in
+                Text(note).type(.caption).foregroundStyle(theme.inkMuted).fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.vertical, 10)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(([row.label] + row.limits.map { model.t("why.limitYours", ["limit": $0.limit, "value": $0.yours]) }
-                             + [model.t("state.\(row.state.rawValue)")]).joined(separator: ". "))
+                             + [row.stateText] + row.notes).joined(separator: ". "))
         .accessibilityIdentifier("why.\(row.id)")
     }
 }
@@ -81,10 +84,13 @@ struct AboutSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeading(text: model.t("about.title"))
-            Para(model.t("about.lead"), .small)
-            if model.silhouetteForAnswers == nil {
-                Para(model.t("results.empty"), .small)
-            } else {
+            // What the program is, from the pack's copy (the same text a model is given).
+            let copy = AnswerInputs.programCopy(model.bundle, programId: programId, locale: model.locale)
+            ForEach(copy.filter { $0.key == "summary" || $0.key == "renewal" }, id: \.key) { item in
+                Para(item.text).accessibilityIdentifier("program.\(item.key)")
+            }
+            Para(model.t("about.leadPublic"), .small)
+            do {
                 let shortKey = model.aboutKey(programId, long: false)
                 if again(model.state(shortKey)) {
                     Button(model.t("about.explain")) { model.startAbout(programId, long: false) }
@@ -215,7 +221,8 @@ struct RequestView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Image(systemName: "exclamationmark.triangle").accessibilityHidden(true)
-                    Text(model.t(error.copyKey)).fixedSize(horizontal: false, vertical: true)
+                    // On a program page the daily limit says the result above does not need the cloud.
+                    Text(model.t(error.kind == .quotaDaily ? "error.quotaDailyAnswers" : error.copyKey)).fixedSize(horizontal: false, vertical: true)
                 }
                 .type(.label, size: 13.5)
                 .foregroundStyle(theme.ink)
@@ -253,7 +260,7 @@ struct AnswerView: View {
             Text(model.t("answers.ready")).type(.label).foregroundStyle(theme.ink)
             ProvenanceBadge(source: result.source, reason: result.reason, route: result.route, noDeviceModel: result.noDeviceModel)
             if result.reason == .onDeviceFailed { Para(model.t("answers.retried"), .small) }
-            if sentBefore { Para(model.t("send.once"), .small, muted: true) }
+            if sentBefore { Para(model.t("send.linePublic"), .small, muted: true) }
             Text(result.text)
                 .type(.body)
                 .foregroundStyle(theme.ink)
@@ -328,8 +335,6 @@ struct SendSheet: View {
                     .zIndex(1)
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(lines, id: \.self) { Text($0).type(.monoValue).fixedSize(horizontal: false, vertical: true) }
-                    Text(model.t("send.notListed")).type(.caption).foregroundStyle(theme.onPaperMuted)
-                        .fixedSize(horizontal: false, vertical: true).padding(.top, 4)
                     Text(model.t("outbound.model", ["model": request.model])).type(.monoValue)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

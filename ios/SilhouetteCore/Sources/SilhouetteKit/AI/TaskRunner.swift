@@ -24,6 +24,69 @@ public struct PointerOutcome: Sendable {
     public let pointers: JSON
     public let source: InferenceSource
     public let reason: RoutingReason
+    /// Fields left out as not read on this device (DEVICE_READING.md sections 5 and 6).
+    public var notRead: [String] = []
+    /// What the device answered, part by part, when it was asked (placeholder ids only).
+    public var attempt: DeviceAttempt? = nil
+}
+
+/// The on-device reading of a document, for the review screen and the on-device check.
+public struct DeviceAttempt: Sendable {
+    public let passes: [DeviceReading.Pass]
+    /// The problems that made it fail (empty when it passed).
+    public let problems: [String]
+}
+
+/// A failed on-device reading when the person chose to keep everything on the device.
+public struct DeviceReadingFailed: Error, Sendable {
+    public let error: TaskError
+    public let attempt: DeviceAttempt?
+}
+
+/// The step a reading is on, for the status line (DEVICE_READING.md section 7).
+public enum ReadingStage: String, Sendable {
+    case deviceReading = "device-reading"
+    case deviceGross = "device-gross"
+    case deviceDeductions = "device-deductions"
+    case checking
+    case sendingAfterDevice = "sending-after-device"
+
+    public var copyKey: String {
+        switch self {
+        case .deviceReading: "preview.stage.deviceReading"
+        case .deviceGross: "preview.stage.deviceGross"
+        case .deviceDeductions: "preview.stage.deviceDeductions"
+        case .checking: "preview.stage.checking"
+        case .sendingAfterDevice: "preview.stage.sendingAfterDevice"
+        }
+    }
+}
+
+/// What a paystub is read with on a device in parts (pointer-extract.v5.md with
+/// pointer-extract-device.v1.md): the prompt, the part texts, the schema and the silhouette's map,
+/// which the checks use on the device and which is never sent.
+public struct ReadingInParts: Sendable {
+    let template: PromptTemplate
+    let parts: [String: String]
+    let schema: JSON
+    let skeleton: Skeleton
+    let map: Raw<PlaceholderMap>
+    let jurisdiction: String
+    let docType: String
+
+    public init(template: PromptTemplate, parts: [String: String], schema: JSON, skeleton: Skeleton, map: Raw<PlaceholderMap>,
+                jurisdiction: String, docType: String = "paystub") {
+        self.template = template
+        self.parts = parts
+        self.schema = schema
+        self.skeleton = skeleton
+        self.map = map
+        self.jurisdiction = jurisdiction
+        self.docType = docType
+    }
+
+    /// A schema with a list field is read in parts; one without (a lease) in one request.
+    var hasListField: Bool { DeviceReading.partFields(schema, .deductions).count > 0 }
 }
 
 public final class TaskRunner: Sendable {
@@ -54,11 +117,27 @@ public final class TaskRunner: Sendable {
         if Task.isCancelled { throw TaskError(.cancelled, "cancelled by the person") }
     }
 
-    private func onDevice(_ call: DeviceCall, fields: [String]) async throws(TaskError) -> ModelReply {
+    /// Records an answer written on this device: kept, never sent (`kept:document`, `kept:about`, `kept:ask`).
+    private func recordKept(_ kind: String) {
+        log.record(OutboundEntry(channel: .aiCloud, destination: "this device", fields: ["kept:\(kind)"], status: .answeredOnDevice))
+    }
+
+    private static func keptKind(_ taskId: String) -> String {
+        switch taskId {
+        case "document.pointer.extract": "document"
+        case "ask.chip": "ask"
+        default: "about"
+        }
+    }
+
+    /// A call to the on-device model. Checks availability before any SDK call, so a request that must
+    /// stay on the device is never handed to an SDK path that could send it elsewhere.
+    private func onDevice(_ call: DeviceCall, kept: String?) async throws(TaskError) -> ModelReply {
+        guard port.deviceAvailability() == .available else { throw TaskError(.onDeviceUnavailable, "the on-device model is not available") }
         do {
             let reply = try await port.generateOnDevice(call)
             try checkCancelled()
-            log.record(OutboundEntry(channel: .aiCloud, destination: "this device", fields: fields, status: .answeredOnDevice))
+            if let kept { recordKept(kept) }
             return reply
         } catch let e as TaskError {
             throw e
@@ -103,7 +182,7 @@ public final class TaskRunner: Sendable {
             }
             if !Planner.exceedsDeviceLimit(call) {
                 do {
-                    let reply = try await onDevice(call, fields: request.fields)
+                    let reply = try await onDevice(call, kept: Self.keptKind(request.taskId))
                     if accept(reply) { return (reply, .onDevice, request.reason, false) }
                 } catch {
                     if error.kind == .cancelled { throw error }
@@ -116,18 +195,18 @@ public final class TaskRunner: Sendable {
                 return (try await inCloud(request), .inCloud, request.reason, false)
             } catch {
                 guard error.kind == .network, port.deviceAvailability() == .available else { throw error }
-                return (try await onDevice(request.deviceCall, fields: request.fields), .onDevice, request.reason, false)
+                return (try await onDevice(request.deviceCall, kept: Self.keptKind(request.taskId)), .onDevice, request.reason, false)
             }
         case .onlyInCloud:
             return (try await inCloud(request), .inCloud, request.reason, false)
         case .onlyOnDevice:
-            return (try await onDevice(request.deviceCall, fields: request.fields), .onDevice, request.reason, false)
+            return (try await onDevice(request.deviceCall, kept: Self.keptKind(request.taskId)), .onDevice, request.reason, false)
         }
     }
 
-    private func blocked(_ text: String, _ scope: OutputCheck.Scope?, _ locale: AppLocale) -> Bool {
+    private func blocked(_ text: String, _ scope: OutputCheck.Scope?, _ locale: AppLocale, verdict: String? = nil) -> Bool {
         guard let scope else { return false }
-        return OutputCheck.isBlocked(text, locale: locale.rawValue, scope: scope, checks: outputChecks)
+        return OutputCheck.isBlocked(text, locale: locale.rawValue, scope: scope, checks: outputChecks, verdict: verdict)
     }
 
     // MARK: Tasks
@@ -150,9 +229,10 @@ public final class TaskRunner: Sendable {
         guard port.deviceAvailability() == .available else { throw TaskError(.onDeviceUnavailable, "no device model") }
         guard !Planner.exceedsDeviceLimit(request.call) else { throw TaskError(.onDeviceUnavailable, "input too long for the device model") }
         for _ in 0..<2 {
-            let reply = try await onDevice(request.call, fields: [])
+            // ONLY_ON_DEVICE with Raw input: never recorded as a request, it cannot leave.
+            let reply = try await onDevice(request.call, kept: nil)
             let text = reply.text.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !blocked(text, request.checks, request.locale) {
+            if !blocked(text, request.checks, request.locale, verdict: request.verdict) {
                 return TaskResult(text: text, source: .onDevice, reason: request.reason, route: nil, noDeviceModel: false)
             }
         }
@@ -169,11 +249,77 @@ public final class TaskRunner: Sendable {
         return .object(JSONObject(o.entries.filter { !$0.value.isNull }))
     }
 
-    /// document.pointer.extract. A device reply that is not a JSON object counts as a device failure.
-    public func extractPointers(_ request: CloudRequest) async throws(TaskError) -> PointerOutcome {
+    /// document.pointer.extract (PREFER_ON_DEVICE, Skeleton input).
+    /// - On a device whose model is available, with `inParts`: the paystub is read in parts, every
+    ///   answer checked (DEVICE_READING.md). A core that does not hold up is a failed on-device attempt:
+    ///   repeated once in the cloud (reason `on-device-failed`), or, when the person chose to keep
+    ///   everything on the device, nothing is sent and `DeviceReadingFailed` is thrown.
+    /// - Otherwise one request, device first (a reply that is not a JSON object is a device failure).
+    /// - `keepOnDevice`: the cloud is never used.
+    public func extractPointers(_ request: CloudRequest, inParts: ReadingInParts? = nil, keepOnDevice: Bool = false,
+                                progress: @Sendable (ReadingStage) -> Void = { _ in }) async throws -> PointerOutcome {
+        let available = port.deviceAvailability() == .available
+        if keepOnDevice && !available { throw TaskError(.onDeviceUnavailable, "the on-device model is not available") }
+        if available, let inParts, inParts.hasListField {
+            let reading = try await readInParts(inParts, progress: progress)
+            switch reading.outcome {
+            case .onDevice(let pointers, let notRead):
+                recordKept("document")
+                return PointerOutcome(pointers: pointers, source: .onDevice, reason: request.reason, notRead: notRead,
+                                      attempt: DeviceAttempt(passes: reading.passes, problems: []))
+            case .failed(let problems):
+                let attempt = DeviceAttempt(passes: reading.passes, problems: problems)
+                if keepOnDevice { throw DeviceReadingFailed(error: TaskError(.onDeviceUnreliable, "the device could not read the silhouette reliably"), attempt: attempt) }
+                progress(.sendingAfterDevice)
+                // A cloud failure after a failed on-device attempt keeps the device's answer for diagnosis.
+                let reply: ModelReply
+                do { reply = try await inCloud(request) } catch { throw DeviceReadingFailed(error: error, attempt: attempt) }
+                guard let pointers = Self.parsePointers(reply.text) else {
+                    throw DeviceReadingFailed(error: TaskError(.badOutput, "the reply is not a JSON object"), attempt: attempt)
+                }
+                return PointerOutcome(pointers: pointers, source: .inCloud, reason: .onDeviceFailed, attempt: attempt)
+            }
+        }
+        if keepOnDevice {
+            progress(.deviceReading)
+            let reply: ModelReply
+            do { reply = try await onDevice(request.deviceCall, kept: nil) } catch {
+                if error.kind == .cancelled { throw error }
+                throw DeviceReadingFailed(error: TaskError(.onDeviceUnreliable, "the device could not read the silhouette"), attempt: nil)
+            }
+            guard let pointers = Self.parsePointers(reply.text) else {
+                throw DeviceReadingFailed(error: TaskError(.onDeviceUnreliable, "the device's reply is not a JSON object"), attempt: nil)
+            }
+            recordKept("document")
+            return PointerOutcome(pointers: pointers, source: .onDevice, reason: request.reason)
+        }
+        if available { progress(.deviceReading) }
         let (reply, source, reason, _) = try await route(request, accept: { Self.parsePointers($0.text) != nil })
         guard let pointers = Self.parsePointers(reply.text) else { throw TaskError(.badOutput, "the reply is not a JSON object") }
         return PointerOutcome(pointers: pointers, source: source, reason: reason)
+    }
+
+    /// The parts of DEVICE_READING.md section 3, each `ONLY_ON_DEVICE` with its strict constraint.
+    private func readInParts(_ plan: ReadingInParts, progress: @Sendable (ReadingStage) -> Void) async throws -> DeviceReading.Reading {
+        try await DeviceReading.read(schema: plan.schema, skeleton: plan.skeleton.text, map: plan.map, jurisdiction: plan.jurisdiction) { part in
+            switch part {
+            case .core, .whole: progress(.deviceReading)
+            case .gross: progress(.deviceGross)
+            case .deductions, .deductionsAgain: progress(.deviceDeductions)
+            }
+            defer { progress(.checking) }
+            let constraint = DeviceReading.constraint(schema: plan.schema, skeleton: plan.skeleton.text, part: part)
+            let call = Planner.devicePart(plan.skeleton, docType: plan.docType, template: plan.template,
+                                          partText: plan.parts[part.rawValue] ?? "", part: part.rawValue, constraint: constraint)
+            let started = Date()
+            do throws(TaskError) {
+                let reply = try await onDevice(call, kept: nil)
+                return DeviceReading.PartAnswer(text: reply.text, seconds: Date().timeIntervalSince(started))
+            } catch {
+                if error.kind == .cancelled { throw error }
+                return DeviceReading.PartAnswer(text: nil, error: error.kind.rawValue, seconds: Date().timeIntervalSince(started))
+            }
+        }
     }
 }
 

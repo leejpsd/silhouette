@@ -35,6 +35,9 @@ public struct PromptTemplate: Sendable {
 /// Every prompt the app uses, by file name.
 public struct PromptLibrary: Sendable {
     let templates: [String: PromptTemplate]
+    /// The part texts of `pointer-extract-device.v1.md`, by part (`core`, `gross`, `deductions`,
+    /// `deductions-again`), exactly as written there.
+    public let deviceParts: [String: String]
 
     public init(directory: URL) throws {
         var out: [String: PromptTemplate] = [:]
@@ -45,6 +48,28 @@ public struct PromptLibrary: Sendable {
             if let t = try? PromptTemplate(id: id, markdown: markdown) { out[id] = t }
         }
         templates = out
+        let device = try? String(contentsOf: directory.appendingPathComponent("pointer-extract-device.v1.md"), encoding: .utf8)
+        deviceParts = device.map(Self.parseDeviceParts) ?? [:]
+    }
+
+    /// Splits pointer-extract-device.v1.md into its part texts. The deductions part asked again is the
+    /// deductions part's text, a line break, then the sentence after "then:".
+    static func parseDeviceParts(_ markdown: String) -> [String: String] {
+        func section(_ title: String) -> String? {
+            guard let start = markdown.range(of: "\n## \(title)\n") else { return nil }
+            var body = markdown[start.upperBound...]
+            if let end = body.range(of: "\n## ") { body = body[..<end.lowerBound] }
+            return body.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        var out: [String: String] = [:]
+        out["core"] = section("Core part")
+        out["gross"] = section("Gross part")
+        out["deductions"] = section("Deductions part")
+        if let deductions = out["deductions"], let again = section("Deductions part, asked again"),
+           let then = again.range(of: "then:") {
+            out["deductions-again"] = deductions + "\n" + again[then.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return out
     }
 
     public subscript(id: String) -> PromptTemplate? { templates[id] }

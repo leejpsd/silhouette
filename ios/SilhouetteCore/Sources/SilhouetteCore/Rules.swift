@@ -280,6 +280,8 @@ public struct RulePack: Sendable {
         public let logic: JSON
         /// Present-but-null is kept as `.null` (and is then a RuleError, as in the reference).
         public let uncertainIf: JSON?
+        /// The variables the criterion reads (documentation, checked by the linter; the engine does not use it).
+        public let requires: [String]
     }
 
     public struct Program: Sendable {
@@ -312,7 +314,8 @@ public struct RulePack: Sendable {
             var cs: [Criterion] = []
             for c in criteria {
                 guard let cid = c["id"]?.stringValue, let logic = c["logic"] else { throw ContractFileError("malformed criterion") }
-                cs.append(Criterion(id: cid, logic: logic, uncertainIf: c["uncertainIf"]))
+                cs.append(Criterion(id: cid, logic: logic, uncertainIf: c["uncertainIf"],
+                                    requires: (c["requires"]?.arrayValue ?? []).compactMap(\.stringValue)))
             }
             ps.append(Program(id: id, name: p["name"]?.stringValue, criteria: cs, amount: p["amount"]))
         }
@@ -551,12 +554,21 @@ public struct Comparison: Sendable {
     /// unanswered question.
     public let limit: Double?
     public let yours: Yours
+    /// Whether this comparison produces the criterion's state: inside an `or` that is met, only a
+    /// comparison that holds; inside an `and` that is not met, only one that fails.
+    public var decisive: Bool = true
+    /// The limit was looked up for a household of this size or more (the household is larger than the cap).
+    public var capped: Int? = nil
 }
 
 public struct CriterionReason: Sendable {
     public let id: String
     public let state: CriterionState
     public let comparisons: [Comparison]
+    /// An `or` met by a branch that is not a comparison with a limit: the answer (and value) that met it.
+    public var metBy: (variable: String, value: String?)? = nil
+    /// The state is `mixed` because of `uncertainIf`, not the income: the answers it reads.
+    public var exception: [String]? = nil
 }
 
 extension RulesEngine {
@@ -604,8 +616,45 @@ extension RulesEngine {
         if case .number(let n)? = answers["annualIncome"] { exact = jsMax([n, 0]); base["annualIncome"] = .number(exact!) }
         let band = exact == nil ? answers["incomeBand"]?.stringValue.flatMap { bands.band(id: $0) } : nil
         let data = JSON.object(base)
+        var constantLiterals: [Double] = []
+        numericLiterals(pack.constants, into: &constantLiterals)
+
+        enum Outcome { case yes, no, mixed, unknown }
+        // The outcome of one expression for these answers: at every sample point when only a band is known.
+        func outcome(_ expr: JSON) -> Outcome {
+            func once(_ d: JSON) -> Bool? {
+                var ctx = EvalContext(unavailable: unavailable)
+                if case .bool(let b)? = try? evaluate(expr, data: d, context: &ctx) { return b }
+                return nil
+            }
+            var results: [Bool?]
+            if exact != nil || band == nil {
+                results = [once(data)]
+            } else {
+                var literals = constantLiterals
+                numericLiterals(expr, into: &literals)
+                results = samplePoints(band!, literals).map { point in
+                    var d = base
+                    d["annualIncome"] = .number(point)
+                    return once(.object(d))
+                }
+            }
+            if results.contains(true) && results.contains(false) { return .mixed }
+            if results.contains(where: { $0 == nil }) { return .unknown }
+            return results[0] == true ? .yes : .no
+        }
+        let householdSize = base["householdSize"]?.numberValue
+        func capped(_ limit: JSON) -> Int? {
+            guard let size = householdSize, size > bands.householdSizeCap else { return nil }
+            let text = limit.jsonText
+            return text.contains("\"householdSize\"") || text.contains("\"householdSizeCapped\"") ? Int(bands.householdSizeCap) : nil
+        }
+
         let reasons = program.criteria.map { criterion -> CriterionReason in
             let state = result.criteria.first { $0.id == criterion.id }?.state ?? .unknown
+            let top = criterion.logic.objectValue?.entries.first
+            let op = top?.key
+            let branches: [JSON] = (op == "or" || op == "and") ? (top?.value.arrayValue ?? [criterion.logic]) : [criterion.logic]
             let comparisons = Self.comparisons(in: criterion.logic).map { c -> Comparison in
                 var ctx = EvalContext(unavailable: unavailable)
                 let limit = (try? evaluate(c.limit, data: data, context: &ctx))?.finiteNumber
@@ -617,10 +666,68 @@ extension RulesEngine {
                 } else {
                     yours = .unanswered
                 }
-                return Comparison(variable: c.variable, op: c.op, limit: limit, yours: yours)
+                let node = branches.first { b in
+                    guard let e = b.objectValue?.entries.first, e.key == c.op, let args = e.value.arrayValue, args.count == 2 else { return false }
+                    return args[0]["var"]?.stringValue == c.variable && args[1].isIdentical(to: c.limit)
+                }
+                let own = node.map(outcome) ?? .unknown
+                let decisive: Bool = switch op {
+                case "or": state == .pass ? own == .yes : (state == .fail || own != .no)
+                case "and": state == .fail ? own == .no : (state == .pass || own != .yes)
+                default: true
+                }
+                return Comparison(variable: c.variable, op: c.op, limit: limit, yours: yours, decisive: decisive, capped: capped(c.limit))
             }
-            return CriterionReason(id: criterion.id, state: state, comparisons: comparisons)
+            var reason = CriterionReason(id: criterion.id, state: state, comparisons: comparisons)
+            if op == "or", state == .pass, !comparisons.contains(where: \.decisive),
+               let branch = branches.first(where: { Self.comparisons(in: $0).isEmpty && outcome($0) == .yes }) {
+                reason.metBy = answerIn(branch)
+            }
+            if state == .mixed, let uncertain = criterion.uncertainIf, outcome(criterion.logic) == .no {
+                var seen: [String] = []
+                for v in varsRead(uncertain) where !seen.contains(v) { seen.append(v) }
+                reason.exception = seen
+            }
+            return reason
         }
         return Raw(reasons)
+    }
+
+    /// The answer an expression such as `{"in": ["snap", {"var": "benefits"}]}` or
+    /// `{"==": [{"var": "x"}, "yes"]}` checks.
+    static func answerIn(_ expr: JSON) -> (variable: String, value: String?)? {
+        guard let e = expr.objectValue?.entries.first, let args = e.value.arrayValue, args.count == 2 else { return nil }
+        func varOf(_ x: JSON) -> String? { x["var"]?.stringValue }
+        func literal(_ x: JSON) -> String? {
+            switch x {
+            case .string(let s): s
+            case .number(let n): JSNumber.string(n)
+            case .bool(let b): b ? "true" : "false"
+            default: nil
+            }
+        }
+        if e.key == "in", let v = varOf(args[1]) { return (v, literal(args[0])) }
+        if e.key == "==", let v = varOf(args[0]) { return (v, literal(args[1])) }
+        if e.key == "==", let v = varOf(args[1]) { return (v, literal(args[0])) }
+        return varsRead(expr).first.map { ($0, nil) }
+    }
+
+    /// The answers an expression reads (not constants), in order; `householdSizeCapped` as `householdSize`.
+    static func varsRead(_ expr: JSON) -> [String] {
+        var out: [String] = []
+        func walk(_ x: JSON) {
+            switch x {
+            case .array(let items): items.forEach(walk)
+            case .object(let o):
+                for (k, v) in o.entries {
+                    if k == "var", let name = v.stringValue {
+                        if !name.hasPrefix("constants.") { out.append(name == "householdSizeCapped" ? "householdSize" : name) }
+                    } else { walk(v) }
+                }
+            default: break
+            }
+        }
+        walk(expr)
+        return out
     }
 }

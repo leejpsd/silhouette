@@ -440,9 +440,15 @@ struct GrainOverlay: View {
 
 enum Motion { case rise, wipe, pop }
 
+/// Switches every appearance motion off (the fast snapshot capture shows end states).
+enum MotionSwitch {
+    nonisolated(unsafe) static var off = false
+}
+
 private struct AppearMotion: ViewModifier {
     @Environment(\.theme) private var theme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    private var reduceMotion: Bool { systemReduceMotion || MotionSwitch.off }
     let motion: Motion
     let delay: Double
     @State private var shown = false

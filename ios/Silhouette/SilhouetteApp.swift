@@ -14,7 +14,7 @@ struct SilhouetteApp: App {
                 .orThrow(SharedBundle.ContentError.missing("Shared"))
             let local = try Bundle.main.url(forResource: "copy.local", withExtension: "json")
                 .map { try JSON.parse(Data(contentsOf: $0)) }
-            let bundle = try SharedBundle(directory: shared, localCopy: local)
+            let bundle = try SharedBundle(directory: shared, jurisdiction: AppModel.jurisdiction, localCopy: local)
             let model = try AppModel(bundle: bundle, store: AnswerStore(), resetOnLaunch: options.resetAll, testModel: options.testModel)
             model.forceOffline = options.offline
             return model
@@ -23,17 +23,31 @@ struct SilhouetteApp: App {
     }
 
     private let options: LaunchOptions
+    /// The fast snapshot capture: only with a scripted model, never with Firebase.
+    private var snapshot: SnapshotOptions? { options.testModel == nil ? nil : SnapshotOptions(arguments: ProcessInfo.processInfo.arguments) }
+    @State private var snapshotStyle = SnapshotStyle()
 
     var body: some Scene {
         WindowGroup {
             switch model {
             case .success(let model):
-                RootView()
-                    .environment(model)
-                    .environment(\.theme, model.theme)
-                    .environment(\.locale, Locale(identifier: model.locale.rawValue))
-                    .preferredColorScheme(options.colorScheme)
-                    .tint(model.theme.ink)
+                if let snapshot {
+                    RootView()
+                        .environment(model)
+                        .environment(\.theme, model.theme)
+                        .environment(\.locale, Locale(identifier: model.locale.rawValue))
+                        .environment(\.dynamicTypeSize, snapshotStyle.dynamicType)
+                        .preferredColorScheme(snapshotStyle.scheme)
+                        .tint(model.theme.ink)
+                        .task { await SnapshotRunner.run(model: model, style: snapshotStyle, options: snapshot) }
+                } else {
+                    RootView()
+                        .environment(model)
+                        .environment(\.theme, model.theme)
+                        .environment(\.locale, Locale(identifier: model.locale.rawValue))
+                        .preferredColorScheme(options.colorScheme)
+                        .tint(model.theme.ink)
+                }
             case .failure(let error):
                 Text(String(describing: error))
                     .font(.callout.monospaced())

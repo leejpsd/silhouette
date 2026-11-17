@@ -41,12 +41,19 @@ public struct DeviceCall: Sendable {
     public let system: String
     public let prompt: String
     public let maxOutputTokens: Int
+    /// The strict response constraint of a reading part (JSON Schema, DEVICE_READING.md section 2),
+    /// when the call has one. The port converts it to what its on-device API accepts, without loosening it.
+    public let constraint: JSON?
+    /// The reading part (`core`, `gross`, `deductions`, `deductions-again`), when the call is one.
+    public let part: String?
 
-    init(taskId: String, system: String, prompt: String, maxOutputTokens: Int) {
+    init(taskId: String, system: String, prompt: String, maxOutputTokens: Int, constraint: JSON? = nil, part: String? = nil) {
         self.taskId = taskId
         self.system = system
         self.prompt = prompt
         self.maxOutputTokens = maxOutputTokens
+        self.constraint = constraint
+        self.part = part
     }
 }
 
@@ -71,6 +78,9 @@ public struct TaskError: Error, Sendable, CustomStringConvertible {
         case blocked
         case network
         case onDeviceUnavailable = "on-device-unavailable"
+        /// The device read a document but its answer did not pass the checks, and the person chose to
+        /// keep everything on the device (DEVICE_READING.md section 7).
+        case onDeviceUnreliable = "on-device-unreliable"
         case badOutput = "bad-output"
         /// No Firebase configuration in this build.
         case notConfigured = "not-configured"
@@ -99,6 +109,7 @@ public struct TaskError: Error, Sendable, CustomStringConvertible {
     public var copyKey: String {
         switch kind {
         case .quotaDaily: "error.quotaDaily"
+        case .onDeviceUnreliable: "error.on-device-unreliable"
         case .quota: "error.quota"
         case .blocked: "answers.blocked"
         case .network: "error.network"

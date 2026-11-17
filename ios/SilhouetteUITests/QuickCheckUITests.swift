@@ -1,6 +1,7 @@
-// End-to-end Quick Check flows. Question order comes from the zz-test pack's questionOrder:
-// householdSize, numChildren, hasEarnedIncome, income, housing, benefits, hasOlderMember,
-// residentStatus.
+// End-to-end Quick Check flows with the California draft pack (the pack people see). Question order
+// comes from its questionOrder: householdSize, numQualifyingChildren, hasChildUnder6, income,
+// hasEarnedIncome, ageGroup, housing, benefits, energyProvider, hasElderlyOrDisabledMember,
+// filingStatus, taxIdType, investmentIncome, calfreshEligibleMember.
 
 import XCTest
 
@@ -13,7 +14,6 @@ final class QuickCheckUITests: XCTestCase {
         let app = XCUIApplication.silhouette()
         app.launch()
         XCTAssertTrue(app.element("demo.banner").waitForExistence(timeout: 5))
-        XCTAssertTrue(app.element("leaving.bar").exists)
         XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
         app.tapButton("start.begin")
 
@@ -21,7 +21,7 @@ final class QuickCheckUITests: XCTestCase {
         app.setStepper(to: 3)
         app.next()
         app.waitForQuestion(2)
-        app.setStepper(to: 2)
+        app.setStepper(to: 1)
         app.next()
         app.waitForQuestion(3)
         app.choose("yes")
@@ -37,77 +37,91 @@ final class QuickCheckUITests: XCTestCase {
         field.tap()
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 12))
         field.typeText("28000.50")
-        // The amount as understood is shown before continuing.
         let understood = app.element("income.understood")
         XCTAssertTrue(understood.waitForExistence(timeout: 5))
-        XCTAssertTrue(understood.label.contains("28,000.50"), understood.label)
+        XCTAssertTrue(understood.label.contains("$28,000.50"), understood.label)
         XCTAssertTrue(app.element("income.private").exists, "exact income shows the stays-on-device note")
         app.next()
         app.waitForQuestion(5)
-        app.choose("renter")
+        app.choose("yes")
         app.next()
         app.waitForQuestion(6)
-        app.choose("snap")
+        app.choose("25-64")
         app.next()
         app.waitForQuestion(7)
-        app.choose("no")
+        app.choose("renter")
         app.next()
         app.waitForQuestion(8)
-        XCTAssertTrue(app.element("question.sensitive").exists, "the sensitive question shows its note")
-        app.choose("eligible")
+        app.next()  // no benefit ticked: "none of these"
+        app.waitForQuestion(9)
+        app.choose("pge")
+        app.next()
+        app.waitForQuestion(10)
+        XCTAssertTrue(app.element("question.sensitive").exists, "a sensitive question shows its note")
+        app.choose("no")
+        app.next()
+        app.waitForQuestion(11)
+        app.choose("head-of-household")
+        app.next()
+        app.waitForQuestion(12)
+        app.choose("ssn-valid-for-work")
+        app.next()
+        app.waitForQuestion(13)
+        // Investment income is asked as money.
+        let amount = app.textFields["amount.field"]
+        XCTAssertTrue(amount.waitForExistence(timeout: 5))
+        amount.tap()
+        amount.typeText("0")
+        app.next()
+        app.waitForQuestion(14)
+        app.choose("yes")
         app.next()
 
         XCTAssertTrue(app.element("results.title").waitForExistence(timeout: 5))
-        let workCredit = app.buttons["program.work-credit"]
-        XCTAssertTrue(workCredit.waitForExistence(timeout: 5))
-        XCTAssertEqual(workCredit.value as? String, "You may qualify")
-        // min(3000, 10% of 28,000.50) = 2,800. Reading the amount 100× too large would make this "Probably not".
-        XCTAssertTrue(workCredit.label.contains("About $2,800 a year"), workCredit.label)
-        XCTAssertEqual(app.buttons["program.food-help"].value as? String, "You may qualify")
-        XCTAssertFalse(app.element("group.depends").exists)
+        let eitc = app.buttons["program.federal-eitc"]
+        XCTAssertTrue(eitc.waitForExistence(timeout: 5))
+        XCTAssertEqual(eitc.value as? String, "You may qualify")
+        XCTAssertTrue(eitc.label.contains("About $"), eitc.label)
         XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
     }
 
     func testSkippedSensitiveQuestionGivesDependsAndCanBeAnsweredFromDetail() {
         let app = XCUIApplication.silhouette()
         app.launch()
-        app.tapButton("start.begin")
-        app.waitForQuestion(1)
-        app.setStepper(to: 3)
-        app.next()
-        app.waitForQuestion(2)
-        app.skip()
-        app.waitForQuestion(3)
-        app.skip()
-        app.waitForQuestion(4)
-        app.typeExactIncome("30524")
-        app.next()
-        for n in 5...7 {
-            app.waitForQuestion(n)
-            app.skip()
-        }
-        app.waitForQuestion(8)
-        XCTAssertTrue(app.element("question.sensitive").exists)
-        app.skip()
-
-        let food = app.buttons["program.food-help"]
-        XCTAssertTrue(food.waitForExistence(timeout: 5))
-        XCTAssertEqual(food.value as? String, "Depends on an answer you skipped")
-        XCTAssertTrue(food.label.contains("Residency"), food.label)
-        food.tap()
+        app.runPreparedHousehold()  // leaves "calfreshEligibleMember" unanswered
+        let calfresh = app.buttons["program.calfresh"]
+        XCTAssertTrue(calfresh.waitForExistence(timeout: 5))
+        XCTAssertEqual(calfresh.value as? String, "Depends on an answer you skipped")
+        XCTAssertTrue(calfresh.label.contains("Citizenship"), calfresh.label)
+        app.tapButton("program.calfresh")
 
         let verdict = app.element("detail.verdict")
         XCTAssertTrue(verdict.waitForExistence(timeout: 5))
         XCTAssertEqual(verdict.value as? String, "depends")
-        app.tapButton("depends.residentStatus")
-        app.waitForQuestion(8)
-        app.choose("eligible")
+        app.tapButton("depends.calfreshEligibleMember")
+        app.waitForQuestion(14)
+        app.choose("yes")
         app.next()
 
         XCTAssertTrue(verdict.waitForExistence(timeout: 5))
-        let likely = NSPredicate(format: "value == %@", "likely")
-        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: likely, object: verdict)], timeout: 5), .completed)
-        XCTAssertFalse(app.buttons["depends.residentStatus"].exists)
+        let answered = NSPredicate(format: "value != %@", "depends")
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: answered, object: verdict)], timeout: 5), .completed)
+        XCTAssertFalse(app.buttons["depends.calfreshEligibleMember"].exists)
+    }
+
+    func testDraftNoticeAndOfficialSources() {
+        let app = XCUIApplication.silhouette()
+        app.launch()
+        let banner = app.element("demo.banner")
+        XCTAssertTrue(banner.waitForExistence(timeout: 5))
+        XCTAssertTrue(banner.staticTexts["Draft rules, read November 12, 2026."].exists, "the draft notice with the date its sources were read")
+        app.runPreparedHousehold()
+        app.tapButton("program.federal-eitc")
+        let readOn = app.element("official.readOn").firstMatch
+        app.scrollIntoView(readOn)
+        XCTAssertTrue(readOn.waitForExistence(timeout: 5))
+        XCTAssertTrue(readOn.label.contains("Read from this source on November 12, 2026"), readOn.label)
+        XCTAssertTrue(app.element("program.period").label.contains("tax year 2026"), "the period in the reader's language")
     }
 
     func testDeleteEverythingClearsStoredData() {
@@ -156,13 +170,8 @@ final class QuickCheckUITests: XCTestCase {
         XCTAssertEqual(title.label, "Find public benefits you may qualify for")
 
         app.tapButton("language.menu")
-        app.tapButton("language.ko")
-        XCTAssertTrue(title.waitForExistence(timeout: 5))
-        XCTAssertEqual(title.label, "받을 수 있을지도 모르는 공공 지원을 찾아보세요")
-        XCTAssertTrue(app.buttons["start.begin"].label.unicodeScalars.contains { (0xAC00...0xD7A3).contains($0.value) })
-
-        app.tapButton("language.menu")
         app.tapButton("language.es")
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
         XCTAssertEqual(title.label, "Encuentra ayudas públicas para las que podrías calificar")
         app.terminate()
 

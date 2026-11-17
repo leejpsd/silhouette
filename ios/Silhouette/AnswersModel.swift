@@ -22,8 +22,6 @@ extension AppModel {
     static let slowAfter: Duration = .seconds(15)
     static let chips = AnswerInputs.chips
 
-    var silhouetteForAnswers: Silhouette? { session.silhouette(pack: bundle.pack, packInfo: bundle.packInfo, bands: bundle.bands) }
-
     func reasons(_ programId: String) -> Raw<[CriterionReason]> {
         session.reasons(pack: bundle.pack, bands: bundle.bands, programId: programId)
     }
@@ -47,43 +45,50 @@ extension AppModel {
 
     // MARK: Requests with the step before sending
 
-    private func explainInput(_ programId: String) -> (ExplainInput, Silhouette)? {
-        guard let silhouette = silhouetteForAnswers, let facts = AnswerInputs.programFacts(bundle, programId: programId, locale: locale) else { return nil }
-        return (ExplainInput(profile: silhouette.profile, silhouetteVerdicts: silhouette.verdicts, program: facts, locale: locale), silhouette)
+    /// The program's public information in the UI language: all a general explanation is given.
+    private func publicFacts(_ programId: String) -> Public<ProgramFacts>? {
+        AnswerInputs.programFacts(bundle, programId: programId, locale: locale)
     }
 
     func aboutKey(_ programId: String, long: Bool) -> String {
-        AnswerSession.key(long ? "explain-long" : "explain-short", locale.rawValue, silhouetteForAnswers?.canonical ?? "-", programId)
+        AnswerSession.key(long ? "explain-long" : "explain-short", locale.rawValue, programId)
     }
 
     func chipKey(_ programId: String, _ chip: String) -> String {
-        AnswerSession.key("ask-chip", locale.rawValue, silhouetteForAnswers?.canonical ?? "-", programId, chip)
+        AnswerSession.key("ask-chip", locale.rawValue, programId, chip)
+    }
+
+    /// What the step before sending lists: nothing about the person, the program, the question.
+    private func publicLines(_ programId: String, question: String? = nil) -> [String] {
+        [t("send.linePublic"), t("send.line.program", ["value": programName(programId)])]
+            + (question.map { [t("send.line.question", ["value": $0])] } ?? [])
     }
 
     func startAbout(_ programId: String, long: Bool) {
-        guard let (input, silhouette) = explainInput(programId), let template = explainTemplate else { return }
-        let request = Planner.explain(input, long: long, template: template, config: currentConfig)
-        start(aboutKey(programId, long: long), request: request, content: silhouette.canonical,
-              lines: AnswerInputs.silhouetteLines(bundle, silhouette, locale: locale)
-                  + [t("send.line.program", ["value": programName(programId)])])
+        guard let facts = publicFacts(programId), let template = explainTemplate else { return }
+        let request = Planner.explain(facts, locale: locale, long: long, template: template, config: currentConfig)
+        start(aboutKey(programId, long: long), request: request, content: "program|\(programId)|\(locale.rawValue)", lines: publicLines(programId))
     }
 
     func startChip(_ programId: String, _ chip: String) {
-        guard let (input, silhouette) = explainInput(programId), let template = bundle.prompts["ask.v2"],
-              let publicQuestion = AnswerInputs.chipQuestion(bundle, chip: chip, locale: locale) else { return }
-        let question = publicQuestion.value
-        let request = Planner.askChip(input, question: publicQuestion, template: template)
-        start(chipKey(programId, chip), request: request, content: silhouette.canonical,
-              lines: AnswerInputs.silhouetteLines(bundle, silhouette, locale: locale)
-                  + [t("send.line.program", ["value": programName(programId)]), t("send.line.question", ["value": question])])
+        guard let facts = publicFacts(programId), let template = askTemplate,
+              let question = AnswerInputs.chipQuestion(bundle, chip: chip, locale: locale) else { return }
+        let request = Planner.askChip(facts, question: question, locale: locale, template: template)
+        start(chipKey(programId, chip), request: request, content: "program|\(programId)|\(locale.rawValue)|\(chip)",
+              lines: publicLines(programId, question: question.value))
     }
 
     var currentConfig: AppConfig {
         lastConfig ?? AppConfig(values: bundle.remoteConfigTemplate.map(AppConfig.defaultValues) ?? [:])
     }
 
+    /// Only versions that send nothing about the person are bundled for use: explain 5, ask 4.
     var explainTemplate: PromptTemplate? {
-        bundle.prompts.versioned("explain", version: currentConfig.promptExplainV, among: 3...3)
+        bundle.prompts.versioned("explain", version: currentConfig.promptExplainV, among: 5...5)
+    }
+
+    var askTemplate: PromptTemplate? {
+        bundle.prompts.versioned("ask", version: currentConfig.promptAskV, among: 4...4)
     }
 
     private func start(_ key: String, request: CloudRequest, content: String, lines: [String]) {

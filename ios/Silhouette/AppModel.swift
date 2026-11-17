@@ -14,6 +14,10 @@ enum Route: Hashable {
     case documentAdd
     case documentPreview
     case documentReview
+    /// The short path for judges (from the draft-rules sheet).
+    case judges
+    /// The on-device check (from the draft-rules sheet).
+    case deviceCheck
 }
 
 enum ReturnTo: Hashable {
@@ -28,6 +32,8 @@ enum ReturnTo: Hashable {
 @Observable
 final class AppModel {
     static let localeKey = "silhouette.locale"
+    /// The rule pack people see (shared/rulepacks/us-ca, a labelled draft).
+    static let jurisdiction = "us-ca"
 
     let bundle: SharedBundle
     let theme: Theme
@@ -64,6 +70,8 @@ final class AppModel {
     private(set) var recordClearedAt: Date?
     /// UI tests: show the offline state.
     @ObservationIgnored var forceOffline = false
+    /// The fast snapshot capture: open the on-device check running (`run`) or on its recording (`recording`).
+    @ObservationIgnored var snapshotDeviceCheck: String?
 
     @ObservationIgnored private let store: AnswerStore
     @ObservationIgnored private let defaults: UserDefaults
@@ -86,7 +94,9 @@ final class AppModel {
         document = (try? store.loadDocument(schema: bundle.paystubSchema)) ?? DocumentSession(language: preferred)
         sampleKey = try? SampleAnswerKeyExtractor(bundle: bundle)
         self.testModel = testModel
-        port = testModel.map { TestModelPort(mode: $0) } ?? FirebaseModelPort()
+        port = testModel.map { mode in
+            TestModelPort(mode: mode, answerKeys: (try? SampleAnswerKeyExtractor(bundle: bundle))?.entries.map { ($0.skeleton.text, $0.pointers) } ?? [])
+        } ?? FirebaseModelPort()
         let rc = RemoteConfigService(defaults: bundle.remoteConfigTemplate.map(AppConfig.defaultValues) ?? [:])
         remoteConfig = rc
         let log = OutboundLog.shared
@@ -122,8 +132,12 @@ final class AppModel {
 
     // MARK: Outbound log
 
+    /// Answers written on this device are recorded as `kept:{kind}`, named by what they answered.
+    static let keptTitles = ["kept:document": "model.title", "kept:photo": "model.title", "kept:about": "about.title", "kept:ask": "ask.title"]
+
     func outboundFieldName(_ field: String) -> String {
-        bundle.copy.has("outbound.field.\(field)") ? t("outbound.field.\(field)") : field
+        if let key = Self.keptTitles[field] { return t(key) }
+        return bundle.copy.has("outbound.field.\(field)") ? t("outbound.field.\(field)") : field
     }
 
     /// "Nothing has left this device." or "{count} sent: {kinds}" (requests answered on this device
@@ -179,6 +193,40 @@ final class AppModel {
         f.timeStyle = .short
         return f.string(from: date)
     }
+
+    /// A date the pack writes as `YYYY-MM-DD`, in the UI language ("November 12, 2026").
+    func packDate(_ iso: String) -> String {
+        let parts = iso.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3, let date = Calendar(identifier: .gregorian).date(from: DateComponents(
+            timeZone: TimeZone(identifier: "UTC"), year: parts[0], month: parts[1], day: parts[2])) else { return iso }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: locale.rawValue)
+        f.timeZone = TimeZone(identifier: "UTC")
+        f.dateStyle = .long
+        return f.string(from: date)
+    }
+
+    /// A program's period as the pack writes it ("Tax year 2025", "October 1, 2026 - September 30,
+    /// 2027"), in the UI language. Anything else is shown as written.
+    func packPeriod(_ period: String) -> String {
+        if let m = period.wholeMatch(of: /Tax year (\d{4})/) { return t("period.taxYear", ["year": String(m.1)]) }
+        if let m = period.wholeMatch(of: /([A-Z][a-z]+ \d{1,2}, \d{4}) - ([A-Z][a-z]+ \d{1,2}, \d{4})/) {
+            let f = DateFormatter()
+            f.locale = Locale(identifier: "en_US_POSIX")
+            f.timeZone = TimeZone(identifier: "UTC")
+            f.dateFormat = "MMMM d, yyyy"
+            let out = DateFormatter()
+            out.locale = Locale(identifier: locale.rawValue)
+            out.timeZone = TimeZone(identifier: "UTC")
+            out.dateStyle = .long
+            let day = { (s: Substring) in f.date(from: String(s)).map(out.string(from:)) ?? String(s) }
+            return "\(day(m.1)) – \(day(m.2))"
+        }
+        return period
+    }
+
+    /// The draft notice line: "Draft rules, read November 12, 2026."
+    var draftDate: String { bundle.packInfo.sourcesReadOn.map(packDate) ?? "" }
 
     /// A document amount as the jurisdiction's paperwork writes it (the pack's number format), with
     /// decimals only when it has them.
@@ -256,6 +304,13 @@ final class AppModel {
         path = [.question(firstStep, returnTo: nil)]
     }
 
+    /// Clears the answers without moving (the judges' prepared household starts from nothing).
+    func restartForDemo() {
+        notice = nil
+        session.reset()
+        persist()
+    }
+
     func editAnswers() {
         path = [.question(firstStep, returnTo: nil)]
     }
@@ -300,6 +355,14 @@ final class AppModel {
         stampedCount = 0
         recordClearedAt = Date()
         notice = "delete.done"
+    }
+
+    /// A clean state without the "deleted" notice (the fast snapshot capture starts each scene here).
+    func resetForSnapshot(locale newLocale: AppLocale) {
+        deleteEverything()
+        notice = nil
+        recordClearedAt = nil
+        setLocale(newLocale)
     }
 
     /// The wordmark: back to the start.
@@ -348,7 +411,7 @@ final class AppModel {
 
     /// Whether a model can be reached: the device model, or the network with a Firebase configuration.
     var deviceModelAvailable: Bool { port.deviceAvailability() == .available }
-    var isOnline: Bool { testModel.map { $0.hasPrefix("cloud") } ?? (network.isOnline && FirebaseServices.isConfigured) }
+    var isOnline: Bool { testModel.map { $0.hasPrefix("cloud") || $0 == "device-unreliable" } ?? (network.isOnline && FirebaseServices.isConfigured) }
 
     /// The reader for this silhouette: a model when one can be reached; otherwise, for a bundled sample
     /// only, its answer key (routing.json offlineSample); otherwise none.
@@ -360,28 +423,69 @@ final class AppModel {
     }
 
     var modelExtractor: ModelPointerExtractor? {
-        let rcVersion = bundle.remoteConfigTemplate.flatMap { AppConfig.defaultValues(template: $0)["prompt_pointer_extract_v"] }.flatMap(Int.init)
-        guard let template = bundle.prompts.versioned("pointer-extract", version: lastConfig?.promptPointerExtractV ?? rcVersion, among: 2...4)
-        else { return nil }
+        guard let template = pointerTemplate(version: lastConfig?.promptPointerExtractV ?? currentConfig.promptPointerExtractV) else { return nil }
         return ModelPointerExtractor(runner: runner, template: template, schema: bundle.paystubSchema, canRun: { true })
     }
 
     @ObservationIgnored var lastConfig: AppConfig?
     var documentError: TaskError?
 
-    /// Reads the silhouette through the extraction path and opens the review.
-    func readDocument() async {
-        guard let silhouette, let extractor = documentExtractor else { return }
+    /// The step a reading is on, for the status line while the device reads (DEVICE_READING.md section 7).
+    var readingStage: ReadingStage?
+
+    /// The pointer prompt for the Remote Config version (an unknown version means the newest bundled one).
+    func pointerTemplate(version: Int?) -> PromptTemplate? {
+        bundle.prompts.versioned("pointer-extract", version: version, among: 2...5)
+    }
+
+    /// Reads the silhouette and opens the review.
+    /// - A bundled sample with no model and no network: its answer key (nothing is sent).
+    /// - Otherwise a model through Firebase AI Logic: on a device whose model is available, a paystub is
+    ///   read in parts when Remote Config says 5 or more (pointer-extract v5), every answer checked.
+    /// - `keepOnDevice`: the person chose to keep everything on this device. The device reads it when
+    ///   it has a model; nothing is sent, and a reading that does not hold up fills in nothing.
+    func readDocument(keepOnDevice: Bool = false) async {
+        guard let silhouette, let extractor = documentExtractor ?? (keepOnDevice && deviceModelAvailable ? modelExtractor : nil) else { return }
         documentError = nil
-        if extractor is ModelPointerExtractor {
+        readingStage = nil
+        defer { readingStage = nil }
+        if !(extractor is ModelPointerExtractor) {
+            do {
+                let result = try await extractor.extract(PointerRequest(skeleton: silhouette.skeleton, language: document.language))
+                document.apply(result, silhouette: silhouette, schema: bundle.paystubSchema)
+            } catch {
+                documentError = (error as? TaskError) ?? TaskError(.unknown, "extraction")
+                return
+            }
+            persistDocument()
+            path.append(.documentReview)
+            return
+        }
+        // Remote Config is fetched before the first cloud request only; keeping everything on the device sends nothing.
+        if !keepOnDevice {
             await remoteConfig.fetchOnce(log: OutboundLog.shared)
             lastConfig = await remoteConfig.current()
         }
+        let version = lastConfig?.promptPointerExtractV ?? currentConfig.promptPointerExtractV
+        guard let template = pointerTemplate(version: version),
+              let request = try? Planner.pointers(silhouette.skeleton, language: document.language, template: template, pointerSchema: bundle.paystubSchema)
+        else { documentError = TaskError(.unknown, "no pointer prompt"); return }
+        let inParts: ReadingInParts? = template.id == "pointer-extract.v5" && version >= 5 && !bundle.prompts.deviceParts.isEmpty
+            ? ReadingInParts(template: template, parts: bundle.prompts.deviceParts, schema: bundle.paystubSchema, skeleton: silhouette.skeleton,
+                             map: silhouette.map, jurisdiction: bundle.packInfo.jurisdiction)
+            : nil
         do {
-            let reader = (extractor is ModelPointerExtractor ? modelExtractor : nil) ?? extractor
-            let result = try await reader.extract(PointerRequest(skeleton: silhouette.skeleton, language: document.language))
-            if result.source == .inCloud { answers.markSent(silhouette.skeleton.text) }
-            document.apply(result, silhouette: silhouette, schema: bundle.paystubSchema)
+            let outcome = try await runner.extractPointers(request, inParts: inParts, keepOnDevice: keepOnDevice) { stage in
+                Task { @MainActor [weak self] in self?.readingStage = stage }
+            }
+            if outcome.source == .inCloud { answers.markSent(silhouette.skeleton.text) }
+            lastDeviceAttempt = outcome.attempt
+            document.apply(PointerResult(pointers: outcome.pointers, source: outcome.source, reason: outcome.reason, notRead: outcome.notRead),
+                           silhouette: silhouette, schema: bundle.paystubSchema)
+        } catch let failed as DeviceReadingFailed {
+            lastDeviceAttempt = failed.attempt
+            documentError = failed.error
+            return
         } catch {
             documentError = (error as? TaskError) ?? TaskError(.unknown, "extraction")
             return
@@ -389,6 +493,9 @@ final class AppModel {
         persistDocument()
         path.append(.documentReview)
     }
+
+    /// What the device answered in the last reading, part by part (placeholder ids only).
+    @ObservationIgnored var lastDeviceAttempt: DeviceAttempt?
 
     func typeNumbers() {
         document.startManual(schema: bundle.paystubSchema)

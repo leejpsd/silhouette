@@ -8,35 +8,22 @@ final class AnswersUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    /// Household of three, the rest skipped except income; opens Test Food Help.
-    private func openFoodHelp(_ app: XCUIApplication, income: () -> Void) {
-        app.tapButton("start.begin")
-        app.waitForQuestion(1)
-        app.setStepper(to: 3)
-        app.next()
-        app.waitForQuestion(2)
-        app.skip()
-        app.waitForQuestion(3)
-        app.skip()
-        app.waitForQuestion(4)
-        income()
-        app.next()
-        for n in 5...8 {
-            app.waitForQuestion(n)
-            app.skip()
-        }
-        app.tapButton("program.food-help")
+    /// The prepared household (income range $25,000–$32,999); opens the federal credit.
+    private func openFederalCredit(_ app: XCUIApplication) {
+        app.runPreparedHousehold()
+        app.tapButton("program.federal-eitc")
         XCTAssertTrue(app.element("detail.verdict").waitForExistence(timeout: 5))
     }
 
     func testWhyThisResultFromTheRules() {
         let app = XCUIApplication.silhouette(model: "none")
         app.launch()
-        openFoodHelp(app) { app.typeExactIncome("30524") }
+        openFederalCredit(app)
         let income = app.element("why.income-limit")
+        app.scrollIntoView(income)
         XCTAssertTrue(income.waitForExistence(timeout: 5))
-        XCTAssertTrue(income.label.contains("limit $34,000, yours $30,524"), income.label)
-        XCTAssertTrue(app.element("why.residency").exists)
+        XCTAssertTrue(income.label.contains("limit $") && income.label.contains("$25,000") && income.label.contains("$32,999"), income.label)
+        XCTAssertTrue(app.element("why.investment-income").exists)
         // Without a device model the person's own result is not put into words, and typed questions are off.
         XCTAssertTrue(app.element("why.unavailable").exists)
         XCTAssertFalse(app.buttons["why.explain"].exists)
@@ -47,12 +34,15 @@ final class AnswersUITests: XCTestCase {
     func testStepBeforeSendingKeepAndSend() {
         let app = XCUIApplication.silhouette(model: "cloud")
         app.launch()
-        openFoodHelp(app) { app.choose("C") }
+        openFederalCredit(app)
 
         app.tapButton("about.explain")
         let lines = app.element("send.lines")
         XCTAssertTrue(lines.waitForExistence(timeout: 5))
-        XCTAssertTrue(lines.label.contains("(C)"), lines.label)
+        // Explanations take public information only: nothing about the person.
+        XCTAssertTrue(lines.label.contains("Nothing about you"), lines.label)
+        XCTAssertTrue(lines.label.contains("Federal Earned Income Tax Credit"), lines.label)
+        XCTAssertFalse(lines.label.contains("25,000"), lines.label)
         XCTAssertTrue(app.buttons["send.send"].exists)
         app.tapButton("send.skip")
         XCTAssertTrue(app.element("send.skipped").waitForExistence(timeout: 5))

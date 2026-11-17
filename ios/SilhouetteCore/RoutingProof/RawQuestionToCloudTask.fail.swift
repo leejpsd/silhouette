@@ -3,6 +3,6 @@
 import SilhouetteCore
 import SilhouetteKit
 
-func leak(input: ExplainInput, typed: Raw<String>, template: PromptTemplate) {
-    _ = Planner.askChip(input, question: typed, template: template)
+func leak(facts: Public<ProgramFacts>, typed: Raw<String>, template: PromptTemplate) {
+    _ = Planner.askChip(facts, question: typed, locale: .en, template: template)
 }

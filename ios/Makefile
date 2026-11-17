@@ -5,7 +5,7 @@ DERIVED   := build/DerivedData
 SCREENSHOT_DIR ?= $(CURDIR)/build/screenshots
 DESTINATION := 'platform=iOS Simulator,name=$(SIMULATOR)'
 
-.PHONY: all test test-ios ui-test screenshots routing-proof project build edge-cases clean
+.PHONY: all test test-ios ui-test screenshots snapshots snapshots-device routing-proof project build edge-cases clean
 
 all: test routing-proof build
 
@@ -26,6 +26,21 @@ ui-test:
 screenshots:
 	mkdir -p $(SCREENSHOT_DIR)
 	TEST_RUNNER_SCREENSHOT_DIR=$(SCREENSHOT_DIR) TEST_RUNNER_SCREENSHOT_CONFIGS=$(SCREENSHOT_CONFIGS) xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/ScreenshotTour
+
+## Fast snapshots of every screen and state, set by the app itself (no UI automation), into SNAPSHOT_DIR.
+## SNAPSHOT_CONFIGS limits the configurations (en-light, en-light-ax5, en-dark, en-dark-ax5, es-…),
+## SNAPSHOT_SCENES the scenes. About 40 s per configuration.
+SNAPSHOT_DIR ?= $(CURDIR)/build/snapshots
+APP_PATH := $(DERIVED)/Build/Products/Debug-iphonesimulator/Silhouette.app
+snapshots:
+	xcodebuild -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) build -quiet
+	scripts/snapshots.sh "$(SIMULATOR)" $(APP_PATH) $(SNAPSHOT_DIR) cloud "$(SNAPSHOT_CONFIGS)" "$(SNAPSHOT_SCENES)"
+
+## The same with a scripted on-device model: reading kept on the device, the on-device check run
+DEVICE_SCENES := review-sample,preview-keep,device-check,device-check-run,program-answer,record-sent
+snapshots-device:
+	xcodebuild -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) build -quiet
+	scripts/snapshots.sh "$(SIMULATOR)" $(APP_PATH) $(SNAPSHOT_DIR)-device device "$(SNAPSHOT_CONFIGS)" "$(or $(SNAPSHOT_SCENES),$(DEVICE_SCENES))"
 
 ## Compile-time check that Raw cannot reach a cloud-capable call
 routing-proof:

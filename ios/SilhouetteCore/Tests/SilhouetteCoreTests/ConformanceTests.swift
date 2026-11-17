@@ -11,8 +11,8 @@ struct ConformanceTests {
     /// Files this suite knows how to run. A new file in the folder fails the suite until a runner
     /// is added.
     static let knownFiles: Set<String> = [
-        "evaluator.json", "generalize.json", "model-schema.json", "output-check.json", "rehydrate.json", "silhouette-verdict.json", "skeleton.json",
-        "validate.json", "verdict.json",
+        "device-reading.json", "evaluator.json", "generalize.json", "model-schema.json", "output-check.json", "rehydrate.json", "silhouette-verdict.json",
+        "skeleton.json", "validate.json", "verdict.json",
     ]
 
     @Test("every file in the folder has a runner, and every runner has a file")
@@ -20,7 +20,9 @@ struct ConformanceTests {
         let files = Set(try Shared.files(in: Shared.conformanceDir))
         #expect(files.subtracting(Self.knownFiles).isEmpty, "no runner for: \(files.subtracting(Self.knownFiles).sorted())")
         #expect(Self.knownFiles.subtracting(files).isEmpty, "missing fixture files: \(Self.knownFiles.subtracting(files).sorted())")
-        for file in files { #expect(try !Shared.cases(file).isEmpty, "\(file) has no cases") }
+        // device-reading.json has sections instead of `cases` (DeviceReadingTests runs them).
+        for file in files where file != "device-reading.json" { #expect(try !Shared.cases(file).isEmpty, "\(file) has no cases") }
+        #expect(DeviceReadingTests.caseCount > 0)
     }
 
     // MARK: skeleton.json

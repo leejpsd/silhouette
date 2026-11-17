@@ -156,6 +156,12 @@ struct DocumentReviewScreen: View {
                     .foregroundStyle(theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("review.basis")
+                if case .ytd = a.basis {
+                    // Which date the yearly income was worked out from: the end of the pay period, else the pay date.
+                    let periodEnd = model.document.fieldsForDisplay.first { $0.name == "periodEnd" }?.value != nil
+                    Para(model.t(periodEnd ? "review.basis.dateIsPeriodEnd" : "review.basis.dateIsPayDate"), .small, muted: true)
+                        .accessibilityIdentifier("review.basisDate")
+                }
                 if case .average(_, _, _, let used) = a.basis, used.count > 1 {
                     Para(model.t("review.stubsCount", ["count": String(used.count)]), .small, muted: true)
                 }
@@ -175,7 +181,9 @@ struct DocumentReviewScreen: View {
     }
 
     @ViewBuilder private func checks(_ validation: ValidationResult) -> some View {
-        let shown = (validation.checks.last ?? []).filter { $0.status != .skipped }
+        // Deductions not read on this device: the net-sum check is not shown while none has been added.
+        let deductionsNotRead = model.document.notRead.contains("deductions") && model.document.deductionsForDisplay.isEmpty
+        let shown = (validation.checks.last ?? []).filter { $0.status != .skipped && !(deductionsNotRead && $0.id == "net-sum") }
         if !shown.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 SectionHeading(text: model.t("review.checksTitle")).padding(.bottom, 6)
@@ -232,6 +240,9 @@ struct DocumentReviewScreen: View {
     private var deductions: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeading(text: model.t("field.paystub.deductions"))
+            if model.document.notRead.contains("deductions") && model.document.deductionsForDisplay.isEmpty {
+                Para(model.t("review.deductionsNotRead"), .small, muted: true).accessibilityIdentifier("review.deductionsNotRead")
+            }
             ForEach(model.document.deductionsForDisplay) { row in
                 DeductionRowView(row: row)
             }
@@ -355,7 +366,7 @@ private struct FieldRow: View {
             }
             Spacer(minLength: 0)
             HStack(spacing: 6) {
-                Text(valueText ?? model.t("review.notFound"))
+                Text(valueText ?? model.t(model.document.notRead.contains(field.name) ? "review.fieldNotRead" : "review.notFound"))
                     .type(valueText == nil ? .small : .monoDocument)
                     .foregroundStyle(valueText == nil ? theme.inkMuted : theme.ink)
                     .multilineTextAlignment(.trailing)

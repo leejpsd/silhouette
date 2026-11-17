@@ -115,9 +115,22 @@ public struct PackInfo: Sendable {
         public let period: String?
         public let caveats: [String]
         public let applyUrl: String?
+        /// Official sources (https only), with the date a person compared the numbers, when they have.
+        public let sources: [Source]
+        public let docsRequired: [String]
+    }
+
+    public struct Source: Sendable {
+        public let url: String
+        public let title: String
+        public let checkedAt: String?
     }
 
     public let jurisdiction: String
+    /// `draft`: read from official sources (on `sourcesReadOn`), not all confirmed by a person.
+    public let status: String?
+    public let sourcesReadOn: String?
+    public var isDraft: Bool { status == "draft" }
     /// ISO 4217 code when the pack names one: amounts, limits and income ranges are money.
     public let currency: String?
     /// BCP 47 tag of the jurisdiction's number conventions (`en-US`): money is written this way in
@@ -142,6 +155,8 @@ public struct PackInfo: Sendable {
             return Int(n)
         }
         self.jurisdiction = jurisdiction
+        self.status = json["status"]?.stringValue
+        self.sourcesReadOn = json["sourcesReadOn"]?.stringValue
         self.currency = json["currency"]?.stringValue
         self.numberFormat = json["numberFormat"]?.stringValue
         self.verifiedOn = json["verifiedOn"]?.stringValue
@@ -155,8 +170,14 @@ public struct PackInfo: Sendable {
         self.questionOrder = json["questionOrder"]?.arrayValue?.compactMap(\.stringValue)
         self.programs = try programs.map { p in
             guard let id = p["id"]?.stringValue else { throw SharedBundle.ContentError.malformed("pack.json", "malformed program") }
+            let sources = (p["sources"]?.arrayValue ?? []).compactMap { s -> Source? in
+                guard let url = s["url"]?.stringValue, url.hasPrefix("https://") else { return nil }
+                return Source(url: url, title: s["title"]?.stringValue ?? url, checkedAt: s["checkedAt"]?.stringValue)
+            }
+            let apply = p["applyUrl"]?.stringValue.flatMap { $0.hasPrefix("https://") ? $0 : nil }
             return Program(id: id, name: p["name"]?.stringValue ?? id, period: p["period"]?.stringValue,
-                           caveats: (p["caveats"]?.arrayValue ?? []).compactMap(\.stringValue), applyUrl: p["applyUrl"]?.stringValue)
+                           caveats: (p["caveats"]?.arrayValue ?? []).compactMap(\.stringValue), applyUrl: apply, sources: sources,
+                           docsRequired: (p["docsRequired"]?.arrayValue ?? []).compactMap(\.stringValue))
         }
     }
 

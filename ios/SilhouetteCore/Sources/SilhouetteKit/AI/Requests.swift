@@ -62,6 +62,8 @@ public struct DeviceRequest: Sendable {
     let call: DeviceCall
     let checks: OutputCheck.Scope
     public let locale: AppLocale
+    /// The verdict on screen: a hedge that contradicts it is blocked too (OUTPUT_CHECKS.md, scope personal).
+    let verdict: String
 }
 
 // MARK: - Inputs
@@ -70,28 +72,10 @@ public struct DeviceRequest: Sendable {
 public struct ProgramFacts: Sendable {
     public let programId: String
     public let name: String
-    /// What the program checks, its period and caveats, as sentences.
+    /// `{programFacts}` (shared/rulepacks/SPEC.md section 2.1): one item per line.
     public let facts: String
     /// Criterion labels by criterion id.
     public let criteria: [String: String]
-}
-
-/// What the general explanation and prepared questions are given: the profile silhouette, the
-/// criterion states the engine reaches from it alone (shared/rulepacks/SPEC.md section 7) and the
-/// program's facts. Never a verdict, exact values or answers to sensitive questions.
-public struct ExplainInput: Sendable {
-    public let profile: Generalized<GeneralizedProfile>
-    public let silhouetteVerdicts: Generalized<[SilhouetteVerdict]>
-    public let program: Public<ProgramFacts>
-    public let locale: AppLocale
-
-    public init(profile: Generalized<GeneralizedProfile>, silhouetteVerdicts: Generalized<[SilhouetteVerdict]>,
-                program: Public<ProgramFacts>, locale: AppLocale) {
-        self.profile = profile
-        self.silhouetteVerdicts = silhouetteVerdicts
-        self.program = program
-        self.locale = locale
-    }
 }
 
 /// The person's own result for the on-device prompts. Raw: it holds the on-screen verdict, exact
@@ -100,6 +84,8 @@ public struct PersonalResult: Sendable {
     public let locale: AppLocale
     public let programName: String
     public let facts: String
+    /// The verdict on screen (`likely`, `maybe`, `depends`, `unlikely`).
+    public let verdict: String
     public let verdictLabel: String
     /// `- {label}: {state}` lines, with ` (limit {limit}, yours {value})` where the rules compare.
     public let criteriaLines: String

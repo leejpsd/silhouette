@@ -22,8 +22,23 @@ struct StartScreen: View {
                     .appear(.rise)
                 Para(model.t("start.lead"))
             }
-            PromisePicture()
-                .padding(.top, theme.space("xs"))
+            Text(model.t("start.promise"))
+                .type(.bodyStrong)
+                .foregroundStyle(theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("start.promise")
+            VStack(alignment: .leading, spacing: 10) {
+                Text(model.t("start.example").uppercased())
+                    .type(.label, size: 12)
+                    .tracking(1)
+                    .foregroundStyle(theme.ink)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(theme.ink, lineWidth: theme.border))
+                    .accessibilityHidden(true)
+                PromisePicture()
+            }
+            .padding(.top, theme.space("xs"))
         } actions: {
             BlockAction(label: startLabel, id: "start.begin") { model.begin() }
             VStack(spacing: 0) {
@@ -58,6 +73,14 @@ struct StartScreen: View {
 private struct PromisePicture: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    static let exampleIncome = 29183.0
+
+    /// The example's yearly income as it could leave: the pack's own range around it.
+    private var exampleBand: String {
+        let band = model.bundle.bands.annualIncome.first { Double($0.min) <= Self.exampleIncome && ($0.max.map { Self.exampleIncome <= Double($0) } ?? true) }
+        return band.map { model.bundle.copy.bandLabel($0, model.locale, currency: model.bundle.packInfo.currency, format: model.bundle.packInfo.numberFormat) }
+            ?? model.money(Self.exampleIncome)
+    }
 
     var body: some View {
         let household = model.t("variable.householdSize")
@@ -67,7 +90,7 @@ private struct PromisePicture: View {
                 VStack(alignment: .leading, spacing: 8) {
                     PaperField(label: model.t("field.paystub.employerName"), value: "NORTHWIND STAFFING")
                     PaperField(label: model.t("field.paystub.grossPay"), value: "1,271.88")
-                    PaperField(label: model.t("review.annualTitle"), value: model.money(29183))
+                    PaperField(label: model.t("review.annualTitle"), value: model.money(Self.exampleIncome))
                     PaperField(label: household, value: "3")
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -93,8 +116,7 @@ private struct PromisePicture: View {
                         Text(model.t("field.paystub.grossPay")).type(.caption, size: 12).foregroundStyle(theme.onPaperMuted)
                         PlaceholderBar(id: "N12", width: 56).appear(.wipe, delay: 0.4)
                     }
-                    PaperField(label: model.t("review.annualTitle"),
-                               value: model.t("income.band.range", ["min": model.money(15000), "max": model.money(29999)]))
+                    PaperField(label: model.t("review.annualTitle"), value: exampleBand)
                     PaperField(label: household, value: "3")
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

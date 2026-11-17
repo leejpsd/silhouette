@@ -117,6 +117,8 @@ struct QuestionScreen: View {
     @ViewBuilder
     private func input(for step: Step) -> some View {
         switch step.kind {
+        case .integer where AnswerInputs.isMoneyVariable(step.id):
+            moneyField(step)
         case .integer(let min, let max):
             VStack(spacing: 4) {
                 Counter(value: $number, min: min, max: max, label: model.t("question.\(step.id).label"),
@@ -201,6 +203,32 @@ struct QuestionScreen: View {
         }
     }
 
+    /// An amount of money asked as a number (investment income): typed as money, kept in whole dollars.
+    private func moneyField(_ step: Step) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            TextField("", text: $exactText)
+                .keyboardType(.decimalPad)
+                .textContentType(nil)
+                .autocorrectionDisabled()
+                .focused($exactFocused)
+                .fieldStyle(error: error != nil)
+                .accessibilityLabel(model.t("question.\(step.id).label"))
+                .accessibilityIdentifier("amount.field")
+                .onChange(of: exactText) { error = nil }
+            if let amount = Rehydrator.parseTypedAmount(exactText) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Circle().fill(theme.ink).frame(width: 12, height: 12).accessibilityHidden(true)
+                    Text(model.t("review.understood", ["amount": model.money(amount.rounded())])).fixedSize(horizontal: false, vertical: true)
+                }
+                .type(.label, size: 13.5)
+                .foregroundStyle(theme.ink)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("amount.understood")
+            }
+        }
+        .id("amount.field")
+    }
+
     @ViewBuilder private var exactField: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
@@ -253,7 +281,9 @@ struct QuestionScreen: View {
         loaded = true
         guard case .value(let value)? = model.session.displayAnswer(for: step.id) else { return }
         switch value {
-        case .integer(let n): number = n
+        case .integer(let n):
+            number = n
+            if AnswerInputs.isMoneyVariable(step.id) { exactText = String(n) }
         case .choice(let c): choice = c
         case .boolean(let b): choice = b ? "true" : "false"
         case .selection(let s): picked = s
@@ -266,6 +296,11 @@ struct QuestionScreen: View {
 
     private func draftValue(_ step: Step) -> AnswerValue? {
         switch step.kind {
+        case .integer where AnswerInputs.isMoneyVariable(step.id):
+            guard !exactText.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+            // Typed as money (shared/skeleton/SPEC.md section 5.1), kept in whole dollars.
+            guard let amount = Rehydrator.parseTypedAmount(exactText), amount < Double(Int.max) else { return .integer(Int.min) }
+            return .integer(Int(amount.rounded()))
         case .integer: return number.map(AnswerValue.integer)
         case .single: return choice.map(AnswerValue.choice)
         case .boolean: return choice.map { .boolean($0 == "true") }
@@ -295,8 +330,17 @@ struct QuestionScreen: View {
             return
         }
         var params: [String: String] = [:]
-        if case .integer(let min, let max) = step.kind { params = ["min": String(min), "max": String(max)] }
-        let message = model.t(problem.rawValue, params)
+        var key = problem.rawValue
+        if case .integer(let min, let max) = step.kind {
+            if AnswerInputs.isMoneyVariable(step.id) {
+                params = ["min": model.money(Double(min)), "max": model.money(Double(max))]
+                // "60.000" is refused with a message that shows the accepted form.
+                if exactText.range(of: #"\.[0-9]{3,}\s*$"#, options: .regularExpression) != nil { key = "q.error.amountDecimals" }
+            } else {
+                params = ["min": String(min), "max": String(max)]
+            }
+        }
+        let message = model.t(key, params)
         error = message
         scrollTarget = "question.error"
         AccessibilityNotification.Announcement(message).post()

@@ -21,6 +21,10 @@ public struct WhyRow: Sendable, Identifiable {
     public let limits: [(limit: String, yours: String)]
     /// The answer each entry of `limits` compares (`annualIncome`, `householdSize` …).
     public var limitVariables: [String] = []
+    /// What the state means here: the state word, or what a `mixed` state depends on when it is not the income.
+    public var stateText: String = ""
+    /// How the criterion was met another way, and which household size a limit is for.
+    public var notes: [String] = []
 }
 
 extension QuickCheckSession {
@@ -46,7 +50,24 @@ extension QuickCheckSession {
 }
 
 public enum AnswerInputs {
-    /// Rule-pack facts of one program in the UI language. Static content, so Public.
+    /// The optional program copy keys (shared/rulepacks/SPEC.md section 2.1), in `{programFacts}` order.
+    public static let programCopyKeys = ["summary", "apply", "documents", "renewal", "office"]
+
+    /// The pack's program copy in the UI language (English per key when the language lacks one).
+    public static func programCopy(_ bundle: SharedBundle, programId: String, locale: AppLocale) -> [(key: String, text: String)] {
+        programCopyKeys.compactMap { key in bundle.copy.lookup("program.\(programId).\(key)", locale).map { (key, $0) } }
+    }
+
+    /// The answers a program's criteria use: `annualIncome` first, then in pack question order.
+    public static func programUses(_ bundle: SharedBundle, programId: String) -> [String] {
+        guard let program = bundle.pack.programs.first(where: { $0.id == programId }) else { return [] }
+        let used = Set(program.criteria.flatMap(\.requires))
+        return (["annualIncome"] + bundle.packInfo.questions.map(\.id)).filter(used.contains)
+    }
+
+    /// `{programFacts}`: the program copy, then "This program uses: …" with the labels of the answers
+    /// its criteria read, then "This program checks: …" with the criterion labels, one item per line.
+    /// Static content, so Public.
     public static func programFacts(_ bundle: SharedBundle, programId: String, locale: AppLocale) -> Public<ProgramFacts>? {
         guard let info = bundle.packInfo.program(programId), let program = bundle.pack.programs.first(where: { $0.id == programId }) else { return nil }
         let copy = bundle.copy
@@ -57,12 +78,11 @@ public enum AnswerInputs {
             criteria[c.id] = label
             labels.append(label)
         }
-        var sentences = ["\(copy.text("answers.facts.checks", locale)) \(labels.joined(separator: "; "))."]
-        if let period = info.period { sentences.append(copy.text("answers.facts.period", locale, ["period": period])) }
-        for key in info.caveats {
-            if let text = copy.lookup("caveat.\(key)", locale) { sentences.append("\(copy.text("answers.facts.note", locale)) \(text)") }
-        }
-        let facts = ProgramFacts(programId: programId, name: copy.programName(info, locale), facts: sentences.joined(separator: " "), criteria: criteria)
+        var lines = programCopy(bundle, programId: programId, locale: locale).map(\.text)
+        let uses = programUses(bundle, programId: programId).compactMap { copy.lookup("variable.\($0)", locale) }
+        if !uses.isEmpty { lines.append("\(copy.text("answers.facts.uses", locale)) \(uses.joined(separator: "; ")).") }
+        lines.append("\(copy.text("answers.facts.checks", locale)) \(labels.joined(separator: "; ")).")
+        let facts = ProgramFacts(programId: programId, name: copy.programName(info, locale), facts: lines.joined(separator: "\n"), criteria: criteria)
         return Public(bundled: facts, text: facts.name)
     }
 
@@ -108,25 +128,45 @@ public enum AnswerInputs {
         }
     }
 
-    /// "Why this result" rows, for showing the person their own result on this device.
+    /// "Why this result" rows, for showing the person their own result on this device. The lines never
+    /// contradict the verdict: "limit / yours" only for a comparison that produces the state; a
+    /// criterion met another way says which way; a `mixed` state from `uncertainIf` says what it depends
+    /// on; a limit looked up for the largest household size says so.
     /// `currency`: income limits and values are shown as money in it (the screen passes the pack's).
     public static func whyRows(_ bundle: SharedBundle, programId: String, reasons: Raw<[CriterionReason]>, locale: AppLocale,
                                currency: String? = nil, format: String? = nil) -> [WhyRow] {
-        reasons.value.map { r in
-            let compared = r.comparisons.filter { $0.limit != nil }
-            return WhyRow(id: r.id, label: bundle.copy.text("criterion.\(programId).\(r.id)", locale), state: r.state,
-                          limits: compared.compactMap { c in
-                              let money = Self.moneyVariables.contains(c.variable) ? currency : nil
-                              return c.limit.map { (CopyBook.formatMoney($0, locale, currency: money, format: format),
-                                                    shown(c.yours, locale: locale, none: bundle.copy.text("send.unanswered", locale),
-                                                          currency: money, format: format)) }
-                          },
-                          limitVariables: compared.map(\.variable))
+        let copy = bundle.copy
+        return reasons.value.map { r in
+            let compared = r.comparisons.filter { $0.limit != nil && $0.decisive }
+            var row = WhyRow(id: r.id, label: copy.text("criterion.\(programId).\(r.id)", locale), state: r.state,
+                             limits: compared.compactMap { c in
+                                 let money = Self.isMoneyVariable(c.variable) ? currency : nil
+                                 return c.limit.map { (CopyBook.formatMoney($0, locale, currency: money, format: format),
+                                                       shown(c.yours, locale: locale, none: copy.text("send.unanswered", locale),
+                                                             currency: money, format: format)) }
+                             },
+                             limitVariables: compared.map(\.variable))
+            if let met = r.metBy {
+                let way = met.value.flatMap { copy.lookup("option.\(met.variable).\($0)", locale) }
+                    ?? copy.lookup("variable.\(met.variable)", locale) ?? met.variable
+                row.notes.append(copy.text("why.metBy", locale, ["way": way]))
+            }
+            if let cap = compared.compactMap(\.capped).first { row.notes.append(copy.text("why.capNote", locale, ["cap": String(cap)])) }
+            if let exception = r.exception, !exception.isEmpty {
+                let what = exception.map { copy.lookup("variable.\($0)", locale) ?? $0 }.joined(separator: ", ")
+                row.stateText = copy.text("why.exception", locale, ["what": what])
+            } else {
+                row.stateText = copy.text("state.\(r.state.rawValue)", locale)
+            }
+            return row
         }
     }
 
-    /// Answers that are amounts of money.
-    static let moneyVariables: Set<String> = ["annualIncome"]
+    /// Answers that are amounts of money: the yearly income, and other incomes asked as an amount
+    /// (investment income), not yes/no questions about income.
+    public static func isMoneyVariable(_ variable: String) -> Bool {
+        variable == "annualIncome" || (!variable.lowercased().hasPrefix("has") && variable.lowercased().hasSuffix("income"))
+    }
 
     /// State words of explain-personal.v1.md (the prompt is in English).
     static let promptState: [CriterionState: String] = [.pass: "met", .fail: "not met", .mixed: "depends on your exact income", .unknown: "not answered"]
@@ -139,7 +179,7 @@ public enum AnswerInputs {
         }
         let facts = programFacts(bundle, programId: programId, locale: locale)?.value
         return Raw(PersonalResult(locale: locale, programName: facts?.name ?? programId, facts: facts?.facts ?? "",
-                                  verdictLabel: bundle.copy.text("verdict.\(verdict.rawValue)", locale),
+                                  verdict: verdict.rawValue, verdictLabel: bundle.copy.text("verdict.\(verdict.rawValue)", locale),
                                   criteriaLines: lines.joined(separator: "\n")))
     }
 }

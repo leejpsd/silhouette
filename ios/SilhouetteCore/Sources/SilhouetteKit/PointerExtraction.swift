@@ -32,6 +32,15 @@ public struct PointerResult: Sendable {
     public let pointers: JSON
     public let source: InferenceSource
     public let reason: RoutingReason
+    /// Fields left out as not read on this device.
+    public var notRead: [String] = []
+
+    public init(pointers: JSON, source: InferenceSource, reason: RoutingReason, notRead: [String] = []) {
+        self.pointers = pointers
+        self.source = source
+        self.reason = reason
+        self.notRead = notRead
+    }
 }
 
 public struct ExtractorUnavailable: Error, Sendable {}

@@ -22,7 +22,8 @@ enum AppSheet: Equatable {
 struct SheetHost: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    private var reduceMotion: Bool { systemReduceMotion || MotionSwitch.off }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -126,7 +127,7 @@ private struct SheetPanel: View {
         switch sheet {
         case .record, .send: model.t("leaving.title")
         case .language: model.t("nav.language")
-        case .demo: model.t("demo.title")
+        case .demo: model.bundle.packInfo.isDraft ? model.t("pack.draft.title") : model.t("demo.title")
         case .delete: model.t("delete.all")
         }
     }
@@ -360,9 +361,27 @@ private struct DemoSheet: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        DisplayHeadline(text: model.t("demo.title"), role: .title, size: 44, maxLines: 4, color: theme.onBlock)
-        Para(model.t("demo.body"))
+        let draft = model.bundle.packInfo.isDraft
+        DisplayHeadline(text: model.t(draft ? "pack.draft.title" : "demo.title"), role: .title, size: 44, maxLines: 4, color: theme.onBlock)
+        Para(draft ? model.t("pack.draft.body", ["date": model.draftDate]) : model.t("demo.body"))
+        if draft { Para(model.t("pack.draft.notice", ["date": model.draftDate]), .small) }
         Para(model.t("promise.line3"), .small)
+        // A short path for judges, and the on-device check: reachable from here, not from the main flow.
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                model.sheet = nil
+                model.path = [.judges]
+            } label: { Label(model.t("demo.judges"), systemImage: "arrow.right") }
+                .buttonStyle(TextLinkStyle())
+                .accessibilityIdentifier("demo.judges")
+            Button {
+                model.sheet = nil
+                model.path = [.deviceCheck]
+            } label: { Label(model.t("demo.deviceCheck"), systemImage: "arrow.right") }
+                .buttonStyle(TextLinkStyle())
+                .accessibilityIdentifier("demo.deviceCheck")
+        }
+        .padding(.top, 4)
         Button { model.sheet = .delete(back: .demo) } label: {
             Label(model.t("delete.all"), systemImage: "trash")
         }

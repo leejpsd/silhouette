@@ -273,7 +273,8 @@ struct Disclosure<Content: View>: View {
 
 // MARK: - Choice controls
 
-/// The radio of the design: 24 pt circle; selected is pink with a ring in the row's colour.
+/// The radio of the design: 24 pt circle; selected has a solid dot in the row's ink. (Pink is only
+/// for what leaves the device, never for a selection.)
 struct RadioMark: View {
     @Environment(\.theme) private var theme
     let selected: Bool
@@ -283,25 +284,26 @@ struct RadioMark: View {
     var body: some View {
         ZStack {
             Circle().strokeBorder(ink, lineWidth: theme.border)
-            if selected { Circle().fill(theme.leave).padding(size * 0.2) }
+            if selected { Circle().fill(ink).padding(size * 0.25) }
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
     }
 }
 
-/// The checkbox: 24 pt square, radius 6; selected is pink with a check in onLeave.
+/// The checkbox: 24 pt square, radius 6; selected is filled with the row's ink and checked.
 struct CheckMark: View {
     @Environment(\.theme) private var theme
     let selected: Bool
     let ink: Color
+    /// The colour of the check: the row's fill.
+    var mark: Color? = nil
 
     var body: some View {
         ZStack {
             if selected {
-                RoundedRectangle(cornerRadius: 6).fill(theme.leave)
-                RoundedRectangle(cornerRadius: 6).strokeBorder(theme.leaveFocus, lineWidth: theme.border)
-                Image(systemName: "checkmark").font(.system(size: 13, weight: .heavy)).foregroundStyle(theme.onLeave)
+                RoundedRectangle(cornerRadius: 6).fill(ink)
+                Image(systemName: "checkmark").font(.system(size: 13, weight: .heavy)).foregroundStyle(mark ?? theme.block)
             } else {
                 RoundedRectangle(cornerRadius: 6).strokeBorder(ink, lineWidth: theme.border)
             }

@@ -79,6 +79,26 @@ extension XCUIApplication {
     }
 }
 
+
+extension XCUIApplication {
+    /// The judges' path from the draft-rules sheet: the prepared household's answers, then the results.
+    func runPreparedHousehold(file: StaticString = #filePath, line: UInt = #line) {
+        let more = buttons["demo.more"]
+        XCTAssertTrue(more.waitForExistence(timeout: 5), file: file, line: line)
+        more.tap()
+        tapButton("demo.judges", file: file, line: line)
+        tapButton("judges.quickCheck", file: file, line: line)
+        XCTAssertTrue(element("results.title").waitForExistence(timeout: 5), file: file, line: line)
+    }
+
+    /// Opens a sample paystub's silhouette from the start screen.
+    func openSample(_ id: String = "paystub-en-01", file: StaticString = #filePath, line: UInt = #line) {
+        tapButton("start.sample", file: file, line: line)
+        tapButton("doc.sample.\(id)", file: file, line: line)
+        XCTAssertTrue(element("preview.title").waitForExistence(timeout: 5), file: file, line: line)
+    }
+}
+
 private func expectation(for predicate: NSPredicate, evaluatedWith object: Any) -> XCTestExpectation {
     XCTNSPredicateExpectation(predicate: predicate, object: object)
 }

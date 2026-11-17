@@ -29,6 +29,10 @@ struct RootView: View {
                             DocumentPreviewScreen()
                         case .documentReview:
                             DocumentReviewScreen()
+                        case .judges:
+                            JudgesScreen()
+                        case .deviceCheck:
+                            DeviceCheckScreen()
                         }
                     }
             }
@@ -38,6 +42,8 @@ struct RootView: View {
             GrainOverlay()
         }
         .background(theme.ground.ignoresSafeArea())
+        // The fast snapshot capture shows end states: no transitions.
+        .transaction { if MotionSwitch.off { $0.disablesAnimations = true; $0.animation = nil } }
     }
 }
 

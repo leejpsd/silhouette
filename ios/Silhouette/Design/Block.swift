@@ -60,7 +60,11 @@ struct Screen<Content: View, Actions: View>: View {
                 if mode != .compact && (!tall || typing) {
                     blockActions
                 }
-                CountRow(separated: mode != .compact && (!tall || typing), numberOnly: typing, compactHeight: compactHeight)
+                // Pinned like a system bar: its text stops growing at the first accessibility size and the
+                // subline is left to VoiceOver there, so the content keeps most of the screen.
+                CountRow(separated: mode != .compact && (!tall || typing), numberOnly: typing,
+                         compactHeight: compactHeight || dynamicType.isAccessibilitySize)
+                    .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { countHeight = $0 }
             }
             .background(UnevenRoundedRectangle(topLeadingRadius: theme.radius("block"), topTrailingRadius: theme.radius("block"))
@@ -145,9 +149,11 @@ struct DemoLine: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        if model.bundle.packInfo.isDemo {
+        let info = model.bundle.packInfo
+        if info.isDemo || info.isDraft {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(model.t("demo.short"))
+                // A draft pack says so on every screen, with the date its sources were read.
+                Text(info.isDraft ? model.t("pack.draft.short", ["date": model.draftDate]) : model.t("demo.short"))
                     .type(.caption)
                     .foregroundStyle(theme.inkMuted)
                     .fixedSize(horizontal: false, vertical: true)
@@ -167,7 +173,7 @@ struct DemoLine: View {
             .frame(minHeight: theme.size("demoLineHeight"))
             .padding(.horizontal, theme.gutter)
             .accessibilityElement(children: .contain)
-            .accessibilityLabel(model.t("demo.title"))
+            .accessibilityLabel(info.isDraft ? model.t("pack.draft.title") : model.t("demo.title"))
             .accessibilityIdentifier("demo.banner")
         }
     }
@@ -198,6 +204,7 @@ struct CountRow: View {
                     .foregroundStyle(theme.onBlock)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
+                    .accessibilityShowsLargeContentViewer()
                 if !numberOnly && !compactHeight {
                     Text(model.countSubline)
                         .type(.caption)

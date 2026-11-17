@@ -55,6 +55,8 @@ public struct DocumentDraft: Sendable {
     var text: String?
     var hidden: [String] = []
     var extraction: (source: InferenceSource, reason: RoutingReason)?
+    /// Fields the device's reading left out as not read (DEVICE_READING.md sections 5 and 6).
+    var notRead: [String] = []
     var reviewed = false
     var fields: [ReviewField] = []
     var deductions: [DeductionRow] = []
@@ -95,11 +97,13 @@ public struct DocumentSession: Sendable {
     public var hasText: Bool { !(draft.value.text ?? "").isEmpty }
     public var isReviewing: Bool { draft.value.reviewed }
     public var extraction: (source: InferenceSource, reason: RoutingReason)? { draft.value.extraction }
+    /// Fields left out as not read on this device; `deductions` when the deductions were.
+    public var notRead: [String] { draft.value.notRead }
     public var confirmedStubCount: Int { draft.value.confirmedStubs.count }
 
     /// The document language decides the allowlist (its language ∪ en), not the app language.
     public mutating func setLanguage(_ language: AppLocale) {
-        edit { $0.language = language; $0.extraction = nil; $0.reviewed = false }
+        edit { $0.language = language; $0.extraction = nil; $0.notRead = []; $0.reviewed = false }
     }
 
     /// A new document. Hidden words and earlier review values belong to the previous one and go.
@@ -111,6 +115,7 @@ public struct DocumentSession: Sendable {
             if let language { d.language = language }
             d.hidden = []
             d.extraction = nil
+            d.notRead = []
             d.reviewed = false
             d.fields = []
             d.deductions = []
@@ -133,6 +138,7 @@ public struct DocumentSession: Sendable {
         edit { d in
             if !d.hidden.contains(lower) { d.hidden.append(lower) }
             d.extraction = nil
+            d.notRead = []
             d.reviewed = false
         }
     }
@@ -141,6 +147,7 @@ public struct DocumentSession: Sendable {
         edit { d in
             d.hidden.removeAll { $0 == word }
             d.extraction = nil
+            d.notRead = []
             d.reviewed = false
         }
     }
@@ -255,6 +262,7 @@ public struct DocumentSession: Sendable {
         }
         edit { d in
             d.extraction = (result.source, result.reason)
+            d.notRead = result.notRead
             d.fields = fields
             d.deductions = rows
             d.reviewed = true
@@ -265,6 +273,7 @@ public struct DocumentSession: Sendable {
     public mutating func startManual(schema: JSON) {
         edit { d in
             d.extraction = nil
+            d.notRead = []
             d.fields = Self.emptyFields(schema: schema)
             d.deductions = []
             d.reviewed = true
@@ -391,6 +400,7 @@ public struct DocumentSession: Sendable {
             d.sampleId = nil
             d.hidden = []
             d.extraction = nil
+            d.notRead = []
             d.reviewed = false
             d.fields = []
             d.deductions = []
@@ -414,6 +424,7 @@ enum DocumentCodec {
         if let s = d.sampleId { o["sampleId"] = .string(s) }
         if let t = d.text { o["text"] = .string(t) }
         o["hidden"] = .array(d.hidden.map(JSON.string))
+        if !d.notRead.isEmpty { o["notRead"] = .array(d.notRead.map(JSON.string)) }
         if let e = d.extraction { o["extraction"] = .object(JSONObject([("source", .string(e.source.rawValue)), ("reason", .string(e.reason.rawValue))])) }
         o["reviewed"] = .bool(d.reviewed)
         func value(_ v: FieldValue?) -> JSON {
@@ -443,6 +454,7 @@ enum DocumentCodec {
         d.sampleId = json["sampleId"]?.stringValue
         d.text = json["text"]?.stringValue
         d.hidden = (json["hidden"]?.arrayValue ?? []).compactMap(\.stringValue)
+        d.notRead = (json["notRead"]?.arrayValue ?? []).compactMap(\.stringValue)
         if let s = json["extraction"]?["source"]?.stringValue.flatMap(InferenceSource.init(rawValue:)),
            let r = json["extraction"]?["reason"]?.stringValue.flatMap(RoutingReason.init(rawValue:)) {
             d.extraction = (s, r)

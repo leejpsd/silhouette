@@ -49,7 +49,8 @@ struct ProgramScreen: View {
                     }
                 }
                 if let period = program.period {
-                    Para(model.t("detail.period", ["period": period]), .small)
+                    Para(model.t("detail.period", ["period": model.packPeriod(period)]), .small)
+                        .accessibilityIdentifier("program.period")
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -60,19 +61,14 @@ struct ProgramScreen: View {
                             Para(model.t("caveat.\(key)"), .small)
                         }
                     }
-                    Para(model.bundle.packInfo.verifiedOn.map { model.t("rules.verifiedOn", ["date": $0]) } ?? model.t("detail.unverified"), .small)
+                    // A draft pack says it is a draft (with the date its sources were read), not "for testing".
+                    let info = model.bundle.packInfo
+                    Para(info.verifiedOn.map { model.t("rules.verifiedOn", ["date": $0]) }
+                         ?? (info.isDraft ? model.t("pack.draft.notice", ["date": model.draftDate]) : model.t("detail.unverified")), .small)
                 }
                 .padding(.top, theme.space("sm"))
 
-                VStack(alignment: .leading, spacing: 6) {
-                    SectionHeading(text: model.t("official.title"))
-                    if let url = program.applyUrl.flatMap(URL.init(string:)) {
-                        Link(model.t("official.apply"), destination: url)
-                            .buttonStyle(TextLinkStyle())
-                    } else {
-                        Para(model.t("official.none"), .small)
-                    }
-                }
+                OfficialInformation(program: program)
 
                 AboutSection(programId: programId).padding(.top, theme.space("sm"))
                 FreeTextSection(programId: programId).padding(.top, theme.space("sm"))
@@ -80,5 +76,67 @@ struct ProgramScreen: View {
                 DisplayHeadline(text: model.t("results.title"), role: .title)
             }
         }
+    }
+}
+
+/// Official information: how to apply, the usual papers and the office (the pack's copy), the apply
+/// link, and each official source with the date its numbers were read (a draft pack) or confirmed.
+private struct OfficialInformation: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.theme) private var theme
+    let program: PackInfo.Program
+
+    var body: some View {
+        let copy = Dictionary(AnswerInputs.programCopy(model.bundle, programId: program.id, locale: model.locale).map { ($0.key, $0.text) },
+                              uniquingKeysWith: { a, _ in a })
+        let any = !program.sources.isEmpty || program.applyUrl != nil || !program.docsRequired.isEmpty
+        VStack(alignment: .leading, spacing: 8) {
+            SectionHeading(text: model.t("official.title"))
+            if let apply = copy["apply"] { Para(apply, .small) }
+            if let documents = copy["documents"] {
+                Text(model.t("official.docs")).type(.label).foregroundStyle(theme.ink)
+                Para(documents, .small)
+            }
+            if let office = copy["office"] { Text(office).type(.bodyStrong).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true) }
+            if !any { Para(model.t("official.none"), .small, muted: true) }
+            if let url = program.applyUrl.flatMap(URL.init(string:)) {
+                Link(destination: url) {
+                    Label(model.t("official.apply"), systemImage: "arrow.up.right")
+                }
+                .buttonStyle(OutlineStyle())
+                .accessibilityIdentifier("official.apply")
+            }
+            if !program.sources.isEmpty {
+                Text(model.t("official.source")).type(.label).foregroundStyle(theme.ink).padding(.top, 4)
+                ForEach(program.sources, id: \.url) { source in
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let url = URL(string: source.url) {
+                            Link(source.title, destination: url)
+                                .buttonStyle(TextLinkStyle(role: .small))
+                        }
+                        // A draft pack's numbers were read on a date; a confirmed source says when it was compared.
+                        if let checked = source.checkedAt {
+                            Para(model.t("official.confirmedOn", ["date": model.packDate(checked)]), .caption, muted: true)
+                        } else if let read = model.bundle.packInfo.sourcesReadOn {
+                            Para(model.t("official.readOn", ["date": model.packDate(read)]), .caption, muted: true)
+                                .accessibilityIdentifier("official.readOn")
+                        }
+                    }
+                    .accessibilityElement(children: .contain)
+                }
+            }
+            // The pack's list is in one language; its program copy says the same in the reader's.
+            if copy["documents"] == nil && !program.docsRequired.isEmpty {
+                Text(model.t("official.docs")).type(.label).foregroundStyle(theme.ink)
+                ForEach(program.docsRequired, id: \.self) { d in
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(verbatim: "–").type(.small).accessibilityHidden(true)
+                        Para(d, .small)
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("official.info")
     }
 }
