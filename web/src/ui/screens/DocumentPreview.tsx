@@ -1,12 +1,13 @@
 // Skeleton preview: exactly what could leave the device, before anything is sent.
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { placeholderCounts, buildReview, type SourceSegment } from '../../core/review';
-import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
+import { cancelPreparedReading, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
 import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../../core/pointer-check';
 import { PACK } from '../pack';
-import type { Skeleton } from '../../core/types';
+import type { Raw, Skeleton } from '../../core/types';
+import type { PlaceholderMap } from '../../core/skeleton';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
 import { classifyError } from '../../ai/errors';
@@ -41,6 +42,23 @@ function splitWords(text: string): { word?: string; text: string }[] {
 let firstPreview = true;
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
+/**
+ * The deterministic checks of a paystub reading of this silhouette (core/pointer-check.ts): a core that
+ * fails is a failed attempt; deductions, names, hours or rate that fail are left out as not read.
+ */
+function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>) {
+  const schema = POINTER_SCHEMAS.paystub;
+  return {
+    validate: (pointers: Record<string, unknown>) => pointerProblems(schema, pointers, skeleton, map, PACK.jurisdiction),
+    checkParts: {
+      core: (pointers: Record<string, unknown>) => corePointerProblems(schema, pointers, map, PACK.jurisdiction, skeleton),
+      deductions: (pointers: Record<string, unknown>) => deductionsProblems(schema, pointers, map, PACK.jurisdiction),
+      notRead: (pointers: Record<string, unknown>) => notReadFields(pointers, skeleton),
+      ytdMissing: (pointers: Record<string, unknown>) => ytdMissingWithCandidate(schema, pointers, skeleton, map, PACK.jurisdiction),
+    },
+  };
+}
+
 export function DocumentPreviewScreen() {
   const { t } = useApp();
   const { doc, update } = useDocument();
@@ -53,14 +71,15 @@ export function DocumentPreviewScreen() {
   // looks at the silhouette (nothing is sent or stored; src/ai/tasks.ts prepareDeviceReading).
   const [readingAhead, setReadingAhead] = useState(false);
   const aheadSkeleton = doc.skeleton;
+  const aheadMap = doc.map;
   const aheadLanguage = doc.language;
   useEffect(() => {
-    if (!aheadSkeleton || deviceStatus !== 'available' || !ON_DEVICE_LANGUAGES.has(aheadLanguage)) return;
+    if (!aheadSkeleton || !aheadMap || deviceStatus !== 'available' || !ON_DEVICE_LANGUAGES.has(aheadLanguage)) return;
     let live = true;
     // After a short pause, so hiding several words in a row starts one reading, not one per word.
     const timer = setTimeout(() => {
       setReadingAhead(true);
-      void prepareDeviceReading(aheadSkeleton, 'paystub', aheadLanguage).finally(() => {
+      void prepareDeviceReading(aheadSkeleton, 'paystub', aheadLanguage, readingChecks(aheadSkeleton, aheadMap)).finally(() => {
         if (live) setReadingAhead(false);
       });
     }, 1200);
@@ -68,8 +87,11 @@ export function DocumentPreviewScreen() {
       live = false;
       clearTimeout(timer);
       setReadingAhead(false);
+      // A changed silhouette or leaving the screen (typing the numbers instead, going back) stops it,
+      // unless "Send" or "Keep" has already taken it over.
+      cancelPreparedReading();
     };
-  }, [aheadSkeleton, aheadLanguage, deviceStatus]);
+  }, [aheadSkeleton, aheadMap, aheadLanguage, deviceStatus]);
   // The preview opens on what could leave (the screen's heading). The first silhouette of a session is
   // shown being made: the bars wipe in once. Later changes animate only the bars that are new.
   const [mode, setMode] = useState<'phone' | 'leave'>('leave');
@@ -105,14 +127,7 @@ export function DocumentPreviewScreen() {
   }
   const { skeleton, map } = doc;
   // The deterministic check of a pointer answer: one that fails it is a failed attempt, never values to confirm.
-  const checkAnswer = (pointers: Record<string, unknown>) => (doc.docType === 'paystub' ? pointerProblems(POINTER_SCHEMAS.paystub, pointers, skeleton, map, PACK.jurisdiction) : []);
-  // Read on this device in two parts: a core that fails is a failed attempt; deductions that fail are left out.
-  const checkParts = {
-    core: (pointers: Record<string, unknown>) => corePointerProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction, skeleton),
-    deductions: (pointers: Record<string, unknown>) => deductionsProblems(POINTER_SCHEMAS[doc.docType], pointers, map, PACK.jurisdiction),
-    notRead: (pointers: Record<string, unknown>) => notReadFields(pointers, skeleton),
-    ytdMissing: (pointers: Record<string, unknown>) => ytdMissingWithCandidate(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map, PACK.jurisdiction),
-  };
+  const { validate: checkAnswer, checkParts } = readingChecks(skeleton, map);
   const counts = placeholderCounts(skeleton);
   const rawText = doc.text;
 

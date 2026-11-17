@@ -109,6 +109,8 @@ export interface PointerCallOptions {
   readonly onProgress?: ((stage: PointerStage) => void) | undefined;
   /** Internal: one part of a two-part on-device reading. */
   readonly part?: DevicePart | undefined;
+  /** Internal: a reading prepared ahead stops before its next part once this returns true. */
+  readonly isCancelled?: (() => boolean) | undefined;
 }
 
 /**
@@ -282,6 +284,8 @@ const elapsedSince = (start: number) => Math.round(performance.now() - start);
 
 /** One part of a two-part on-device reading, never thrown: a pass that did not parse has problems. */
 async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: Exclude<DevicePart, 'whole'>): Promise<DevicePass> {
+  // A reading prepared ahead that was cancelled asks the device for nothing more.
+  if (options.isCancelled?.()) throw new ReadingCancelled('the reading prepared ahead was cancelled');
   const config = options.config ?? activePointerConfig();
   const fields = partFields(config.schemas[docType], part);
   const started = performance.now();
@@ -313,47 +317,111 @@ async function devicePass(skeleton: Skeleton, docType: DocType, language: string
 
 // ---------- Reading ahead on the device ----------
 //
-// The first request after the page loads makes Chrome load the model into memory, which made the first
-// paystub take about 14 s against 5 to 9 s afterwards. Firebase AI Logic has no way to load the model
-// without a prompt, so the preview screen starts the first part of the reading itself (the core part,
-// ONLY_ON_DEVICE, the same task and routing as after "Send" or "Keep everything on this device") while
-// the person looks at the silhouette. Nothing is sent and nothing is stored: the answer waits in memory
-// for this exact silhouette, is used once by the reading that follows, and is dropped when the
-// silhouette changes or the page closes. It is recorded only as part of that reading.
+// The first request after the page loads makes Chrome load the model into memory, and the whole
+// reading takes several requests. Firebase AI Logic has no way to load the model without a prompt, so
+// while the person looks at the silhouette the preview screen starts the whole on-device reading
+// itself (every part: core, gross when needed, deductions, deductions asked again; ONLY_ON_DEVICE, the
+// same task, routing and checks as after "Send" or "Keep everything on this device").
+// - Only when the device model is available. Nothing is sent and nothing is stored: the reading is held
+//   in memory for this exact silhouette and used once, by the reading that follows.
+// - "Send" or "Keep" while it is still running continues from where it is; the status line follows it.
+// - A changed silhouette, leaving the screen, choosing to type the numbers or "Delete everything"
+//   cancels it: no further part is asked (a part already running on the device finishes and is dropped).
+// - It is recorded only as part of the reading that uses it.
 
-const prepared = new Map<string, Promise<DevicePass>>();
+type ReadOutcome = Awaited<ReturnType<typeof readInParts>>;
+
+interface PreparedReading {
+  readonly key: string;
+  /** The step running now, for a reading that joins it. */
+  stage: PointerStage | null;
+  readonly listeners: Set<(stage: PointerStage) => void>;
+  cancelled: boolean;
+  readonly result: Promise<ReadOutcome | null>;
+}
+
+/** The one reading prepared ahead (the latest silhouette only), until a reading takes it. */
+let preparedReading: PreparedReading | null = null;
 const preparedKey = (skeleton: Skeleton, docType: DocType, language: string, config: PointerConfig) => `${config.id}|${docType}|${language}|${skeleton}`;
 
+class ReadingCancelled extends Error {}
+
 /**
- * Starts the core part of an on-device reading of this silhouette ahead of time, when the device model
- * is available and the document is read in parts. Resolves when it is done; never rejects.
+ * Starts the whole on-device reading of this silhouette ahead of time, when the device model is
+ * available and the document is read in parts. `options.checkParts` must be the checks the reading that
+ * follows uses. Resolves true when a reading was prepared (or is being prepared); never rejects.
  */
 export async function prepareDeviceReading(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions = {}): Promise<boolean> {
   const config = options.config ?? activePointerConfig();
   if (!readsInParts(config, docType)) return false;
   const key = preparedKey(skeleton, docType, language, config);
-  const existing = prepared.get(key);
-  if (existing) return existing.then(() => true);
+  if (preparedReading?.key === key) return preparedReading.result.then((r) => r !== null);
+  cancelPreparedReading();
   const createOptions = pointerModelParams(docType, language, { ...options, skeleton, part: 'core' }).onDeviceParams?.createOptions;
   if ((await deviceAvailability(createOptions)) !== 'available') return false;
-  // Only the latest silhouette is kept.
-  prepared.clear();
-  const pass = devicePass(skeleton, docType, language, { ...options, skeleton }, 'core');
-  prepared.set(key, pass);
-  return pass.then(() => true);
+  if (preparedReading?.key === key) return preparedReading.result.then((r) => r !== null);
+  cancelPreparedReading();
+  const listeners = new Set<(stage: PointerStage) => void>();
+  const run: PreparedReading = {
+    key,
+    stage: null,
+    listeners,
+    cancelled: false,
+    result: Promise.resolve(null),
+  };
+  const result = readInParts(skeleton, docType, language, {
+    ...options,
+    skeleton,
+    onProgress: (stage) => {
+      run.stage = stage;
+      for (const l of listeners) l(stage);
+    },
+    isCancelled: () => run.cancelled,
+  }).catch((error: unknown) => {
+    if (error instanceof ReadingCancelled) return null;
+    throw error;
+  });
+  (run as { result: Promise<ReadOutcome | null> }).result = result;
+  preparedReading = run;
+  return result.then(
+    (r) => r !== null,
+    () => false,
+  );
 }
 
-/** The core part read ahead for exactly this silhouette, once. */
-function takePrepared(skeleton: Skeleton, docType: DocType, language: string, config: PointerConfig): Promise<DevicePass> | undefined {
-  const key = preparedKey(skeleton, docType, language, config);
-  const pass = prepared.get(key);
-  prepared.delete(key);
-  return pass;
+/** Cancels the reading prepared ahead, if no reading has taken it: no further part is asked. */
+export function cancelPreparedReading(): void {
+  if (preparedReading) preparedReading.cancelled = true;
+  preparedReading = null;
+}
+
+/** The reading prepared ahead for exactly this silhouette, once. */
+function takePrepared(key: string): PreparedReading | undefined {
+  if (preparedReading?.key !== key || preparedReading.cancelled) return undefined;
+  const run = preparedReading;
+  preparedReading = null;
+  return run;
 }
 
 /** Drops anything read ahead (after "Delete everything", or when the document is closed). */
 export function dropPreparedReadings(): void {
-  prepared.clear();
+  cancelPreparedReading();
+}
+
+/** Joins a reading prepared ahead: reports its current step and the ones that follow, then its outcome. */
+async function joinPrepared(run: PreparedReading, onProgress: ((stage: PointerStage) => void) | undefined): Promise<ReadOutcome | null> {
+  const listener = (stage: PointerStage) => onProgress?.(stage);
+  if (onProgress) {
+    onProgress(run.stage ?? 'device-reading');
+    run.listeners.add(listener);
+  }
+  try {
+    return await run.result;
+  } catch {
+    return null;
+  } finally {
+    run.listeners.delete(listener);
+  }
 }
 
 /** Core problems that concern only gross pay and year to date (the gross part may answer them again). */
@@ -380,7 +448,7 @@ async function readInParts(
   const config = options.config ?? activePointerConfig();
   const checkCore = (v: Record<string, unknown>) => [...(options.checkParts?.core(v) ?? [])];
   options.onProgress?.('device-reading');
-  const core0 = await (takePrepared(skeleton, docType, language, config) ?? devicePass(skeleton, docType, language, options, 'core'));
+  const core0 = await devicePass(skeleton, docType, language, options, 'core');
   options.onProgress?.('checking');
   let core: DevicePass = core0.value ? { ...core0, problems: checkCore(core0.value) } : core0;
   const passes: DevicePass[] = [core];
@@ -469,7 +537,10 @@ export async function extractPointers(
   // On a device with a ready model, a paystub is read in two parts (core, then deductions). Only a
   // core that fails its check is a failed on-device attempt; the cloud retry stays one single pass.
   if (available && readsInParts(config, docType)) {
-    const read = await readInParts(skeleton, docType, language, { ...options, skeleton });
+    // A reading prepared ahead for this exact silhouette continues from where it is.
+    const ahead = takePrepared(preparedKey(skeleton, docType, language, config));
+    const joined = ahead ? await joinPrepared(ahead, options.onProgress) : null;
+    const read = joined ?? (await readInParts(skeleton, docType, language, { ...options, skeleton }));
     if (read.ok) {
       recordAnsweredOnDevice('document');
       return { value: read.value, inferenceSource: 'ON_DEVICE', reason, deviceAttempt: read.attempt, deductionsNotRead: read.attempt.deductionsNotRead, notRead: read.attempt.notRead };

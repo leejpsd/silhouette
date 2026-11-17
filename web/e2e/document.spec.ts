@@ -196,6 +196,30 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(page.getByTestId('lead-fields').getByTestId('field-payDate')).toBeVisible();
   });
 
+  test('read ahead: the whole reading runs while the preview is open; Send asks the device for nothing more; a hidden word starts it again', async ({ page, context }) => {
+    const { deductions, ...core } = fixturePointers('paystub-en-01-correct');
+    await fakeOnDeviceModel(context, {
+      availability: 'available',
+      systemReplies: { 'answer only the fields in the schema': JSON.stringify(core), 'answer only the deductions': JSON.stringify({ deductions }) },
+      replies: {},
+    });
+    const requests = recordRequests(page);
+    const prompts = () => page.evaluate(() => (window as unknown as { __fakePrompts: string[] }).__fakePrompts.length);
+    await page.goto('/#/doc');
+    await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'available');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    // Both parts are read before Send.
+    await expect.poll(prompts, { timeout: 10_000 }).toBe(2);
+    // A word hidden: the changed silhouette is read again from the start.
+    await page.getByRole('button', { name: 'Hide “Earnings”' }).first().click();
+    await expect.poll(prompts, { timeout: 10_000 }).toBe(4);
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
+    await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
+    expect(await prompts()).toBe(4);
+    expect(requests.filter((r) => new URL(r.url()).origin !== new URL(page.url()).origin)).toEqual([]);
+  });
+
   test('photo path (fake on-device model): ONLY_ON_DEVICE transcription, then the same silhouette', async ({ page, context }) => {
     await fakeOnDeviceModel(context, {
       availability: 'available',

@@ -10,7 +10,7 @@ import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile } fro
 import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../core/pointer-check';
 import { setModelProviderForTests } from './model-port';
 import { setDeviceModelForTests } from './device-fake';
-import { POINTER_SCHEMAS, dropPreparedReadings, extractPointers, pointerModelParams, prepareDeviceReading, type PointerStage } from './tasks';
+import { POINTER_SCHEMAS, cancelPreparedReading, dropPreparedReadings, extractPointers, pointerModelParams, prepareDeviceReading, type PointerStage } from './tasks';
 import { deviceResponseConstraint, placeholderIds } from './device-schema';
 import { activePointerConfig } from './tasks';
 
@@ -329,27 +329,77 @@ describe('reading a paystub on the device in two parts', () => {
 });
 
 describe('reading ahead while the preview is open', () => {
-  it('the core part starts on this device before Send, and the reading uses it once; nothing else is asked twice', async () => {
+  const settle = () => new Promise((r) => setTimeout(r, 0));
+
+  it('the whole reading runs on this device before Send, and Send uses it once without asking again', async () => {
     const { calls } = device({ core: json(KEY_CORE) });
-    expect(await prepareDeviceReading(doc.skeleton, 'paystub', 'en')).toBe(true);
-    expect(calls).toEqual(['only_on_device:core']);
-    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(await prepareDeviceReading(doc.skeleton, 'paystub', 'en', { checkParts })).toBe(true);
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions']);
+    const stages: PointerStage[] = [];
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, onProgress: (s) => stages.push(s) });
     expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions']);
     expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY });
+    // Already done: the status line shows the last step it reached.
+    expect(stages).toEqual(['checking']);
     // Used once: a second reading asks the device again.
     await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
     expect(calls.filter((c) => c.endsWith(':core'))).toHaveLength(2);
   });
 
-  it('a changed silhouette is read again; without a ready model nothing starts', async () => {
-    const { calls } = device({ core: json(KEY_CORE) });
-    await prepareDeviceReading(doc.skeleton, 'paystub', 'en');
-    await extractPointers(`${doc.skeleton}\n` as never, 'paystub', 'en', { validate, checkParts });
-    expect(calls.filter((c) => c.endsWith(':core'))).toHaveLength(2);
+  it('every part is read ahead: the gross part and the deductions asked again too', async () => {
+    const short = json({ deductions: (KEY_DEDUCTIONS as unknown[]).slice(0, 3) });
+    const { calls } = device({ core: json({ ...KEY_CORE, ytdGross: 'N7' }), gross: json({ grossPay: 'N12', ytdGross: 'N13' }), deductions: short, deductionsAgain: json({ deductions: KEY_DEDUCTIONS }) });
+    await prepareDeviceReading(doc.skeleton, 'paystub', 'en', { checkParts });
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'only_on_device:deductions', 'only_on_device:deductions-again']);
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toHaveLength(4);
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY });
+    expect(result.deviceAttempt?.passes?.map((p) => p.part)).toEqual(['core', 'gross', 'deductions', 'deductions-again']);
+  });
+
+  it('Send while it is still running continues from where it is, and the status line follows the real step', async () => {
+    const { calls } = device({ core: json(KEY_CORE) }, 30);
+    const ahead = prepareDeviceReading(doc.skeleton, 'paystub', 'en', { checkParts });
+    await expect.poll(() => calls.length).toBe(1);
+    const stages: PointerStage[] = [];
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, onProgress: (s) => stages.push(s) });
+    await ahead;
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions']);
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY });
+    // Joined during the core part: core, then checking, the deductions, checking.
+    expect(stages).toEqual(['device-reading', 'checking', 'device-deductions', 'checking']);
+  });
+
+  it('a word hidden in the middle: the old reading stops after its current part, the new silhouette is read', async () => {
+    const { calls } = device({ core: json(KEY_CORE) }, 20);
+    const changed = `${doc.skeleton}\n` as never;
+    const first = prepareDeviceReading(doc.skeleton, 'paystub', 'en', { checkParts });
+    await expect.poll(() => calls.length).toBe(1);
+    // The silhouette changes while the core part of the first one is running.
+    cancelPreparedReading();
+    expect(await first).toBe(false);
+    expect(await prepareDeviceReading(changed, 'paystub', 'en', { checkParts })).toBe(true);
+    // The first reading asked for nothing after its core part.
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:core', 'only_on_device:deductions']);
+    await extractPointers(changed, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toHaveLength(3);
+    // The old silhouette was dropped: it is read again from the start.
+    await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toHaveLength(5);
+  });
+
+  it('leaving the screen cancels it; without a ready model nothing starts', async () => {
+    const { calls } = device({ core: json(KEY_CORE) }, 20);
+    const ahead = prepareDeviceReading(doc.skeleton, 'paystub', 'en', { checkParts });
+    await expect.poll(() => calls.length).toBe(1);
+    cancelPreparedReading();
+    expect(await ahead).toBe(false);
+    await settle();
+    expect(calls).toEqual(['only_on_device:core']);
     dropPreparedReadings();
     setDeviceModelForTests('downloadable');
     const modes = models(json(KEY));
-    expect(await prepareDeviceReading(doc.skeleton, 'paystub', 'en')).toBe(false);
+    expect(await prepareDeviceReading(doc.skeleton, 'paystub', 'en', { checkParts })).toBe(false);
     expect(modes).toEqual([]);
   });
 });
