@@ -158,7 +158,7 @@ The prompt measured is v4. The cloud prompt in use (v5) is v4's text word for wo
 
 **Leak check, same runs** ([`web/eval/results/v15p4.json`](web/eval/results/v15p4.json), field `leakCheck`). No name, date or amount printed in a document appeared in any of the 39 request bodies sent for 38 documents. In the browser tests, a canary test fails if any string listed in [`shared/fixtures/canary/`](shared/fixtures/canary/) appears in any outgoing URL, header or body.
 
-**On-device runs in Chrome 157, 2026-11-16 to 2026-11-17** ([`web/eval/results/on-device/README.md`](web/eval/results/on-device/README.md)). Six recorded runs of the app's on-device check on macOS, each a JSON file in that folder. A "reading" is one paystub read once; a case that ended up in the cloud counts as a cloud run.
+**On-device runs in Chrome 157, 2026-11-16 to 2026-11-17** ([`web/eval/results/on-device/README.md`](web/eval/results/on-device/README.md)). Seven recorded runs of the app's on-device check on macOS, each a JSON file in that folder. A "reading" is one paystub read once; a case that ended up in the cloud counts as a cloud run.
 
 | Run | What changed before it | Answered on the device | Readings with a wrong value reaching the person |
 |---|---|---|---|
@@ -167,22 +167,23 @@ The prompt measured is v4. The cloud prompt in use (v5) is v4's text word for wo
 | 3 | Reading in parts with a strict response constraint | 13 of 14 | 3 of 5 |
 | 4 | Year-to-date rules; gross pay asked again when only it fails | 14 of 14 | 1 of 5 |
 | 5 | One placeholder per field; each paystub read three times | 24 of 24 | 2 of 15 |
-| 6 (latest) | A name cut short is left out as not read | 24 of 24 | **0 of 15** |
+| 6 | A name cut short is left out as not read | 24 of 24 | 0 of 15 |
+| 7 (latest) | Hours, rate, net pay and an early pay date are shown only when a check confirms them | 24 of 24 | **0 of 15** |
 
-In the latest run (2026-11-17), all 24 cases ran on the device: 15 paystub readings, two general explanations and four prepared questions in English and Spanish, the explanation of a person's own result, a typed question, and reading a photo of the sample. Every yearly-income input was right in 13 of 15 readings; in the other 2 a value was not found and left for the person to type, never filled with a wrong one. Median time per paystub: 7.6 s (5.1 to 14.6 s). Two of these runs are bundled in the app at `#/device-check`, labelled as recordings with their date and machine.
+In the latest run (2026-11-17), all 24 cases ran on the device: 15 paystub readings, two general explanations and four prepared questions in English and Spanish, the explanation of a person's own result, a typed question, and reading a photo of the sample. Every yearly-income input was right in 14 of 15 readings; in the other one a value was not found and left for the person to type, never filled with a wrong one. Median time per paystub: 7.9 s (4.8 to 11.2 s). Replaying every recorded on-device answer, from these runs and from three runs on an iPhone, through the current checks leaves no reading with a wrong value reaching the person (the recomputed table in the same README). Two of these runs are bundled in the app at `#/device-check`, labelled as recordings with their date and machine.
 
-<p><img src="docs/images/device-check.png" width="250" alt="Recorded on-device check, 2026-11-17, Chrome 157, macOS: 24 of 24 cases answered on this device, 13 of 15 readings with every yearly-income input right, 0 of 15 readings with a wrong value."></p>
+<p><img src="docs/images/device-check.png" width="250" alt="Recorded on-device check, 2026-11-17, Chrome 157, macOS: 24 of 24 cases answered on this device, 14 of 15 readings with every yearly-income input right, 0 of 15 readings with a wrong value."></p>
 
 **Explanations, 2026-11-14** ([`web/eval/results/answers-v5.md`](web/eval/results/answers-v5.md)). 12 real cloud replies (explanations and prepared questions, English and Spanish): none said anything about the person, and the check on model text blocked none.
 
 **Rule pack.** The engine reproduces all 189 results of 27 households worked out by hand ([`shared/rulepacks/us-ca/README.md`](shared/rulepacks/us-ca/README.md)).
 
-**Tests, as of 2026-11-17.** Web: 1,037 unit tests, including every shared conformance fixture, and 199 browser tests (Playwright). Shared reference implementation: 16 tests.
+**Tests, as of 2026-11-17.** Web: 1,088 unit tests, including every shared conformance fixture, and 203 browser tests (Playwright). iOS: 103 package tests, including the shared fixtures, and 12 UI tests. Shared reference implementation: 23 tests.
 
 **Not verified yet.**
 
 - Current information and other help (Google Search grounding), help nearby (Google Maps grounding) and read aloud are built behind Remote Config flags that are off by default, and are tested only with replies faked in the shapes the API documents.
-- No on-device run has been recorded on Android or iOS yet.
+- The iOS app has been run on a real iPhone 17 Pro with Apple's on-device model (2026-11-17); its run files are not in the repository yet. No on-device run has been made on Android.
 
 ## What is different
 
@@ -219,11 +220,11 @@ As of 2026-11-17.
 
 | Platform | Contract | Done and verified | Not yet |
 |---|---|---|---|
-| Web | v1.17 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Six recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Live grounding and read aloud |
-| iOS | v1.10, moving to v1.17 | Core engine, document flow, Firebase AI Logic, explanations and the final design. Verified with a scripted model; installed once on a real iPhone | California pack, reading in parts, a recorded on-device run |
+| Web | v1.18 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Live grounding and read aloud |
+| iOS | v1.17, moving to v1.18 | Core engine, California pack, document flow, on-device reading in parts with the shared fixture, explanations, the on-device check and the two-minute path. Installed and run on a real iPhone 17 Pro | Recorded run files in the repository, contract v1.18 |
 | Android | v1.10 | Core engine, document flow, Firebase AI Logic and explanations. Verified with a fake model | Final design, California pack, a recorded on-device run |
 
-The mobile apps at v1.10 run against the synthetic `zz-test` rule pack and say so on every screen. Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/`](android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
+The Android app at v1.10 runs against the synthetic `zz-test` rule pack and says so on every screen. Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/`](android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
 
 ## Run it locally
 
@@ -267,7 +268,7 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 | [`firebase/`](firebase/README.md), [`firebase.json`](firebase.json) | Remote Config template, Firestore rules, hosting headers |
 | [`docs/`](docs/ARCHITECTURE.md) | Architecture and these images |
 
-**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.17. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
+**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.18. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -277,7 +278,7 @@ More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - One jurisdiction. Paystubs are the document type in the app flow.
 - Photos are read only by an on-device model; there is no separate text recognition library.
 - The on-device checks have known gaps, listed in [`shared/validation/DEVICE_READING.md`](shared/validation/DEVICE_READING.md) section 9.
-- Next: bring iOS and Android to v1.17 with the California pack, record on-device runs on phones, confirm the pack's numbers, and publish the video.
+- Next: bring iOS to v1.18 and Android to v1.18 with the California pack, add the phones' on-device run files, confirm the pack's numbers, and publish the video.
 
 ## License
 

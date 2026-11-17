@@ -177,7 +177,12 @@ describe('the run files and the shared contract (v1.18)', () => {
 
   it('the latest recorded run has exactly the cases of shared/fixtures/device-check/cases.json, in order', () => {
     const cases = (JSON.parse(readFileSync(new URL('../../../../shared/fixtures/device-check/cases.json', import.meta.url), 'utf8')) as { cases: { id: string; task: string; mode: string }[] }).cases;
-    const latest = JSON.parse(readFileSync(new URL('device-check-2026-11-17T0038-chrome157-macos.json', dir), 'utf8')) as { cases: { id: string; task: string; mode: string }[] };
+    // The latest bundled run is the newest by its own date: no file is named here, so a newer run needs no test edit.
+    const bundled = readdirSync(dir)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => JSON.parse(readFileSync(new URL(f, dir), 'utf8')) as { date: string; cases: { id: string; task: string; mode: string }[] })
+      .sort((a, b) => a.date.localeCompare(b.date));
+    const latest = bundled[bundled.length - 1]!;
     const seen = new Map<string, { id: string; task: string; mode: string }>();
     for (const c of latest.cases) if (!seen.has(c.id)) seen.set(c.id, { id: c.id, task: c.task, mode: c.mode });
     expect([...seen.values()]).toEqual(cases.map(({ id, task, mode }) => ({ id, task, mode })));
