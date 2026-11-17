@@ -33,7 +33,9 @@ Figures are taken from the files. The photo case is not counted: on iPhone the o
 |---|---|---|---|---|---|---|
 | 2026-11-17 05:05 | `device-check-2026-11-17T0505-silhouette0-ios2652.json` (baseline) | 12 / 1 of 13 | 34 of 60 | 5 of 5 | 3 of 5 | 8.5 s (6.2–10.9 s) |
 | 2026-11-17 05:08 | `history/device-check-2026-11-17T0508-silhouette0-ios2652.json` | 12 / 1 of 13 | 34 of 60 | 5 of 5 | 2 of 5 | 6.7 s (5.7–8.7 s) |
-| 2026-11-17 05:11 | `device-check-2026-11-17T0511-silhouette0-ios2652.json` (three repetitions) | 17 / 6 of 23 | 95 of 180 | 14 of 15 | 6 of 15 | 7.4 s (4.4–10.6 s) |
+| 2026-11-17 05:11 | `history/device-check-2026-11-17T0511-silhouette0-ios2652.json` (three repetitions) | 17 / 6 of 23 | 95 of 180 | 14 of 15 | 6 of 15 | 7.4 s (4.4–10.6 s) |
+| 2026-11-17 06:13 | `history/device-check-2026-11-17T0613-silhouette0-ios2652.json` (three repetitions; values shown only when confirmed; greedy sampling; the cloud retry was refused for lack of an App Check token, so three readings did not run) | 20 / 0 of 23; 3 did not run | 102 of 180 | 12 of 15 | 0 of 15 | 6.5 s (5.8–12.0 s) |
+| 2026-11-17 06:25 | `device-check-2026-11-17T0625-silhouette0-ios2652.json` (latest; three repetitions; the App Check debug token registered, so a reading the device refuses is read in the cloud) | 20 / 3 of 23 | 102 of 180 | 15 of 15 | 0 of 15 | 6.5 s (5.7–11.9 s) |
 
 All three runs were made with the app of contract v1.17 on an iPhone 17 Pro (iOS 26.5.2). Every wrong value was in a field that feeds no result: hourly rate, hours worked, net pay, and once a pay date. The evaluation paystub L10 never ran on the device: its core part failed in about 10 ms, before the model answered, and was read in the cloud; those files record only `error:on-device-unavailable`. Runs made since record where such a call stopped and why (`failure:` in the pass's problems).
 

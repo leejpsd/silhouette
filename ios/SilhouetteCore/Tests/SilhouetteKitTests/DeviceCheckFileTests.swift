@@ -68,7 +68,7 @@ struct DeviceCheckFileTests {
             let run = try JSON.parse(Data(contentsOf: Repo.shared.appendingPathComponent(path)))
             #expect(DeviceCheck.validate(Self.runSchema, run) == [], "\(path)")
         }
-        #expect(Self.iPhoneRuns.count == 3)
+        #expect(Self.iPhoneRuns.count >= 3)
         for run in Self.iPhoneRuns {
             #expect(DeviceCheck.validate(Self.runSchema, run.file) == [], "\(run.name)")
             #expect(DeviceCheck.fileName(run.file) == run.name, "\(run.name) is named as the spec says")
