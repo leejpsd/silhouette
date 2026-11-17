@@ -177,7 +177,7 @@ In the latest run (2026-11-17), all 24 cases ran on the device: 15 paystub readi
 
 **Rule pack.** The engine reproduces all 189 results of 27 households worked out by hand ([`shared/rulepacks/us-ca/README.md`](shared/rulepacks/us-ca/README.md)).
 
-**Tests, as of 2026-11-17.** Web: 1,028 unit tests, including every shared conformance fixture, and 188 browser tests (Playwright). Shared reference implementation: 16 tests.
+**Tests, as of 2026-11-17.** Web: 1,037 unit tests, including every shared conformance fixture, and 199 browser tests (Playwright). Shared reference implementation: 16 tests.
 
 **Not verified yet.**
 
@@ -200,6 +200,8 @@ In the latest run (2026-11-17), all 24 cases ran on the device: 15 paystub readi
 2. The network monitor ([`web/src/data/net-monitor.ts`](web/src/data/net-monitor.ts)) lets a request reach Firebase AI Logic only when a cloud-capable task registered it just before. Anything else is blocked and recorded as blocked.
 
 Both are tested ([`web/src/ai/only-on-device.test.ts`](web/src/ai/only-on-device.test.ts), [`web/e2e/dev/only-on-device.spec.ts`](web/e2e/dev/only-on-device.spec.ts)).
+
+**Nothing before it is needed.** In a Chrome that has the built-in model, the whole two-minute path makes no request to any other origin: requests that run on the device use a Firebase app without App Check, and App Check and reCAPTCHA start only when a request is about to go to the cloud. A browser test asserts this on the network under the hosting build and policy ([`web/e2e/hosting/device-only.spec.ts`](web/e2e/hosting/device-only.spec.ts)). A first cloud Send makes eight requests the page can see, one of them with the silhouette; they are listed in [`web/README.md`](web/README.md) under "What leaves, and when". A cloud request is sent only with a limited-use App Check token: if the token exchange fails, nothing is sent.
 
 **App Check.** Cloud calls need App Check: reCAPTCHA Enterprise on the web, with limited-use tokens for Firebase AI Logic; Play Integrity on Android and App Attest on iOS for release builds. Debug tokens are for local development only. A build check fails if a production web bundle contains the debug-token code path or any value from a local env file.
 
