@@ -8,6 +8,8 @@ function messageKey(error: TaskError): CopyKey {
   if (error.kind === 'quota-daily') return 'error.quotaDaily';
   if (error.kind === 'cancelled') return 'answers.cancelled';
   if (error.kind === 'blocked') return 'answers.blocked';
+  // Not the person's doing: said plainly, with what to do next.
+  if (error.kind === 'app-check') return 'error.appCheckTryAgain';
   return dynamicKey(`error.${error.kind}`);
 }
 

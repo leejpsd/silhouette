@@ -117,6 +117,7 @@ export function App() {
     const { shutdownFirebase } = await import('../ai/firebase');
     await shutdownFirebase();
     resetModelInstances();
+    (await import('../ai/tasks')).dropPreparedReadings();
     resetCloudRequests();
     clearSession();
     forgetCounty();

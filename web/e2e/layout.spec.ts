@@ -74,7 +74,9 @@ test.describe('documents', () => {
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
     await page.getByRole('button', { name: 'Send', exact: true }).click();
     const lead = page.getByTestId('lead-fields');
-    for (const name of ['grossPay', 'ytdGross', 'payDate', 'payFrequency']) await expect(lead.getByTestId(`field-${name}`)).toBeVisible();
+    // The date shown first is the one the yearly income uses: the period end (the sample has one).
+    for (const name of ['grossPay', 'ytdGross', 'periodEnd', 'payFrequency']) await expect(lead.getByTestId(`field-${name}`)).toBeVisible();
+    await expect(lead.getByTestId('field-payDate')).toHaveCount(0);
     const more = page.getByTestId('more-values');
     await expect(more).toHaveAttribute('aria-expanded', 'false');
     await expect(page.getByTestId('field-hoursWorked')).toBeHidden();

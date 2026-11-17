@@ -311,6 +311,51 @@ async function devicePass(skeleton: Skeleton, docType: DocType, language: string
   };
 }
 
+// ---------- Reading ahead on the device ----------
+//
+// The first request after the page loads makes Chrome load the model into memory, which made the first
+// paystub take about 14 s against 5 to 9 s afterwards. Firebase AI Logic has no way to load the model
+// without a prompt, so the preview screen starts the first part of the reading itself (the core part,
+// ONLY_ON_DEVICE, the same task and routing as after "Send" or "Keep everything on this device") while
+// the person looks at the silhouette. Nothing is sent and nothing is stored: the answer waits in memory
+// for this exact silhouette, is used once by the reading that follows, and is dropped when the
+// silhouette changes or the page closes. It is recorded only as part of that reading.
+
+const prepared = new Map<string, Promise<DevicePass>>();
+const preparedKey = (skeleton: Skeleton, docType: DocType, language: string, config: PointerConfig) => `${config.id}|${docType}|${language}|${skeleton}`;
+
+/**
+ * Starts the core part of an on-device reading of this silhouette ahead of time, when the device model
+ * is available and the document is read in parts. Resolves when it is done; never rejects.
+ */
+export async function prepareDeviceReading(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions = {}): Promise<boolean> {
+  const config = options.config ?? activePointerConfig();
+  if (!readsInParts(config, docType)) return false;
+  const key = preparedKey(skeleton, docType, language, config);
+  const existing = prepared.get(key);
+  if (existing) return existing.then(() => true);
+  const createOptions = pointerModelParams(docType, language, { ...options, skeleton, part: 'core' }).onDeviceParams?.createOptions;
+  if ((await deviceAvailability(createOptions)) !== 'available') return false;
+  // Only the latest silhouette is kept.
+  prepared.clear();
+  const pass = devicePass(skeleton, docType, language, { ...options, skeleton }, 'core');
+  prepared.set(key, pass);
+  return pass.then(() => true);
+}
+
+/** The core part read ahead for exactly this silhouette, once. */
+function takePrepared(skeleton: Skeleton, docType: DocType, language: string, config: PointerConfig): Promise<DevicePass> | undefined {
+  const key = preparedKey(skeleton, docType, language, config);
+  const pass = prepared.get(key);
+  prepared.delete(key);
+  return pass;
+}
+
+/** Drops anything read ahead (after "Delete everything", or when the document is closed). */
+export function dropPreparedReadings(): void {
+  prepared.clear();
+}
+
 /** Core problems that concern only gross pay and year to date (the gross part may answer them again). */
 const isGrossProblem = (p: string) => /^(grossPay|ytdGross):/.test(p) || p === 'check:ytd-gross' || p === 'check:ytd-periods';
 
@@ -335,7 +380,7 @@ async function readInParts(
   const config = options.config ?? activePointerConfig();
   const checkCore = (v: Record<string, unknown>) => [...(options.checkParts?.core(v) ?? [])];
   options.onProgress?.('device-reading');
-  const core0 = await devicePass(skeleton, docType, language, options, 'core');
+  const core0 = await (takePrepared(skeleton, docType, language, config) ?? devicePass(skeleton, docType, language, options, 'core'));
   options.onProgress?.('checking');
   let core: DevicePass = core0.value ? { ...core0, problems: checkCore(core0.value) } : core0;
   const passes: DevicePass[] = [core];

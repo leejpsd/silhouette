@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { clearOutbound, outboundState, restoreOutbound } from './outbound';
-import { AI_LOGIC_HOST, BLOCKED_REASON, aiPayloadText, bodyToSend, classify, describeAiRequests, expectRequestBody, installNetMonitor, modelOf, permitCloudRequest } from './net-monitor';
+import { AI_LOGIC_HOST, BLOCKED_REASON, REFUSED_BY_BROWSER, aiPayloadText, bodyToSend, classify, describeAiRequests, expectRequestBody, installNetMonitor, modelOf, noteRefused, permitCloudRequest } from './net-monitor';
 
 afterEach(() => clearOutbound(null));
 
@@ -60,7 +60,7 @@ describe('network monitor', () => {
     const target = {
       fetch: (async (input: RequestInfo | URL) => {
         const url = String(input);
-        if (url.includes('fail')) throw new TypeError('Failed to fetch');
+        if (url.includes('fail') || url.includes('/clr')) throw new TypeError('Failed to fetch');
         if (url.includes('denied')) return new Response('{}', { status: 401, statusText: 'Unauthorized' });
         return new Response('{}', { status: 200 });
       }) as typeof fetch,
@@ -79,6 +79,9 @@ describe('network monitor', () => {
     release();
     // Nothing asked for this one: it is blocked before it leaves, and recorded as blocked.
     await expect(target.fetch(`https://${AI_LOGIC_HOST}/v1beta/models/m:generateContent`, { method: 'POST', body: generateBody })).rejects.toThrow(BLOCKED_REASON);
+    // reCAPTCHA's call refused by the site's security policy: it never left the browser, so it is blocked, not sent or failed.
+    await expect(target.fetch('https://www.google.com/recaptcha/enterprise/clr?k=SITEKEY', { method: 'POST', body: '{}' })).rejects.toThrow();
+    noteRefused('https://www.google.com/recaptcha/enterprise/clr?k=SITEKEY');
 
     const entries = outboundState().entries;
     expect(entries.map((e) => [e.channel, e.status])).toEqual([
@@ -87,7 +90,10 @@ describe('network monitor', () => {
       ['ai-cloud', 'failed'],
       ['other', 'failed'],
       ['ai-cloud', 'blocked'],
+      ['recaptcha', 'blocked'],
     ]);
+    expect(entries[5]).toMatchObject({ fields: ['recaptcha-check'], error: REFUSED_BY_BROWSER, destination: 'www.google.com', path: '/recaptcha/enterprise/clr' });
+    expect(entries[3]?.fields).toEqual(['other-request']);
     expect(entries[0]).toMatchObject({ httpStatus: 200, path: '/v1beta/projects/p/models/m:generateContent', model: 'm' });
     expect(entries[2]).toMatchObject({ httpStatus: 401, error: 'HTTP 401 Unauthorized' });
     expect(entries[3]?.error).toBe('Failed to fetch');
@@ -95,6 +101,13 @@ describe('network monitor', () => {
     expect(stored).not.toContain('SECRET');
     expect(stored).not.toContain('key=');
     expect(entries[1]?.body).toBeUndefined();
+  });
+
+  it('labels reCAPTCHA (script, calls and frame) as the check that this is the real app, never a bare host', () => {
+    for (const href of ['https://www.google.com/recaptcha/enterprise.js?render=explicit', 'https://www.google.com/recaptcha/enterprise/clr?k=K', 'https://www.google.com/recaptcha/enterprise/reload?k=K', 'https://www.google.com/recaptcha/enterprise/anchor?k=K', 'https://www.gstatic.com/recaptcha/releases/abc/recaptcha__en.js', 'https://recaptcha.google.com/recaptcha/enterprise/anchor']) {
+      expect(classify(new URL(href), null), href).toEqual({ channel: 'recaptcha', fields: ['recaptcha-check'] });
+    }
+    expect(classify(new URL('https://www.google.com/search'), null).fields).toEqual(['other-request']);
   });
 
   it('restores a saved ledger and keeps the deletion date when cleared', () => {

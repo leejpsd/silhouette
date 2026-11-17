@@ -2,6 +2,7 @@
 // notice, the "Leaving your device" count row with its record, and "Delete everything".
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
+import { REFUSED_BY_BROWSER } from '../data/net-monitor';
 import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, packDate, type CopyKey, type Locale } from './i18n';
 import { useApp } from './context';
 import { PACK, SOURCES_READ_ON, isDemoPack, isDraftPack } from './pack';
@@ -217,8 +218,12 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
       : e.status === 'attempted'
         ? t('outbound.status.attempted')
         : e.status === 'sent'
-          ? t('outbound.status.sent', { status: e.httpStatus ?? '' })
-          : t('outbound.status.failed', { reason: e.error ?? '' });
+          ? e.httpStatus === 0
+            ? t('outbound.status.loaded')
+            : t('outbound.status.sent', { status: e.httpStatus ?? '' })
+          : e.status === 'blocked'
+            ? t(e.error === REFUSED_BY_BROWSER ? 'outbound.status.refusedByBrowser' : 'outbound.status.blocked')
+            : t('outbound.status.failed', { reason: e.error ?? '' });
 
   return (
     <div
@@ -258,6 +263,11 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
                 <OutboundItem key={e.id} entry={e} title={e.fields.map(fieldName).join(', ')} status={statusLine(e)} at={time(locale, e.at)} />
               ))}
             </ol>
+          )}
+          {entries.some((e) => e.channel === 'recaptcha') && (
+            <p className="record-note" data-testid="recaptcha-note">
+              {t('leaving.recaptchaNote')}
+            </p>
           )}
           <DeleteEverything onDelete={onDelete} />
         </div>

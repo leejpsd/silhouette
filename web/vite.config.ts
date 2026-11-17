@@ -117,7 +117,7 @@ export default defineConfig(({ mode }) => {
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts', 'eval/**/*.test.mjs', 'scripts/**/*.test.mjs'],
+    include: ['src/**/*.test.ts', 'eval/**/*.test.mjs', 'scripts/**/*.test.mjs', 'sw/**/*.test.mjs'],
   },
   };
 });

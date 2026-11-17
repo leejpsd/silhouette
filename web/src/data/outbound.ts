@@ -5,7 +5,7 @@
 // Answers written by the on-device model are recorded too, with status "answered": they never left,
 // carry no destination and no body, and are never counted as sent.
 
-export type OutboundChannel = 'ai-cloud' | 'app-check' | 'firestore' | 'remote-config' | 'analytics' | 'other' | 'on-device';
+export type OutboundChannel = 'ai-cloud' | 'app-check' | 'recaptcha' | 'firestore' | 'remote-config' | 'analytics' | 'other' | 'on-device';
 export type OutboundStatus = 'attempted' | 'sent' | 'failed' | 'answered' | 'blocked';
 
 export interface OutboundEntry {
@@ -85,16 +85,22 @@ function update(id: string, patch: Partial<OutboundEntry>): void {
   set({ ...state, entries: state.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)) });
 }
 
+/** A request already marked blocked (refused before it left) keeps that status, whatever arrives later. */
+const isBlocked = (id: string) => state.entries.some((e) => e.id === id && e.status === 'blocked');
+
+/** `httpStatus` 0: loaded, but the browser does not show the status to the page (another site's script or frame). */
 export function markSent(id: string, httpStatus: number): void {
+  if (isBlocked(id)) return;
   update(id, { status: 'sent', httpStatus });
 }
 
-/** A request stopped before it left (the network monitor refused it): nothing was sent. */
+/** A request stopped before it left (the network monitor or the browser refused it): nothing was sent. */
 export function markBlocked(id: string, reason: string): void {
-  update(id, { status: 'blocked', error: reason });
+  update(id, { status: 'blocked', error: reason, httpStatus: undefined });
 }
 
 export function markFailed(id: string, error: string, httpStatus?: number): void {
+  if (isBlocked(id)) return;
   update(id, { status: 'failed', error, httpStatus });
 }
 

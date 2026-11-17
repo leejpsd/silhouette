@@ -10,7 +10,7 @@ import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile } fro
 import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../core/pointer-check';
 import { setModelProviderForTests } from './model-port';
 import { setDeviceModelForTests } from './device-fake';
-import { POINTER_SCHEMAS, extractPointers, pointerModelParams, type PointerStage } from './tasks';
+import { POINTER_SCHEMAS, dropPreparedReadings, extractPointers, pointerModelParams, prepareDeviceReading, type PointerStage } from './tasks';
 import { deviceResponseConstraint, placeholderIds } from './device-schema';
 import { activePointerConfig } from './tasks';
 
@@ -89,6 +89,7 @@ function device(text: { core: string; deductions?: string; deductionsAgain?: str
 }
 
 afterEach(() => {
+  dropPreparedReadings();
   setModelProviderForTests(null);
   setDeviceModelForTests('absent');
 });
@@ -324,6 +325,32 @@ describe('reading a paystub on the device in two parts', () => {
     device({ core: json(KEY_CORE) });
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
     for (const pass of result.deviceAttempt?.passes ?? []) expect(pass.latencyMs).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('reading ahead while the preview is open', () => {
+  it('the core part starts on this device before Send, and the reading uses it once; nothing else is asked twice', async () => {
+    const { calls } = device({ core: json(KEY_CORE) });
+    expect(await prepareDeviceReading(doc.skeleton, 'paystub', 'en')).toBe(true);
+    expect(calls).toEqual(['only_on_device:core']);
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions']);
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY });
+    // Used once: a second reading asks the device again.
+    await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls.filter((c) => c.endsWith(':core'))).toHaveLength(2);
+  });
+
+  it('a changed silhouette is read again; without a ready model nothing starts', async () => {
+    const { calls } = device({ core: json(KEY_CORE) });
+    await prepareDeviceReading(doc.skeleton, 'paystub', 'en');
+    await extractPointers(`${doc.skeleton}\n` as never, 'paystub', 'en', { validate, checkParts });
+    expect(calls.filter((c) => c.endsWith(':core'))).toHaveLength(2);
+    dropPreparedReadings();
+    setDeviceModelForTests('downloadable');
+    const modes = models(json(KEY));
+    expect(await prepareDeviceReading(doc.skeleton, 'paystub', 'en')).toBe(false);
+    expect(modes).toEqual([]);
   });
 });
 

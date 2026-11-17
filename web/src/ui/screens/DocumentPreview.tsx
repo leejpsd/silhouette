@@ -1,7 +1,7 @@
 // Skeleton preview: exactly what could leave the device, before anything is sent.
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { placeholderCounts, buildReview, type SourceSegment } from '../../core/review';
-import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, type PointerStage } from '../../ai/tasks';
+import { extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
 import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../../core/pointer-check';
@@ -10,6 +10,7 @@ import type { Skeleton } from '../../core/types';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
 import { classifyError } from '../../ai/errors';
+import { resetModelInstances } from '../../ai/model-port';
 import { useApp } from '../context';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
@@ -48,6 +49,27 @@ export function DocumentPreviewScreen() {
   const [stage, setStage] = useState<PointerStage | null>(null);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
   const online = useOnline();
+  // With a ready on-device model, the first part of the reading starts on this device while the person
+  // looks at the silhouette (nothing is sent or stored; src/ai/tasks.ts prepareDeviceReading).
+  const [readingAhead, setReadingAhead] = useState(false);
+  const aheadSkeleton = doc.skeleton;
+  const aheadLanguage = doc.language;
+  useEffect(() => {
+    if (!aheadSkeleton || deviceStatus !== 'available' || !ON_DEVICE_LANGUAGES.has(aheadLanguage)) return;
+    let live = true;
+    // After a short pause, so hiding several words in a row starts one reading, not one per word.
+    const timer = setTimeout(() => {
+      setReadingAhead(true);
+      void prepareDeviceReading(aheadSkeleton, 'paystub', aheadLanguage).finally(() => {
+        if (live) setReadingAhead(false);
+      });
+    }, 1200);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+      setReadingAhead(false);
+    };
+  }, [aheadSkeleton, aheadLanguage, deviceStatus]);
   // The preview opens on what could leave (the screen's heading). The first silhouette of a session is
   // shown being made: the bars wipe in once. Later changes animate only the bars that are new.
   const [mode, setMode] = useState<'phone' | 'leave'>('leave');
@@ -134,6 +156,19 @@ export function DocumentPreviewScreen() {
     } finally {
       setSending(false);
     }
+  };
+
+  /**
+   * "Try again". After an App Check failure Firebase starts again first: the SDK keeps a failed
+   * provider throttled (from a second up to a day), so trying again with it would fail at once.
+   */
+  const retry = async () => {
+    if (doc.error?.kind === 'app-check') {
+      const { restartForAppCheck } = await import('../../ai/firebase');
+      await restartForAppCheck();
+      resetModelInstances();
+    }
+    await send();
   };
 
   /**
@@ -236,7 +271,7 @@ export function DocumentPreviewScreen() {
       <p className="small muted">{t('leaving.network')}</p>
       {sending && <Loading />}
       <div role="status" className="status-line">
-        {sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : ''}
+        {sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : readingAhead ? t('preview.readingAhead') : ''}
       </div>
       {doc.error && (
         <>
@@ -249,7 +284,7 @@ export function DocumentPreviewScreen() {
               </button>
             ) : (
               doc.error.kind !== 'quota-daily' && (
-                <button type="button" className="outline-button" onClick={() => void send()}>
+                <button type="button" className="outline-button" onClick={() => void retry()} data-testid="retry">
                   {t('error.retry')}
                 </button>
               )

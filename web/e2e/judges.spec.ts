@@ -1,6 +1,7 @@
 // The judges' path and the on-device check, in browsers with and without the on-device model.
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { chooseLanguage } from './helpers';
 import { baselineRecording, bundledRecordingCount, latestRecording } from './recordings';
 import { fakeAnswerModels, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel } from './model-fakes';
 
@@ -35,6 +36,17 @@ test.describe('for judges: try it in two minutes', () => {
     const record = page.getByTestId('record-sheet');
     await expect(record).toBeVisible();
     await expect(record.getByTestId('outbound-list')).toContainText('Document silhouette');
+  });
+
+  test('in Spanish the judges page is all Spanish', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.goto('/#/judges');
+    await chooseLanguage(page, 'es');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pruébalo en dos minutos');
+    await expect(page.getByRole('button', { name: 'Abrir el talón de pago de ejemplo' })).toBeVisible();
+    await expect(page.getByTestId('judges-device')).toContainText('Este navegador no tiene el modelo del dispositivo');
+    const text = await page.locator('main').innerText();
+    for (const english of ['Try it', 'Open the sample', 'Fill in and see', 'Compare what left', 'This browser', 'Three steps']) expect(text).not.toContain(english);
   });
 
   test('says which steps run on this device when a model is present', async ({ page, context }) => {

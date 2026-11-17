@@ -124,7 +124,7 @@ const money = (locale: Locale, cents: number) => formatMoney(locale, cents / 100
 /** Fields that are amounts of money (shown in the pack's currency). */
 const MONEY_FIELDS: ReadonlySet<string> = new Set(['grossPay', 'netPay', 'ytdGross', 'hourlyRate']);
 
-/** What decides the yearly income: shown first. The date is the pay date, or the period end without one. */
+/** What decides the yearly income: shown first. The date is the one it is worked out from: the period end, or the pay date without one. */
 const LEAD_FIELDS = ['grossPay', 'ytdGross', 'payDate', 'payFrequency'] as const;
 
 /** The values each check compares; a value a check flags is shown with the leading values. */
@@ -224,7 +224,10 @@ export function DocumentReviewScreen() {
   const deductionsUnread = doc.extraction?.deductionsNotRead === true && deductions.length === 0;
   const shownChecks = (result?.checks[currentIndex] ?? []).filter((c) => c.status !== 'skipped' && !(deductionsUnread && c.id === 'net-sum'));
   const flagged = new Set(shownChecks.filter((c) => c.status === 'warn').flatMap((c) => CHECK_FIELDS[c.id] ?? []));
-  const dateField = rows.find((r) => r.name === 'payDate')?.text === '' ? 'periodEnd' : 'payDate';
+  // The date the yearly income is worked out from (validation/SPEC.md section 7): the period end when
+  // it parses, otherwise the pay date. That one is shown with the leading values.
+  const periodEndText = rows.find((r) => r.name === 'periodEnd')?.text ?? '';
+  const dateField = periodEndText !== '' && parseDate(periodEndText, PACK.jurisdiction) !== null ? 'periodEnd' : 'payDate';
   const leadOrder = [...LEAD_FIELDS.map((n) => (n === 'payDate' ? dateField : n)), ...rows.map((r) => r.name).filter((n) => flagged.has(n))];
   const leadNames = new Set<string>(leadOrder);
   const leadRows = [...new Set(leadOrder)].flatMap((n) => rows.filter((r) => r.name === n));

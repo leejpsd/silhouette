@@ -1,0 +1,90 @@
+// The hosting build (mode hosting, with a site key) under the hosting content security policy, with
+// reCAPTCHA Enterprise and App Check answering in the shapes they use in production. The policy must
+// let every request they make through, App Check's token must reach Firebase AI Logic, and the record
+// must say plainly what each request was. A failed first exchange is followed by a successful one
+// after "Try again", without reloading.
+import { readFileSync } from 'node:fs';
+import { expect, test, type Page } from '@playwright/test';
+import { AI_HOST, fakeCloudModel, fixturePointers, noOnDeviceModel } from '../model-fakes';
+import { APP_CHECK_TOKEN, fakeRecaptcha, requireAppCheck, serveWithPolicy } from './recaptcha';
+
+const hosting = JSON.parse(readFileSync(new URL('../../hosting/firebase.hosting.json', import.meta.url), 'utf8')) as {
+  hosting: { headers: { source: string; headers: { key: string; value: string }[] }[] };
+};
+const POLICY = hosting.hosting.headers.flatMap((h) => h.headers).find((h) => h.key === 'Content-Security-Policy')?.value ?? '';
+
+async function judgesStepTwo(page: Page) {
+  await page.goto('/#/judges');
+  await page.getByRole('button', { name: 'Open the sample paystub' }).click();
+  await page.getByTestId('skeleton-preview').waitFor();
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
+}
+
+test('reCAPTCHA Enterprise and App Check work under the hosting policy; the record names each request', async ({ page, context, baseURL }) => {
+  await noOnDeviceModel(context);
+  const violations = await serveWithPolicy(page, POLICY, new URL(baseURL ?? '').origin);
+  const recaptcha = await fakeRecaptcha(context, page);
+  await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+  const aiHeaders: string[] = [];
+  page.on('request', (r) => {
+    if (new URL(r.url()).hostname === AI_HOST) aiHeaders.push(r.headers()['x-firebase-appcheck'] ?? '');
+  });
+
+  await judgesStepTwo(page);
+  await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
+  await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
+
+  // Every request reCAPTCHA and App Check make, in production's shapes, and none refused by the policy.
+  const seen = recaptcha.requests.join('\n');
+  for (const part of ['/recaptcha/enterprise.js?render=explicit', 'www.gstatic.com/recaptcha/releases/', '/recaptcha/enterprise/anchor', '/recaptcha/enterprise/clr', '/recaptcha/enterprise/reload', 'exchangeRecaptchaEnterpriseToken']) {
+    expect(seen, part).toContain(part);
+  }
+  expect(violations).toEqual([]);
+  expect(aiHeaders.length).toBeGreaterThan(0);
+  expect(aiHeaders.every((h) => h === APP_CHECK_TOKEN)).toBe(true);
+
+  // The record: reCAPTCHA in plain words, never a bare host name, and nothing refused.
+  await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
+  const list = page.getByTestId('outbound-list');
+  await expect(list.locator('li[data-channel="recaptcha"]').first()).toContainText('A check that this is the real app (reCAPTCHA, no personal data)');
+  await expect(list.locator('li[data-channel="app-check"]').first()).toContainText('App Check token request (no personal data)');
+  await expect(page.getByTestId('recaptcha-note')).toBeVisible();
+  await expect(list.locator('li[data-status="blocked"]')).toHaveCount(0);
+  for (const title of await list.locator('li .outbound-what').allInnerTexts()) expect(title).not.toMatch(/^[a-z0-9.-]+\.[a-z]{2,}$/);
+});
+
+test('the policy without reCAPTCHA in connect-src is caught: the call is refused, and the record says it never left', async ({ page, context, baseURL }) => {
+  await noOnDeviceModel(context);
+  // The policy of the first hosted release, before connect-src allowed https://www.google.com/recaptcha/.
+  const oldPolicy = POLICY.replace(/(connect-src[^;]*?) https:\/\/www\.google\.com\/recaptcha\//, '$1');
+  expect(oldPolicy).not.toBe(POLICY);
+  const violations = await serveWithPolicy(page, oldPolicy, new URL(baseURL ?? '').origin);
+  await fakeRecaptcha(context, page);
+  await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+  await requireAppCheck(page);
+  await judgesStepTwo(page);
+  await expect(page.getByTestId('task-error')).toHaveAttribute('data-kind', 'app-check');
+  await expect.poll(() => violations.join('\n')).toContain('https://www.google.com/recaptcha/enterprise/clr');
+  await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
+  const refused = page.getByTestId('outbound-list').locator('li[data-channel="recaptcha"][data-status="blocked"]');
+  await expect(refused.first()).toContainText('Not sent: the browser refused it under this site’s security rules');
+});
+
+test('after a failed App Check exchange, "Try again" works without reloading, and the message blames nobody', async ({ page, context, baseURL }) => {
+  await noOnDeviceModel(context);
+  await serveWithPolicy(page, POLICY, new URL(baseURL ?? '').origin);
+  const recaptcha = await fakeRecaptcha(context, page, [400, 200]);
+  await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+  await requireAppCheck(page);
+  await judgesStepTwo(page);
+  const error = page.getByTestId('task-error');
+  await expect(error).toHaveAttribute('data-kind', 'app-check');
+  await expect(error).toContainText('is nothing you did');
+  await expect(error).not.toContainText('genuine');
+  // Straight away: the SDK would still be throttling the failed provider; the app starts it again.
+  await page.getByTestId('retry').click();
+  await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
+  await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
+  expect(recaptcha.exchanges[0]).toBe(400);
+  expect(recaptcha.exchanges.slice(1).every((s) => s === 200)).toBe(true);
+});

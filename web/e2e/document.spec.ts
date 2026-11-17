@@ -192,6 +192,8 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(page.locator('.basis')).toContainText('through 2026-10-20');
     await expect(page.getByTestId('basis-date')).toHaveAttribute('data-source', 'payDate');
     await expect(page.getByTestId('basis-date')).toHaveText('The date is the pay date: no end of the pay period was found.');
+    // Without a period end, the pay date is the date shown with the leading values.
+    await expect(page.getByTestId('lead-fields').getByTestId('field-payDate')).toBeVisible();
   });
 
   test('photo path (fake on-device model): ONLY_ON_DEVICE transcription, then the same silhouette', async ({ page, context }) => {

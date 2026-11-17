@@ -18,6 +18,7 @@ interface Services {
 }
 
 let services: Promise<Services> | null = null;
+let settingsListener = false;
 
 async function init(): Promise<Services> {
   const app = initializeApp(FIREBASE_CONFIG);
@@ -41,8 +42,11 @@ async function init(): Promise<Services> {
   }
   const ai = getAI(app, { backend: new GoogleAIBackend(), useLimitedUseAppCheckTokens: true });
   // Settings are fetched only after a request the person chose to send has gone to the cloud: never
-  // on start, and never when everything ran on this device.
-  onFirstCloudRequest(() => void import('../data/remote-config-fetch').then(({ refreshRemoteConfig }) => refreshRemoteConfig(app)));
+  // on start, and never when everything ran on this device. Once per page, even if Firebase starts again.
+  if (!settingsListener) {
+    settingsListener = true;
+    onFirstCloudRequest(() => void firebaseServices().then(({ app: current }) => import('../data/remote-config-fetch').then(({ refreshRemoteConfig }) => refreshRemoteConfig(current))));
+  }
   return { app, ai, appCheck };
 }
 
@@ -70,4 +74,15 @@ export async function shutdownFirebase(): Promise<void> {
   } catch {
     // Initialization had failed; nothing is open.
   }
+}
+
+/**
+ * After App Check could not get a token, "Try again" starts Firebase again: the App Check SDK throttles
+ * a provider that failed (from a second up to a day, kept in memory), so a fresh app is the only way to
+ * try again without reloading the page. reCAPTCHA's invisible widget container of the old app is
+ * removed so the new one can render its own.
+ */
+export async function restartForAppCheck(): Promise<void> {
+  await shutdownFirebase();
+  document.getElementById('fire_app_check_[DEFAULT]')?.remove();
 }
