@@ -17,7 +17,7 @@ Each entry has a channel, what it carried (in plain words, never a bare host nam
 |---|---|---|---|
 | `attempted` | recorded before it was sent, no answer yet | `outbound.status.attempted` | yes, as in progress |
 | `sent` | an answer arrived with a 2xx status | `outbound.status.sent` (with the status), or `outbound.status.loaded` when the platform cannot see the status (a script or frame another service loaded) | yes |
-| `failed` | it left but did not complete: an HTTP error status, or a network error after it left | `outbound.status.failed` with the reason | yes, and listed under `leaving.notCompleted` |
+| `failed` | it did not complete: an HTTP error status, or a network error (the app cannot tell whether a request that failed with a network error ever left, so it is counted) | `outbound.status.failed` with the reason | yes, and listed under `leaving.notCompleted` |
 | `blocked` | stopped before it left: by the app (no cloud request was expected; no App Check token) or refused by the platform's security policy | `outbound.status.blocked`, `outbound.status.noAppCheck` or `outbound.status.refusedByBrowser` | **no** |
 | `answered` | an answer written by the on-device model; nothing left | `outbound.status.answeredShort` | no; counted as kept (`leaving.keptCount`) |
 
