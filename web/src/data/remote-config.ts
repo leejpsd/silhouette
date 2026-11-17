@@ -30,7 +30,7 @@ export const CONFIG_DEFAULTS: AppConfig = {
   groundingSearch: false,
   groundingMaps: false,
   tts: false,
-  promptPointerExtractV: 4,
+  promptPointerExtractV: 5,
   promptExplainV: 5,
   promptAskV: 4,
 };

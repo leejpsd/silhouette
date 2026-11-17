@@ -2970,6 +2970,9 @@ main h2.source-title {
 }
 
 .device-headline .figure {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
   flex: none;
   min-width: 4.5ch;
   font-family: var(--font-display);

@@ -5,7 +5,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Raw } from '../../core/types';
 import { parseNumber, readTypedAmount, type PointerSchema } from '../../core/skeleton';
 import type { ReviewField, SourceSegment } from '../../core/review';
-import { validatePaystubs, type Annualization, type PayFrequency, type PaystubValues, type ValidationResult } from '../../core/validate';
+import { parseDate, validatePaystubs, type Annualization, type PayFrequency, type PaystubValues, type ValidationResult } from '../../core/validate';
 import { POINTER_SCHEMAS } from '../../ai/tasks';
 import { useApp } from '../context';
 import { dynamicKey, formatMoney, programName, type Locale, type Translate } from '../i18n';
@@ -159,6 +159,17 @@ export function basisText(annual: Annualization, stubs: readonly PaystubValues[]
     return t('review.basis.averageMany', { sum: money(locale, used.reduce((a, b) => a + b, 0)), count: used.length, periods, amount });
   }
   return t('review.basis.average', { average: money(locale, used[0] ?? annual.basis.averageGrossCents ?? 0), periods, amount });
+}
+
+/**
+ * Which date of the reference paystub the year-to-date method used (validation/SPEC.md section 7: the
+ * period end if it parses, else the pay date), so the review can say so. Null for the average method.
+ */
+export function referenceDateSource(annual: Annualization, stubs: readonly PaystubValues[]): 'periodEnd' | 'payDate' | null {
+  if (annual.method !== 'ytd') return null;
+  const stub = stubs[annual.basis.stubsUsed[0] ?? -1];
+  if (!stub) return null;
+  return stub.periodEnd !== undefined && parseDate(stub.periodEnd, PACK.jurisdiction) !== null ? 'periodEnd' : 'payDate';
 }
 
 export function DocumentReviewScreen() {
@@ -536,6 +547,14 @@ export function DocumentReviewScreen() {
                 {formatMoney(locale, annual.annualIncome)}
               </p>
               <p className="basis">{basisText(annual, [...doc.confirmedStubs, toValues(rows, deductions)], locale, t)}</p>
+              {(() => {
+                const source = referenceDateSource(annual, [...doc.confirmedStubs, toValues(rows, deductions)]);
+                return source ? (
+                  <p className="small" data-testid="basis-date" data-source={source}>
+                    {t(source === 'periodEnd' ? 'review.basis.dateIsPeriodEnd' : 'review.basis.dateIsPayDate')}
+                  </p>
+                ) : null;
+              })()}
               <p className="small muted">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>
               <Changes amount={annual.annualIncome} />
             </>

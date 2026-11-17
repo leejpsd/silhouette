@@ -7,6 +7,7 @@
 import { test, type BrowserContext, type Page } from '@playwright/test';
 import { chooseLanguage, confirmAllValues, openDeleteEverything } from '../helpers';
 import { fakeAnswerModels, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel, seedRemoteConfig } from '../model-fakes';
+import { latestRecording } from '../recordings';
 
 const OUT = 'visual-captures';
 const ALL_ON = { feature_grounding_search: 'true', feature_grounding_maps: 'true', feature_tts: 'true' };
@@ -351,7 +352,7 @@ for (const theme of ['light', 'dark'] as const) {
       // The latest bundled run: its first screen (the three numbers) and the whole page.
       await page.goto('/#/judges');
       await page.goto('/#/device-check');
-      await page.getByRole('button', { name: 'Show the recording of device-check-2026-11-16T1836-chrome157-macos' }).click();
+      await page.getByRole('button', { name: `Show the recording of ${latestRecording().label}`, exact: true }).click();
       await page.getByTestId('device-headline').waitFor();
       await shot(page, `52-${width}-device-check-latest-first-screen`, theme, false);
       await shot(page, `52-${width}-device-check-latest`, theme);

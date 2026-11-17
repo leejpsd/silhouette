@@ -1,6 +1,7 @@
 // The judges' path and the on-device check, in browsers with and without the on-device model.
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { baselineRecording, bundledRecordingCount, latestRecording } from './recordings';
 import { fakeAnswerModels, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel } from './model-fakes';
 
 test.describe('for judges: try it in two minutes', () => {
@@ -151,9 +152,10 @@ test.describe('the on-device check', () => {
   test('the first recorded run (version 1) still opens and replays', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await page.goto('/#/device-check');
-    await page.getByRole('button', { name: 'Show the recording of device-check-2026-11-16-chrome157-macos' }).click();
+    const baseline = baselineRecording();
+    await page.getByRole('button', { name: `Show the recording of ${baseline.label}`, exact: true }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on\u2011device check');
-    await expect(page.getByTestId('device-summary')).toContainText('14 of 14 on this device');
+    await expect(page.getByTestId('device-summary')).toContainText(`${baseline.onDevice} of ${baseline.total} on this device`);
     await expect(page.getByTestId('device-summary-first')).toContainText('37 of 60 fields correct');
   });
 
@@ -161,7 +163,8 @@ test.describe('the on-device check', () => {
     await noOnDeviceModel(context);
     await page.goto('/#/device-check');
     // Only the baseline and the latest run are bundled; earlier runs are kept in history/.
-    await expect(page.locator('.recordings .chip-button')).toHaveCount(2);
+    await expect(page.locator('.recordings .chip-button')).toHaveCount(bundledRecordingCount());
+    expect(bundledRecordingCount()).toBe(2);
     const file = new URL('../eval/results/on-device/history/device-check-2026-11-16T1744-chrome157-macos.json', import.meta.url);
     await page.locator('input[type="file"]').setInputFiles({ name: 'device-check-2026-11-16T1744-chrome157-macos.json', mimeType: 'application/json', buffer: readFileSync(file) });
     await expect(page.getByTestId('device-summary')).toContainText('9 of 14 on this device; 5 in the cloud after a failed on-device attempt; 0 in the cloud; 0 did not run.');
@@ -174,16 +177,18 @@ test.describe('the on-device check', () => {
     await noOnDeviceModel(context);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/#/device-check');
-    await page.getByRole('button', { name: 'Show the recording of device-check-2026-11-16T1836-chrome157-macos' }).click();
-    for (const [id, text] of [
-      ['headline-on-device', '24 / 24'],
-      ['headline-income-right', '15 / 15'],
-      ['headline-wrong', '2 / 15'],
-    ] as const) {
+    const latest = latestRecording();
+    await page.getByRole('button', { name: `Show the recording of ${latest.label}`, exact: true }).click();
+    const expected: [string, string][] = [['headline-on-device', `${latest.onDevice} / ${latest.total}`]];
+    if (latest.income) expected.push(['headline-income-right', `${latest.income.allRight} / ${latest.readings}`]);
+    if (latest.wrongReachedPerson !== null) expected.push(['headline-wrong', `${latest.wrongReachedPerson} / ${latest.readings}`]);
+    for (const [id, text] of expected) {
       const item = page.getByTestId(id);
       await expect(item).toContainText(text);
       await expect(item).toBeInViewport({ ratio: 1 });
     }
-    await expect(page.getByTestId('device-summary-repetitions')).toContainText('run 3 times');
+    // None reached the person wrong: shown as met. Readings with a value not found are counted beside the income line.
+    if (latest.wrongReachedPerson === 0) await expect(page.getByTestId('headline-wrong')).toHaveAttribute('data-met', 'true');
+    if (latest.income && latest.income.notFound > 0) await expect(page.getByTestId('headline-not-found')).toContainText(`${latest.income.notFound} with a value not found`);
   });
 });

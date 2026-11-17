@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { Raw } from '../core/types';
 import { validatePaystubs, type PaystubValues } from '../core/validate';
-import { basisText } from './screens/DocumentReview';
+import { basisText, referenceDateSource } from './screens/DocumentReview';
 import { formatMoney, translator } from './i18n';
 
 const t = translator('en');
@@ -50,5 +50,24 @@ describe('annualization basis line', () => {
   it('one paystub: gross × periods', () => {
     const { line } = check([{ grossPay: 1271.88, payFrequency: 'semimonthly' }]);
     expect(line).toBe('Average gross per pay period $1,271.88 × 24 pay periods a year = $30,525');
+  });
+
+  it('names the date the year-to-date method used: the period end, or the pay date when the period was not found', () => {
+    // The recorded L07 run 3: period start and end left empty, pay date present.
+    const noPeriod: PaystubValues = { grossPay: 792.78, ytdGross: 36337.74, payFrequency: 'weekly', payDate: '11/17/2026' };
+    const a = validatePaystubs(Raw.of([noPeriod]), 'us-ca').annualization!;
+    expect(a.method).toBe('ytd');
+    expect(a.basis.referenceDate).toBe('2026-11-17');
+    expect(referenceDateSource(a, [noPeriod])).toBe('payDate');
+    expect(t('review.basis.dateIsPayDate')).toContain('pay date');
+    const withPeriod: PaystubValues = { ...noPeriod, periodStart: '11/05/2026', periodEnd: '11/11/2026' };
+    const b = validatePaystubs(Raw.of([withPeriod]), 'us-ca').annualization!;
+    expect(b.basis.referenceDate).toBe('2026-11-11');
+    expect(referenceDateSource(b, [withPeriod])).toBe('periodEnd');
+    // No date at all: the average method with the pay frequency, and no date to name.
+    const noDate: PaystubValues = { grossPay: 792.78, ytdGross: 36337.74, payFrequency: 'weekly' };
+    const c = validatePaystubs(Raw.of([noDate]), 'us-ca').annualization!;
+    expect(c.method).toBe('average');
+    expect(referenceDateSource(c, [noDate])).toBeNull();
   });
 });

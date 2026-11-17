@@ -172,6 +172,28 @@ test.describe('Document silhouette and pointer extraction', () => {
     expect(constraints.some((c) => c.includes('"required":["grossPay","ytdGross"]'))).toBe(true);
   });
 
+  test('period dates left empty on the device: the yearly income uses the pay date, and the review says so', async ({ page, context }) => {
+    const { deductions, periodStart, periodEnd, ...core } = fixturePointers('paystub-en-01-correct');
+    void periodStart;
+    void periodEnd;
+    await fakeOnDeviceModel(context, {
+      availability: 'available',
+      systemReplies: { 'answer only the fields in the schema': JSON.stringify({ ...core, periodStart: null, periodEnd: null }), 'answer only the deductions': JSON.stringify({ deductions }) },
+      replies: {},
+    });
+    await page.goto('/#/doc');
+    await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'available');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
+    await confirmAllValues(page);
+    await page.getByRole('button', { name: 'Check these values' }).click();
+    await expect(page.getByTestId('annual-income')).toBeVisible();
+    await expect(page.locator('.basis')).toContainText('through 2026-10-20');
+    await expect(page.getByTestId('basis-date')).toHaveAttribute('data-source', 'payDate');
+    await expect(page.getByTestId('basis-date')).toHaveText('The date is the pay date: no end of the pay period was found.');
+  });
+
   test('photo path (fake on-device model): ONLY_ON_DEVICE transcription, then the same silhouette', async ({ page, context }) => {
     await fakeOnDeviceModel(context, {
       availability: 'available',

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context';
 import { ScreenHeading } from '../Heading';
 import { BlockActions } from '../design/block';
-import { ArrowRight, ChevronLeft } from '../design/icons';
+import { ArrowRight, Check, ChevronLeft } from '../design/icons';
 import { ActionLabel } from '../design/parts';
 import { dynamicKey } from '../i18n';
 import { routeHref } from '../router';
@@ -199,19 +199,41 @@ function Headline({ file }: { file: RunFile }) {
   const { t } = useApp();
   const s = summarize(file.cases, file.version);
   const incomeRight = s.income?.allRight ?? s.incomeInputsCorrect;
-  const items = [
-    { id: 'on-device', figure: `${s.onDevice} / ${s.total}`, label: t('deviceCheck.headline.onDevice') },
-    ...(incomeRight !== null ? [{ id: 'income-right', figure: `${incomeRight} / ${s.extractionCases}`, label: t('deviceCheck.headline.incomeRight') }] : []),
-    ...(s.wrongReachedPerson !== null ? [{ id: 'wrong', figure: `${s.wrongReachedPerson} / ${s.extractionCases}`, label: t('deviceCheck.headline.wrong') }] : []),
-  ];
+  const wrong = s.wrongReachedPerson;
   return (
     <ul className="device-headline" data-testid="device-headline">
-      {items.map((item) => (
-        <li key={item.id} data-testid={`headline-${item.id}`}>
-          <span className="figure">{item.figure}</span>
-          <span className="small">{item.label}</span>
+      <li data-testid="headline-on-device">
+        <span className="figure">
+          {s.onDevice} / {s.total}
+        </span>
+        <span className="small">{t('deviceCheck.headline.onDevice')}</span>
+      </li>
+      {incomeRight !== null && (
+        <li data-testid="headline-income-right">
+          <span className="figure">
+            {incomeRight} / {s.extractionCases}
+          </span>
+          <span className="small">
+            {t('deviceCheck.headline.incomeRight')}
+            {s.income && s.income.notFound > 0 && (
+              <span className="headline-aside" data-testid="headline-not-found">
+                {' '}
+                {t('deviceCheck.headline.notFound', { count: s.income.notFound })}
+              </span>
+            )}
+          </span>
         </li>
-      ))}
+      )}
+      {wrong !== null && (
+        // The number that must be zero: when it is, it is shown as met, with a check mark.
+        <li data-testid="headline-wrong" data-met={wrong === 0}>
+          <span className="figure">
+            {wrong === 0 && <Check size={22} />}
+            {wrong} / {s.extractionCases}
+          </span>
+          <span className="small">{wrong === 0 ? t('deviceCheck.headline.wrongNone') : t('deviceCheck.headline.wrong')}</span>
+        </li>
+      )}
     </ul>
   );
 }

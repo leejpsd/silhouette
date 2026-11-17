@@ -7,7 +7,7 @@
 import paystubV2 from '../../../shared/schemas/pointer.paystub.json';
 import leaseV2 from '../../../shared/schemas/pointer.lease.json';
 import type { PointerSchema } from '../core/skeleton';
-import { POINTER_DEVICE_PARTS_V3, POINTER_EXTRACT, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, type DeviceParts, type PromptTemplate } from './prompts';
+import { POINTER_EXTRACT, POINTER_EXTRACT_DEVICE_V1, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, POINTER_EXTRACT_V5, type DeviceParts, type PromptTemplate } from './prompts';
 import type { ModelSchemaOptions } from './model-schema';
 
 export type DocType = 'paystub' | 'lease';
@@ -77,16 +77,24 @@ export const POINTER_V3: PointerConfig = { ...POINTER_V2, id: 'v3', prompt: POIN
 
 /**
  * shared/prompts/pointer-extract.v4.md: v3 plus "hours worked and hourly rate are those of the
- * Regular (base pay) line". Same schemas and settings. On the device a paystub is read in two
- * parts with src/ai/device-prompts/pointer-extract-parts.v3.md added (the cloud call is unchanged).
+ * Regular (base pay) line". Same schemas and settings. One request per page, on the device and in the
+ * cloud alike.
  */
-export const POINTER_V4: PointerConfig = { ...POINTER_V2, id: 'v4', prompt: POINTER_EXTRACT_V4, deviceParts: POINTER_DEVICE_PARTS_V3 };
+export const POINTER_V4: PointerConfig = { ...POINTER_V2, id: 'v4', prompt: POINTER_EXTRACT_V4 };
+
+/**
+ * shared/prompts/pointer-extract.v5.md (v4's text, word for word) with
+ * shared/prompts/pointer-extract-device.v1.md: on a device whose model is available a paystub is read
+ * in parts (validation/DEVICE_READING.md); the cloud request is one page with v5 alone.
+ */
+export const POINTER_V5: PointerConfig = { ...POINTER_V2, id: 'v5', prompt: POINTER_EXTRACT_V5, deviceParts: POINTER_EXTRACT_DEVICE_V1 };
 
 /** Bundled prompt versions, by the number in shared/prompts/pointer-extract.v{n}.md. */
 export const POINTER_CONFIGS: ReadonlyMap<number, PointerConfig> = new Map([
   [2, POINTER_V2],
   [3, POINTER_V3],
   [4, POINTER_V4],
+  [5, POINTER_V5],
 ]);
 
 /** The bundled configuration for a prompt version; an unknown version gets the newest bundled one. */

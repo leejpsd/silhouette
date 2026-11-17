@@ -11,7 +11,7 @@ import { classifyError, TaskError } from './errors';
 import { setModelProviderForTests, type ModelPort } from './model-port';
 import { CLOUD_MODEL, POINTER_SCHEMAS, activePointerConfig, extractPointers, pointerModelParams } from './tasks';
 import { setConfigForTests } from '../data/remote-config';
-import { POINTER_V2, POINTER_V3, POINTER_V4, pointerConfigFor } from './pointer-config';
+import { POINTER_V2, POINTER_V3, POINTER_V4, POINTER_V5, pointerConfigFor } from './pointer-config';
 import { readPhoto } from './on-device';
 import { setDeviceModelForTests } from './device-fake';
 import { POINTER_EXTRACT, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, parsePrompt } from './prompts';
@@ -207,16 +207,20 @@ describe('schema and prompt from /shared', () => {
 
   it('selects the bundled prompt version named by Remote Config, the newest for an unknown value', () => {
     try {
-      expect(activePointerConfig()).toBe(POINTER_V4);
+      // The bundled default is 5: v4's text, read in parts on the device.
+      expect(activePointerConfig()).toBe(POINTER_V5);
       expect(pointerModelParams('paystub', 'en').inCloudParams?.systemInstruction).toBe(POINTER_EXTRACT_V4.system);
+      setConfigForTests({ promptPointerExtractV: 4 });
+      expect(activePointerConfig()).toBe(POINTER_V4);
+      expect(POINTER_V4.deviceParts).toBeUndefined();
       setConfigForTests({ promptPointerExtractV: 3 });
       expect(activePointerConfig()).toBe(POINTER_V3);
       setConfigForTests({ promptPointerExtractV: 2 });
       expect(activePointerConfig()).toBe(POINTER_V2);
       expect(pointerModelParams('paystub', 'en').inCloudParams?.systemInstruction).toBe(POINTER_EXTRACT.system);
       setConfigForTests({ promptPointerExtractV: 99 });
-      expect(activePointerConfig()).toBe(POINTER_V4);
-      expect(pointerConfigFor(1)).toBe(POINTER_V4);
+      expect(activePointerConfig()).toBe(POINTER_V5);
+      expect(pointerConfigFor(1)).toBe(POINTER_V5);
     } finally {
       setConfigForTests(null);
     }

@@ -28,6 +28,7 @@ import { modelTextIsBlocked, type OutputChecks, type OutputScope, type ShownVerd
 import { InputError, RuleError, UNKNOWN, evaluate, verdicts, type Answers, type RulePack } from './rules';
 import { ValidationInputError, validatePaystubs, type PaystubValues } from './validate';
 import { toModelSchema, type ModelSchemaOptions } from '../ai/model-schema';
+import { runDeviceReadingFixture } from '../ai/device-reading.conformance';
 
 const SHARED = fileURLToPath(new URL('../../../shared/', import.meta.url));
 const CONFORMANCE_DIR = join(SHARED, 'fixtures', 'conformance');
@@ -240,15 +241,16 @@ const extraRunners: Record<string, (fixture: unknown) => void> = {
     }
   },
 };
-Object.assign(runners, extraRunners);
+Object.assign(runners, extraRunners, { 'device-reading.json': runDeviceReadingFixture });
 
 // ---------- Every file in the conformance folder ----------
 
 const conformanceFiles = readdirSync(CONFORMANCE_DIR).sort();
 
 describe('shared/fixtures/conformance', () => {
-  it('contains the nine known files (contract v1.9) and every file has a runner', () => {
+  it('contains the ten known files (contract v1.17) and every file has a runner', () => {
     expect(conformanceFiles).toEqual([
+      'device-reading.json',
       'evaluator.json',
       'generalize.json',
       'model-schema.json',

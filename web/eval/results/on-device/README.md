@@ -7,7 +7,9 @@ Each `*.json` file here is one run of the app's on-device check, made in a brows
 The app bundles only the `*.json` files directly in this folder, and lists them at `#/device-check`. Exactly two are kept here:
 
 - the first run, `device-check-2026-11-16-chrome157-macos.json`, as the baseline;
-- the latest run.
+- the latest run (by the `date` in the file).
+
+The tests read both from this folder; they name no file and no figure of the latest run, so adding a newer run needs no test change.
 
 Every other run is kept in [`history/`](history/). It is not bundled, and any browser can still show it with **Open a run file**. When a newer run is added, move the previous latest run into `history/` and put the new file here, so this folder again holds the baseline and the latest run.
 
@@ -36,9 +38,12 @@ Figures are taken from the files. "Readings" are the extraction cases (5 per run
 | 2026-11-16 17:44 | `history/device-check-2026-11-16T1744-chrome157-macos.json` | Deterministic check of the answer; a failed answer is read once in the cloud | 9 / 5 of 14 | 48 of 60 | 5 of 5 | 0 of 5 | 17.8 s (14.0–22.4 s), including the cloud retry |
 | 2026-11-16 18:07 | `history/device-check-2026-11-16T1807-chrome157-macos.json` | Reading in two parts (core, deductions) with a strict per-document constraint; deductions optional | 13 / 1 of 14 | 54 of 60 | 3 of 5 | 3 of 5 | 5.7 s (5.1–10.7 s) |
 | 2026-11-16 18:24 | `history/device-check-2026-11-16T1824-chrome157-macos.json` | Year-to-date rules (same line, larger amount); gross part when only gross pay or year to date fail; names sharing a placeholder not read | 14 / 0 of 14 | 52 of 60 | 3 of 5 | 1 of 5 | 6.3 s (5.4–10.7 s) |
-| 2026-11-16 18:36 | `device-check-2026-11-16T1836-chrome157-macos.json` | Gross part also when year to date is left out; one placeholder per field; deductions asked once more; three repetitions | 24 / 0 of 24 | 164 of 180 | 15 of 15 | 2 of 15 | 7.4 s (5.3–14.9 s) |
+| 2026-11-16 18:36 | `history/device-check-2026-11-16T1836-chrome157-macos.json` | Gross part also when year to date is left out; one placeholder per field; deductions asked once more; three repetitions | 24 / 0 of 24 | 164 of 180 | 15 of 15 | 2 of 15 | 7.4 s (5.3–14.9 s) |
+| 2026-11-17 00:38 | `device-check-2026-11-17T0038-chrome157-macos.json` | A name cut short (the next word on its line left out) is left out as not read; three repetitions | 24 / 0 of 24 | 161 of 180 | 13 of 15 (2 with a value not found, 0 wrong) | 0 of 15 | 7.6 s (5.1–14.6 s) |
 
-After the last run, the app also leaves out, as not read, a name cut short (the next word on its line left out). Both wrong values of the last run were such names.
+In the 18:36 run both wrong values were names cut short; the 00:38 run is the first with that rule. Its two readings with a value not found: L01 run 3 (the gross part answered another line's year to date, the checks rejected it, and year to date stayed empty) and L07 run 3 (period start and end left empty; the yearly income used the pay date).
+
+The rules of the on-device reading are specified in `shared/validation/DEVICE_READING.md` (contract v1.17), with the prompts `shared/prompts/pointer-extract.v5.md` and `pointer-extract-device.v1.md`.
 
 ## What a run file contains
 

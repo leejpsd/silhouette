@@ -2,6 +2,8 @@
 import pointerExtractV2 from '../../../shared/prompts/pointer-extract.v2.md?raw';
 import pointerExtractV3 from '../../../shared/prompts/pointer-extract.v3.md?raw';
 import pointerExtractV4 from '../../../shared/prompts/pointer-extract.v4.md?raw';
+import pointerExtractV5 from '../../../shared/prompts/pointer-extract.v5.md?raw';
+import pointerExtractDeviceV1 from '../../../shared/prompts/pointer-extract-device.v1.md?raw';
 import explainV5 from '../../../shared/prompts/explain.v5.md?raw';
 import askV4 from '../../../shared/prompts/ask.v4.md?raw';
 import explainPersonalV1 from '../../../shared/prompts/explain-personal.v1.md?raw';
@@ -11,10 +13,6 @@ import discoverV1 from '../../../shared/prompts/discover.v1.md?raw';
 import nearbyV1 from '../../../shared/prompts/nearby.v1.md?raw';
 import readAloudV1 from '../../../shared/prompts/read-aloud.v1.md?raw';
 import photoReadV1 from '../../../shared/prompts/photo-read.v1.md?raw';
-// Device-only wording for reading a paystub in two parts on the device (web/, a candidate).
-import pointerDevicePartsV1 from './device-prompts/pointer-extract-parts.v1.md?raw';
-import pointerDevicePartsV2 from './device-prompts/pointer-extract-parts.v2.md?raw';
-import pointerDevicePartsV3 from './device-prompts/pointer-extract-parts.v3.md?raw';
 
 export interface PromptTemplate {
   readonly id: string;
@@ -51,7 +49,11 @@ export interface DeviceParts {
   readonly deductionsAgain?: string | undefined;
 }
 
-/** Splits a device-parts file into its "Core part" and "Deductions part" sections. */
+/**
+ * Splits shared/prompts/pointer-extract-device.v{n}.md into its parts. The section "Deductions part,
+ * asked again" holds a lead-in ("…, a line break, then:") and the sentence; only the sentence is kept,
+ * and it is added after the deductions part's text with a line break (validation/DEVICE_READING.md).
+ */
 export function parseDeviceParts(id: string, markdown: string): DeviceParts {
   const section = (title: string): string | undefined => {
     const start = markdown.indexOf(`## ${title}`);
@@ -65,16 +67,17 @@ export function parseDeviceParts(id: string, markdown: string): DeviceParts {
     if (text === undefined) throw new Error(`${id}: missing section "${title}"`);
     return text;
   };
-  return { id, core: required('Core part'), deductions: required('Deductions part'), gross: section('Gross part'), deductionsAgain: section('Deductions part, asked again') };
+  const again = section('Deductions part, asked again');
+  const sentence = again === undefined ? undefined : (/then:\s*([\s\S]*)$/.exec(again)?.[1] ?? again).trim();
+  return { id, core: required('Core part'), deductions: required('Deductions part'), gross: section('Gross part'), deductionsAgain: sentence };
 }
 
-export const POINTER_DEVICE_PARTS_V1 = parseDeviceParts('pointer-extract-parts.v1', pointerDevicePartsV1);
-export const POINTER_DEVICE_PARTS_V2 = parseDeviceParts('pointer-extract-parts.v2', pointerDevicePartsV2);
-export const POINTER_DEVICE_PARTS_V3 = parseDeviceParts('pointer-extract-parts.v3', pointerDevicePartsV3);
+export const POINTER_EXTRACT_DEVICE_V1 = parseDeviceParts('pointer-extract-device.v1', pointerExtractDeviceV1);
 
 export const POINTER_EXTRACT = parsePrompt('pointer-extract.v2', pointerExtractV2);
 export const POINTER_EXTRACT_V3 = parsePrompt('pointer-extract.v3', pointerExtractV3);
 export const POINTER_EXTRACT_V4 = parsePrompt('pointer-extract.v4', pointerExtractV4);
+export const POINTER_EXTRACT_V5 = parsePrompt('pointer-extract.v5', pointerExtractV5);
 export const PHOTO_READ = parsePrompt('photo-read.v1', photoReadV1);
 /** General explanation and prepared questions: the program's public information only, nothing about the person. */
 export const EXPLAIN_V5 = parsePrompt('explain.v5', explainV5);
