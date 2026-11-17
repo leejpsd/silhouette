@@ -1,5 +1,5 @@
 {
- "$comment": "The 38 English evaluation paystubs (synthetic) and their right readings, for the zero-false-alarm cases of the on-device reading checks. alternatives: every placeholder that holds the gold value; base: one right reading of the other core fields; names: each line's run of gold name placeholders.",
+ "$comment": "The 38 English evaluation paystubs (synthetic) and their right readings, for the zero-false-alarm cases of the on-device reading checks. alternatives: every placeholder that holds the gold value; base: one right reading of the other core fields; names: each line's run of gold name placeholders. deductions: the gold deductions as placeholders, for the confirmation rules (net pay = gross - deductions).",
  "docs": [
   {
    "id": "en-l01-1",
@@ -43,7 +43,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N14",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N16",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N18",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N20",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l01-2",
@@ -87,7 +105,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N14",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N16",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N18",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N20",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l01-3",
@@ -131,7 +167,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N14",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N16",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N18",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N20",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l02-1",
@@ -175,7 +229,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N13",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N15",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N17",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N19",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l02-2",
@@ -219,7 +291,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N13",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N15",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N17",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N19",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l02-3",
@@ -263,7 +353,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N13",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N15",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N17",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N19",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l03-1",
@@ -299,7 +407,29 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N3",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N4",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N5",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N6",
+     "kind": "state_tax"
+    },
+    {
+     "amount": "N7",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l03-2",
@@ -335,7 +465,29 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N3",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N4",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N5",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N6",
+     "kind": "state_tax"
+    },
+    {
+     "amount": "N7",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l03-3",
@@ -371,7 +523,29 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N3",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N4",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N5",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N6",
+     "kind": "state_tax"
+    },
+    {
+     "amount": "N7",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l04-1",
@@ -415,7 +589,21 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N5",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N6",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N7",
+     "kind": "medicare"
+    }
+   ]
   },
   {
    "id": "en-l04-2",
@@ -459,7 +647,21 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N5",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N6",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N7",
+     "kind": "medicare"
+    }
+   ]
   },
   {
    "id": "en-l04-3",
@@ -503,7 +705,21 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N5",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N6",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N7",
+     "kind": "medicare"
+    }
+   ]
   },
   {
    "id": "en-l05-1",
@@ -547,7 +763,29 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N10",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N11",
+     "kind": "state_tax"
+    },
+    {
+     "amount": "N12",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N13",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N14",
+     "kind": "retirement"
+    }
+   ]
   },
   {
    "id": "en-l05-2",
@@ -591,7 +829,29 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N10",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N11",
+     "kind": "state_tax"
+    },
+    {
+     "amount": "N12",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N13",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N14",
+     "kind": "retirement"
+    }
+   ]
   },
   {
    "id": "en-l05-3",
@@ -635,7 +895,29 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N10",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N11",
+     "kind": "state_tax"
+    },
+    {
+     "amount": "N12",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N13",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N14",
+     "kind": "retirement"
+    }
+   ]
   },
   {
    "id": "en-l06-1",
@@ -675,7 +957,29 @@
       "W10"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N13",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N15",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N17",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N19",
+     "kind": "health"
+    },
+    {
+     "amount": "N21",
+     "kind": "retirement"
+    }
+   ]
   },
   {
    "id": "en-l06-2",
@@ -715,7 +1019,29 @@
       "W10"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N13",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N15",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N17",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N19",
+     "kind": "health"
+    },
+    {
+     "amount": "N21",
+     "kind": "retirement"
+    }
+   ]
   },
   {
    "id": "en-l06-3",
@@ -755,7 +1081,29 @@
       "W10"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N13",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N15",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N17",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N19",
+     "kind": "health"
+    },
+    {
+     "amount": "N21",
+     "kind": "retirement"
+    }
+   ]
   },
   {
    "id": "en-l07-1",
@@ -800,7 +1148,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N20",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N22",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N24",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N26",
+     "kind": "retirement"
+    }
+   ]
   },
   {
    "id": "en-l07-2",
@@ -845,7 +1211,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N20",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N22",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N24",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N26",
+     "kind": "retirement"
+    }
+   ]
   },
   {
    "id": "en-l07-3",
@@ -890,7 +1274,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N20",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N22",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N24",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N26",
+     "kind": "retirement"
+    }
+   ]
   },
   {
    "id": "en-l08-1",
@@ -934,7 +1336,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N9",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N10",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N11",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N12",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l08-2",
@@ -978,7 +1398,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N9",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N10",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N11",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N12",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l08-3",
@@ -1022,7 +1460,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N9",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N10",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N11",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N12",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l09-1",
@@ -1062,7 +1518,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N5",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N7",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N9",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N11",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l09-2",
@@ -1102,7 +1576,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N5",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N7",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N9",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N11",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l09-3",
@@ -1142,7 +1634,25 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N5",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N7",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N9",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N11",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l10-1",
@@ -1188,7 +1698,29 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N8",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N10",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N12",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N14",
+     "kind": "state_tax"
+    },
+    {
+     "amount": "N16",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l10-2",
@@ -1234,7 +1766,29 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N8",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N10",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N12",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N14",
+     "kind": "state_tax"
+    },
+    {
+     "amount": "N16",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l10-3",
@@ -1280,7 +1834,29 @@
       "W5"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N8",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N10",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N12",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N14",
+     "kind": "state_tax"
+    },
+    {
+     "amount": "N16",
+     "kind": "health"
+    }
+   ]
   },
   {
    "id": "en-l11-1",
@@ -1325,7 +1901,25 @@
       "W11"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N15",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N17",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N19",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N21",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l11-2",
@@ -1365,7 +1959,25 @@
       "W10"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N9",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N11",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N13",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N15",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l11-3",
@@ -1412,7 +2024,25 @@
       "W11"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N11",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N13",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N15",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N17",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l11-4",
@@ -1453,7 +2083,25 @@
       "W11"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N9",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N11",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N13",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N15",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l11-5",
@@ -1498,7 +2146,25 @@
       "W11"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N15",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N17",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N19",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N21",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l11-6",
@@ -1539,7 +2205,25 @@
       "W11"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N9",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N11",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N13",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N15",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l11-7",
@@ -1586,7 +2270,25 @@
       "W11"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N11",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N13",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N15",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N17",
+     "kind": "state_tax"
+    }
+   ]
   },
   {
    "id": "en-l11-8",
@@ -1627,7 +2329,25 @@
       "W11"
      ]
     ]
-   }
+   },
+   "deductions": [
+    {
+     "amount": "N9",
+     "kind": "federal_tax"
+    },
+    {
+     "amount": "N11",
+     "kind": "social_security"
+    },
+    {
+     "amount": "N13",
+     "kind": "medicare"
+    },
+    {
+     "amount": "N15",
+     "kind": "state_tax"
+    }
+   ]
   }
  ]
 }

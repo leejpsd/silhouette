@@ -6,6 +6,7 @@ import { ValidationInputError, validatePaystubs } from './validate.mjs';
 import { cases as modelSchemaCases, errorCases as modelSchemaErrorCases } from './model-schema.cases.mjs';
 import { toModelSchema } from './model-schema.mjs';
 import { buildDeviceReading } from './device-reading.generate.mjs';
+import { buildDeviceCheck, buildJudgesHousehold } from './device-check.generate.mjs';
 
 export function build() {
   const bands = c.readJson('../bands/zz-test.json');
@@ -91,6 +92,8 @@ export function build() {
       cases: c.outputCheckCases.map((k) => ({ ...k, blocked: s.modelTextIsBlocked(k.text, k.locale, k.scope, c.readJson('../prompts/output-checks.json'), k.verdict) })),
     },
     'device-reading.json': buildDeviceReading(),
+    'device-check.json': buildDeviceCheck(),
+    'judges-household.json': buildJudgesHousehold(),
     'verdict.json': {
       spec: 'rulepacks/SPEC.md v1.2 section 5', pack: 'rulepacks/zz-test/pack.json', bands: 'bands/zz-test.json',
       cases: c.verdictCases.map((k) => {

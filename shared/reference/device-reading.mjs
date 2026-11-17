@@ -3,7 +3,7 @@
 // which the parts are asked. Zero dependencies. Code only rejects or leaves fields out; it never
 // picks or fills in a placeholder.
 import { parseNumber, rehydrate } from './silhouette.mjs';
-import { ValidationInputError, validatePaystubs } from './validate.mjs';
+import { ValidationInputError, dayNumber, parseDate, validatePaystubs } from './validate.mjs';
 
 const PLACEHOLDER = /⟦([NDW][0-9]+)⟧/g;
 const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -255,6 +255,50 @@ export function ytdMissingWithCandidate(schema, pointers, skeleton, map, jurisdi
   return amounts.size === 1;
 }
 
+// ---------- Shown only when confirmed (DEVICE_READING.md section 6) ----------
+
+/** Labels that mark net pay, per document language (words the Skeletonizer keeps visible). */
+export const NET_PAY_LABELS = { en: ['net', 'take home'], es: ['neto', 'neta', 'líquido', 'liquido'], ko: ['실수령', '실지급', '차인지급'] };
+
+function netLabelled(skeleton, id, language) {
+  const line = skeleton.split('\n').find((l) => l.includes(`⟦${id}⟧`));
+  if (!line) return false;
+  const text = line.replace(/⟦[NDW][0-9]+⟧/g, ' ').toLowerCase();
+  const labels = [...(NET_PAY_LABELS[language] ?? []), ...(language === 'en' ? [] : NET_PAY_LABELS.en)];
+  return labels.some((label) => (/^[a-z ]+$/.test(label) ? new RegExp(`(^|[^a-z])${label}([^a-z]|$)`).test(text) : text.includes(label)));
+}
+
+/** Fields of a reading about to be used that no check confirms, and why. */
+export function unconfirmedFields(schema, pointers, skeleton, map, jurisdiction, language) {
+  const v = values(schema, pointers, map);
+  const problems = [];
+  if (pointers.hoursWorked !== undefined || pointers.hourlyRate !== undefined) {
+    const { hoursWorked: h, hourlyRate: r, grossPay: g } = v;
+    const confirmed =
+      typeof h === 'number' &&
+      typeof r === 'number' &&
+      typeof g === 'number' &&
+      [...new Set([...skeleton.matchAll(/⟦(N[0-9]+)⟧/g)].map((m) => m[1]))].some((id) => {
+        const text = map[id] ?? '';
+        const m = MONEY_WITH_CENTS.test(text) ? parseNumber(text) : undefined;
+        return m !== undefined && m <= g + 0.005 && Math.abs(r * h - m) <= 0.01 + 1e-9;
+      });
+    if (!confirmed) problems.push('hoursWorked:unconfirmed', 'hourlyRate:unconfirmed');
+  }
+  if (typeof pointers.netPay === 'string') {
+    const byDeductions = Array.isArray(pointers.deductions) && deductionsProblems(schema, pointers, map, jurisdiction).length === 0;
+    if (!byDeductions && !netLabelled(skeleton, pointers.netPay, language)) problems.push('netPay:unconfirmed');
+  }
+  const pay = typeof v.payDate === 'string' ? parseDate(v.payDate, jurisdiction) : null;
+  if (pay) {
+    const start = typeof v.periodStart === 'string' ? parseDate(v.periodStart, jurisdiction) : null;
+    const end = typeof v.periodEnd === 'string' ? parseDate(v.periodEnd, jurisdiction) : null;
+    if ((start && dayNumber(pay) <= dayNumber(start)) || (end && dayNumber(pay) < dayNumber(end))) problems.push('payDate:before-period-end');
+  }
+  const kept = problems.filter((p) => pointers[p.split(':')[0]] !== undefined);
+  return { problems: kept, fields: [...new Set(kept.map((p) => p.split(':')[0]))] };
+}
+
 // ---------- 3. The reading, part by part ----------
 
 /** One answer of the device: the model's text, parsed and limited to the part's fields. */
@@ -280,7 +324,7 @@ const isGrossProblem = (p) => /^(grossPay|ytdGross):/.test(p) || p === 'check:yt
  * parts asked, each pass, and the outcome: `on-device` with the value and the fields not read, or
  * `failed` with the problems (a failed on-device attempt).
  */
-export function readOnDevice(schema, skeleton, map, jurisdiction, answers) {
+export function readOnDevice(schema, skeleton, map, jurisdiction, answers, language = 'en') {
   const ask = (part) => {
     const key = part === 'deductions-again' ? 'deductionsAgain' : part;
     if (typeof answers[key] !== 'string') throw new Error(`no answer given for the ${part} part`);
@@ -319,5 +363,11 @@ export function readOnDevice(schema, skeleton, map, jurisdiction, answers) {
   if (ded.pass.value && ded.pass.problems.includes('check:net-sum')) ded = readDeductions('deductions-again');
   const deductionsNotRead = !ded.pass.value || ded.pass.problems.length > 0;
   if (deductionsNotRead) notRead.push('deductions');
-  return { asked: passes.map((p) => p.part), passes, outcome: 'on-device', value: deductionsNotRead ? coreValue : ded.merged, notRead };
+  const read = deductionsNotRead ? coreValue : ded.merged;
+  // Shown only when confirmed: values that feed no result and that no check confirms are left out.
+  const unconfirmed = unconfirmedFields(schema, read, skeleton, map, jurisdiction, language);
+  notRead.push(...unconfirmed.fields);
+  if (unconfirmed.problems.length > 0) passes[0] = { ...passes[0], marked: [...(passes[0].marked ?? []), ...unconfirmed.problems] };
+  const value = Object.fromEntries(Object.entries(read).filter(([k]) => !unconfirmed.fields.includes(k)));
+  return { asked: passes.map((p) => p.part), passes, outcome: 'on-device', value, notRead };
 }

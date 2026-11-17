@@ -1,5 +1,21 @@
 # Contract changelog
 
+## v1.18 — 2026-11-17
+
+So that every platform can build the judges' path, the on-device check and the record from `shared/` alone.
+
+| Change | Why |
+|---|---|
+| **The on-device check is shared** (`validation/DEVICE_CHECK.md`): the 14 fixed cases (`fixtures/device-check/cases.json`), the four evaluation paystubs with their gold answers and the right answers per part for fake device models (`fixtures/device-check/`), scoring by value (right, not found, wrong; yearly-income inputs; wrong values that reach the person), where a case was finally answered, the run-file format version 3 with a JSON Schema (`schemas/device-check-run.v3.json`, with an optional `device` block for phones), the file-name rule, and what a platform bundles | iOS ported the Web's check from copies of the Web's files; Android needs the same without reading web/ |
+| **The judges' prepared household** (`rulepacks/us-ca/judges-household.json`) with its results before and after the sample paystub (`fixtures/conformance/judges-household.json`, 29,233 a year: CalEITC and the Young Child Tax Credit go from "possible" to "may qualify") | Every platform shows the same two-minute path |
+| **The record** (`RECORD.md`): device-only work makes no request; App Check starts only before a cloud request; no token, no request; the statuses and their wording, so a request that did not complete never reads as sent; the line under the count that separates what carried something of the person's from technical checks; the hosted Web app's first-Send requests as an informative note | Found on the hosted Web app: a reading that stayed on the device still showed "5 sent" |
+| **Shown only when confirmed** (`validation/DEVICE_READING.md` v2, section 5.1; principle 4): on the device, a value that feeds no result is shown only when a deterministic check confirms it, otherwise left out and marked not read. Hours and rate only together and only when rate × hours is, within a cent, an earnings amount of the silhouette not above gross pay (`hoursWorked:unconfirmed`, `hourlyRate:unconfirmed`); net pay only when the deductions add up, or, when they were not read, on a line with a net-pay label (`netPay:unconfirmed`); a pay date on or before the period start or before the period end is left out (`payDate:before-period-end`). Applied last, whatever the gross part repaired | Three iPhone runs (Apple's on-device model, 25 readings): a wrong value reached the person in 11, all secondary (rate 11, hours 8, net pay 3, pay date 1). On the 38 evaluation paystubs no right value is lost; replayed over every recorded Chrome and iPhone answer, the rules leave out all 23 wrong values and no wrong value remains; the cost is 13 right values whose partner was wrong |
+| `validation/DEVICE_READING.md`: a missing key equals null | Apple's guided generation cannot express "required and nullable" |
+| `rulepacks/SPEC.md` section 2: a draft pack shows `pack.draft.notice` where a confirmed pack would show `detail.unverified`, never both | Found by the iOS port |
+| 113 copy keys in en and es (ko holds the English text): the draft-rules sheet, the judges' path, the on-device check page, record labels and statuses, the line under the count, App Check messages, the read-ahead line, the date the yearly income uses, the tax year, and the keys parked earlier (`why.*`, `leaving.notCompleted`, `answers.facts.uses`). Keys that name the platform have `.web`, `.ios` and `.android` variants (`copy/PLATFORM_VARIANTS.md`) | |
+| `reference/device-check.mjs` with `fixtures/conformance/device-check.json` (6 readings, 3 runs of versions 1 to 3, 3 file names, schema validation of a recorded run) | |
+| `fixtures/conformance/device-reading.json` (`confirmedOnly`): 39 checks with the confirmation result, 34 readings part by part (including 5 real iPhone readings and the real Chrome ones), gold set confirmed with the gold deductions; `reference/device-reading.mjs` `unconfirmedFields` | |
+
 ## v1.17 — 2026-11-17
 
 From five recorded on-device runs of the Web app in Chrome 157 (`web/eval/results/on-device/`): the last, with each paystub read three times, answered 24 of 24 cases on the device with every yearly-income input right in 15 of 15 readings.

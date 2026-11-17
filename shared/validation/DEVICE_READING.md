@@ -1,4 +1,4 @@
-# On-device reading specification (v1)
+# On-device reading specification (v2)
 
 How a paystub silhouette is read by the device's own model, and how every answer is checked before a person sees it. It applies to task `document.pointer.extract` (`routing.json`) when the on-device model is available, with `prompts/pointer-extract.v5.md` and `prompts/pointer-extract-device.v1.md`.
 
@@ -9,7 +9,8 @@ Reference implementation: `reference/device-reading.mjs`. Fixture: `fixtures/con
 1. **Code only rejects.** Deterministic code may reject an answer, leave a field out, or ask the device again. It never picks a placeholder, extends a name, fills in a missing value, or chooses between two candidates. Every value the person is shown was answered by a model.
 2. **Missing is not wrong.** A field left empty is shown as "not found", and the person can type it in. A wrong value may go unnoticed. The checks therefore turn doubtful values into missing ones, or into a failed attempt; they never turn a missing value into a guessed one.
 3. **Device first, the cloud only after Send.** Every part runs `ONLY_ON_DEVICE` inside the `PREFER_ON_DEVICE` task, and only once the device model reports `available` for the task's options. A failed on-device attempt is repeated in the cloud exactly as `routing.json` `onDeviceFailure` says: once, `ONLY_IN_CLOUD`, with the same silhouette, reason `on-device-failed`, and only when the person chose to send the silhouette. When the person chose to keep everything on the device, nothing is sent (section 7).
-4. **Value-free.** Prompts, problem codes, records and logs hold placeholder ids and field names only, never document values.
+4. **Shown only when confirmed.** On the device, a value that feeds no result (hours worked, hourly rate, net pay, the pay date when the period gives the date) is shown only when a deterministic check confirms it; otherwise it is left out and marked not read (section 5.1). Missing is not wrong, and code still never picks a value.
+5. **Value-free.** Prompts, problem codes, records and logs hold placeholder ids and field names only, never document values.
 
 ## 2. Parts and the response constraint
 
@@ -37,6 +38,8 @@ The fixture's `constraints` give the exact objects for the bundled sample. A pla
 
 **Reading an answer.** The model's text is parsed as JSON. Text that does not parse, or that is not a JSON object, gives the pass the problem `not-json`. Keys with the value `null` are removed. Keys that are not fields of the part are ignored and recorded as `extraKeys`; fields of the part that the answer does not contain are recorded as `missingKeys`. Neither is a problem.
 
+**A missing key equals null.** A field the answer does not contain is treated exactly as a field whose value is `null`: "not in the document". Every check, every trigger and every outcome is the same either way. A platform whose on-device API cannot express "required and nullable" (Apple's guided generation, where a field is either required or optional) declares every field optional instead; it must still forbid other keys and keep every other restriction of the constraint. `missingKeys` is then informative only.
+
 ## 3. Order of the parts
 
 1. **Core.** Ask `core`; check it (section 4.1).
@@ -51,7 +54,9 @@ The fixture's `constraints` give the exact objects for the bundled sample. A pla
 4. **Fields not read.** On the core that passed, the contradictions of section 5 leave fields out, marked "not read". The reading stays on the device.
 5. **Deductions.** Ask `deductions`; check them against the core without the fields left out (section 6). When the check finds `check:net-sum`, ask `deductions-again` once and check that answer instead. Deductions that do not parse, or whose last answer still has a problem, are left out and marked "not read". Deductions never make the attempt fail.
 
-The answer used is the core, without the fields not read, plus the deductions when they passed.
+6. **Shown only when confirmed.** On the answer about to be used (the core without the fields left out, plus the deductions when they passed), the rules of section 5.1 leave out every value no check confirms. This applies whatever the gross part changed: a first answer whose gross pay or year to date was repaired keeps its other amounts only if they are confirmed on their own.
+
+The answer used is the core, without the fields not read, plus the deductions when they passed, without the values section 5.1 leaves out.
 
 ## 4. Core checks
 
@@ -112,6 +117,22 @@ These contradictions concern fields that feed no rule and no yearly income. The 
 
 A gap of three or more spaces, a tab, or any visible character between two placeholders does not count: a layout may put two names on one line separated by spaces. Code never extends a name.
 
+### 5.1 Shown only when confirmed
+
+Applied last, on the answer about to be used (step 6 of section 3). Each value below is shown only when its check confirms it; otherwise it is left out, marked not read (its problem is added to `marked` on the core pass), and the review shows `review.fieldNotRead`. Amounts are the placeholders' text read with `parseNumber`; "money" means text that ends with `.` or `,` and exactly two digits.
+
+| Problem | Value left out | Confirmed when |
+|---|---|---|
+| `hoursWorked:unconfirmed`, `hourlyRate:unconfirmed` | both, whichever of the two was answered | both are answered, gross pay has a value, and some money placeholder of the silhouette has an amount `m` with `m ≤ grossPay + 0.005` and `abs(hourlyRate × hoursWorked − m) ≤ 0.01`: rate × hours is the amount of an earnings line (the gross line itself when there is only one) |
+| `netPay:unconfirmed` | net pay | the deductions were read and passed (section 6: net pay = gross − deductions), or, when they were not read, the net-pay placeholder is on a skeleton line whose visible text contains a net-pay label of the document's language: en `net`, `take home` (whole words); es `neto`, `neta`, `líquido`, `liquido`; ko `실수령`, `실지급`, `차인지급` (as substrings). The English labels also apply to documents in other languages |
+| `payDate:before-period-end` | the pay date | the pay date parses and is neither on or before the period start nor before the period end (dates as `validation/SPEC.md` section 3 reads them). Without a pay date, the yearly income uses the period end (`validation/SPEC.md` section 7) |
+
+Measured before adoption:
+- On the 38 English evaluation paystubs, no right value is lost: every right reading, with every right placeholder for gross pay, year to date, hours, rate and net pay, and the gold deductions (101 readings), is fully confirmed.
+- On every real on-device answer recorded (six Chrome runs and three iPhone runs; 56 on-device readings when replayed under these rules), the rules leave out all 8 wrong hours, 11 wrong rates, 3 wrong net pays and 1 wrong pay date. The cost is right values that went out with a wrong partner: 1 hours value and 12 rates whose other half was wrong or missing. No wrong value is left in any reading.
+
+`validation/SPEC.md`'s `pay-date` check warns only when the pay date is more than 31 days from the period end, so a pay date answered as the period start (14 days before the end) passed it; this rule closes that.
+
 ## 6. Deductions
 
 The deductions are checked on the core's answer (without fields not read) plus the deductions part's answer:
@@ -142,6 +163,8 @@ While the device works, the status line says which step it is on: `preview.stage
 A platform may record each pass for diagnosis: its part, the model's text, whether it parsed, the parsed value, the problems, `marked`, `extraKeys`, `missingKeys`, and its time. Records hold placeholder ids and field names only.
 
 ## 9. Known limits
+
+- Hours and rate both taken from another earnings line (for example Overtime) multiply to that line's amount and are confirmed: they are shown, as answered. No recorded reading did this.
 
 - A wrong year to date with the same amount as the right one (an only earnings line) is accepted; it cannot change the yearly income.
 - A year to date answered as a number without cents that happens to fit (an employee number) is not caught when the document's gross line holds no year to date: in a simulation over the evaluation set, 1 of 34 such wrong answers (en-l04-1). A year to date answered where the document has none (en-l03-1, 2 of 34) is not caught either.

@@ -1,0 +1,225 @@
+{
+ "$comment": "Right pointer answers of the five check documents (placeholder ids only), per part of the on-device reading, for tests with a fake device model. needle: a line found only in that document's silhouette.",
+ "documents": [
+  {
+   "id": "sample",
+   "needle": "⟦W11⟧ ⟦W12⟧                                ⟦N20⟧          ⟦N21⟧",
+   "core": {
+    "employerName": [
+     "W1",
+     "W2",
+     "W3"
+    ],
+    "employeeName": [
+     "W4",
+     "W5"
+    ],
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "payDate": "D3",
+    "grossPay": "N12",
+    "netPay": "N22",
+    "ytdGross": "N13",
+    "hoursWorked": "N5",
+    "hourlyRate": "N4",
+    "payFrequency": "semimonthly"
+   },
+   "deductions": {
+    "deductions": [
+     {
+      "amount": "N14",
+      "kind": "federal_tax"
+     },
+     {
+      "amount": "N16",
+      "kind": "social_security"
+     },
+     {
+      "amount": "N18",
+      "kind": "medicare"
+     },
+     {
+      "amount": "N20",
+      "kind": "state_tax"
+     }
+    ]
+   }
+  },
+  {
+   "id": "L01",
+   "needle": "Federal Income Tax                    ⟦N14⟧         ⟦N15⟧",
+   "core": {
+    "employerName": [
+     "W1",
+     "W2",
+     "W3"
+    ],
+    "employeeName": [
+     "W4",
+     "W5"
+    ],
+    "payFrequency": "biweekly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N12",
+    "netPay": "N22",
+    "ytdGross": "N13",
+    "hoursWorked": "N5",
+    "hourlyRate": "N4"
+   },
+   "deductions": {
+    "deductions": [
+     {
+      "amount": "N14",
+      "kind": "federal_tax"
+     },
+     {
+      "amount": "N16",
+      "kind": "social_security"
+     },
+     {
+      "amount": "N18",
+      "kind": "medicare"
+     },
+     {
+      "amount": "N20",
+      "kind": "state_tax"
+     }
+    ]
+   }
+  },
+  {
+   "id": "L04",
+   "needle": "Federal Income Tax: $⟦N5⟧",
+   "core": {
+    "employerName": [
+     "W1",
+     "W2",
+     "W3"
+    ],
+    "employeeName": [
+     "W4",
+     "W5"
+    ],
+    "payFrequency": "biweekly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N4",
+    "netPay": "N8",
+    "ytdGross": "N9",
+    "hoursWorked": "N3",
+    "hourlyRate": "N2"
+   },
+   "deductions": {
+    "deductions": [
+     {
+      "amount": "N5",
+      "kind": "federal_tax"
+     },
+     {
+      "amount": "N6",
+      "kind": "social_security"
+     },
+     {
+      "amount": "N7",
+      "kind": "medicare"
+     }
+    ]
+   }
+  },
+  {
+   "id": "L07",
+   "needle": "Shift Differential  ⟦N14⟧    ⟦N15⟧     ⟦N16⟧        ⟦N17⟧",
+   "core": {
+    "employerName": [
+     "W1",
+     "W2",
+     "W3"
+    ],
+    "employeeName": [
+     "W4",
+     "W5"
+    ],
+    "payFrequency": "weekly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N18",
+    "netPay": "N28",
+    "ytdGross": "N19",
+    "hoursWorked": "N2",
+    "hourlyRate": "N11"
+   },
+   "deductions": {
+    "deductions": [
+     {
+      "amount": "N20",
+      "kind": "federal_tax"
+     },
+     {
+      "amount": "N22",
+      "kind": "social_security"
+     },
+     {
+      "amount": "N24",
+      "kind": "medicare"
+     },
+     {
+      "amount": "N26",
+      "kind": "retirement"
+     }
+    ]
+   }
+  },
+  {
+   "id": "L10",
+   "needle": "Period ⟦D1⟧ to ⟦D2⟧   Paid on ⟦D3⟧   Pay Frequency: Semimonthly",
+   "core": {
+    "employerName": [
+     "W1",
+     "W2",
+     "W3"
+    ],
+    "employeeName": [
+     "W4",
+     "W5"
+    ],
+    "payFrequency": "semimonthly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N18",
+    "netPay": "N20",
+    "ytdGross": "N19",
+    "hoursWorked": "N4",
+    "hourlyRate": "N5"
+   },
+   "deductions": {
+    "deductions": [
+     {
+      "amount": "N8",
+      "kind": "federal_tax"
+     },
+     {
+      "amount": "N10",
+      "kind": "social_security"
+     },
+     {
+      "amount": "N12",
+      "kind": "medicare"
+     },
+     {
+      "amount": "N14",
+      "kind": "state_tax"
+     },
+     {
+      "amount": "N16",
+      "kind": "health"
+     }
+    ]
+   }
+  }
+ ]
+}

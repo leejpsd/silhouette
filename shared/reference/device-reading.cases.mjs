@@ -43,6 +43,16 @@ export const checkCases = [
   { id: 'names-cut-short', document: 'sample', pointers: { ...KEY_CORE, employerName: ['W1'], employeeName: ['W4'] } },
   { id: 'hours-on-gross', document: 'sample', pointers: { ...KEY_CORE, hoursWorked: 'N12' } },
   { id: 'ytd-left-out', document: 'sample', pointers: NO_YTD },
+  // Shown only when confirmed (DEVICE_READING.md section 6).
+  { id: 'hours-rate-right', document: 'sample', pointers: KEY },
+  { id: 'hours-rate-consecutive-placeholders', document: 'sample', pointers: { ...KEY, hoursWorked: 'N1', hourlyRate: 'N2' } },
+  { id: 'rate-without-hours', document: 'sample', pointers: Object.fromEntries(Object.entries(KEY).filter(([k]) => k !== 'hoursWorked')) },
+  { id: 'hours-rate-overtime-line', document: 'sample', pointers: { ...KEY, hoursWorked: 'N9', hourlyRate: 'N8' } },
+  { id: 'net-confirmed-by-deductions', document: 'sample', pointers: { ...KEY, netPay: 'N22' } },
+  { id: 'net-on-net-line-without-deductions', document: 'sample', pointers: KEY_CORE },
+  { id: 'net-elsewhere-without-deductions', document: 'sample', pointers: { ...KEY_CORE, netPay: 'N10' } },
+  { id: 'pay-date-on-period-start', document: 'sample', pointers: { ...KEY_CORE, payDate: 'D1' } },
+  { id: 'pay-date-before-period-end', document: 'sample', pointers: { ...KEY_CORE, payDate: 'D1', periodStart: undefined } },
   // The real mistakes recorded on the device (core answers as given).
   ...[
     ['real-run3-sample-ytd-regular-line', 'sample', 'run3-sample'],
@@ -54,6 +64,9 @@ export const checkCases = [
     ['real-run4-l07-hours-on-gross', 'en-l07-3', 'run4-l07'],
     ['real-run5-sample-employer-cut-short', 'sample', 'run5-sample-2'],
     ['real-run5-l07-names-cut-short', 'en-l07-3', 'run5-l07-2'],
+    ['real-ios-0505-sample-hours-rate-neighbours', 'sample', 'ios-0505-sample'],
+    ['real-ios-0511-sample-2-pay-date-on-start', 'sample', 'ios-0511-sample-2'],
+    ['real-ios-0511-l01-1-consecutive-placeholders', 'en-l01-1', 'ios-0511-l01-1'],
   ].map(([id, document, key]) => ({ id, document, pointers: Object.fromEntries(Object.entries(JSON.parse(real[key].core)).filter(([, v]) => v !== null)) })),
 ];
 
@@ -84,6 +97,18 @@ export const readingCases = [
   { id: 'real-run5-sample-2', document: 'sample', answers: { core: real['run5-sample-2'].core, deductions: real['run5-sample-2'].deductions, deductionsAgain: real['run5-sample-2']['deductions-again'] } },
   { id: 'real-run5-l07-2', document: 'en-l07-3', answers: { core: real['run5-l07-2'].core, deductions: real['run5-l07-2'].deductions, deductionsAgain: real['run5-l07-2']['deductions-again'] } },
   { id: 'real-run3-l01', document: 'en-l01-1', answers: { core: real['run3-l01'].core, gross: real['run3-l01'].core } },
+  // Real iPhone readings (Apple's on-device model): wrong secondary values that the confirmation rules leave out.
+  ...['ios-0505-sample', 'ios-0505-l07', 'ios-0511-sample-2', 'ios-0511-l01-1', 'ios-0508-l01'].map((key) => {
+    const a = real[key];
+    const document = key.endsWith('l07') ? 'en-l07-3' : key.includes('l01') ? 'en-l01-1' : 'sample';
+    return { id: `real-${key}`, document, answers: { core: a.core, ...(a.gross ? { gross: a.gross } : {}), deductions: a.deductions, deductionsAgain: a['deductions-again'] ?? a.deductions } };
+  }),
+  // Shown only when confirmed, part by part.
+  { id: 'confirm-hours-rate-left-out', document: 'sample', answers: { core: json({ ...KEY_CORE, hoursWorked: 'N1', hourlyRate: 'N2' }), deductions: DEDUCTIONS } },
+  { id: 'confirm-net-left-out-without-deductions', document: 'sample', answers: { core: json({ ...KEY_CORE, netPay: 'N10' }), deductions: SHORT, deductionsAgain: SHORT } },
+  { id: 'confirm-net-kept-on-net-line', document: 'sample', answers: { core: CORE, deductions: SHORT, deductionsAgain: SHORT } },
+  { id: 'confirm-pay-date-on-period-start', document: 'sample', answers: { core: json({ ...KEY_CORE, payDate: 'D1' }), deductions: DEDUCTIONS } },
+  { id: 'confirm-after-gross-part', document: 'sample', answers: { core: json({ ...KEY_CORE, ytdGross: 'N7', hoursWorked: 'N7', hourlyRate: 'N4' }), gross: json({ grossPay: 'N12', ytdGross: 'N13' }), deductions: DEDUCTIONS } },
 ];
 
 /**
@@ -91,7 +116,7 @@ export const readingCases = [
  * every combination of the `alternatives` (each placeholder that holds the gold value) over `base`,
  * and each line's run of gold name placeholders, and must find no problem and nothing to leave out.
  */
-export const goldCases = evaluation.map((d) => ({ document: d.id, base: d.base, alternatives: d.alternatives, names: d.names }));
+export const goldCases = evaluation.map((d) => ({ document: d.id, base: d.base, alternatives: d.alternatives, names: d.names, deductions: d.deductions }));
 
 /** Every right reading of a gold case (the combinations a port must enumerate). */
 export function rightReadings(g) {

@@ -1,0 +1,139 @@
+{
+  "$id": "device-check-run.v3",
+  "description": "A run file of the on-device check (validation/DEVICE_CHECK.md). Placeholder ids and field names only, never document values. Versions 1 and 2 files (written by the Web app before version 3) validate too.",
+  "type": "object",
+  "required": ["kind", "version", "date", "browser", "platform", "userAgent", "availability", "jurisdiction", "cases"],
+  "properties": {
+    "kind": { "const": "silhouette-device-check" },
+    "version": { "enum": [1, 2, 3] },
+    "date": { "type": "string", "description": "When the run started, ISO 8601 in UTC" },
+    "browser": { "type": "string", "description": "The client: on the Web the browser and its version (\"Chrome 157.0.0.0\"); in an app the app and its version (\"Silhouette 1.0\")" },
+    "platform": { "type": "string", "description": "The operating system as the client names it (\"macOS\", \"iOS 26.5\", \"Android 16\")" },
+    "userAgent": { "type": "string" },
+    "availability": { "type": "object", "additionalProperties": { "type": "string" }, "description": "What the on-device model reported before the run, per set of options the tasks use" },
+    "jurisdiction": { "type": "string" },
+    "repetitions": { "type": "integer", "minimum": 1 },
+    "device": {
+      "type": "object",
+      "description": "Optional, version 3: the device and model, where the platform exposes them",
+      "properties": {
+        "platform": { "enum": ["web", "ios", "android"] },
+        "os": { "type": "string" },
+        "osVersion": { "type": "string" },
+        "model": { "type": "string", "description": "Device model name or identifier (\"iPhone18,1\", \"SM-S938B\"); the Web leaves it out" },
+        "onDeviceModel": { "type": "string", "description": "The on-device model as the platform names it (\"Gemini Nano (AICore)\"), where exposed" },
+        "sdk": { "type": "string", "description": "Firebase AI Logic SDK and version" },
+        "appVersion": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "cases": { "type": "array", "items": { "$ref": "#/$defs/case" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "ran": { "enum": ["ON_DEVICE", "IN_CLOUD", "not-run"] },
+    "count": {
+      "type": "object",
+      "required": ["correct", "total"],
+      "properties": { "correct": { "type": "integer", "minimum": 0 }, "total": { "type": "integer", "minimum": 0 } },
+      "additionalProperties": false
+    },
+    "status": { "enum": ["correct", "wrong", "missing", "spurious", "absent"] },
+    "case": {
+      "type": "object",
+      "required": ["id", "task", "mode", "ran", "latencyMs", "outputCheck"],
+      "properties": {
+        "id": { "type": "string" },
+        "task": { "type": "string" },
+        "mode": { "enum": ["PREFER_ON_DEVICE", "PREFER_IN_CLOUD", "ONLY_ON_DEVICE", "ONLY_IN_CLOUD"] },
+        "ran": { "$ref": "#/$defs/ran" },
+        "latencyMs": { "type": ["number", "null"] },
+        "outputCheck": { "enum": ["passed", "blocked", null] },
+        "fields": { "$ref": "#/$defs/count" },
+        "first": {
+          "type": "object",
+          "required": ["ran", "fields"],
+          "properties": { "ran": { "$ref": "#/$defs/ran" }, "fields": { "$ref": "#/$defs/count" } },
+          "additionalProperties": false
+        },
+        "final": {
+          "type": "object",
+          "required": ["ran", "fields", "retried"],
+          "properties": {
+            "ran": { "$ref": "#/$defs/ran" },
+            "fields": { "$ref": "#/$defs/count" },
+            "retried": { "type": "boolean" },
+            "deductionsNotRead": { "type": "boolean" },
+            "notRead": { "type": "array", "items": { "type": "string" } },
+            "incomeInputsCorrect": { "type": "boolean" },
+            "incomeInputs": {
+              "type": "object",
+              "required": ["right", "notFound", "wrong"],
+              "properties": {
+                "right": { "type": "array", "items": { "type": "string" } },
+                "notFound": { "type": "array", "items": { "type": "string" } },
+                "wrong": { "type": "array", "items": { "type": "string" } }
+              },
+              "additionalProperties": false
+            },
+            "wrongFields": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        },
+        "device": { "$ref": "#/$defs/diagnosis" },
+        "error": { "type": "string" },
+        "note": { "type": "string" },
+        "repetition": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "diagnosis": {
+      "type": "object",
+      "required": ["rawText", "parsed", "problems", "passed", "fields"],
+      "properties": {
+        "scoredBy": { "const": "value" },
+        "rawText": { "type": "string" },
+        "parsed": { "type": "boolean" },
+        "problems": { "type": "array", "items": { "type": "string" } },
+        "passed": { "type": "boolean" },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["field", "gold", "answered", "status"],
+            "properties": {
+              "field": { "type": "string" },
+              "gold": { "type": "array", "items": { "type": "string" } },
+              "answered": { "type": "array", "items": { "type": "string" } },
+              "status": { "$ref": "#/$defs/status" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "core": { "$ref": "#/$defs/count" },
+        "deductions": { "enum": ["correct", "wrong", "missing", "spurious", "absent", "not-asked"] },
+        "deductionsNotRead": { "type": "boolean" },
+        "passes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["part", "rawText", "parsed", "problems", "extraKeys", "missingKeys", "latencyMs"],
+            "properties": {
+              "part": { "enum": ["core", "gross", "deductions", "deductions-again"] },
+              "rawText": { "type": "string" },
+              "parsed": { "type": "boolean" },
+              "parsedValue": { "type": "object" },
+              "problems": { "type": "array", "items": { "type": "string" } },
+              "marked": { "type": "array", "items": { "type": "string" } },
+              "extraKeys": { "type": "array", "items": { "type": "string" } },
+              "missingKeys": { "type": "array", "items": { "type": "string" } },
+              "latencyMs": { "type": "number", "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

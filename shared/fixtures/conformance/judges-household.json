@@ -1,0 +1,374 @@
+{
+  "spec": "rulepacks/SPEC.md section 5; validation/SPEC.md section 7",
+  "household": "rulepacks/us-ca/judges-household.json",
+  "pack": "rulepacks/us-ca/pack.json",
+  "bands": "bands/us-ca.json",
+  "before": {
+    "engineAnswers": {
+      "incomeBand": "C",
+      "householdSize": 3,
+      "numQualifyingChildren": 1,
+      "hasChildUnder6": "yes",
+      "hasEarnedIncome": "yes",
+      "ageGroup": "25-64",
+      "housing": "renter",
+      "benefits": [],
+      "energyProvider": "pge",
+      "hasElderlyOrDisabledMember": "no",
+      "filingStatus": "head-of-household",
+      "taxIdType": "ssn-valid-for-work",
+      "investmentIncome": 0
+    },
+    "expected": [
+      {
+        "programId": "federal-eitc",
+        "verdict": "likely",
+        "criteria": [
+          {
+            "id": "has-earned-income",
+            "state": "pass"
+          },
+          {
+            "id": "income-limit",
+            "state": "pass"
+          },
+          {
+            "id": "investment-income",
+            "state": "pass"
+          },
+          {
+            "id": "valid-ssn",
+            "state": "pass"
+          },
+          {
+            "id": "filing-status",
+            "state": "pass"
+          },
+          {
+            "id": "age-if-no-child",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": []
+      },
+      {
+        "programId": "caleitc",
+        "verdict": "maybe",
+        "criteria": [
+          {
+            "id": "has-earned-income",
+            "state": "pass"
+          },
+          {
+            "id": "income-limit",
+            "state": "mixed"
+          },
+          {
+            "id": "investment-income",
+            "state": "pass"
+          },
+          {
+            "id": "ssn-or-itin",
+            "state": "pass"
+          },
+          {
+            "id": "filing-status",
+            "state": "pass"
+          },
+          {
+            "id": "age-if-no-child",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": []
+      },
+      {
+        "programId": "yctc",
+        "verdict": "maybe",
+        "criteria": [
+          {
+            "id": "child-under-6",
+            "state": "pass"
+          },
+          {
+            "id": "income-limit",
+            "state": "mixed"
+          },
+          {
+            "id": "investment-income",
+            "state": "pass"
+          },
+          {
+            "id": "ssn-or-itin",
+            "state": "pass"
+          },
+          {
+            "id": "filing-status",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": []
+      },
+      {
+        "programId": "calfresh",
+        "verdict": "depends",
+        "criteria": [
+          {
+            "id": "gross-income-limit",
+            "state": "pass"
+          },
+          {
+            "id": "eligible-member",
+            "state": "unknown"
+          }
+        ],
+        "dependsOn": [
+          "calfreshEligibleMember"
+        ]
+      },
+      {
+        "programId": "ca-lifeline",
+        "verdict": "likely",
+        "criteria": [
+          {
+            "id": "income-or-program",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": []
+      },
+      {
+        "programId": "care",
+        "verdict": "likely",
+        "criteria": [
+          {
+            "id": "participating-utility",
+            "state": "pass"
+          },
+          {
+            "id": "income-or-program",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": []
+      },
+      {
+        "programId": "fera",
+        "verdict": "unlikely",
+        "criteria": [
+          {
+            "id": "participating-utility",
+            "state": "pass"
+          },
+          {
+            "id": "income-window",
+            "state": "fail"
+          }
+        ],
+        "dependsOn": []
+      }
+    ]
+  },
+  "paystub": {
+    "values": {
+      "employerName": "NORTHWIND STAFFING LLC",
+      "employeeName": "Maria Lopez",
+      "payFrequency": "semimonthly",
+      "payDate": "10/20/2026",
+      "periodStart": "10/01/2026",
+      "periodEnd": "10/15/2026",
+      "grossPay": 1271.88,
+      "netPay": 1100.92,
+      "ytdGross": 23103.25,
+      "hoursWorked": 62,
+      "hourlyRate": 18.5,
+      "deductions": [
+        {
+          "amount": 58.4,
+          "kind": "federal_tax"
+        },
+        {
+          "amount": 78.86,
+          "kind": "social_security"
+        },
+        {
+          "amount": 18.44,
+          "kind": "medicare"
+        },
+        {
+          "amount": 15.26,
+          "kind": "state_tax"
+        }
+      ]
+    },
+    "annualIncome": 29233
+  },
+  "after": {
+    "engineAnswers": {
+      "annualIncome": 29233,
+      "householdSize": 3,
+      "numQualifyingChildren": 1,
+      "hasChildUnder6": "yes",
+      "hasEarnedIncome": "yes",
+      "ageGroup": "25-64",
+      "housing": "renter",
+      "benefits": [],
+      "energyProvider": "pge",
+      "hasElderlyOrDisabledMember": "no",
+      "filingStatus": "head-of-household",
+      "taxIdType": "ssn-valid-for-work",
+      "investmentIncome": 0
+    },
+    "expected": [
+      {
+        "programId": "federal-eitc",
+        "verdict": "likely",
+        "criteria": [
+          {
+            "id": "has-earned-income",
+            "state": "pass"
+          },
+          {
+            "id": "income-limit",
+            "state": "pass"
+          },
+          {
+            "id": "investment-income",
+            "state": "pass"
+          },
+          {
+            "id": "valid-ssn",
+            "state": "pass"
+          },
+          {
+            "id": "filing-status",
+            "state": "pass"
+          },
+          {
+            "id": "age-if-no-child",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": [],
+        "estimatedAmount": 3573
+      },
+      {
+        "programId": "caleitc",
+        "verdict": "likely",
+        "criteria": [
+          {
+            "id": "has-earned-income",
+            "state": "pass"
+          },
+          {
+            "id": "income-limit",
+            "state": "pass"
+          },
+          {
+            "id": "investment-income",
+            "state": "pass"
+          },
+          {
+            "id": "ssn-or-itin",
+            "state": "pass"
+          },
+          {
+            "id": "filing-status",
+            "state": "pass"
+          },
+          {
+            "id": "age-if-no-child",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": []
+      },
+      {
+        "programId": "yctc",
+        "verdict": "likely",
+        "criteria": [
+          {
+            "id": "child-under-6",
+            "state": "pass"
+          },
+          {
+            "id": "income-limit",
+            "state": "pass"
+          },
+          {
+            "id": "investment-income",
+            "state": "pass"
+          },
+          {
+            "id": "ssn-or-itin",
+            "state": "pass"
+          },
+          {
+            "id": "filing-status",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": [],
+        "estimatedAmount": 796
+      },
+      {
+        "programId": "calfresh",
+        "verdict": "depends",
+        "criteria": [
+          {
+            "id": "gross-income-limit",
+            "state": "pass"
+          },
+          {
+            "id": "eligible-member",
+            "state": "unknown"
+          }
+        ],
+        "dependsOn": [
+          "calfreshEligibleMember"
+        ]
+      },
+      {
+        "programId": "ca-lifeline",
+        "verdict": "likely",
+        "criteria": [
+          {
+            "id": "income-or-program",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": []
+      },
+      {
+        "programId": "care",
+        "verdict": "likely",
+        "criteria": [
+          {
+            "id": "participating-utility",
+            "state": "pass"
+          },
+          {
+            "id": "income-or-program",
+            "state": "pass"
+          }
+        ],
+        "dependsOn": []
+      },
+      {
+        "programId": "fera",
+        "verdict": "unlikely",
+        "criteria": [
+          {
+            "id": "participating-utility",
+            "state": "pass"
+          },
+          {
+            "id": "income-window",
+            "state": "fail"
+          }
+        ],
+        "dependsOn": []
+      }
+    ]
+  }
+}

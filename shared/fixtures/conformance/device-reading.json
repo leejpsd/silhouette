@@ -1,5 +1,8 @@
 {
-  "spec": "validation/DEVICE_READING.md v1",
+  "spec": "validation/DEVICE_READING.md v2",
+  "confirmedOnly": {
+    "language": "en"
+  },
   "schema": "schemas/pointer.paystub.json",
   "jurisdiction": "us-ca",
   "documents": {
@@ -1869,7 +1872,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -1922,7 +1929,15 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "netPay:unconfirmed"
+          ],
+          "fields": [
+            "netPay"
+          ]
+        }
       }
     },
     {
@@ -1978,7 +1993,17 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate"
+          ]
+        }
       }
     },
     {
@@ -2034,7 +2059,17 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate"
+          ]
+        }
       }
     },
     {
@@ -2088,7 +2123,17 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate"
+          ]
+        }
       }
     },
     {
@@ -2141,7 +2186,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2176,7 +2225,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2213,7 +2266,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2253,7 +2310,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2290,7 +2351,15 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "netPay:unconfirmed"
+          ],
+          "fields": [
+            "netPay"
+          ]
+        }
       }
     },
     {
@@ -2328,7 +2397,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2364,7 +2437,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2406,7 +2483,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2441,7 +2522,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2483,7 +2568,11 @@
             "employeeName"
           ]
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2521,7 +2610,11 @@
             "employeeName"
           ]
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2560,7 +2653,17 @@
             "hoursWorked"
           ]
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate"
+          ]
+        }
       }
     },
     {
@@ -2594,7 +2697,462 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": true
+        "ytdMissingWithCandidate": true,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
+      }
+    },
+    {
+      "id": "hours-rate-right",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [],
+        "deductions": [],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
+      }
+    },
+    {
+      "id": "hours-rate-consecutive-placeholders",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N1",
+        "hourlyRate": "N2",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [],
+        "deductions": [],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "rate-without-hours",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [],
+        "deductions": [],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hourlyRate:unconfirmed"
+          ],
+          "fields": [
+            "hourlyRate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "hours-rate-overtime-line",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N9",
+        "hourlyRate": "N8",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [],
+        "deductions": [],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
+      }
+    },
+    {
+      "id": "net-confirmed-by-deductions",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [],
+        "deductions": [],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
+      }
+    },
+    {
+      "id": "net-on-net-line-without-deductions",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
+      }
+    },
+    {
+      "id": "net-elsewhere-without-deductions",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N10",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "netPay:unconfirmed"
+          ],
+          "fields": [
+            "netPay"
+          ]
+        }
+      }
+    },
+    {
+      "id": "pay-date-on-period-start",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D1",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "payDate:before-period-end"
+          ],
+          "fields": [
+            "payDate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "pay-date-before-period-end",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodEnd": "D2",
+        "payDate": "D1",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "payDate:before-period-end"
+          ],
+          "fields": [
+            "payDate"
+          ]
+        }
       }
     },
     {
@@ -2632,7 +3190,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2670,7 +3232,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2709,7 +3275,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2751,7 +3321,11 @@
             "employeeName"
           ]
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2783,7 +3357,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": true
+        "ytdMissingWithCandidate": true,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2817,7 +3395,11 @@
           "problems": [],
           "fields": []
         },
-        "ytdMissingWithCandidate": true
+        "ytdMissingWithCandidate": true,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
       }
     },
     {
@@ -2856,7 +3438,17 @@
             "hoursWorked"
           ]
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate"
+          ]
+        }
       }
     },
     {
@@ -2895,7 +3487,17 @@
             "hoursWorked"
           ]
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate"
+          ]
+        }
       }
     },
     {
@@ -2931,7 +3533,160 @@
             "employeeName"
           ]
         },
-        "ytdMissingWithCandidate": false
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
+      }
+    },
+    {
+      "id": "real-ios-0505-sample-hours-rate-neighbours",
+      "document": "sample",
+      "pointers": {
+        "payDate": "D3",
+        "netPay": "N22",
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "ytdGross": "N13",
+        "grossPay": "N12",
+        "payFrequency": "semimonthly",
+        "hoursWorked": "N10",
+        "periodEnd": "D2",
+        "hourlyRate": "N11"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "real-ios-0511-sample-2-pay-date-on-start",
+      "document": "sample",
+      "pointers": {
+        "periodStart": "D1",
+        "employeeName": [
+          "W1"
+        ],
+        "employerName": [
+          "W1"
+        ],
+        "payDate": "D1",
+        "grossPay": "N12",
+        "periodEnd": "D2",
+        "hoursWorked": "N5",
+        "payFrequency": "semimonthly",
+        "ytdGross": "N13",
+        "netPay": "N22",
+        "hourlyRate": "N2"
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [
+            "names:shared-placeholder",
+            "employerName:incomplete",
+            "employeeName:incomplete"
+          ],
+          "fields": [
+            "employerName",
+            "employeeName"
+          ]
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed",
+            "payDate:before-period-end"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate",
+            "payDate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "real-ios-0511-l01-1-consecutive-placeholders",
+      "document": "en-l01-1",
+      "pointers": {
+        "ytdGross": "N14",
+        "payDate": "D3",
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "netPay": "N12",
+        "employeeName": [
+          "W2"
+        ],
+        "hoursWorked": "N2",
+        "grossPay": "N13",
+        "hourlyRate": "N3",
+        "employerName": [
+          "W1"
+        ],
+        "payFrequency": "biweekly"
+      },
+      "expected": {
+        "core": [
+          "check:ytd-gross",
+          "check:ytd-periods"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [
+            "employerName:incomplete",
+            "employeeName:incomplete"
+          ],
+          "fields": [
+            "employerName",
+            "employeeName"
+          ]
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "hoursWorked:unconfirmed",
+            "hourlyRate:unconfirmed",
+            "netPay:unconfirmed"
+          ],
+          "fields": [
+            "hoursWorked",
+            "hourlyRate",
+            "netPay"
+          ]
+        }
       }
     }
   ],
@@ -4075,7 +4830,8 @@
             "parsed": true,
             "problems": [],
             "marked": [
-              "hoursWorked:shares-placeholder"
+              "hoursWorked:shares-placeholder",
+              "hourlyRate:unconfirmed"
             ],
             "extraKeys": [],
             "missingKeys": []
@@ -4105,7 +4861,6 @@
           "grossPay": "N12",
           "netPay": "N22",
           "ytdGross": "N13",
-          "hourlyRate": "N4",
           "payFrequency": "semimonthly",
           "deductions": [
             {
@@ -4127,7 +4882,8 @@
           ]
         },
         "notRead": [
-          "hoursWorked"
+          "hoursWorked",
+          "hourlyRate"
         ]
       }
     },
@@ -4239,7 +4995,8 @@
             "parsed": true,
             "problems": [],
             "marked": [
-              "hoursWorked:shares-placeholder"
+              "hoursWorked:shares-placeholder",
+              "hourlyRate:unconfirmed"
             ],
             "extraKeys": [],
             "missingKeys": []
@@ -4280,12 +5037,12 @@
           "periodEnd": "D2",
           "grossPay": "N18",
           "netPay": "N28",
-          "ytdGross": "N19",
-          "hourlyRate": "N3"
+          "ytdGross": "N19"
         },
         "notRead": [
           "hoursWorked",
-          "deductions"
+          "deductions",
+          "hourlyRate"
         ]
       }
     },
@@ -4310,7 +5067,8 @@
             "problems": [],
             "marked": [
               "employerName:incomplete",
-              "hoursWorked:shares-placeholder"
+              "hoursWorked:shares-placeholder",
+              "hourlyRate:unconfirmed"
             ],
             "extraKeys": [],
             "missingKeys": []
@@ -4345,7 +5103,6 @@
           "grossPay": "N12",
           "netPay": "N22",
           "ytdGross": "N13",
-          "hourlyRate": "N4",
           "deductions": [
             {
               "amount": "N14",
@@ -4367,7 +5124,8 @@
         },
         "notRead": [
           "employerName",
-          "hoursWorked"
+          "hoursWorked",
+          "hourlyRate"
         ]
       }
     },
@@ -4483,10 +5241,751 @@
           "ytdGross:ambiguous"
         ]
       }
+    },
+    {
+      "id": "real-ios-0505-sample",
+      "document": "sample",
+      "answers": {
+        "core": "{\"payDate\": \"D3\", \"netPay\": \"N22\", \"employerName\": [\"W1\", \"W2\", \"W3\"], \"employeeName\": [\"W4\", \"W5\"], \"periodStart\": \"D1\", \"ytdGross\": \"N13\", \"grossPay\": \"N12\", \"payFrequency\": \"semimonthly\", \"hoursWorked\": \"N10\", \"periodEnd\": \"D2\", \"hourlyRate\": \"N11\"}",
+        "deductions": "{\"deductions\": [{\"kind\": \"federal_tax\", \"amount\": \"N14\"}, {\"kind\": \"social_security\", \"amount\": \"N16\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}, {\"kind\": \"other\", \"amount\": \"N20\"}, {\"amount\": \"N22\", \"kind\": \"other\"}]}",
+        "deductionsAgain": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"kind\": \"social_security\", \"amount\": \"N16\"}, {\"kind\": \"medicare\", \"amount\": \"N18\"}, {\"amount\": \"N20\", \"kind\": \"other\"}, {\"kind\": \"retirement\", \"amount\": \"N22\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "hoursWorked:unconfirmed",
+              "hourlyRate:unconfirmed"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "payDate": "D3",
+          "netPay": "N22",
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "ytdGross": "N13",
+          "grossPay": "N12",
+          "payFrequency": "semimonthly",
+          "periodEnd": "D2"
+        },
+        "notRead": [
+          "deductions",
+          "hoursWorked",
+          "hourlyRate"
+        ]
+      }
+    },
+    {
+      "id": "real-ios-0505-l07",
+      "document": "en-l07-3",
+      "answers": {
+        "core": "{\"payFrequency\": \"weekly\", \"periodStart\": \"D1\", \"employerName\": [\"W1\"], \"hoursWorked\": \"N4\", \"periodEnd\": \"D2\", \"ytdGross\": \"N3\", \"grossPay\": \"N1\", \"netPay\": \"N2\", \"employeeName\": [\"W4\"], \"payDate\": \"D3\", \"hourlyRate\": \"N5\"}",
+        "gross": "{\"grossPay\": \"N18\", \"ytdGross\": \"N19\"}",
+        "deductions": "{\"deductions\": [{\"amount\": \"N20\", \"kind\": \"federal_tax\"}, {\"kind\": \"social_security\", \"amount\": \"N22\"}, {\"kind\": \"medicare\", \"amount\": \"N24\"}]}",
+        "deductionsAgain": "{\"deductions\": [{\"amount\": \"N18\", \"kind\": \"social_security\"}, {\"kind\": \"social_security\", \"amount\": \"N22\"}, {\"amount\": \"N24\", \"kind\": \"medicare\"}, {\"amount\": \"N26\", \"kind\": \"federal_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "check:ytd-gross",
+              "check:ytd-periods"
+            ],
+            "marked": [
+              "employerName:incomplete",
+              "employeeName:incomplete",
+              "hoursWorked:unconfirmed",
+              "hourlyRate:unconfirmed",
+              "netPay:unconfirmed"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "payFrequency": "weekly",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "ytdGross": "N19",
+          "grossPay": "N18",
+          "payDate": "D3"
+        },
+        "notRead": [
+          "employerName",
+          "employeeName",
+          "deductions",
+          "hoursWorked",
+          "hourlyRate",
+          "netPay"
+        ]
+      }
+    },
+    {
+      "id": "real-ios-0511-sample-2",
+      "document": "sample",
+      "answers": {
+        "core": "{\"periodStart\": \"D1\", \"employeeName\": [\"W1\"], \"employerName\": [\"W1\"], \"payDate\": \"D1\", \"grossPay\": \"N12\", \"periodEnd\": \"D2\", \"hoursWorked\": \"N5\", \"payFrequency\": \"semimonthly\", \"ytdGross\": \"N13\", \"netPay\": \"N22\", \"hourlyRate\": \"N2\"}",
+        "deductions": "{\"deductions\": [{\"kind\": \"federal_tax\", \"amount\": \"N20\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}]}",
+        "deductionsAgain": "{\"deductions\": [{\"kind\": \"federal_tax\", \"amount\": \"N14\"}, {\"kind\": \"social_security\", \"amount\": \"N16\"}, {\"kind\": \"medicare\", \"amount\": \"N18\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "names:shared-placeholder",
+              "employerName:incomplete",
+              "employeeName:incomplete",
+              "hoursWorked:unconfirmed",
+              "hourlyRate:unconfirmed",
+              "payDate:before-period-end"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "periodStart": "D1",
+          "grossPay": "N12",
+          "periodEnd": "D2",
+          "payFrequency": "semimonthly",
+          "ytdGross": "N13",
+          "netPay": "N22"
+        },
+        "notRead": [
+          "employerName",
+          "employeeName",
+          "deductions",
+          "hoursWorked",
+          "hourlyRate",
+          "payDate"
+        ]
+      }
+    },
+    {
+      "id": "real-ios-0511-l01-1",
+      "document": "en-l01-1",
+      "answers": {
+        "core": "{\"ytdGross\": \"N14\", \"payDate\": \"D3\", \"periodStart\": \"D1\", \"periodEnd\": \"D2\", \"netPay\": \"N12\", \"employeeName\": [\"W2\"], \"hoursWorked\": \"N2\", \"grossPay\": \"N13\", \"hourlyRate\": \"N3\", \"employerName\": [\"W1\"], \"payFrequency\": \"biweekly\"}",
+        "gross": "{\"ytdGross\": \"N13\", \"grossPay\": \"N12\"}",
+        "deductions": "{\"deductions\": [{\"amount\": \"N14\", \"kind\": \"federal_tax\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"amount\": \"N18\", \"kind\": \"medicare\"}]}",
+        "deductionsAgain": "{\"deductions\": [{\"kind\": \"federal_tax\", \"amount\": \"N14\"}, {\"amount\": \"N16\", \"kind\": \"social_security\"}, {\"kind\": \"medicare\", \"amount\": \"N18\"}, {\"amount\": \"N20\", \"kind\": \"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "check:ytd-gross",
+              "check:ytd-periods"
+            ],
+            "marked": [
+              "employerName:incomplete",
+              "employeeName:incomplete",
+              "hoursWorked:unconfirmed",
+              "hourlyRate:unconfirmed",
+              "netPay:unconfirmed"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "ytdGross": "N13",
+          "payDate": "D3",
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N12",
+          "payFrequency": "biweekly"
+        },
+        "notRead": [
+          "employerName",
+          "employeeName",
+          "deductions",
+          "hoursWorked",
+          "hourlyRate",
+          "netPay"
+        ]
+      }
+    },
+    {
+      "id": "real-ios-0508-l01",
+      "document": "en-l01-1",
+      "answers": {
+        "core": "{\"employerName\": [\"W1\"], \"hoursWorked\": \"N10\", \"payFrequency\": \"biweekly\", \"periodEnd\": \"D2\", \"employeeName\": [\"W4\"], \"netPay\": \"N22\", \"ytdGross\": \"N13\", \"payDate\": \"D3\", \"grossPay\": \"N12\", \"periodStart\": \"D1\", \"hourlyRate\": \"N11\"}",
+        "deductions": "{\"deductions\": [{\"kind\": \"federal_tax\", \"amount\": \"N14\"}, {\"kind\": \"social_security\", \"amount\": \"N16\"}, {\"kind\": \"medicare\", \"amount\": \"N18\"}, {\"amount\": \"N20\", \"kind\": \"state_tax\"}]}",
+        "deductionsAgain": "{\"deductions\": [{\"kind\": \"federal_tax\", \"amount\": \"N14\"}, {\"kind\": \"social_security\", \"amount\": \"N16\"}, {\"kind\": \"medicare\", \"amount\": \"N18\"}, {\"amount\": \"N20\", \"kind\": \"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "employerName:incomplete",
+              "employeeName:incomplete",
+              "hoursWorked:unconfirmed",
+              "hourlyRate:unconfirmed"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "payFrequency": "biweekly",
+          "periodEnd": "D2",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "periodStart": "D1",
+          "deductions": [
+            {
+              "kind": "federal_tax",
+              "amount": "N14"
+            },
+            {
+              "kind": "social_security",
+              "amount": "N16"
+            },
+            {
+              "kind": "medicare",
+              "amount": "N18"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": [
+          "employerName",
+          "employeeName",
+          "hoursWorked",
+          "hourlyRate"
+        ]
+      }
+    },
+    {
+      "id": "confirm-hours-rate-left-out",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N1\",\"hourlyRate\":\"N2\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "hoursWorked:unconfirmed",
+              "hourlyRate:unconfirmed"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": [
+          "hoursWorked",
+          "hourlyRate"
+        ]
+      }
+    },
+    {
+      "id": "confirm-net-left-out-without-deductions",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N10\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"}]}",
+        "deductionsAgain": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "netPay:unconfirmed"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly"
+        },
+        "notRead": [
+          "deductions",
+          "netPay"
+        ]
+      }
+    },
+    {
+      "id": "confirm-net-kept-on-net-line",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"}]}",
+        "deductionsAgain": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions",
+          "deductions-again"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions-again",
+            "parsed": true,
+            "problems": [
+              "check:net-sum"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly"
+        },
+        "notRead": [
+          "deductions"
+        ]
+      }
+    },
+    {
+      "id": "confirm-pay-date-on-period-start",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D1\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N13\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [],
+            "marked": [
+              "payDate:before-period-end"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": [
+          "payDate"
+        ]
+      }
+    },
+    {
+      "id": "confirm-after-gross-part",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N12\",\"netPay\":\"N22\",\"ytdGross\":\"N7\",\"hoursWorked\":\"N7\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":\"N13\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "ytdGross:not-on-gross-line",
+              "ytdGross:ambiguous"
+            ],
+            "marked": [
+              "hoursWorked:unconfirmed",
+              "hourlyRate:unconfirmed"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": [
+          "hoursWorked",
+          "hourlyRate"
+        ]
+      }
     }
   ],
   "gold": {
-    "$comment": "Every right reading of the 38 English evaluation paystubs: each combination of the alternatives over base (see device-reading.cases.mjs rightReadings), and each line run of gold name placeholders. Expected: no core problem and nothing left out for every reading; ytdMissingWhenLeftOut gives, per grossPay alternative, whether leaving year to date out asks the gross part again.",
+    "$comment": "Every right reading of the 38 English evaluation paystubs: each combination of the alternatives over base (see device-reading.cases.mjs rightReadings), and each line run of gold name placeholders. Expected: no core problem, nothing left out, and (with the gold deductions) nothing unconfirmed for every reading; ytdMissingWhenLeftOut gives, per grossPay alternative, whether leaving year to date out asks the gross part again.",
     "cases": [
       {
         "document": "en-l01-1",
@@ -4530,6 +6029,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -4580,6 +6097,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -4630,6 +6165,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -4680,6 +6233,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -4730,6 +6301,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -4780,6 +6369,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -4822,6 +6429,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N3",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N4",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N5",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N6",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 2,
           "problems": [],
@@ -4865,6 +6494,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N3",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N4",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N5",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N6",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 2,
           "problems": [],
@@ -4908,6 +6559,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N3",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N4",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N5",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N6",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 2,
           "problems": [],
@@ -4959,6 +6632,20 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N6",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N7",
+            "kind": "medicare"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -5009,6 +6696,20 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N6",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N7",
+            "kind": "medicare"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -5059,6 +6760,20 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N6",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N7",
+            "kind": "medicare"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -5109,6 +6824,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N10",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N12",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "retirement"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -5159,6 +6896,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N10",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N12",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "retirement"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -5209,6 +6968,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N10",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N12",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "retirement"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -5255,6 +7036,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          },
+          {
+            "amount": "N21",
+            "kind": "retirement"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -5302,6 +7105,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          },
+          {
+            "amount": "N21",
+            "kind": "retirement"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -5349,6 +7174,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N13",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N15",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N17",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N19",
+            "kind": "health"
+          },
+          {
+            "amount": "N21",
+            "kind": "retirement"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -5401,6 +7248,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N20",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N22",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N24",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N26",
+            "kind": "retirement"
+          }
+        ],
         "expected": {
           "readings": 2,
           "problems": [],
@@ -5452,6 +7317,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N20",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N22",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N24",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N26",
+            "kind": "retirement"
+          }
+        ],
         "expected": {
           "readings": 2,
           "problems": [],
@@ -5503,6 +7386,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N20",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N22",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N24",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N26",
+            "kind": "retirement"
+          }
+        ],
         "expected": {
           "readings": 2,
           "problems": [],
@@ -5553,6 +7454,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N11",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N12",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -5603,6 +7522,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N11",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N12",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -5653,6 +7590,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N11",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N12",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -5699,6 +7654,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N9",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N11",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -5746,6 +7719,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N9",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N11",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -5793,6 +7784,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N5",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N7",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N9",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N11",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -5846,6 +7855,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N8",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N12",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -5899,6 +7930,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N8",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N12",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -5952,6 +8005,28 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N8",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N10",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N12",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N14",
+            "kind": "state_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "health"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -6004,6 +8079,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N15",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N17",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N19",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N21",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -6050,6 +8143,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N15",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -6104,6 +8215,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N11",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N13",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N15",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N17",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -6152,6 +8281,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N15",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -6204,6 +8351,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N15",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N17",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N19",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N21",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 1,
           "problems": [],
@@ -6251,6 +8416,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N15",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -6305,6 +8488,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N11",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N13",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N15",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N17",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],
@@ -6353,6 +8554,24 @@
             ]
           ]
         },
+        "deductions": [
+          {
+            "amount": "N9",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N11",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N13",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N15",
+            "kind": "state_tax"
+          }
+        ],
         "expected": {
           "readings": 4,
           "problems": [],

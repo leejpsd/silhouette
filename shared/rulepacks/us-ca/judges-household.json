@@ -1,0 +1,25 @@
+{
+  "$comment": "The judges' prepared household for the California pack: an invented renter household of three, a working single parent (head of household) with one child under 6, a yearly income given as a range, and the CalFresh question left unanswered, so the results show every kind of answer. Answers are keyed by question id, in the Quick Check's form (income: a band or an exact amount). Every platform fills the Quick Check with exactly these answers for the judges' path (step 1) and for the on-device check's own result. Expected results: fixtures/conformance/judges-household.json.",
+  "pack": "us-ca",
+  "answers": {
+    "income": { "kind": "band", "bandId": "C" },
+    "householdSize": 3,
+    "numQualifyingChildren": 1,
+    "hasChildUnder6": "yes",
+    "hasEarnedIncome": "yes",
+    "ageGroup": "25-64",
+    "housing": "renter",
+    "benefits": [],
+    "energyProvider": "pge",
+    "hasElderlyOrDisabledMember": "no",
+    "filingStatus": "head-of-household",
+    "taxIdType": "ssn-valid-for-work",
+    "investmentIncome": 0
+  },
+  "unanswered": ["calfreshEligibleMember"],
+  "paystub": {
+    "document": "samples/paystub-en-01.txt",
+    "pointers": "samples/answers.json (paystub-en-01.txt)",
+    "note": "Step 2 confirms the sample paystub's values; its yearly income (validation/SPEC.md section 7) replaces the income band as an exact amount."
+  }
+}

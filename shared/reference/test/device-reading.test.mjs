@@ -78,3 +78,24 @@ test('the constraint of each part: no other keys, every key required, placeholde
   assert.deepEqual(core.properties.payDate.enum, [...ids.D, null]);
   assert.deepEqual(core.properties.grossPay.enum, [...ids.N, null]);
 });
+
+test('shown only when confirmed: no right value of the gold set is left out, and the real wrong values are', () => {
+  for (const g of fixture.gold.cases) {
+    const { skeleton, map } = doc(g.document);
+    for (const r of rightReadings(g)) {
+      const reading = g.deductions.length ? { ...r, deductions: g.deductions } : r;
+      assert.deepEqual(d.unconfirmedFields(schema, reading, skeleton, map, J, 'en'), { problems: [], fields: [] }, g.document);
+    }
+  }
+  const by = Object.fromEntries(fixture.checks.map((c) => [c.id, c.expected.unconfirmed]));
+  assert.deepEqual(by['real-ios-0505-sample-hours-rate-neighbours'].fields, ['hoursWorked', 'hourlyRate']);
+  assert.ok(by['real-ios-0511-sample-2-pay-date-on-start'].fields.includes('payDate'));
+  assert.ok(by['real-ios-0511-l01-1-consecutive-placeholders'].fields.includes('netPay'));
+  assert.deepEqual(by['hours-rate-right'].fields, []);
+  assert.deepEqual(by['net-on-net-line-without-deductions'].fields, []);
+  // Every real iPhone reading ends with nothing unconfirmed shown.
+  for (const r of fixture.readings.filter((x) => x.id.startsWith('real-ios-'))) {
+    const { skeleton, map } = doc(r.document);
+    assert.deepEqual(d.unconfirmedFields(schema, r.expected.value, skeleton, map, J, 'en').problems, [], r.id);
+  }
+});

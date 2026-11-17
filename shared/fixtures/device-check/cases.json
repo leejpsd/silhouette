@@ -1,0 +1,122 @@
+{
+  "$comment": "The fixed cases of the on-device check (validation/DEVICE_CHECK.md), in order. Every input is synthetic. A case's id is recorded as written here; ask.chip ids are the chip's question in the copy of that locale, followed by the locale.",
+  "extraction": [
+    {
+      "id": "pointers: bundled sample",
+      "document": "samples/paystub-en-01.txt",
+      "gold": "rehydrated from samples/answers.json (paystub-en-01.txt)"
+    },
+    {
+      "id": "pointers: evaluation paystub L01",
+      "document": "fixtures/device-check/documents/en-l01-1.txt",
+      "gold": "fixtures/device-check/documents/en-l01-1.gold.json"
+    },
+    {
+      "id": "pointers: evaluation paystub L04",
+      "document": "fixtures/device-check/documents/en-l04-2.txt",
+      "gold": "fixtures/device-check/documents/en-l04-2.gold.json"
+    },
+    {
+      "id": "pointers: evaluation paystub L07",
+      "document": "fixtures/device-check/documents/en-l07-3.txt",
+      "gold": "fixtures/device-check/documents/en-l07-3.gold.json"
+    },
+    {
+      "id": "pointers: evaluation paystub L10",
+      "document": "fixtures/device-check/documents/en-l10-1.txt",
+      "gold": "fixtures/device-check/documents/en-l10-1.gold.json"
+    }
+  ],
+  "cases": [
+    {
+      "id": "pointers: bundled sample",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "the silhouette of the document, language en, document type paystub",
+      "extraction": true
+    },
+    {
+      "id": "pointers: evaluation paystub L01",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "same",
+      "extraction": true
+    },
+    {
+      "id": "pointers: evaluation paystub L04",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "same",
+      "extraction": true
+    },
+    {
+      "id": "pointers: evaluation paystub L07",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "same",
+      "extraction": true
+    },
+    {
+      "id": "pointers: evaluation paystub L10",
+      "task": "document.pointer.extract",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "same",
+      "extraction": true
+    },
+    {
+      "id": "explanation (en)",
+      "task": "explain.short",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "the general explanation of the pack's first program, short, locale en (prompts/explain.v5.md)"
+    },
+    {
+      "id": "explanation (es)",
+      "task": "explain.short",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "the same, locale es"
+    },
+    {
+      "id": "How do I apply? (en)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "prepared question ask.chip.apply about the pack's first program, locale en (prompts/ask.v4.md)"
+    },
+    {
+      "id": "What could change this result? (en)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "prepared question ask.chip.change, locale en"
+    },
+    {
+      "id": "¿Cómo solicito? (es)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "prepared question ask.chip.apply, locale es"
+    },
+    {
+      "id": "¿Qué podría cambiar este resultado? (es)",
+      "task": "ask.chip",
+      "mode": "PREFER_ON_DEVICE",
+      "input": "prepared question ask.chip.change, locale es"
+    },
+    {
+      "id": "your own result (en)",
+      "task": "explain.personal",
+      "mode": "ONLY_ON_DEVICE",
+      "input": "the prepared household's own result for the pack's first program (fixtures/judges/household.us-ca.json), locale en"
+    },
+    {
+      "id": "typed question (en)",
+      "task": "ask.freeText",
+      "mode": "ONLY_ON_DEVICE",
+      "input": "the typed question \"What papers should I bring?\" with the same result, locale en"
+    },
+    {
+      "id": "photo of the sample (en)",
+      "task": "document.photo.read",
+      "mode": "ONLY_ON_DEVICE",
+      "input": "samples/paystub-en-01.txt drawn as a picture: white page 900 px wide, black 16 px monospace, lines 22 px apart starting 30 px from the top and 20 px from the left; not run (\"not-run\" with a note) when the device model does not accept images"
+    }
+  ],
+  "repetitions": "Optionally the five extraction cases run 3 times each, before the other cases; each reading carries its repetition (1, 2, 3)."
+}
