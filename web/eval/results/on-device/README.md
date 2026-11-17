@@ -45,6 +45,24 @@ In the 18:36 run both wrong values were names cut short; the 00:38 run is the fi
 
 The rules of the on-device reading are specified in `shared/validation/DEVICE_READING.md` (contract v1.17), with the prompts `shared/prompts/pointer-extract.v5.md` and `pointer-extract-device.v1.md`.
 
+## Recomputed under the confirmation rules (contract v1.18)
+
+These figures are **recomputed from the recorded answers, not new runs**. Each recorded on-device reading was replayed, part by part, through the current app with a stand-in device that gives the answer recorded for each part (a part the recording did not have gets the recorded answer of the part it replaces). Readings that end in the cloud under the current rules are not counted, because their cloud answer was not recorded. The rules: hours and rate shown only when rate × hours is an earnings amount; net pay only when the deductions add up or it sits on a net-pay line; a pay date before the period end left out (`shared/validation/DEVICE_READING.md` section 5.1).
+
+| Run | File | Readings with a wrong value reaching the person, as recorded | Readings that stay on the device when replayed | …with a wrong value under the confirmation rules |
+|---|---|---|---|---|
+| Chrome 157, 2026-11-16 | `device-check-2026-11-16-chrome157-macos.json` | not recorded | none (no per-part answers recorded) | — |
+| Chrome 157, 17:44 | `history/device-check-2026-11-16T1744-chrome157-macos.json` | 0 of 5 | 2 | 0 |
+| Chrome 157, 18:07 | `history/device-check-2026-11-16T1807-chrome157-macos.json` | 3 of 5 | 2 | 0 |
+| Chrome 157, 18:24 | `history/device-check-2026-11-16T1824-chrome157-macos.json` | 1 of 5 | 5 | 0 |
+| Chrome 157, 18:36 | `history/device-check-2026-11-16T1836-chrome157-macos.json` | 2 of 15 | 15 | 0 |
+| Chrome 157, 2026-11-17 00:38 | `device-check-2026-11-17T0038-chrome157-macos.json` | 0 of 15 | 15 | 0 |
+| iPhone 17 Pro, iOS 26.5.2, 05:05 | `device-check-2026-11-17T0505-silhouette0-ios2652.json` (kept with the iOS app) | 3 of 5 | 4 | 0 |
+| iPhone 17 Pro, iOS 26.5.2, 05:08 | `device-check-2026-11-17T0508-silhouette0-ios2652.json` (kept with the iOS app) | 2 of 5 | 4 | 0 |
+| iPhone 17 Pro, iOS 26.5.2, 05:11 | `device-check-2026-11-17T0511-silhouette0-ios2652.json` (kept with the iOS app) | 6 of 15 | 9 | 0 |
+
+On the iPhone the wrong values were all secondary: hourly rate 11 times, hours worked 8, net pay 3, the pay date once (answered as the period start). The confirmation rules leave every one of them out. The right values they also leave out are 1 hours value and 12 rates whose other half was wrong or missing.
+
 ## What a run file contains
 
 | Field | Meaning |

@@ -104,6 +104,11 @@ export interface PointerCallOptions {
     readonly notRead?: ((pointers: Record<string, unknown>) => { readonly problems: readonly string[]; readonly fields: readonly string[] }) | undefined;
     /** Year to date left out although the document has one place for it: the gross part is asked. */
     readonly ytdMissing?: ((pointers: Record<string, unknown>) => boolean) | undefined;
+    /**
+     * Values that feed no result and that no check confirms (hours and rate, net pay, a pay date that
+     * contradicts the period), on the reading about to be used: they are left out and marked not read.
+     */
+    readonly confirm?: ((pointers: Record<string, unknown>) => { readonly problems: readonly string[]; readonly fields: readonly string[] }) | undefined;
   } | undefined;
   /** Where the reading is, for the screen that waits for it. */
   readonly onProgress?: ((stage: PointerStage) => void) | undefined;
@@ -494,7 +499,15 @@ async function readInParts(
   // Deductions feed no result: when they do not hold up, the core is used and they are marked not read.
   const deductionsNotRead = !ded.pass.value || ded.pass.problems.length > 0;
   if (deductionsNotRead) notRead.push('deductions');
-  const value = deductionsNotRead ? coreValue : ded.merged;
+  const read = deductionsNotRead ? coreValue : ded.merged;
+  // Shown only when confirmed: values that feed no result and that no check confirms are left out.
+  const unconfirmed = options.checkParts?.confirm?.(read) ?? { problems: [], fields: [] };
+  const value = Object.fromEntries(Object.entries(read).filter(([k]) => !unconfirmed.fields.includes(k)));
+  notRead.push(...unconfirmed.fields);
+  if (unconfirmed.problems.length > 0) {
+    const first = passes[0] as DevicePass;
+    passes[0] = { ...first, marked: [...(first.marked ?? []), ...unconfirmed.problems] };
+  }
   return { ok: true, value, attempt: { rawText: core0.rawText, parsed: true, value, problems: [], passes, deductionsNotRead, notRead } };
 }
 

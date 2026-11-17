@@ -4,7 +4,7 @@ import { placeholderCounts, buildReview, type SourceSegment } from '../../core/r
 import { cancelPreparedReading, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
-import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../../core/pointer-check';
+import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, unconfirmedFields, ytdMissingWithCandidate } from '../../core/pointer-check';
 import { PACK } from '../pack';
 import type { Raw, Skeleton } from '../../core/types';
 import type { PlaceholderMap } from '../../core/skeleton';
@@ -46,7 +46,7 @@ const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce
  * The deterministic checks of a paystub reading of this silhouette (core/pointer-check.ts): a core that
  * fails is a failed attempt; deductions, names, hours or rate that fail are left out as not read.
  */
-function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>) {
+function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>, language: string) {
   const schema = POINTER_SCHEMAS.paystub;
   return {
     validate: (pointers: Record<string, unknown>) => pointerProblems(schema, pointers, skeleton, map, PACK.jurisdiction),
@@ -55,6 +55,7 @@ function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>) {
       deductions: (pointers: Record<string, unknown>) => deductionsProblems(schema, pointers, map, PACK.jurisdiction),
       notRead: (pointers: Record<string, unknown>) => notReadFields(pointers, skeleton),
       ytdMissing: (pointers: Record<string, unknown>) => ytdMissingWithCandidate(schema, pointers, skeleton, map, PACK.jurisdiction),
+      confirm: (pointers: Record<string, unknown>) => unconfirmedFields(schema, pointers, skeleton, map, PACK.jurisdiction, language),
     },
   };
 }
@@ -79,7 +80,7 @@ export function DocumentPreviewScreen() {
     // After a short pause, so hiding several words in a row starts one reading, not one per word.
     const timer = setTimeout(() => {
       setReadingAhead(true);
-      void prepareDeviceReading(aheadSkeleton, 'paystub', aheadLanguage, readingChecks(aheadSkeleton, aheadMap)).finally(() => {
+      void prepareDeviceReading(aheadSkeleton, 'paystub', aheadLanguage, readingChecks(aheadSkeleton, aheadMap, aheadLanguage)).finally(() => {
         if (live) setReadingAhead(false);
       });
     }, 1200);
@@ -127,7 +128,7 @@ export function DocumentPreviewScreen() {
   }
   const { skeleton, map } = doc;
   // The deterministic check of a pointer answer: one that fails it is a failed attempt, never values to confirm.
-  const { validate: checkAnswer, checkParts } = readingChecks(skeleton, map);
+  const { validate: checkAnswer, checkParts } = readingChecks(skeleton, map, doc.language);
   const counts = placeholderCounts(skeleton);
   const rawText = doc.text;
 

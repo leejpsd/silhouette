@@ -220,6 +220,24 @@ test.describe('Document silhouette and pointer extraction', () => {
     expect(requests.filter((r) => new URL(r.url()).origin !== new URL(page.url()).origin)).toEqual([]);
   });
 
+  test('on the device, values no check confirms are not shown: hours and rate that do not multiply to an earnings amount', async ({ page, context }) => {
+    const { deductions, ...core } = fixturePointers('paystub-en-01-correct');
+    await fakeOnDeviceModel(context, {
+      availability: 'available',
+      systemReplies: { 'answer only the fields in the schema': JSON.stringify({ ...core, hoursWorked: 'N1', hourlyRate: 'N2' }), 'answer only the deductions': JSON.stringify({ deductions }) },
+      replies: {},
+    });
+    await page.goto('/#/doc');
+    await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'available');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
+    await page.getByTestId('more-values').click();
+    await expect(page.getByTestId('not-read-hoursWorked')).toContainText('Not read on this device.');
+    await expect(page.getByTestId('not-read-hourlyRate')).toContainText('Not read on this device.');
+    await expect(page.getByTestId('value-netPay')).toHaveText('1,100.92');
+  });
+
   test('photo path (fake on-device model): ONLY_ON_DEVICE transcription, then the same silhouette', async ({ page, context }) => {
     await fakeOnDeviceModel(context, {
       availability: 'available',

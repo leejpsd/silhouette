@@ -8,7 +8,7 @@ import { buildReview, type ReviewField } from '../../core/review';
 import { tidyNamePointers } from '../../core/tidy';
 import { criterionReasons, verdicts } from '../../core/rules';
 import { askChip, explainProgram, extractPointers, planAskChip, planExplain, POINTER_SCHEMAS, type DeviceAttempt, type TaskResult } from '../../ai/tasks';
-import { corePointerProblems, deductionsProblems, goldPlaceholderIds, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../../core/pointer-check';
+import { corePointerProblems, deductionsProblems, goldPlaceholderIds, notReadFields, pointerProblems, unconfirmedFields, ytdMissingWithCandidate } from '../../core/pointer-check';
 import { askFreeText, explainPersonal, readPhoto } from '../../ai/on-device';
 import { askDeviceStatus, photoDeviceStatus, pointerDeviceStatus } from '../../ai/device-model';
 import { classifyError } from '../../ai/errors';
@@ -347,6 +347,7 @@ async function extraction(c: (typeof EXTRACTION_CASES)[number], repetition?: num
         deductions: (p) => deductionsProblems(schema, p, map, PACK.jurisdiction),
         notRead: (p) => notReadFields(p, skeleton),
         ytdMissing: (p) => ytdMissingWithCandidate(schema, p, skeleton, map, PACK.jurisdiction),
+        confirm: (p) => unconfirmedFields(schema, p, skeleton, map, PACK.jurisdiction, 'en'),
       },
     });
     const finalFields = scoreFields(reviewOf(result.value), gold);

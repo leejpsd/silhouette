@@ -21,7 +21,7 @@
 
 import { reveal, Raw, type Skeleton } from './types';
 import { parseNumber, rehydrate, type PlaceholderMap, type PointerSchema } from './skeleton';
-import { validatePaystubs, ValidationInputError, type PaystubValues } from './validate';
+import { dayNumber, parseDate, validatePaystubs, ValidationInputError, type PaystubValues } from './validate';
 
 /** Core checks that warn only when a reading is wrong (measured on all 38 English evaluation paystubs). */
 export const CORE_CHECKS: ReadonlySet<string> = new Set(['period-length', 'pay-date', 'ytd-gross', 'ytd-periods', 'dates-parsed']);
@@ -212,6 +212,78 @@ export function notReadFields(pointers: Record<string, unknown>, skeleton?: Skel
   const shared = sharedAmountProblems(pointers);
   const fields = [...(names.length > 0 ? ['employerName', 'employeeName'] : []), ...[...incomplete, ...shared].map((p) => p.split(':')[0] as string)];
   return { problems: [...names, ...incomplete, ...shared], fields: [...new Set(fields)] };
+}
+
+// ---------- Shown only when confirmed ----------
+//
+// On the device, a value that feeds no result is shown only when a deterministic check confirms it;
+// otherwise it is left out and marked not read (validation/DEVICE_READING.md section 6). Measured on
+// the 38 English evaluation paystubs (no right value lost) and on every recorded real answer (Chrome and
+// iPhone): together these rules leave no wrong value in any recorded on-device reading.
+
+/** Labels that mark net pay, per document language (words the Skeletonizer keeps visible). */
+export const NET_PAY_LABELS: Readonly<Record<string, readonly string[]>> = {
+  en: ['net', 'take home'],
+  es: ['neto', 'neta', 'líquido', 'liquido'],
+  ko: ['실수령', '실지급', '차인지급'],
+};
+
+function netLabelled(skeleton: string, id: string, language: string): boolean {
+  const line = skeleton.split('\n').find((l) => l.includes(`⟦${id}⟧`));
+  if (!line) return false;
+  const text = line.replace(/⟦[NDW][0-9]+⟧/g, ' ').toLowerCase();
+  const labels = [...(NET_PAY_LABELS[language] ?? []), ...(language === 'en' ? [] : (NET_PAY_LABELS['en'] ?? []))];
+  return labels.some((label) => (/^[a-z ]+$/.test(label) ? new RegExp(`(^|[^a-z])${label}([^a-z]|$)`).test(text) : text.includes(label)));
+}
+
+/**
+ * Fields of a reading used on the device that no check confirms, with the problems that say why:
+ * - hours worked and hourly rate are shown only together, and only when rate × hours is, within one
+ *   cent, an amount of money in the silhouette (written with cents) that is not above gross pay: the
+ *   earnings line they come from. Otherwise both are left out (`hoursWorked:unconfirmed`,
+ *   `hourlyRate:unconfirmed`);
+ * - net pay is shown when the deductions were read and net pay = gross − deductions holds, or, when
+ *   the deductions were not read, when it is on a line with a net-pay label the silhouette keeps
+ *   visible (NET_PAY_LABELS). Otherwise it is left out (`netPay:unconfirmed`);
+ * - a pay date on or before the period start, or before the period end, contradicts the period: it is
+ *   left out (`payDate:before-period-end`), and the yearly income uses the period end.
+ */
+export function unconfirmedFields(schema: PointerSchema, pointers: Record<string, unknown>, skeleton: Skeleton, rawMap: Raw<PlaceholderMap>, jurisdiction: string, language: string): { problems: string[]; fields: string[] } {
+  const v = values(schema, pointers, rawMap) as unknown as Record<string, unknown>;
+  const map = reveal(rawMap);
+  const problems: string[] = [];
+  // Hours and rate.
+  if (pointers['hoursWorked'] !== undefined || pointers['hourlyRate'] !== undefined) {
+    const h = v['hoursWorked'];
+    const r = v['hourlyRate'];
+    const g = v['grossPay'];
+    const confirmed =
+      typeof h === 'number' &&
+      typeof r === 'number' &&
+      typeof g === 'number' &&
+      [...new Set([...skeleton.matchAll(/⟦(N[0-9]+)⟧/g)].map((m) => m[1] as string))].some((id) => {
+        const text = map[id] ?? '';
+        const m = /[.,][0-9]{2}$/.test(text) ? parseNumber(text) : undefined;
+        return m !== undefined && m <= g + 0.005 && Math.abs(r * h - m) <= 0.01 + 1e-9;
+      });
+    if (!confirmed) {
+      if (pointers['hoursWorked'] !== undefined || pointers['hourlyRate'] !== undefined) problems.push('hoursWorked:unconfirmed', 'hourlyRate:unconfirmed');
+    }
+  }
+  // Net pay.
+  if (typeof pointers['netPay'] === 'string') {
+    const byDeductions = Array.isArray(pointers['deductions']) && deductionsProblems(schema, pointers, rawMap, jurisdiction).length === 0;
+    if (!byDeductions && !netLabelled(skeleton, pointers['netPay'], language)) problems.push('netPay:unconfirmed');
+  }
+  // Pay date against the period.
+  const pay = typeof v['payDate'] === 'string' ? parseDate(v['payDate'], jurisdiction) : null;
+  if (pay) {
+    const start = typeof v['periodStart'] === 'string' ? parseDate(v['periodStart'], jurisdiction) : null;
+    const end = typeof v['periodEnd'] === 'string' ? parseDate(v['periodEnd'], jurisdiction) : null;
+    if ((start && dayNumber(pay) <= dayNumber(start)) || (end && dayNumber(pay) < dayNumber(end))) problems.push('payDate:before-period-end');
+  }
+  const fields = problems.map((p) => p.split(':')[0] as string).filter((f) => pointers[f] !== undefined);
+  return { problems: problems.filter((p) => pointers[p.split(':')[0] as string] !== undefined), fields: [...new Set(fields)] };
 }
 
 /**

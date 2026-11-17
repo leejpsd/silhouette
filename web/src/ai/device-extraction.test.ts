@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Raw } from '../core/types';
 import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile } from '../core/skeleton';
-import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../core/pointer-check';
+import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, unconfirmedFields, ytdMissingWithCandidate } from '../core/pointer-check';
 import { setModelProviderForTests } from './model-port';
 import { setDeviceModelForTests } from './device-fake';
 import { POINTER_SCHEMAS, cancelPreparedReading, dropPreparedReadings, extractPointers, pointerModelParams, prepareDeviceReading, type PointerStage } from './tasks';
@@ -325,6 +325,58 @@ describe('reading a paystub on the device in two parts', () => {
     device({ core: json(KEY_CORE) });
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
     for (const pass of result.deviceAttempt?.passes ?? []) expect(pass.latencyMs).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('shown only when confirmed', () => {
+  const confirmed = { ...checkParts, confirm: (p: Record<string, unknown>) => unconfirmedFields(schema, p, doc.skeleton, doc.map, 'us-ca', 'en') };
+  const read = async (core: Record<string, unknown>, deductions?: string) => {
+    device({ core: json(core), ...(deductions ? { deductions, deductionsAgain: deductions } : {}) });
+    return extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts: confirmed });
+  };
+
+  it('a right reading keeps every value: rate × hours is the Regular line, net pay adds up', async () => {
+    const result = await read(KEY_CORE);
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY, notRead: [] });
+  });
+
+  it('hours and rate that do not multiply to an earnings amount are both left out (consecutive placeholders, as on the iPhone)', async () => {
+    const result = await read({ ...KEY_CORE, hoursWorked: 'N1', hourlyRate: 'N2' });
+    expect(result.notRead).toEqual(['hoursWorked', 'hourlyRate']);
+    expect(result.value).not.toHaveProperty('hoursWorked');
+    expect(result.value).not.toHaveProperty('hourlyRate');
+    expect(result.deviceAttempt?.passes?.[0]?.marked).toEqual(['hoursWorked:unconfirmed', 'hourlyRate:unconfirmed']);
+    // A right rate alone is not shown either: only together.
+    const alone = await read({ ...KEY_CORE, hoursWorked: 'N9' });
+    expect(alone.notRead).toEqual(['hoursWorked', 'hourlyRate']);
+  });
+
+  it('net pay: kept when the deductions add up, or on a "Net Pay" line when they were not read; otherwise left out', async () => {
+    const shortList = json({ deductions: (KEY_DEDUCTIONS as unknown[]).slice(0, 3) });
+    const onNetLine = await read(KEY_CORE, shortList);
+    expect(onNetLine).toMatchObject({ value: KEY_CORE, notRead: ['deductions'] });
+    // A wrong net pay (another line's amount) with the deductions not read: left out.
+    const wrong = await read({ ...KEY_CORE, netPay: 'N10' }, shortList);
+    expect(wrong.notRead).toEqual(['deductions', 'netPay']);
+    expect(wrong.value).not.toHaveProperty('netPay');
+  });
+
+  it('a pay date on the period start (D1) contradicts the period: left out, the period end is used', async () => {
+    const result = await read({ ...KEY_CORE, payDate: 'D1' });
+    expect(result.notRead).toEqual(['payDate']);
+    expect(result.deviceAttempt?.passes?.[0]?.marked).toEqual(['payDate:before-period-end']);
+  });
+
+  it('after the gross part repaired gross pay and year to date, the rest of the first answer still needs its confirmation', async () => {
+    device({ core: json({ ...KEY_CORE, ytdGross: 'N7', hoursWorked: 'N8', hourlyRate: 'N9' }), gross: json({ grossPay: 'N12', ytdGross: 'N13' }) });
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts: confirmed });
+    expect(result.deviceAttempt?.passes?.map((p) => p.part)).toEqual(['core', 'gross', 'deductions']);
+    expect(result.value).toMatchObject({ grossPay: 'N12', ytdGross: 'N13' });
+    // N8 × N9 (27.75 × 4.50 = 124.88) is the Overtime line's amount and not above gross: shown, the model's choice.
+    expect(result.notRead).toEqual([]);
+    device({ core: json({ ...KEY_CORE, ytdGross: 'N7', hoursWorked: 'N7', hourlyRate: 'N4' }), gross: json({ grossPay: 'N12', ytdGross: 'N13' }) });
+    const confused = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts: confirmed });
+    expect(confused.notRead).toEqual(['hoursWorked', 'hourlyRate']);
   });
 });
 

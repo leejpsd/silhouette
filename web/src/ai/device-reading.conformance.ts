@@ -6,7 +6,7 @@ import { expect, it } from 'vitest';
 import { Raw } from '../core/types';
 import type { PlaceholderMap } from '../core/skeleton';
 import type { Skeleton } from '../core/types';
-import { corePointerProblems, deductionsProblems, incompleteNameProblems, notReadFields, pointerProblems, ytdMissingWithCandidate } from '../core/pointer-check';
+import { corePointerProblems, deductionsProblems, incompleteNameProblems, notReadFields, pointerProblems, unconfirmedFields, ytdMissingWithCandidate } from '../core/pointer-check';
 import { setModelProviderForTests } from './model-port';
 import { setDeviceModelForTests } from './device-fake';
 import { POINTER_SCHEMAS, activePointerConfig, extractPointers } from './tasks';
@@ -15,13 +15,15 @@ import { deviceResponseConstraint, type DevicePart } from './device-schema';
 type Doc = { skeleton: Skeleton; map: PlaceholderMap };
 interface Fixture {
   jurisdiction: string;
+  /** Contract v1.18: values that feed no result are shown only when confirmed (DEVICE_READING.md section 6). */
+  confirmedOnly?: { language: string } | undefined;
   documents: Record<string, Doc>;
   constraints: { id: string; document: string; part: DevicePart; expected: unknown }[];
   checks: {
     id: string;
     document: string;
     pointers: Record<string, unknown>;
-    expected: { core: string[]; deductions: string[]; notRead: { problems: string[]; fields: string[] }; ytdMissingWithCandidate: boolean };
+    expected: { core: string[]; deductions: string[]; notRead: { problems: string[]; fields: string[] }; ytdMissingWithCandidate: boolean; unconfirmed?: { problems: string[]; fields: string[] } };
   }[];
   readings: {
     id: string;
@@ -93,6 +95,7 @@ export function runDeviceReadingFixture(raw: unknown): void {
       expect(deductionsProblems(S, c.pointers, map, J)).toEqual(c.expected.deductions);
       expect(notReadFields(c.pointers, skeleton)).toEqual(c.expected.notRead);
       expect(ytdMissingWithCandidate(S, c.pointers, skeleton, map, J)).toBe(c.expected.ytdMissingWithCandidate);
+      if (fixture.confirmedOnly && c.expected.unconfirmed) expect(unconfirmedFields(S, c.pointers, skeleton, map, J, fixture.confirmedOnly.language)).toEqual(c.expected.unconfirmed);
     });
   }
 
@@ -119,6 +122,7 @@ export function runDeviceReadingFixture(raw: unknown): void {
             deductions: (p) => deductionsProblems(S, p, map, J),
             notRead: (p) => notReadFields(p, skeleton),
             ytdMissing: (p) => ytdMissingWithCandidate(S, p, skeleton, map, J),
+            confirm: fixture.confirmedOnly ? (p) => unconfirmedFields(S, p, skeleton, map, J, fixture.confirmedOnly?.language ?? 'en') : undefined,
           },
         });
         const passes = (result.deviceAttempt?.passes ?? []).map((p) => ({
