@@ -118,7 +118,7 @@ export function DeviceCheckScreen() {
           {t('deviceCheck.recordingMeta', { date: day(recording.date), browser: recording.browser, platform: recording.platform })}
         </p>
       )}
-      {view && <Headline file={view.file} />}
+      {view && <Headline file={view.file} recording={view.kind === 'recording'} />}
       {recording && (
         <p className="dashed-note" data-testid="recording-note">
           {t('deviceCheck.recordingNote')}
@@ -196,7 +196,7 @@ export function DeviceCheckScreen() {
  * readings with every yearly-income input right, and readings in which a wrong value reached the person.
  * A number a file does not record is left out, never guessed.
  */
-function Headline({ file }: { file: RunFile }) {
+function Headline({ file, recording = false }: { file: RunFile; recording?: boolean }) {
   const { t } = useApp();
   const s = summarize(file.cases, file.version);
   const incomeRight = s.income?.allRight ?? s.incomeInputsCorrect;
@@ -207,7 +207,8 @@ function Headline({ file }: { file: RunFile }) {
         <span className="figure">
           {s.onDevice} / {s.total}
         </span>
-        <span className="small">{t('deviceCheck.headline.onDevice')}</span>
+        {/* A recording was made on another machine: it does not say "this device". */}
+        <span className="small">{t(recording ? 'deviceCheck.headline.onRecordingDevice' : 'deviceCheck.headline.onDevice')}</span>
       </li>
       {incomeRight !== null && (
         <li data-testid="headline-income-right">

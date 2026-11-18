@@ -72,7 +72,7 @@ describe('sample paystub (shared/samples/paystub-en-01, as rehydrated by the fix
   it('runs every check', () => {
     expect(statuses(result.checks[0]!)).toEqual({
       'net-sum': 'ok',
-      'rate-hours': 'warn', // overtime: 18.50 × 62 = 1,147.00 ≠ 1,271.88
+      'rate-hours': 'ok', // 18.50 × 62 = 1,147.00 is the regular pay; overtime brings gross to 1,271.88
       'period-length': 'ok',
       'pay-date': 'ok',
       'ytd-gross': 'ok',

@@ -229,12 +229,12 @@ function checkStub(s: Stub, raw: PaystubValues): Check[] {
     add('net-sum', diff * 100 <= s.gross ? 'ok' : 'warn');
   } else add('net-sum', 'skipped');
 
-  // rate-hours: |rate × hours − gross| ≤ 1 % of gross (overtime and other earnings make this a warning, not an error).
+  // rate-hours: rate × hours is not more than 1 % above gross. It may be less: overtime and other
+  // earnings add to the regular pay (validation/SPEC.md, since v1.25).
   if (s.rate !== null && s.hoursHundredths !== null && s.gross !== null) {
     const product = BigInt(s.rate) * BigInt(s.hoursHundredths); // cents × hundredths
     const gross = BigInt(s.gross) * 100n;
-    const diff = product > gross ? product - gross : gross - product;
-    add('rate-hours', diff * 100n <= gross ? 'ok' : 'warn');
+    add('rate-hours', (product - gross) * 100n <= gross ? 'ok' : 'warn');
   } else add('rate-hours', 'skipped');
 
   // period-length: length within the frequency's range; start after end is a warning.

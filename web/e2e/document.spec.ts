@@ -57,7 +57,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
     await expect(page.getByTestId('validation').locator('[data-check="net-sum"]')).toHaveAttribute('data-status', 'ok');
-    await expect(page.getByTestId('validation').locator('[data-check="rate-hours"]')).toHaveAttribute('data-status', 'warn');
+    await expect(page.getByTestId('validation').locator('[data-check="rate-hours"]')).toHaveAttribute('data-status', 'ok');
     await expect(page.getByTestId('annual-income')).toHaveAttribute('data-amount', '29233');
     await page.getByRole('button', { name: 'Use $29,233 as my yearly income' }).click();
 

@@ -56,7 +56,7 @@ test.describe('for judges: try it in two minutes', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Comprobación en el dispositivo');
     await page.getByRole('button', { name: `Mostrar la grabación ${latestRecording().label}`, exact: true }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Comprobación en el dispositivo grabada');
-    await expect(page.getByTestId('headline-on-device')).toContainText('casos respondidos en este dispositivo');
+    await expect(page.getByTestId('headline-on-device')).toContainText('casos respondidos en el dispositivo que hizo esta grabación');
     const text = await page.locator('main').innerText();
     for (const english of ['Recorded', 'cases answered', 'Where each case', 'First attempt', 'Download results', 'Open a run file', 'Runs a fixed set', 'This is a recording']) expect(text).not.toContain(english);
   });
