@@ -3605,7 +3605,9 @@ main h2.source-title {
   font-size: 14px;
   font-weight: 500;
   text-align: right;
-  overflow-wrap: anywhere;
+  /* A value breaks between its words, never inside a number ("23,103.2 / 5"); a single word longer than
+     the row may still break rather than run off. */
+  overflow-wrap: break-word;
 }
 
 .state-mark {

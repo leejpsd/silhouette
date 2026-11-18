@@ -221,7 +221,8 @@ export function RailSteps({ route }: { route: Route }) {
   );
 }
 
-const time = (locale: Locale, at: number) => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit', hourCycle: 'h23' }).format(at);
+/** The time of a request, written the way the language writes times (the same as the date lines beside it). */
+const time = (locale: Locale, at: number) => new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(at);
 
 /** What the record counts: requests that left and completed, those that did not complete, answers kept. */
 function useLedger() {
