@@ -37,60 +37,80 @@ struct DeviceCheckScreen: View {
 
     var body: some View {
         let shown = shownFile
-        Screen {
-            BackLink(label: model.t("nav.home"), id: "deviceCheck.home") { model.goHome() }
-                .padding(.bottom, -8)
-            DisplayHeadline(text: model.t(recording == nil ? "deviceCheck.title" : "deviceCheck.titleRecording"), role: .title, size: 50, maxLines: 3)
+        GroundScroll {
+          VStack(alignment: .leading, spacing: 16) {
+            DraftLine()
+            Display(text: model.t(recording == nil ? "deviceCheck.title" : "deviceCheck.titleRecording"), size: 50)
                 .accessibilityIdentifier("deviceCheck.title")
             if let recording {
                 Text(model.t("deviceCheck.recordingMeta", ["date": String((recording.file["date"]?.stringValue ?? "").prefix(10)),
                                                            "browser": recording.file["browser"]?.stringValue ?? "",
                                                            "platform": recording.file["platform"]?.stringValue ?? ""]))
-                    .type(.bodyStrong).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                    .font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("deviceCheck.recordingMeta")
             }
             if let shown, !(shown["cases"]?.arrayValue ?? []).isEmpty { headlines(shown) }
             if recording != nil {
-                DashedNote { Text(model.t("deviceCheck.recordingNote")) }.accessibilityIdentifier("deviceCheck.recordingNote")
+                NoticeCard(text: model.t("deviceCheck.recordingNote"), systemImage: "record.circle").accessibilityIdentifier("deviceCheck.recordingNote")
             }
-            Para(model.t("deviceCheck.lead"))
-            Para(model.t("deviceCheck.cloudNote"), .small)
+            NoteText(text: model.t("deviceCheck.lead"), size: 15)
+            NoteText(text: model.t("deviceCheck.cloudNote"))
             if !available {
-                DashedNote { Text(model.t("deviceCheck.noModel")) }.accessibilityIdentifier("deviceCheck.noModel")
+                NoticeCard(text: model.t("deviceCheck.noModel"), systemImage: "iphone.slash").accessibilityIdentifier("deviceCheck.noModel")
             }
             if recording == nil && available {
                 Toggle(model.t("deviceCheck.repeat"), isOn: $repeatCases)
-                    .type(.small)
+                    .font(.system(size: 15))
                     .tint(theme.ink)
                     .disabled(run?.running == true)
+                    .padding(16)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(theme.sheet))
                     .accessibilityIdentifier("deviceCheck.repeat")
             }
             if let run, recording == nil {
-                Para(run.running ? model.t("deviceCheck.running", ["n": String(run.current), "total": String(run.total)]) : model.t("deviceCheck.done"), .small)
-                    .accessibilityIdentifier("deviceCheck.status")
+                Group {
+                    if run.running {
+                        SpinnerLine(text: model.t("deviceCheck.running", ["n": String(run.current), "total": String(run.total)]))
+                    } else {
+                        NoteText(text: model.t("deviceCheck.done"), size: 15)
+                    }
+                }
+                .accessibilityIdentifier("deviceCheck.status")
                 if let saved = run.savedURL, !run.running {
-                    Para(model.t("deviceCheck.saved", ["file": saved.lastPathComponent]), .small)
+                    NoteText(text: model.t("deviceCheck.saved", ["file": saved.lastPathComponent]))
                         .accessibilityIdentifier("deviceCheck.saved")
                 }
             }
             if let shown, !(shown["cases"]?.arrayValue ?? []).isEmpty { summary(shown); caseList(shown) }
             recordings
-        } actions: {
-            if recording != nil {
-                BlockAction(label: model.t("deviceCheck.live"), id: "deviceCheck.live") { recording = nil }
-            } else if let file = run?.file, let url = run?.savedURL ?? Self.write(file) {
-                ShareLink(item: url) {
-                    Label(model.t("deviceCheck.download"), systemImage: "square.and.arrow.up")
+          }
+          .gutter()
+          .padding(.top, 8)
+        }
+        .navigationTitle(model.t("deviceCheck.title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 6) {
+                if recording != nil {
+                    PrimaryButton(label: model.t("deviceCheck.live"), id: "deviceCheck.live") { recording = nil }
+                } else {
+                    if let file = run?.file, let url = run?.savedURL ?? Self.write(file) {
+                        ShareLink(item: url) {
+                            Label(model.t("deviceCheck.download"), systemImage: "square.and.arrow.up")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(theme.ink)
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .background(Capsule().fill(theme.sheet))
+                        }
+                        .accessibilityIdentifier("deviceCheck.share")
+                    }
+                    PrimaryButton(label: model.t("deviceCheck.run"), id: "deviceCheck.run") { start() }
+                        .disabled(!available || run?.running == true)
                 }
-                .buttonStyle(SecondaryStyle())
-                .frame(maxWidth: .infinity)
-                .accessibilityIdentifier("deviceCheck.share")
-                BlockAction(label: model.t("deviceCheck.run"), id: "deviceCheck.run") { start() }
-                    .disabled(!available || run?.running == true)
-            } else {
-                BlockAction(label: model.t("deviceCheck.run"), id: "deviceCheck.run") { start() }
-                    .disabled(!available || run?.running == true)
             }
+            .gutter()
+            .padding(.vertical, 8)
+            .background(theme.ground)
         }
         .onAppear {
             // The fast snapshot capture opens this screen running, or showing the bundled recording.
@@ -155,8 +175,8 @@ struct DeviceCheckScreen: View {
 
     private func headline(_ figure: String, _ text: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(verbatim: figure).type(.heading).foregroundStyle(theme.ink)
-            Text(text).type(.small).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+            Text(verbatim: figure).font(Font(DesignFonts.uiFont(.display, weight: 900, size: 34))).foregroundStyle(theme.ink)
+            Text(text).font(.system(size: 15)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
     }
@@ -166,23 +186,23 @@ struct DeviceCheckScreen: View {
         let notAvailable = (file["cases"]?.arrayValue?.count ?? 0) - DeviceCheck.countedCases(file).count
         let repetitions = Int(file["repetitions"]?.numberValue ?? 1)
         return VStack(alignment: .leading, spacing: 6) {
-            Para(model.t("deviceCheck.summary", ["onDevice": String(s.onDevice), "total": String(s.total), "afterDevice": String(s.inCloudAfterDevice),
-                                                 "inCloud": String(s.inCloud), "notRun": String(s.notRun)]), .small)
+            NoteText(text: model.t("deviceCheck.summary", ["onDevice": String(s.onDevice), "total": String(s.total), "afterDevice": String(s.inCloudAfterDevice),
+                                                 "inCloud": String(s.inCloud), "notRun": String(s.notRun)]))
             if notAvailable > 0 {
-                Para(model.t("deviceCheck.notCounted", ["count": String(notAvailable)]), .small)
+                NoteText(text: model.t("deviceCheck.notCounted", ["count": String(notAvailable)]))
                     .accessibilityIdentifier("deviceCheck.notCounted")
             }
             if s.extractionCases > 0 {
-                if repetitions > 1 { Para(model.t("deviceCheck.summaryRepetitions", ["repetitions": String(repetitions)]), .small) }
+                if repetitions > 1 { NoteText(text: model.t("deviceCheck.summaryRepetitions", ["repetitions": String(repetitions)])) }
                 if let income = s.income {
-                    Para(model.t("deviceCheck.summaryIncomeSplit", ["total": String(s.extractionCases), "right": String(income.allRight),
-                                                                    "notFound": String(income.notFound), "wrong": String(income.wrong)]), .small)
+                    NoteText(text: model.t("deviceCheck.summaryIncomeSplit", ["total": String(s.extractionCases), "right": String(income.allRight),
+                                                                    "notFound": String(income.notFound), "wrong": String(income.wrong)]))
                 }
                 if let wrong = s.wrongReachedPerson {
-                    Para(model.t("deviceCheck.summaryWrong", ["wrong": String(wrong), "total": String(s.extractionCases)]), .small)
+                    NoteText(text: model.t("deviceCheck.summaryWrong", ["wrong": String(wrong), "total": String(s.extractionCases)]))
                 }
-                if s.deductionsNotRead > 0 { Para(model.t("deviceCheck.summaryNotRead", ["count": String(s.deductionsNotRead)]), .small) }
-                Para(model.t("deviceCheck.wrongMustBeZero"), .small, muted: true)
+                if s.deductionsNotRead > 0 { NoteText(text: model.t("deviceCheck.summaryNotRead", ["count": String(s.deductionsNotRead)])) }
+                NoteText(text: model.t("deviceCheck.wrongMustBeZero"), size: 12)
             }
         }
         .accessibilityElement(children: .contain)
@@ -199,19 +219,19 @@ struct DeviceCheckScreen: View {
     private func caseList(_ file: JSON) -> some View {
         let version = Int(file["version"]?.numberValue ?? 3)
         let cases = file["cases"]?.arrayValue ?? []
-        return VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(cases.enumerated()), id: \.offset) { _, c in
-                Rectangle().fill(theme.line).frame(height: 1)
+        return ListCard {
+            ForEach(Array(cases.enumerated()), id: \.offset) { i, c in
+                if i > 0 { RowDivider(inset: 0) }
                 VStack(alignment: .leading, spacing: 4) {
                     let rep = c["repetition"]?.numberValue.map { " · " + model.t("deviceCheck.repetition", ["n": String(Int($0)), "of": String(Int(file["repetitions"]?.numberValue ?? 1))]) } ?? ""
-                    Text((c["id"]?.stringValue ?? "") + rep).type(.label).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                    Text((c["id"]?.stringValue ?? "") + rep).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     Text("\(model.t("deviceCheck.col.mode")): \(c["mode"]?.stringValue ?? "") · \(model.t("deviceCheck.col.ran")): \(ranLabel(c, version: version))")
-                        .type(.caption).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                        .font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
                     let time = c["latencyMs"]?.numberValue.map { String(format: "%.1f s", $0 / 1000) } ?? "–"
                     let check = c["outputCheck"]?.stringValue ?? "–"
                     let fields = c["final"]?["fields"].map { "\(Int($0["correct"]?.numberValue ?? 0)) / \(Int($0["total"]?.numberValue ?? 0))" } ?? "–"
                     Text("\(model.t("deviceCheck.col.time")): \(time) · \(model.t("deviceCheck.col.check")): \(check) · \(model.t("deviceCheck.col.fields")): \(fields)")
-                        .type(.caption).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                        .font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
                     ForEach(Array((c["device"]?["passes"]?.arrayValue ?? []).enumerated()), id: \.offset) { _, p in
                         let seconds = String(format: "%.1f", (p["latencyMs"]?.numberValue ?? 0) / 1000)
                         let problems = (p["problems"]?.arrayValue ?? []).compactMap(\.stringValue)
@@ -219,16 +239,17 @@ struct DeviceCheckScreen: View {
                         Text(model.t("deviceCheck.pass", ["part": p["part"]?.stringValue ?? "", "time": seconds])
                              + (problems.isEmpty ? "" : " " + problems.joined(separator: ", "))
                              + (marked.isEmpty ? "" : " · " + model.t("deviceCheck.marked", ["problems": marked.joined(separator: ", ")])))
-                            .type(.monoValue, size: 11.5).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                            .font(Font(DesignFonts.uiFont(.mono, weight: 400, size: 11.5))).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     }
                     if let notRead = c["final"]?["notRead"]?.arrayValue, notRead.contains(where: { $0.stringValue == "deductions" }) {
-                        Text(model.t("deviceCheck.deductionsNotRead")).type(.caption).foregroundStyle(theme.inkMuted)
+                        Text(model.t("deviceCheck.deductionsNotRead")).font(.system(size: 13)).foregroundStyle(theme.note)
                     }
                     if let note = c["error"]?.stringValue ?? c["note"]?.stringValue {
-                        Text("\(model.t("deviceCheck.col.note")): \(note)").type(.caption).foregroundStyle(theme.inkMuted).fixedSize(horizontal: false, vertical: true)
+                        Text("\(model.t("deviceCheck.col.note")): \(note)").font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                .padding(.vertical, 10)
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
             }
         }
@@ -237,20 +258,27 @@ struct DeviceCheckScreen: View {
 
     private var recordings: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionHeading(text: model.t("deviceCheck.recordings"))
+            SectionLabel(text: model.t("deviceCheck.recordings"), large: false)
             let bundled = Self.bundledRecordings
-            if bundled.isEmpty { Para(model.t("deviceCheck.noRecording"), .small) }
-            ForEach(bundled, id: \.name) { r in
-                Button(model.t("deviceCheck.showRecording", ["date": String((r.file["date"]?.stringValue ?? "").prefix(10))])) {
-                    recording = (r.file, r.name)
+            if bundled.isEmpty { NoteText(text: model.t("deviceCheck.noRecording")) }
+            ListCard {
+                ForEach(Array(bundled.enumerated()), id: \.element.name) { i, r in
+                    if i > 0 { RowDivider(inset: 64) }
+                    Button { recording = (r.file, r.name) } label: {
+                        ListRow(title: model.t("deviceCheck.showRecording", ["date": String((r.file["date"]?.stringValue ?? "").prefix(10))]),
+                                subtitle: r.file["platform"]?.stringValue, titleSize: 15, titleWeight: .semibold) { IconTile(systemImage: "record.circle") }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("deviceCheck.recording")
                 }
-                .buttonStyle(TextLinkStyle())
-                .accessibilityIdentifier("deviceCheck.recording")
-            }
-            Button(model.t("deviceCheck.open")) { opening = true }
-                .buttonStyle(TextLinkStyle())
+                if !bundled.isEmpty { RowDivider(inset: 64) }
+                Button { opening = true } label: {
+                    ListRow(title: model.t("deviceCheck.open"), titleSize: 15, titleWeight: .semibold) { IconTile(systemImage: "folder") }
+                }
+                .buttonStyle(.plain)
                 .accessibilityIdentifier("deviceCheck.open")
-            if badFile { Para(model.t("deviceCheck.badFile"), .small) }
+            }
+            if badFile { NoteText(text: model.t("deviceCheck.badFile")) }
         }
         .padding(.top, 8)
     }

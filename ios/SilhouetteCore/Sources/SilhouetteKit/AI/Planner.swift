@@ -96,12 +96,18 @@ public enum Planner {
     }
 
     /// One part of a paystub read on the device (pointer-extract-device.v1.md): the pointer prompt's
-    /// system instruction, a blank line and the part's text; the user content unchanged; the part's
-    /// strict response constraint. The device wording never goes into a cloud request.
+    /// system instruction; the part's text, a blank line and the user content; the part's strict
+    /// response constraint. The device wording never goes into a cloud request.
+    ///
+    /// The part's text opens the user turn rather than closing the system instruction: the on-device
+    /// model checks the language of the user turn, and a silhouette alone (mostly ⟦N12⟧ placeholders)
+    /// can read as a language it does not support (6 of the 38 evaluation paystubs read as Polish and
+    /// were refused with `unsupportedLanguageOrLocale`). With the part's English text first, every one
+    /// reads as English. The words asked are the same.
     public static func devicePart(_ skeleton: Skeleton, docType: String = "paystub", template: PromptTemplate, partText: String,
                                   part: String, constraint: JSON) -> DeviceCall {
-        let prompt = PromptTemplate.fill(template.user, ["docType": docType, "skeleton": text(skeleton)])
-        return DeviceCall(taskId: "document.pointer.extract", system: template.system + "\n\n" + partText, prompt: prompt,
+        let user = PromptTemplate.fill(template.user, ["docType": docType, "skeleton": text(skeleton)])
+        return DeviceCall(taskId: "document.pointer.extract", system: template.system, prompt: partText.isEmpty ? user : partText + "\n\n" + user,
                           maxOutputTokens: 1024, constraint: constraint, part: part, deterministic: true)
     }
 

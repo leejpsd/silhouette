@@ -67,6 +67,7 @@ extension AppModel {
     func startAbout(_ programId: String, long: Bool) {
         guard let facts = publicFacts(programId), let template = explainTemplate else { return }
         let request = Planner.explain(facts, locale: locale, long: long, template: template, config: currentConfig)
+        answerContext[aboutKey(programId, long: long)] = (programId, t(long ? "answers.explainLong" : "about.explain"))
         start(aboutKey(programId, long: long), request: request, content: "program|\(programId)|\(locale.rawValue)", lines: publicLines(programId))
     }
 
@@ -74,6 +75,7 @@ extension AppModel {
         guard let facts = publicFacts(programId), let template = askTemplate,
               let question = AnswerInputs.chipQuestion(bundle, chip: chip, locale: locale) else { return }
         let request = Planner.askChip(facts, question: question, locale: locale, template: template)
+        answerContext[chipKey(programId, chip)] = (programId, t("ask.chip.\(chip)"))
         start(chipKey(programId, chip), request: request, content: "program|\(programId)|\(locale.rawValue)|\(chip)",
               lines: publicLines(programId, question: question.value))
     }
@@ -92,8 +94,8 @@ extension AppModel {
     }
 
     private func start(_ key: String, request: CloudRequest, content: String, lines: [String]) {
-        if answers.answer(key) != nil { requests[key] = nil; return }
-        if case .loading = state(key) { return }
+        if answers.answer(key) != nil { requests[key] = nil; openAnswer(key); return }
+        if case .loading = state(key) { openAnswer(key); return }
         let destination = AnswerSession.destination(of: request)
         if answers.needsConsent(content, destination) {
             pendingContent[key] = content
@@ -102,6 +104,7 @@ extension AppModel {
             return
         }
         run(key, request: request, content: content, sentBefore: answers.wasSent(content))
+        openAnswer(key)
     }
 
     /// Send, after the step before sending.
@@ -110,6 +113,7 @@ extension AppModel {
         answers.giveConsent(content, AnswerSession.destination(of: request))
         if sheet == .send(key) { sheet = nil }
         run(key, request: request, content: content, sentBefore: false)
+        openAnswer(key)
     }
 
     /// "Keep everything on this device".

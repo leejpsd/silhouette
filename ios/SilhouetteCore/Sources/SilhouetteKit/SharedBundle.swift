@@ -31,6 +31,8 @@ public struct SharedBundle: Sendable {
     public let judgesHousehold: JudgesHousehold?
     /// The on-device check's fixed cases (`fixtures/device-check/cases.json`).
     public let deviceCheckCases: JSON?
+    /// The routing table (`routing.json`): where each task runs.
+    public let routing: JSON?
     /// The folder the bundle was read from (laid out like shared/).
     public let directory: URL
 
@@ -79,6 +81,7 @@ public struct SharedBundle: Sendable {
         let info = packInfo
         judgesHousehold = (try? json("rulepacks/\(jurisdiction)/judges-household.json")).flatMap { try? JudgesHousehold(json: $0, pack: info) }
         deviceCheckCases = try? json("fixtures/device-check/cases.json")
+        routing = try? json("routing.json")
     }
 
     /// A file of the bundle by its path under shared/ (`fixtures/device-check/documents/en-l01-1.txt`).

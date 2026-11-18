@@ -23,8 +23,8 @@ bundle.
 | `SilhouetteCore/Tests/` | Conformance tests over every file in `shared/fixtures/conformance/` (skeleton, rehydrate with typed amounts, generalize, evaluator, verdict, silhouette verdict, validate, model schema, output check; a new file fails the suite until it has a runner), the canary leak test, Swift/JavaScript edge cases, and unit tests for SilhouetteKit with a scripted model port |
 | `SilhouetteCore/RoutingProof/` | Small Swift files that must, or must not, compile against `SilhouetteCore` |
 | `Silhouette/` | SwiftUI app (iOS 26.0 or later): the screens and the app frame |
-| `Silhouette/Design/` | The design system: theme and type from the tokens, the screen frame with the bottom block, sheets, controls, paper, markers, bars, grain and motion |
-| `Silhouette/Resources/Fonts/` | Darker Grotesque, Hanken Grotesk and DM Mono (TTF) with their SIL Open Font License texts; registered in `Silhouette/Info.plist` |
+| `Silhouette/Design/` | The design system: theme and type from the tokens (`Theme`, `Typography`), the components (`Kit`: hero blocks, glass buttons, primary and redact buttons, badges, markers, token chips, cards, rows, the segmented control) and the sheets |
+| `Silhouette/Resources/Fonts/` | Big Shoulders Display and IBM Plex Mono (TTF) with their SIL Open Font License texts; registered in `Silhouette/Info.plist` |
 | `Silhouette/AI/` | Firebase AI Logic, App Check and Remote Config (the only code that imports Firebase), the network monitor, and the scripted model used by UI tests |
 | `Silhouette/Resources/copy.local.json` | App strings not in `shared/copy/`: three lines of the on-device check that only iOS shows (where the run file was saved, the case this platform cannot run). Never shadows a shared key (a test checks this) |
 | `eval/on-device/` | The on-device check's runs recorded on an iPhone: the baseline and the latest are bundled; earlier runs in `history/` (see its README) |
@@ -114,19 +114,23 @@ make project         # xcodegen generate
   iOS updates the system model.
 - **Copy and languages.** Strings come from `shared/copy/`, the pack's `copy/` folder and
   `copy.local.json`, with per-key fallback to English. The language (English, Español, 한국어)
-  defaults to the device language and can be changed from the header (EN, ES, 한국어).
-- **Design.** The look follows `shared/design/DESIGN.md`; every colour, size, radius, rotation,
-  shadow and duration comes from `shared/design/tokens.json`, in light and dark. Each screen has
-  the header, the one-line demo notice, display headlines that step down in size before they
-  would clip, and the inverted bottom block with the screen's one main action above the
-  "Leaving your device" count (stamped in pink when something leaves). The block follows the
-  keyboard and, when it would cover more than 40 % of the screen, scrolls with the content while
-  the count stays pinned. Pink marks only what leaves. Verdicts are told apart by marker shape
-  (solid, dotted, dashed, hollow) next to their text, never by colour. Document values and what
-  would be sent appear on tilted paper slips; hidden values are bars with their placeholder id.
-  The record, the step before sending, the language, the demo rules and *Delete everything* are
-  sheets. Motion (rise, wipe, pop, stamp, sheet, the preview cross-fade) shows its end state under
-  Reduce Motion; the grain is skipped under Reduce Transparency.
+  defaults to the device language and can be changed with the language button on the hero blocks
+  (EN, ES, 한국어).
+- **Design.** The look follows `shared/design/DESIGN.md` (tokens version 7, "Brand & UI"): ink, a
+  grey ramp and one orange (redact) that marks only what can leave or has left; every colour,
+  size and radius comes from `shared/design/tokens.json`, in light and dark (dark by the rule in
+  DESIGN.md: the ground is ink, the hero blocks are the card colour). Three tabs (Check, Results,
+  Paystub) in the system's floating Liquid Glass tab bar, with the privacy pill above it on every
+  screen ("Nothing has left this iPhone", or how many requests left and what was last sent); the
+  pill opens the record as a sheet. Start, Results, a program, Add a paystub and the silhouette
+  open with an ink hero block (display capitals, rounded bottom corners); question, review, answer
+  and the judges' pages use the system navigation bar. Glass is used for the navigation layer only
+  (the tab bar, the pill, round and capsule buttons on heroes); content is solid white cards on the
+  ground, with no shadows, grain or rotation. Verdicts are told apart by the marker's fill level
+  (filled, half, dashed ring, thin ring) next to the verdict word, never by colour. Placeholders
+  are orange token chips in IBM Plex Mono; a sending action is an orange button with the leave
+  glyph. The record, the step before sending, the language, the draft rules and *Delete
+  everything* are system sheets.
 - **Accessibility.** Interface and mono text scale fully with Dynamic Type; display type scales
   up to the token cap (1.3×) and then relies on the size steps. Targets are at least 44 pt.
   Markers, bars and the count have spoken equivalents (verdict text, "hidden word", "hidden
@@ -212,17 +216,17 @@ scenes that need an on-device model with a scripted one.
 
 ### Fonts
 
-The fonts are bundled; nothing is downloaded at run time. All three are under the SIL Open Font
-License 1.1, whose texts are in `Silhouette/Resources/Fonts/` and in the app bundle. The files
-come from the Google Fonts repository (`github.com/google/fonts`, folder `ofl/`):
+The fonts are bundled; nothing is downloaded at run time. Both are under the SIL Open Font License
+1.1, whose texts are in `Silhouette/Resources/Fonts/` and in the app bundle. The files come from
+the Google Fonts repository (`github.com/google/fonts`, folder `ofl/`). Interface text is the
+system font (SF).
 
 | File | Family | Used for |
 |---|---|---|
-| `DarkerGrotesque-Variable.ttf` | Darker Grotesque (variable, weights 800 and 900 used) | Headlines, amounts, counts, main actions |
-| `HankenGrotesk-Variable.ttf` | Hanken Grotesk (variable, weights 400, 600 and 700 used) | Interface text |
-| `DMMono-Regular.ttf`, `DMMono-Medium.ttf` | DM Mono 400 and 500 | Document values, placeholder ids, times, limits |
+| `BigShouldersDisplay-Variable.ttf` | Big Shoulders Display (variable, weight 900 used) | Display headlines in capitals, the wordmark, large amounts and counts |
+| `IBMPlexMono-Regular.ttf`, `-Medium.ttf`, `-SemiBold.ttf` | IBM Plex Mono 400, 500 and 600 | Document lines, token chips, values, times, requests |
 
-Darker Grotesque has no Hangul, so Korean display text uses the system typeface at its heaviest
+Big Shoulders has no Hangul, so Korean display text uses the system typeface at its heaviest
 weight, with open leading and line breaks between words.
 
 ## Models and Firebase AI Logic
@@ -247,6 +251,11 @@ weight, with open leading and line breaks between words.
   constraint's "every key present, null allowed" cannot be expressed there, so fields are optional
   and a field whose only allowed value is null is left out; the core's checks treat a missing field
   as null. The reply is validated and rehydrated by the core.
+- The part's text opens the user turn of each reading part (rather than ending the system
+  instruction): the on-device model checks the language of the user turn, and a silhouette alone,
+  mostly placeholders, can read as a language it does not support (6 of the 38 evaluation paystubs
+  read as Polish and were refused with `unsupportedLanguageOrLocale`). A package test checks that
+  every part of every evaluation paystub reads as English.
 - When a task may run on the device only and the device has no model, the app stops before any SDK
   call; the SDK's system-model session has no cloud fallback of its own.
 - Remote Config: defaults are the bundled copy of `firebase/remoteconfig.template.json`. Nothing

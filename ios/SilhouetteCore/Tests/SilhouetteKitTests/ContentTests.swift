@@ -130,7 +130,11 @@ struct ContentTests {
         // Structured values by path: the design's motion, rotation and size steps.
         #expect(t.number("motion.duration.rise") == 700)
         #expect(t.numbers("motion.easing.standard").count == 4)
-        #expect(t.number("rotation.stamp") == -8)
+        // Version 7: nothing is rotated, and the palette's named colours are present.
+        #expect(t.number("rotation.stamp") == 0)
+        for name in ["redact", "redactTint", "onRedact", "night", "note", "track", "raised", "sheet"] {
+            #expect(t.light[name] != nil && t.dark[name] != nil, "\(name)")
+        }
         #expect(t.number("typography.sizeSteps.displayScaleCap") == 1.3)
         #expect(t.number("size.compact.optionTileHeight") == 80)
         #expect(t.number("size.marker") == 20)

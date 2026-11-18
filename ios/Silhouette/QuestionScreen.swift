@@ -1,6 +1,7 @@
-// One question per screen: the giant question number, progress (solid = done, dotted = to come),
-// the question as a display headline, and its input. Every question can be skipped; sensitive ones and
-// the exact income say that the answer never leaves the device.
+// One question per screen: the system navigation bar with "Question n of total" and Skip,
+// a thin progress bar, the question in SF bold, and its input as list rows in a white card (a counter
+// for numbers, a mono field for amounts); Next is pinned above the tab bar. Every question can be
+// skipped; sensitive ones and the exact income say that the answer never leaves the device.
 
 import SilhouetteCore
 import SilhouetteKit
@@ -9,7 +10,6 @@ import SwiftUI
 struct QuestionScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
-    @Environment(\.dynamicTypeSize) private var dynamicType
     let stepId: String
     let returnTo: ReturnTo?
 
@@ -20,7 +20,6 @@ struct QuestionScreen: View {
     @State private var exactText = ""
     @State private var error: String?
     @State private var loaded = false
-    @State private var scrollTarget: String?
     @FocusState private var exactFocused: Bool
 
     private var step: Step? { model.session.step(stepId) }
@@ -29,87 +28,81 @@ struct QuestionScreen: View {
     private var isLast: Bool { index == total - 1 && returnTo == nil }
 
     var body: some View {
-        Screen(scrollTo: $scrollTarget) {
-            if let step {
-                header
-                DisplayHeadline(text: model.t("question.\(step.id).label"), role: .title, maxLines: 4)
-                    .accessibilityIdentifier("question.label")
-                    .appear(.rise)
-                let helpKey = "question.\(step.id).help"
-                if model.bundle.copy.has(helpKey) {
-                    Para(model.t(helpKey), .help)
-                }
-                input(for: step)
-                if step.sensitive {
-                    SensitiveNote(text: model.t("sensitive.note")).accessibilityIdentifier("question.sensitive")
-                }
-                if let error {
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle").accessibilityHidden(true)
-                        Text(error).fixedSize(horizontal: false, vertical: true)
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if let step {
+                        ProgressView(value: Double(index + 1), total: Double(max(total, 1)))
+                            .tint(theme.ink)
+                            .accessibilityHidden(true)
+                        DraftLine()
+                        Text(model.t("question.\(step.id).label"))
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(theme.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
+                            .accessibilityIdentifier("question.label")
+                        let helpKey = "question.\(step.id).help"
+                        if model.bundle.copy.has(helpKey) { NoteText(text: model.t(helpKey), size: 15) }
+                        input(for: step)
+                        if step.sensitive {
+                            SensitiveNote(text: model.t("sensitive.note")).accessibilityIdentifier("question.sensitive")
+                        }
+                        if let error {
+                            NoticeCard(text: error, systemImage: "exclamationmark.circle")
+                                .accessibilityElement(children: .combine)
+                                .accessibilityIdentifier("question.error")
+                                .id("question.error")
+                        }
                     }
-                    .type(.label, size: 13.5)
+                }
+                .gutter()
+                .padding(.top, 4)
+                .padding(.bottom, 24)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .onChange(of: error) { _, new in if new != nil { withAnimation { proxy.scrollTo("question.error", anchor: .center) } } }
+            .onChange(of: exactFocused) { _, focused in
+                if focused { Task { try? await Task.sleep(for: .milliseconds(350)); withAnimation { proxy.scrollTo("exactField", anchor: .center) } } }
+            }
+        }
+        .background(theme.ground.ignoresSafeArea())
+        .navigationTitle(model.t("q.progress", ["n": String(index + 1), "total": String(total)]))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(model.t("q.progress", ["n": model.number(Double(index + 1)), "total": model.number(Double(total))]))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(theme.ink)
-                    .accessibilityElement(children: .combine)
-                    .accessibilityIdentifier("question.error")
-                    .id("question.error")
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("question.progress")
+            }
+            if let step {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(model.t("q.skipShort")) {
+                        model.skip(step.id)
+                        model.advance(from: step.id, returnTo: returnTo)
+                    }
+                    .accessibilityLabel(model.t("q.skip"))
+                    .accessibilityIdentifier("q.skip")
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(isLast ? model.t("q.finish") : model.t("q.next")) { submit(step) }
+                        .fontWeight(.semibold)
+                        .accessibilityIdentifier("keyboard.next")
                 }
             }
-        } actions: {
-            if let step { actionRow(step) }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if let step {
+                PrimaryButton(label: isLast ? model.t("q.finish") : model.t("q.next"), id: "q.next") { submit(step) }
+                    .gutter()
+                    .padding(.vertical, 8)
+                    .background(theme.ground)
+            }
         }
         .onAppear(perform: loadDraft)
-    }
-
-    // MARK: Header
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .bottom, spacing: 8) {
-                VStack(alignment: .leading, spacing: 0) {
-                    BackLink(label: model.t("q.back")) { if !model.path.isEmpty { model.path.removeLast() } }
-                    Text(model.t("q.progress", ["n": String(index + 1), "total": String(total)]))
-                        .type(.caption)
-                        .foregroundStyle(theme.ink)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .accessibilityIdentifier("question.progress")
-                }
-                Spacer(minLength: 8)
-                QuestionNumber(n: index + 1, total: total)
-            }
-            HStack(spacing: 4) {
-                ForEach(0..<total, id: \.self) { i in
-                    Group {
-                        if i <= index { Rectangle().fill(theme.ink) } else { DotFill(color: theme.ink) }
-                    }
-                    .frame(height: 8)
-                    .clipShape(RoundedRectangle(cornerRadius: 1))
-                }
-            }
-            .accessibilityHidden(true)
-        }
-    }
-
-    // MARK: Actions
-
-    @ViewBuilder private func actionRow(_ step: Step) -> some View {
-        let next = BlockAction(label: isLast ? model.t("q.finish") : model.t("q.next"), id: "q.next") { submit(step) }
-        let skip = Button(model.t("q.skip")) {
-            model.skip(step.id)
-            model.advance(from: step.id, returnTo: returnTo)
-        }
-        .buttonStyle(TextLinkStyle())
-        .accessibilityIdentifier("q.skip")
-        if dynamicType.isAccessibilitySize {
-            // The row stacks: the action above, the skip link below.
-            next
-            skip.frame(maxWidth: .infinity)
-        } else {
-            HStack(spacing: 14) {
-                skip.padding(.leading, 6).frame(maxWidth: 130, alignment: .leading).fixedSize(horizontal: false, vertical: true)
-                next
-            }
-        }
     }
 
     // MARK: Inputs
@@ -120,29 +113,23 @@ struct QuestionScreen: View {
         case .integer where AnswerInputs.isMoneyVariable(step.id):
             moneyField(step)
         case .integer(let min, let max):
-            VStack(spacing: 4) {
+            VStack(spacing: 6) {
                 Counter(value: $number, min: min, max: max, label: model.t("question.\(step.id).label"),
                         decrease: model.t("q.decrease"), increase: model.t("q.increase"), error: error != nil) { error = nil }
-                // The range, under the value.
-                Text(model.t("q.error.integer", ["min": String(min), "max": String(max)]))
-                    .type(.caption)
-                    .foregroundStyle(theme.ink)
+                NoteText(text: model.t("q.error.integer", ["min": String(min), "max": String(max)]), size: 13)
                     .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
                     .accessibilityHidden(true)
             }
-        case .single(let values) where values.count == 2:
-            tiles(values.map { ($0, model.t("option.\(step.id).\($0)")) })
         case .single(let values):
             rows(values.map { ($0, model.t("option.\(step.id).\($0)")) })
         case .boolean:
-            tiles([("true", model.t("option.\(step.id).true")), ("false", model.t("option.\(step.id).false"))])
+            rows([("true", model.t("option.\(step.id).true")), ("false", model.t("option.\(step.id).false"))])
         case .multiple(let values):
-            VStack(spacing: 10) {
-                ForEach(values, id: \.self) { value in
+            ListCard {
+                ForEach(Array(values.enumerated()), id: \.element) { i, value in
+                    if i > 0 { RowDivider() }
                     let selected = picked.contains(value)
-                    OptionRow(label: model.t("option.\(step.id).\(value)"), selected: selected, multiple: true, dashed: value == "none",
-                              id: "choice.\(value)") {
+                    ChoiceRow(label: model.t("option.\(step.id).\(value)"), selected: selected, multiple: true, id: "choice.\(value)") {
                         if value == "none" { picked = selected ? [] : ["none"] } else {
                             picked = selected ? picked.filter { $0 != value } : picked.filter { $0 != "none" } + [value]
                         }
@@ -155,22 +142,11 @@ struct QuestionScreen: View {
         }
     }
 
-    private func tiles(_ options: [(value: String, label: String)]) -> some View {
-        HStack(spacing: 10) {
-            ForEach(options, id: \.value) { option in
-                OptionTile(word: option.label, selected: choice == option.value, error: error != nil) {
-                    choice = option.value
-                    error = nil
-                }
-                .accessibilityIdentifier("choice.\(option.value)")
-            }
-        }
-    }
-
     private func rows(_ options: [(value: String, label: String)]) -> some View {
-        VStack(spacing: 10) {
-            ForEach(options, id: \.value) { option in
-                OptionRow(label: option.label, selected: choice == option.value, error: error != nil, id: "choice.\(option.value)") {
+        ListCard {
+            ForEach(Array(options.enumerated()), id: \.element.value) { i, option in
+                if i > 0 { RowDivider() }
+                ChoiceRow(label: option.label, selected: choice == option.value, id: "choice.\(option.value)") {
                     choice = option.value
                     error = nil
                 }
@@ -179,51 +155,38 @@ struct QuestionScreen: View {
     }
 
     private func income(_ bands: [Bands.IncomeBand]) -> some View {
-        let columns = dynamicType.isAccessibilitySize ? [GridItem(.flexible())] : [GridItem(.flexible(), spacing: 10), GridItem(.flexible())]
-        return VStack(spacing: 10) {
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
-                ForEach(bands, id: \.id) { band in
-                    IncomeCell(label: model.bundle.copy.bandLabel(band, model.locale, currency: model.bundle.packInfo.currency,
-                                                                   format: model.bundle.packInfo.numberFormat),
-                               selected: choice == band.id, error: error != nil && choice == nil) {
+        VStack(alignment: .leading, spacing: 12) {
+            ListCard {
+                ForEach(Array(bands.enumerated()), id: \.element.id) { i, band in
+                    if i > 0 { RowDivider() }
+                    ChoiceRow(label: model.bundle.copy.bandLabel(band, model.locale, currency: model.bundle.packInfo.currency,
+                                                                 format: model.bundle.packInfo.numberFormat),
+                              selected: choice == band.id, mono: true, id: "choice.\(band.id)") {
                         choice = band.id
                         error = nil
                         exactFocused = false
                     }
-                    .accessibilityIdentifier("choice.\(band.id)")
+                }
+                RowDivider()
+                ChoiceRow(label: model.t("income.exact.option"), selected: choice == "exact", id: "choice.exact") {
+                    choice = "exact"
+                    error = nil
+                    exactFocused = true
                 }
             }
-            OptionRow(label: model.t("income.exact.option"), selected: choice == "exact", error: error != nil && choice == nil, id: "choice.exact") {
-                choice = "exact"
-                error = nil
-                exactFocused = true
-            } extra: {
-                if choice == "exact" { exactField }
-            }
+            if choice == "exact" { exactField }
         }
     }
 
     /// An amount of money asked as a number (investment income): typed as money, kept in whole dollars.
     private func moneyField(_ step: Step) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            TextField("", text: $exactText)
-                .keyboardType(.decimalPad)
-                .textContentType(nil)
-                .autocorrectionDisabled()
-                .focused($exactFocused)
-                .fieldStyle(error: error != nil)
-                .accessibilityLabel(model.t("question.\(step.id).label"))
-                .accessibilityIdentifier("amount.field")
+            AmountField(text: $exactText, label: model.t("question.\(step.id).label"), currency: model.currencySymbol, error: error != nil,
+                        id: "amount.field", focused: $exactFocused)
                 .onChange(of: exactText) { error = nil }
             if let amount = Rehydrator.parseTypedAmount(exactText) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Circle().fill(theme.ink).frame(width: 12, height: 12).accessibilityHidden(true)
-                    Text(model.t("review.understood", ["amount": model.money(amount.rounded())])).fixedSize(horizontal: false, vertical: true)
-                }
-                .type(.label, size: 13.5)
-                .foregroundStyle(theme.ink)
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("amount.understood")
+                Understood(text: model.t("review.understood", ["amount": model.money(amount.rounded())]))
+                    .accessibilityIdentifier("amount.understood")
             }
         }
         .id("amount.field")
@@ -232,46 +195,24 @@ struct QuestionScreen: View {
     @ViewBuilder private var exactField: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text(model.t("income.exact.label")).type(.label).foregroundStyle(theme.onBlock)
+                Text(model.t("income.exact.label")).font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 8)
-                HStack(spacing: 4) {
-                    Image(systemName: "lock").font(.system(size: 11, weight: .semibold)).accessibilityHidden(true)
-                    Text(model.t("q.private")).type(.caption)
-                }
-                .foregroundStyle(theme.onBlock)
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("income.private")
+                Label(model.t("q.private"), systemImage: "lock").labelStyle(SmallIconLabel())
+                    .font(.system(size: 12)).foregroundStyle(theme.note)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("income.private")
             }
-            TextField("", text: $exactText)
-                .keyboardType(.decimalPad)
-                .textContentType(nil)
-                .autocorrectionDisabled()
-                .focused($exactFocused)
-                .fieldStyle(error: error != nil)
-                .accessibilityLabel(model.t("income.exact.label"))
-                .accessibilityHint(model.t("q.private"))
-                .accessibilityIdentifier("income.exact")
+            AmountField(text: $exactText, label: model.t("income.exact.label"), hint: model.t("q.private"), currency: model.currencySymbol,
+                        error: error != nil, id: "income.exact", focused: $exactFocused)
                 .onChange(of: exactText) { error = nil }
             if let amount = Rehydrator.parseTypedAmount(exactText) {
                 // The amount as understood, shown before the user continues.
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Circle().fill(theme.onBlock).frame(width: 12, height: 12).accessibilityHidden(true)
-                    Text(model.t("q.amountUnderstood", ["amount": model.money(amount, cents: true)]))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .type(.label, size: 13.5)
-                .foregroundStyle(theme.onBlock)
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("income.understood")
+                Understood(text: model.t("q.amountUnderstood", ["amount": model.money(amount, cents: true)]))
+                    .accessibilityIdentifier("income.understood")
             }
         }
-        .padding(.bottom, 6)
-        .id("income.exactField")
-        .onChange(of: exactFocused) { _, focused in
-            // Keep the field and the amount as understood above the block and the keyboard.
-            if focused { Task { try? await Task.sleep(for: .milliseconds(350)); scrollTarget = "income.exactField" } }
-        }
+        .id("exactField")
     }
 
     // MARK: Draft
@@ -342,56 +283,95 @@ struct QuestionScreen: View {
         }
         let message = model.t(key, params)
         error = message
-        scrollTarget = "question.error"
         AccessibilityNotification.Announcement(message).post()
     }
 }
 
-/// "1 /8": the giant question number (150, 80 under 700 pt) with the total at 38 and 60 % opacity.
-private struct QuestionNumber: View {
+/// A list row to choose: the label, and a checkmark (single) or a check box (multiple) when chosen.
+struct ChoiceRow: View {
     @Environment(\.theme) private var theme
-    @Environment(\.compactHeight) private var compact
-    @Environment(AppModel.self) private var model
-    let n: Int
-    let total: Int
+    let label: String
+    let selected: Bool
+    var multiple = false
+    var mono = false
+    var id: String = ""
+    let action: () -> Void
 
     var body: some View {
-        let size: CGFloat = compact ? CGFloat(theme.tokens.number("size.compact.questionNumber") ?? 80) : theme.spec(.giantNumber).size
-        HStack(alignment: .bottom, spacing: 4) {
-            TightText(text: model.number(Double(n)), role: .giantNumber, size: size)
-            TightText(text: "/\(model.number(Double(total)))", role: .progressTotal, color: theme.ink.opacity(0.6))
+        Button(action: action) {
+            HStack(spacing: 12) {
+                if multiple {
+                    Image(systemName: selected ? "checkmark.square.fill" : "square").font(.system(size: 20)).foregroundStyle(theme.ink)
+                        .accessibilityHidden(true)
+                }
+                Text(label)
+                    .font(mono ? Font(DesignFonts.uiFont(.mono, weight: 500, size: 15)) : .system(size: 17, weight: selected ? .semibold : .regular))
+                    .foregroundStyle(theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if !multiple && selected {
+                    Image(systemName: "checkmark").font(.system(size: 17, weight: .semibold)).foregroundStyle(theme.ink).accessibilityHidden(true)
+                }
+            }
+            .padding(.horizontal, 16)
+            .frame(minHeight: 52)
+            .background(selected ? theme.raised : .clear)
+            .contentShape(Rectangle())
         }
-        .foregroundStyle(theme.ink)
-        .accessibilityHidden(true)
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? [.isSelected] : [])
+        .accessibilityIdentifier(id)
     }
 }
 
-/// Display figures in a box from the baseline to the cap height (tight, like the design's 0.6 to
-/// 0.7 leading); the bottom of the box is the baseline.
-struct TightText: View {
+/// A money amount typed in IBM Plex Mono after the currency symbol, in a white field.
+struct AmountField: View {
     @Environment(\.theme) private var theme
-    @Environment(\.dynamicTypeSize) private var dynamicType
-    @Environment(\.locale) private var locale
-    let text: String
-    let role: TypeRole
-    var size: CGFloat? = nil
-    var color: Color? = nil
+    @Binding var text: String
+    let label: String
+    var hint: String? = nil
+    var currency: String = "$"
+    var error = false
+    var id: String = ""
+    var focused: FocusState<Bool>.Binding
 
     var body: some View {
-        let spec = theme.spec(role)
-        let points = (size ?? spec.size) * theme.scale(.display, dynamicType)
-        let font = DesignFonts.uiFont(.display, weight: spec.weight, size: points, korean: locale.isKorean)
-        Text(verbatim: text)
-            .type(role, size: size)
-            .foregroundStyle(color ?? theme.ink)
-            .fixedSize()
-            .alignmentGuide(.bottom) { $0[.lastTextBaseline] }
-            .frame(height: font.capHeight, alignment: .bottom)
+        HStack(spacing: 6) {
+            Text(currency).font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 20))).foregroundStyle(theme.note).accessibilityHidden(true)
+            TextField("", text: $text)
+                .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 20)))
+                .foregroundStyle(theme.ink)
+                .keyboardType(.decimalPad)
+                .textContentType(nil)
+                .autocorrectionDisabled()
+                .focused(focused)
+                .accessibilityLabel(label)
+                .accessibilityHint(hint ?? "")
+                .accessibilityIdentifier(id)
+        }
+        .padding(.horizontal, 16)
+        .frame(minHeight: 56)
+        .background(RoundedRectangle(cornerRadius: 12).fill(theme.sheet))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(error ? theme.ink : theme.cardBorder, style: StrokeStyle(lineWidth: error ? 1.5 : 1, dash: error ? [5, 4] : [])))
     }
 }
 
-/// − value + : the value in Darker Grotesque 180 between two 72 pt outline circles. At the minimum
-/// or maximum a button turns dashed and is disabled. Unanswered shows a dash.
+/// "Understood as $28,000.50 a year.": an ink check disc and the amount as read.
+struct Understood: View {
+    @Environment(\.theme) private var theme
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: "checkmark.circle.fill").font(.system(size: 15)).foregroundStyle(theme.ink).accessibilityHidden(true)
+            Text(text).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// − value + : the value in display type between two 44 pt round buttons, in a white card. At the
+/// minimum or maximum a button is disabled. Unanswered shows a dash.
 private struct Counter: View {
     @Environment(\.theme) private var theme
     @Environment(AppModel.self) private var model
@@ -411,20 +391,16 @@ private struct Counter: View {
             }
             Group {
                 if let value {
-                    TightText(text: model.number(Double(value)), role: .giantNumber, size: theme.size("counter"))
+                    Text(verbatim: model.number(Double(value)))
+                        .font(Font(DesignFonts.uiFont(.display, weight: 900, size: 72)))
+                        .foregroundStyle(theme.ink)
                         .minimumScaleFactor(0.5)
+                        .lineLimit(1)
                 } else {
-                    RoundedRectangle(cornerRadius: 2).fill(theme.ink).frame(width: 52, height: 16).frame(height: 120)
+                    RoundedRectangle(cornerRadius: 2).fill(theme.ink).frame(width: 40, height: 10)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 130)
-            .padding(.vertical, 8)
-            .overlay {
-                if error {
-                    RoundedRectangle(cornerRadius: theme.radius("tile"))
-                        .strokeBorder(theme.ink, style: StrokeStyle(lineWidth: theme.border, dash: [5, 4]))
-                }
-            }
+            .frame(maxWidth: .infinity, minHeight: 96)
             .accessibilityElement()
             .accessibilityLabel(label)
             .accessibilityValue(value.map(String.init) ?? "")
@@ -441,40 +417,42 @@ private struct Counter: View {
                 value = value.map { Swift.min(max, $0 + 1) } ?? min
             }
         }
+        .padding(16)
         .frame(maxWidth: .infinity)
+        .background(RoundedRectangle(cornerRadius: 24).fill(theme.sheet))
+        .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(error ? theme.ink : theme.cardBorder, style: StrokeStyle(lineWidth: error ? 1.5 : 1, dash: error ? [5, 4] : [])))
     }
 
     private func stepButton(_ symbol: String, _ a11y: String, id: String, enabled: Bool, action: @escaping () -> Void) -> some View {
-        let d = theme.size("counterButton")
-        return Button {
+        Button {
             action()
             onChange()
         } label: {
             Image(systemName: symbol)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(theme.ink)
-                .frame(width: d, height: d)
-                .overlay(Circle().strokeBorder(theme.ink, style: StrokeStyle(lineWidth: theme.border, dash: enabled ? [] : [5, 4])))
+                .font(.system(size: 17, weight: .bold))
+                .foregroundStyle(enabled ? theme.ink : theme.faint)
+                .frame(width: 44, height: 44)
+                .background(Circle().fill(theme.raised))
                 .contentShape(Circle())
         }
-        .buttonStyle(PressStyle())
+        .buttonStyle(PressScale())
         .disabled(!enabled)
         .accessibilityLabel(a11y)
         .accessibilityIdentifier(id)
     }
 }
 
-/// "This answer never leaves your device. You can skip it." with a lock; the first sentence bold.
+/// "This answer stays on this iPhone. Private questions can be skipped." with a lock, in note grey.
 struct SensitiveNote: View {
     @Environment(\.theme) private var theme
     let text: String
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Image(systemName: "lock").font(.system(size: 14, weight: .semibold)).accessibilityHidden(true)
-            Text(Self.firstSentenceBold(text)).type(.small).fixedSize(horizontal: false, vertical: true)
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: "lock").font(.system(size: 12, weight: .semibold)).accessibilityHidden(true)
+            Text(Self.firstSentenceBold(text)).font(.system(size: 13)).fixedSize(horizontal: false, vertical: true)
         }
-        .foregroundStyle(theme.ink)
+        .foregroundStyle(theme.note)
         .accessibilityElement(children: .combine)
     }
 

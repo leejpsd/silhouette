@@ -61,7 +61,8 @@ enum SnapshotRunner {
         ]
         for (i, id) in steps.enumerated() {
             out.append(Scene(name: String(format: "question-%02d-%@", i + 1, id)) { m in
-                m.path = steps.prefix(i + 1).map { .question($0, returnTo: nil) }
+                m.tab = .check
+                m.checkPath = steps.prefix(i + 1).map { .question($0, returnTo: nil) }
             })
         }
         out += [
@@ -111,27 +112,28 @@ enum SnapshotRunner {
                 m.deleteEverything()
                 m.sheet = .record
             },
-            Scene(name: "add-document", pages: 2) { m in m.path = [.documentAdd] },
+            Scene(name: "add-document", pages: 2) { m in m.openDocument() },
             Scene(name: "preview-could-leave", pages: 3) { m in m.openSamplePreview() },
             Scene(name: "review-sample", pages: 4, wait: 1.0) { m in
                 m.openSamplePreview()
                 await m.readDocument(keepOnDevice: m.deviceModelAvailable)
             },
             Scene(name: "review-type-numbers", pages: 3) { m in
-                m.path = [.documentAdd]
+                m.openDocument()
                 m.typeNumbers()
             },
-            Scene(name: "judges") { m in m.path = [.judges] },
-            Scene(name: "device-check", pages: 2) { m in m.path = [.deviceCheck] },
+            Scene(name: "judges") { m in m.open(.judges) },
+            Scene(name: "tasks") { m in m.open(.tasks) },
+            Scene(name: "device-check", pages: 2) { m in m.open(.deviceCheck) },
             Scene(name: "device-check-recording", pages: 6) { m in
                 m.snapshotDeviceCheck = "recording"
-                m.path = [.deviceCheck]
+                m.open(.deviceCheck)
             },
             // With `-UITestModel device`: the whole check, run by the scripted on-device model; the reading kept on
             // the device (`device-unreliable`, `device-notread`: the other outcomes).
             Scene(name: "device-check-run", pages: 6, wait: 14, needsDevice: true) { m in
                 m.snapshotDeviceCheck = "run"
-                m.path = [.deviceCheck]
+                m.open(.deviceCheck)
             },
             Scene(name: "preview-keep", pages: 2, wait: 1.5, needsDevice: true) { m in
                 m.openSamplePreview()

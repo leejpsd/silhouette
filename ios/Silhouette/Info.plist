@@ -10,10 +10,10 @@
 	<true/>
 	<key>UIAppFonts</key>
 	<array>
-		<string>DarkerGrotesque-Variable.ttf</string>
-		<string>HankenGrotesk-Variable.ttf</string>
-		<string>DMMono-Regular.ttf</string>
-		<string>DMMono-Medium.ttf</string>
+		<string>BigShouldersDisplay-Variable.ttf</string>
+		<string>IBMPlexMono-Regular.ttf</string>
+		<string>IBMPlexMono-Medium.ttf</string>
+		<string>IBMPlexMono-SemiBold.ttf</string>
 	</array>
 </dict>
 </plist>

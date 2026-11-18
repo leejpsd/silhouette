@@ -450,7 +450,9 @@ struct DeviceReadingTaskTests {
         #expect(port.calls == [.device("document.pointer.extract"), .device("document.pointer.extract")])
         #expect(port.deviceCalls.map(\.part) == ["core", "deductions"])
         #expect(port.deviceCalls.allSatisfy { $0.constraint?["additionalProperties"]?.boolValue == false })
-        #expect(port.deviceCalls[0].system.hasSuffix(try #require(Fixture().bundle.prompts.deviceParts["core"])))
+        let corePart = try #require(Fixture().bundle.prompts.deviceParts["core"])
+        #expect(port.deviceCalls[0].prompt.hasPrefix(corePart), "the part's text opens the user turn")
+        #expect(!port.deviceCalls[0].system.contains(corePart))
         #expect(log.entries.map(\.fields) == [["kept:document"]] && !log.anythingLeft)
         #expect(outcome.attempt?.passes.count == 2)
     }

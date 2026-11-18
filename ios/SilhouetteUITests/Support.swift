@@ -18,23 +18,26 @@ extension XCUIApplication {
         button.tap()
     }
 
-    /// Controls can sit below the fold or under the bottom block (controls inside the block are not covered).
+    /// Controls can sit below the fold or under the floating tab bar and the privacy pill above it
+    /// (the system's glass chrome, drawn over the scrolling content).
     func scrollIntoView(_ element: XCUIElement) {
-        let block = self.element("bottom.block").firstMatch
-        let inBlock = block.exists && !element.identifier.isEmpty
-            && block.descendants(matching: .any).matching(identifier: element.identifier).count > 0
+        func chrome() -> [CGRect] {
+            [tabBars.firstMatch, buttons["leaving.details"].firstMatch].filter(\.exists).map(\.frame)
+        }
         func covered() -> Bool {
             guard element.isHittable else { return true }
-            guard block.exists, !inBlock else { return false }
-            return block.frame.intersects(element.frame)
+            let frame = element.frame
+            let rects = chrome()
+            // The pill and the tab bar themselves are never covered.
+            if rects.contains(where: { $0.insetBy(dx: -1, dy: -1).contains(frame) }) { return false }
+            return rects.contains { $0.intersects(frame) }
         }
         var attempts = 0
         while covered() && attempts < 8 {
             let scroll = scrollViews.firstMatch
-            // Swipe in the half above the bottom block; a drag that starts on the block does not scroll.
             let above = element.exists && element.frame.midY < scroll.frame.minY + scroll.frame.height * 0.3
-            let from = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: above ? 0.2 : 0.5))
-            let to = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: above ? 0.5 : 0.2))
+            let from = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: above ? 0.2 : 0.55))
+            let to = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: above ? 0.55 : 0.2))
             from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .default, thenHoldForDuration: 0.05)
             attempts += 1
         }

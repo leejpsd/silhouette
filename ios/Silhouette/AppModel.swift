@@ -6,18 +6,24 @@ import Observation
 import SilhouetteCore
 import SilhouetteKit
 
+/// The three tabs (DESIGN.md section 6): the Quick Check, the results, the paystub.
+enum AppTab: Hashable { case check, results, paystub }
+
+/// A screen pushed on a tab's stack. Each tab's root is its own screen (Start, Results, Add a paystub).
 enum Route: Hashable {
     /// `returnTo`: where to go after answering, when the question was opened from elsewhere.
     case question(String, returnTo: ReturnTo?)
-    case results
     case program(String)
-    case documentAdd
     case documentPreview
     case documentReview
-    /// The short path for judges (from the draft-rules sheet).
+    /// The short path for judges (from the start screen and the draft-rules sheet).
     case judges
-    /// The on-device check (from the draft-rules sheet).
+    /// The on-device check (from the judges' page and the draft-rules sheet).
     case deviceCheck
+    /// Where each task runs (from the judges' page and the draft-rules sheet).
+    case tasks
+    /// A question about a program and its answer, by request key.
+    case answer(String)
 }
 
 enum ReturnTo: Hashable {
@@ -38,7 +44,50 @@ final class AppModel {
     let bundle: SharedBundle
     let theme: Theme
     private(set) var session: QuickCheckSession
-    var path: [Route] = []
+    /// Where the person is: the selected tab and each tab's stack (one source of truth).
+    var tab: AppTab = .check
+    var checkPath: [Route] = []
+    var resultsPath: [Route] = []
+    var paystubPath: [Route] = []
+
+    /// The stack of the selected tab.
+    var path: [Route] {
+        get {
+            switch tab {
+            case .check: checkPath
+            case .results: resultsPath
+            case .paystub: paystubPath
+            }
+        }
+        set {
+            switch tab {
+            case .check: checkPath = newValue
+            case .results: resultsPath = newValue
+            case .paystub: paystubPath = newValue
+            }
+        }
+    }
+
+    /// The pack's currency symbol ("$" for USD), written in the pack's number format.
+    var currencySymbol: String {
+        let f = NumberFormatter()
+        f.numberStyle = .currency
+        f.locale = Locale(identifier: bundle.packInfo.numberFormat ?? "en-US")
+        f.currencyCode = bundle.packInfo.currency ?? "USD"
+        return f.currencySymbol ?? "$"
+    }
+
+    /// The program and the question of each request about a program, for its answer screen.
+    @ObservationIgnored var answerContext: [String: (program: String, question: String)] = [:]
+
+    /// Shows the answer screen of a request (on the results tab, above the program's page).
+    func openAnswer(_ key: String) {
+        guard path.last != .answer(key) else { return }
+        path.append(.answer(key))
+    }
+
+    /// Goes back one screen in the selected tab.
+    func back() { if !path.isEmpty { path.removeLast() } }
     private(set) var locale: AppLocale
     private(set) var outbound: [OutboundEntry] = []
     /// A copy key shown once on the start screen (for example after deleting everything).
@@ -292,20 +341,22 @@ final class AppModel {
 
     func begin() {
         notice = nil
+        tab = .check
         guard session.isStarted else {
-            path = [.question(firstStep, returnTo: nil)]
+            checkPath = [.question(firstStep, returnTo: nil)]
             return
         }
         let open = session.firstOpenIndex
-        let asked = session.steps.prefix(open + (open < session.steps.count ? 1 : 0)).map { Route.question($0.id, returnTo: nil) }
-        path = open < session.steps.count ? asked : asked + [.results]
+        guard open < session.steps.count else { showResults(); return }
+        checkPath = session.steps.prefix(open + 1).map { Route.question($0.id, returnTo: nil) }
     }
 
     func restart() {
         notice = nil
         session.reset()
         persist()
-        path = [.question(firstStep, returnTo: nil)]
+        tab = .check
+        checkPath = [.question(firstStep, returnTo: nil)]
     }
 
     /// Clears the answers without moving (the judges' prepared household starts from nothing).
@@ -316,7 +367,8 @@ final class AppModel {
     }
 
     func editAnswers() {
-        path = [.question(firstStep, returnTo: nil)]
+        tab = .check
+        checkPath = [.question(firstStep, returnTo: nil)]
     }
 
     /// After a question is answered or skipped.
@@ -329,11 +381,15 @@ final class AppModel {
         if index + 1 < session.steps.count {
             path.append(.question(session.steps[index + 1].id, returnTo: nil))
         } else {
-            path.append(.results)
+            showResults()
         }
     }
 
-    func openProgram(_ id: String) { path.append(.program(id)) }
+    /// A program's page, on the results tab.
+    func openProgram(_ id: String) {
+        if tab != .results { tab = .results; resultsPath = [] }
+        resultsPath.append(.program(id))
+    }
 
     func answerDependency(_ variable: String, program: String) {
         path.append(.question(QuickCheck.step(forVariable: variable), returnTo: .program(program)))
@@ -354,7 +410,10 @@ final class AppModel {
         document = DocumentSession(language: AppLocale.preferred(from: Locale.preferredLanguages))
         incomeChange = nil
         locale = AppLocale.preferred(from: Locale.preferredLanguages)
-        path = []
+        tab = .check
+        checkPath = []
+        resultsPath = []
+        paystubPath = []
         sheet = nil
         stampedCount = 0
         recordClearedAt = Date()
@@ -372,7 +431,8 @@ final class AppModel {
     /// The wordmark: back to the start.
     func goHome() {
         sheet = nil
-        path = []
+        tab = .check
+        checkPath = []
     }
 
     var hasSavedData: Bool { store.hasSavedData }
@@ -383,9 +443,11 @@ final class AppModel {
         try? store.saveDocument(document)
     }
 
+    /// The paystub tab at its start (Add a paystub).
     func openDocument() {
         incomeChange = nil
-        path.append(.documentAdd)
+        tab = .paystub
+        paystubPath = []
     }
 
     func setDocumentLanguage(_ language: AppLocale) {
@@ -398,7 +460,8 @@ final class AppModel {
         document.setText(text, source: source, sampleId: sample?.id, language: sample?.language)
         incomeChange = nil
         persistDocument()
-        path.append(.documentPreview)
+        tab = .paystub
+        paystubPath = [.documentPreview]
     }
 
     var silhouette: SkeletonResult? { try? document.silhouette(bundle: bundle) }
@@ -462,7 +525,7 @@ final class AppModel {
                 return
             }
             persistDocument()
-            path.append(.documentReview)
+            paystubPath.append(.documentReview)
             return
         }
         // Remote Config is fetched after the first cloud request (shared/RECORD.md section 1); until then the
@@ -493,7 +556,7 @@ final class AppModel {
             return
         }
         persistDocument()
-        path.append(.documentReview)
+        paystubPath.append(.documentReview)
     }
 
     /// What the device answered in the last reading, part by part (placeholder ids only).
@@ -502,7 +565,8 @@ final class AppModel {
     func typeNumbers() {
         document.startManual(schema: bundle.paystubSchema)
         persistDocument()
-        if path.last != .documentReview { path.append(.documentReview) }
+        tab = .paystub
+        if paystubPath.last != .documentReview { paystubPath.append(.documentReview) }
     }
 
     func editDocument(_ change: (inout DocumentSession) -> Void) {
@@ -529,17 +593,28 @@ final class AppModel {
         document.addAnother()
         incomeChange = nil
         persistDocument()
-        path.append(.documentAdd)
+        tab = .paystub
+        paystubPath = []
     }
 
     func anotherDocument() {
         document.reset()
         persistDocument()
-        if let i = path.lastIndex(of: .documentAdd) { path.removeSubrange((i + 1)...) } else { path.append(.documentAdd) }
+        tab = .paystub
+        paystubPath = []
     }
 
+    /// The results tab at its start; the Quick Check tab goes back to its start.
     func showResults() {
-        let asked = session.steps.map { Route.question($0.id, returnTo: nil) }
-        path = asked + [.results]
+        tab = .results
+        resultsPath = []
+        checkPath = []
+    }
+
+    /// A page of the check tab (judges, on-device check, where each task runs), from anywhere.
+    func open(_ route: Route) {
+        sheet = nil
+        tab = .check
+        checkPath = [route]
     }
 }

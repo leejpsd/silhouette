@@ -19,7 +19,7 @@ struct SilhouetteApp: App {
             model.forceOffline = options.offline
             if let repetitions = options.deviceCheckRun {
                 model.autoRunDeviceCheck = repetitions
-                model.path = [.deviceCheck]
+                model.open(.deviceCheck)
             }
             return model
         })

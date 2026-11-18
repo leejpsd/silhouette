@@ -1,10 +1,11 @@
-// Type: Darker Grotesque 800/900 for display, Hanken Grotesk for interface text, DM Mono for
-// document values, ids and times (all SIL OFL 1.1, bundled under Resources/Fonts and registered in
-// Info.plist). Sizes come from `typography.scale` in the tokens.
+// Type (shared/design/DESIGN.md section 2, tokens version 7): Big Shoulders Display 900 for display,
+// always in capitals; the system font (SF) for interface text on iOS; IBM Plex Mono for documents,
+// token chips, times and requests (both SIL OFL 1.1, bundled under Resources/Fonts and registered in
+// Info.plist). Every number uses tabular figures. Sizes come from `typography.scale` in the tokens.
 // Dynamic Type: interface and mono text scale fully; display type scales up to
 // `typography.sizeSteps.displayScaleCap` and then relies on the size-step rule.
-// Korean: Darker Grotesque has no Hangul, so display text uses the system face at its heaviest
-// weight, 0.92 of the size, with open leading (1.08) and line breaks between words (tokens displayKo).
+// Korean: Big Shoulders has no Hangul, so display text uses the system face at its heaviest weight,
+// 0.92 of the size, with open leading (1.08) and line breaks between words (tokens displayKo).
 
 import SilhouetteKit
 import SwiftUI
@@ -15,11 +16,12 @@ enum TypeRole: String {
     case body, bodyStrong, help, small, label, caption, button, control
     case monoValue, monoDocument, placeholderId
     case stampCount, progressTotal, optionWord, recordHeadline
+    case lead, rowTitle, meta, documentLine, tile
 
     var family: Family {
         switch self {
-        case .monoValue, .monoDocument, .placeholderId: .mono
-        case .body, .bodyStrong, .help, .small, .label, .caption, .button, .control: .text
+        case .monoValue, .monoDocument, .placeholderId, .documentLine: .mono
+        case .body, .bodyStrong, .help, .small, .label, .caption, .button, .control, .progressTotal, .lead, .rowTitle, .meta, .tile: .text
         default: .display
         }
     }
@@ -35,23 +37,31 @@ enum DesignFonts {
     /// The `wght` axis tag.
     private static let weightAxis = 0x7767_6874
 
-    /// A face at a weight: Darker Grotesque and Hanken Grotesk through their variable `wght` axis,
-    /// DM Mono from its static Regular and Medium files. Falls back to the system font.
+    /// A face at a weight: Big Shoulders Display through its variable `wght` axis, the system font
+    /// for text, IBM Plex Mono from its static Regular, Medium and SemiBold files. Numbers tabular.
     static func uiFont(_ family: TypeRole.Family, weight: Double, size: CGFloat, korean: Bool = false) -> UIFont {
-        if korean && family == .display { return .systemFont(ofSize: size * koreanScale, weight: .heavy) }
+        if korean && family == .display { return tabular(.systemFont(ofSize: size * koreanScale, weight: .heavy)) }
         switch family {
         case .mono:
-            return UIFont(name: weight >= 500 ? "DMMono-Medium" : "DMMono-Regular", size: size)
-                ?? .monospacedSystemFont(ofSize: size, weight: weight >= 500 ? .medium : .regular)
-        case .display, .text:
-            let base = family == .display ? "DarkerGrotesque-Light" : "HankenGrotesk-Regular"
-            guard let font = UIFont(name: base, size: size) else {
-                return .systemFont(ofSize: size, weight: weight >= 700 ? .bold : weight >= 600 ? .semibold : .regular)
+            let name = weight >= 600 ? "IBMPlexMono-SemiBold" : weight >= 500 ? "IBMPlexMono-Medium" : "IBMPlexMono-Regular"
+            return UIFont(name: name, size: size) ?? .monospacedSystemFont(ofSize: size, weight: weight >= 600 ? .semibold : weight >= 500 ? .medium : .regular)
+        case .text:
+            let w: UIFont.Weight = weight >= 800 ? .heavy : weight >= 700 ? .bold : weight >= 600 ? .semibold : weight >= 500 ? .medium : .regular
+            return tabular(.systemFont(ofSize: size, weight: w))
+        case .display:
+            guard let font = UIFont(name: "BigShouldersDisplay-Black", size: size) ?? UIFont(name: "BigShouldersDisplay-Regular", size: size) else {
+                return tabular(.systemFont(ofSize: size, weight: .black))
             }
             let key = UIFontDescriptor.AttributeName(rawValue: kCTFontVariationAttribute as String)
-            let descriptor = font.fontDescriptor.addingAttributes([key: [weightAxis: weight]])
-            return UIFont(descriptor: descriptor, size: size)
+            let descriptor = font.fontDescriptor.addingAttributes([key: [weightAxis: max(weight, 100)]])
+            return tabular(UIFont(descriptor: descriptor, size: size))
         }
+    }
+
+    /// Tabular (monospaced) figures.
+    static func tabular(_ font: UIFont) -> UIFont {
+        let feature: [UIFontDescriptor.FeatureKey: Int] = [.type: kNumberSpacingType, .selector: kMonospacedNumbersSelector]
+        return UIFont(descriptor: font.fontDescriptor.addingAttributes([.featureSettings: [feature]]), size: font.pointSize)
     }
 }
 

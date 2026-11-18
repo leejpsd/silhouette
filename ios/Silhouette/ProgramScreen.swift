@@ -1,6 +1,7 @@
-// A program's page: the result by shape, the name and the estimated amount, why (from the rules),
-// what the result depends on (each opens the question and comes back), things to know, official
-// information, then the model-written parts. The count block is compact.
+// A program's page: the hero with the verdict pill, the name, its summary and "Explain this
+// program" (the step before sending comes first); "Why this result" from the rules only, with the
+// income bar; what the result depends on; how it works (the pack's sections as rows); things to know;
+// official sources with the date they were read; prepared and typed questions.
 
 import SilhouetteCore
 import SilhouetteKit
@@ -12,126 +13,198 @@ struct ProgramScreen: View {
     let programId: String
 
     var body: some View {
-        Screen {
-            BackLink(label: model.t("detail.back")) { if !model.path.isEmpty { model.path.removeLast() } }
-                .padding(.bottom, -8)
-            if let program = model.bundle.packInfo.program(programId), let result = model.result(programId) {
-                MarkerLine(kind: .verdict(result.verdict), text: model.t("verdict.\(result.verdict.rawValue)"))
-                    .accessibilityIdentifier("detail.verdict")
-                    .accessibilityValue(result.verdict.rawValue)
-                DisplayHeadline(text: model.programName(programId), role: .display, maxLines: 2)
-                    .appear(.rise)
-                if let amount = result.estimatedAmount, amount > 0 {
-                    VStack(alignment: .leading, spacing: 4) {
-                        DisplayLabel(text: model.money(amount), role: .amount, maxLines: 1)
-                            .accessibilityHidden(true)
-                            .appear(.pop)
-                        Para(model.t("detail.amount", ["amount": model.money(amount)]), .small)
-                    }
-                }
-
-                WhySection(programId: programId).padding(.top, theme.space("xs"))
-
-                if !result.dependsOn.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(model.t("detail.dependsOn")).type(.label).foregroundStyle(theme.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .accessibilityAddTraits(.isHeader)
-                        FlowLayout {
-                            ForEach(result.dependsOn, id: \.self) { variable in
-                                Button(model.t("detail.answer", ["question": model.variableName(variable)])) {
-                                    model.answerDependency(variable, program: programId)
-                                }
-                                .buttonStyle(ChipStyle())
-                                .accessibilityIdentifier("depends.\(variable)")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                if let program = model.bundle.packInfo.program(programId), let result = model.result(programId) {
+                    hero(program, result)
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let amount = result.estimatedAmount, amount > 0 {
+                            Card {
+                                Display(text: model.money(amount), size: 44, maxLines: 1)
+                                NoteText(text: model.t("detail.amount", ["amount": model.money(amount)])).padding(.top, 4)
                             }
                         }
+                        WhySection(programId: programId)
+                        if !result.dependsOn.isEmpty { dependsOn(result) }
+                        HowItWorks(program: program)
+                        thingsToKnow(program)
+                        OfficialInformation(program: program)
+                        AskSection(programId: programId)
+                        FreeTextSection(programId: programId)
                     }
+                    .gutter()
                 }
-                if let period = program.period {
-                    Para(model.t("detail.period", ["period": model.packPeriod(period)]), .small)
-                        .accessibilityIdentifier("program.period")
-                }
+            }
+            .padding(.bottom, 24)
+        }
+        .heroScreen(theme)
+    }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    SectionHeading(text: model.t("detail.caveats"))
-                    ForEach(program.caveats, id: \.self) { key in
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text(verbatim: "–").type(.small).accessibilityHidden(true)
-                            Para(model.t("caveat.\(key)"), .small)
+    private func hero(_ program: PackInfo.Program, _ result: ProgramVerdict) -> some View {
+        let summary = model.bundle.copy.lookup("program.\(programId).summary", model.locale)
+        let pill = HeroPill(label: model.t("verdict.\(result.verdict.rawValue)"), filled: true, verdict: result.verdict)
+            .accessibilityIdentifier("detail.verdict")
+            .accessibilityValue(result.verdict.rawValue)
+        return Hero(title: model.programName(programId), size: 54, lead: summary, badge: AnyView(pill)) {
+            HStack(spacing: 8) {
+                GlassRound(systemImage: "chevron.left", label: model.t("detail.back"), id: "program.back") { model.back() }
+                Spacer(minLength: 0)
+                if let url = program.applyUrl.flatMap(URL.init(string:)) {
+                    Link(destination: url) {
+                        Image(systemName: "arrow.up.right").font(.system(size: 17, weight: .semibold)).frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+                    .accessibilityLabel(model.t("official.apply"))
+                    .accessibilityIdentifier("program.applyLink")
+                }
+            }
+        } content: {
+            let key = model.aboutKey(programId, long: false)
+            HStack(spacing: 14) {
+                Button { model.startAbout(programId, long: false) } label: {
+                    Label(model.t("about.explain"), systemImage: "bubble.left")
+                        .font(.system(size: 17, weight: .semibold))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .foregroundStyle(Color(red: 0.055, green: 0.055, blue: 0.055))
+                        .padding(.horizontal, 18)
+                        .frame(minHeight: 48)
+                        .background(Capsule().fill(.white))
+                }
+                .buttonStyle(PressScale())
+                .accessibilityIdentifier("about.explain")
+                .disabled({ if case .loading = model.state(key) { true } else { false } }())
+                Text(model.t("about.seeFirst")).font(.system(size: 13)).foregroundStyle(theme.onHeroMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.top, 16)
+        }
+    }
+
+    private func dependsOn(_ result: ProgramVerdict) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SectionLabel(text: model.t("detail.dependsOn"), large: false)
+            ListCard {
+                ForEach(Array(result.dependsOn.enumerated()), id: \.element) { i, variable in
+                    if i > 0 { RowDivider() }
+                    Button { model.answerDependency(variable, program: programId) } label: {
+                        ListRow(title: model.t("detail.answer", ["question": model.variableName(variable)]), titleWeight: .semibold) {
+                            VerdictMarker(verdict: .depends)
                         }
                     }
-                    // A draft pack says it is a draft (with the date its sources were read), not "for testing".
-                    let info = model.bundle.packInfo
-                    Para(info.verifiedOn.map { model.t("rules.verifiedOn", ["date": $0]) }
-                         ?? (info.isDraft ? model.t("pack.draft.notice", ["date": model.draftDate]) : model.t("detail.unverified")), .small)
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("depends.\(variable)")
                 }
-                .padding(.top, theme.space("sm"))
+            }
+        }
+    }
 
-                OfficialInformation(program: program)
-
-                AboutSection(programId: programId).padding(.top, theme.space("sm"))
-                FreeTextSection(programId: programId).padding(.top, theme.space("sm"))
-            } else {
-                DisplayHeadline(text: model.t("results.title"), role: .title)
+    private func thingsToKnow(_ program: PackInfo.Program) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SectionLabel(text: model.t("detail.caveats"))
+            Card {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(program.caveats, id: \.self) { key in
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Circle().fill(theme.ink).frame(width: 5, height: 5).accessibilityHidden(true)
+                            Text(model.t("caveat.\(key)")).font(.system(size: 15)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    if let period = program.period {
+                        NoteText(text: model.t("detail.period", ["period": model.packPeriod(period)]))
+                            .accessibilityIdentifier("program.period")
+                    }
+                    // A draft pack says it is a draft (with the date its sources were read), never both notes.
+                    let info = model.bundle.packInfo
+                    NoteText(text: info.verifiedOn.map { model.t("rules.verifiedOn", ["date": $0]) }
+                        ?? (info.isDraft ? model.t("pack.draft.notice", ["date": model.draftDate]) : model.t("detail.unverified")))
+                }
             }
         }
     }
 }
 
-/// Official information: how to apply, the usual papers and the office (the pack's copy), the apply
-/// link, and each official source with the date its numbers were read (a draft pack) or confirmed.
+/// How it works: the pack's own sections (how to apply, papers, renewal, where to go) as rows.
+private struct HowItWorks: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.theme) private var theme
+    let program: PackInfo.Program
+
+    var body: some View {
+        let copy = AnswerInputs.programCopy(model.bundle, programId: program.id, locale: model.locale).filter { $0.key != "summary" }
+        if !copy.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                SectionLabel(text: model.t("about.title"))
+                ListCard {
+                    ForEach(Array(copy.enumerated()), id: \.element.key) { i, item in
+                        if i > 0 { RowDivider() }
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(title(item.key)).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
+                            Text(item.text).font(.system(size: 15)).foregroundStyle(theme.ink2).fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier("program.\(item.key)")
+                    }
+                }
+            }
+        }
+    }
+
+    private func title(_ key: String) -> String {
+        switch key {
+        case "apply": model.t("official.howToApply")
+        case "documents": model.t("official.docs")
+        case "office": model.t("official.office")
+        case "renewal": model.t("program.renewalTitle")
+        default: key
+        }
+    }
+}
+
+/// Official information: the apply link and each official source with the date its numbers were read
+/// (a draft pack) or confirmed; the pack's list of papers when its copy has none.
 private struct OfficialInformation: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
     let program: PackInfo.Program
 
     var body: some View {
-        let copy = Dictionary(AnswerInputs.programCopy(model.bundle, programId: program.id, locale: model.locale).map { ($0.key, $0.text) },
-                              uniquingKeysWith: { a, _ in a })
+        let hasDocsCopy = model.bundle.copy.lookup("program.\(program.id).documents", model.locale) != nil
         let any = !program.sources.isEmpty || program.applyUrl != nil || !program.docsRequired.isEmpty
         VStack(alignment: .leading, spacing: 8) {
-            SectionHeading(text: model.t("official.title"))
-            if let apply = copy["apply"] { Para(apply, .small) }
-            if let documents = copy["documents"] {
-                Text(model.t("official.docs")).type(.label).foregroundStyle(theme.ink)
-                Para(documents, .small)
-            }
-            if let office = copy["office"] { Text(office).type(.bodyStrong).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true) }
-            if !any { Para(model.t("official.none"), .small, muted: true) }
-            if let url = program.applyUrl.flatMap(URL.init(string:)) {
-                Link(destination: url) {
-                    Label(model.t("official.apply"), systemImage: "arrow.up.right")
-                }
-                .buttonStyle(OutlineStyle())
-                .accessibilityIdentifier("official.apply")
-            }
-            if !program.sources.isEmpty {
-                Text(model.t("official.source")).type(.label).foregroundStyle(theme.ink).padding(.top, 4)
-                ForEach(program.sources, id: \.url) { source in
-                    VStack(alignment: .leading, spacing: 2) {
-                        if let url = URL(string: source.url) {
-                            Link(source.title, destination: url)
-                                .buttonStyle(TextLinkStyle(role: .small))
-                        }
-                        // A draft pack's numbers were read on a date; a confirmed source says when it was compared.
-                        if let checked = source.checkedAt {
-                            Para(model.t("official.confirmedOn", ["date": model.packDate(checked)]), .caption, muted: true)
-                        } else if let read = model.bundle.packInfo.sourcesReadOn {
-                            Para(model.t("official.readOn", ["date": model.packDate(read)]), .caption, muted: true)
-                                .accessibilityIdentifier("official.readOn")
-                        }
+            SectionLabel(text: model.t("official.title"))
+            if !any { NoteText(text: model.t("official.none")) }
+            ListCard {
+                if let url = program.applyUrl.flatMap(URL.init(string:)) {
+                    Link(destination: url) {
+                        ListRow(title: model.t("official.apply"), titleWeight: .semibold, leading: { IconTile(systemImage: "arrow.up.right") })
                     }
-                    .accessibilityElement(children: .contain)
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("official.apply")
+                }
+                ForEach(Array(program.sources.enumerated()), id: \.element.url) { i, source in
+                    if i > 0 || program.applyUrl != nil { RowDivider(inset: 64) }
+                    let date = source.checkedAt.map { model.t("official.confirmedOn", ["date": model.packDate($0)]) }
+                        ?? model.bundle.packInfo.sourcesReadOn.map { model.t("official.readOn", ["date": model.packDate($0)]) }
+                    if let url = URL(string: source.url) {
+                        Link(destination: url) {
+                            ListRow(title: source.title, subtitle: date, titleSize: 15, titleWeight: .semibold, leading: { IconTile(systemImage: "doc.text") })
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier(source.checkedAt == nil ? "official.readOn" : "official.confirmedOn")
+                    }
                 }
             }
             // The pack's list is in one language; its program copy says the same in the reader's.
-            if copy["documents"] == nil && !program.docsRequired.isEmpty {
-                Text(model.t("official.docs")).type(.label).foregroundStyle(theme.ink)
-                ForEach(program.docsRequired, id: \.self) { d in
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(verbatim: "–").type(.small).accessibilityHidden(true)
-                        Para(d, .small)
+            if !hasDocsCopy && !program.docsRequired.isEmpty {
+                Card {
+                    Text(model.t("official.docs")).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
+                    ForEach(program.docsRequired, id: \.self) { d in
+                        Text("· \(d)").font(.system(size: 15)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true).padding(.top, 4)
                     }
                 }
             }

@@ -1,8 +1,8 @@
-// Review: each value next to the document line it came from (on a paper slip, the value circled),
-// confirmed or changed; values not found can be typed. What decides the yearly income comes first;
-// everything else is under "More values". Then the yearly income with its arithmetic and the checks of
-// shared/validation/SPEC.md in plain words. "Use this income" is the block's action, and shows how
-// the results changed.
+// Review: "Check what was found" under a system navigation bar; compact rows (the label,
+// the value in IBM Plex Mono, an empty ring to confirm, an ink check disc once confirmed); a row opens to
+// show the document line it came from and Change; what decides the yearly income comes first, the rest
+// under "More values". Then the yearly income in display type with its arithmetic, "worked out on this
+// iPhone, no model", the checks of shared/validation/SPEC.md in plain words, and the ink primary.
 
 import SilhouetteCore
 import SilhouetteKit
@@ -28,37 +28,38 @@ struct DocumentReviewScreen: View {
     ]
 
     var body: some View {
-        if model.document.foundNothing { notADocument } else { review }
+        Group {
+            if model.document.foundNothing { notADocument } else { review }
+        }
+        .background(theme.ground.ignoresSafeArea())
+        .navigationTitle(model.t("review.navTitle"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func title(_ text: String) -> some View {
+        Text(text).font(.system(size: 28, weight: .bold)).foregroundStyle(theme.ink)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityIdentifier("review.title")
     }
 
     // MARK: Not a paystub
 
     private var notADocument: some View {
-        Screen {
-            BackLink(label: model.t("q.back")) { if !model.path.isEmpty { model.path.removeLast() } }
-                .padding(.bottom, -8)
-            if let silhouette = model.silhouette {
-                let segments = Array(DocumentSession.segments(of: silhouette).prefix(24))
-                DocumentPaper(segments: segments, leave: true, hidden: []) { _ in }
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
-                    .frame(maxHeight: 180, alignment: .top)
-                    .clipped()
-                    .padding(.horizontal, 10)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                DraftLine()
+                title(model.t("review.notDocument.title"))
+                if let extraction = model.document.extraction {
+                    ProvenanceBadge(source: extraction.source, reason: extraction.reason)
+                }
+                NoteText(text: model.t("review.notDocument.body"), size: 15)
+                    .accessibilityIdentifier("review.notDocument")
+                PrimaryButton(label: model.t("review.notDocument.typeIn"), id: "review.typeIn") { model.typeNumbers() }
+                SecondaryButton(label: model.t("review.notDocument.another"), filled: false, id: "review.another") { model.anotherDocument() }
             }
-            DisplayHeadline(text: model.t("review.notDocument.title"), role: .title, size: 50, maxLines: 3)
-                .accessibilityIdentifier("review.title")
-            if let extraction = model.document.extraction {
-                ProvenanceBadge(source: extraction.source, reason: extraction.reason)
-            }
-            Para(model.t("review.notDocument.body"))
-                .accessibilityIdentifier("review.notDocument")
-        } actions: {
-            BlockAction(label: model.t("review.notDocument.typeIn"), id: "review.typeIn") { model.typeNumbers() }
-            Button(model.t("review.notDocument.another")) { model.anotherDocument() }
-                .buttonStyle(TextLinkStyle())
-                .frame(maxWidth: .infinity)
-                .accessibilityIdentifier("review.another")
+            .gutter()
+            .padding(.vertical, 8)
         }
     }
 
@@ -76,68 +77,88 @@ struct DocumentReviewScreen: View {
         let leadNames = leadOrder.filter { seen.insert($0).inserted }
         let leadRows = leadNames.compactMap { n in doc.fieldsForDisplay.first { $0.name == n } }
         let restRows = doc.fieldsForDisplay.filter { !seen.contains($0.name) }
-        return Screen(scrollTo: $scrollTarget) {
-            BackLink(label: model.t("q.back")) { if !model.path.isEmpty { model.path.removeLast() } }
-                .padding(.bottom, -8)
-            DisplayHeadline(text: model.t("review.title"), role: .title, size: 50, maxLines: 3)
-                .accessibilityIdentifier("review.title")
-                .appear(.rise)
-            if let extraction = doc.extraction {
-                ProvenanceBadge(source: extraction.source, reason: extraction.reason)
-                if extraction.reason == .onDeviceFailed { Para(model.t("answers.retried"), .small) }
-            }
-            Para(model.t(doc.extraction == nil ? "review.manualLead" : "review.lead"), .small)
-            if doc.pendingCount > 0 {
-                VStack(alignment: .leading, spacing: 6) {
-                    Button(model.t("review.confirmAllCount", ["count": String(doc.pendingCount)])) {
-                        model.editDocument { $0.confirmAll() }
+        let moreShown = moreOpen || flagged.contains("deductions")
+        return ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    DraftLine()
+                    title(model.t("review.title"))
+                    if let extraction = doc.extraction {
+                        ProvenanceBadge(source: extraction.source, reason: extraction.reason)
+                        if extraction.reason == .onDeviceFailed { NoteText(text: model.t("answers.retried")) }
                     }
-                    .buttonStyle(OutlineStyle(fullWidth: true))
-                    .accessibilityIdentifier("review.confirmAll")
-                    Para(model.t("review.pending", ["count": String(doc.pendingCount)]), .small)
-                        .accessibilityIdentifier("review.pending")
-                }
-            }
-
-            ForEach(Array(leadRows.enumerated()), id: \.element.id) { i, field in
-                FieldRow(field: field, flagged: flagged.contains(field.name), index: i)
-            }
-
-            if let validation { income(validation) }
-            if let validation { checks(validation) }
-
-            Disclosure(label: model.t("review.moreValues", ["count": String(restRows.count + doc.deductionsForDisplay.count)]),
-                       open: Binding(get: { moreOpen || flagged.contains("deductions") }, set: { moreOpen = $0 }), id: "review.more") {
-                VStack(alignment: .leading, spacing: theme.space("md")) {
-                    ForEach(Array(restRows.enumerated()), id: \.element.id) { i, field in
-                        FieldRow(field: field, flagged: false, index: i + 1)
+                    NoteText(text: model.t(doc.extraction == nil ? "review.manualLead" : "review.lead"), size: 15)
+                    if doc.pendingCount > 0 {
+                        SecondaryButton(label: model.t("review.confirmAllCount", ["count": String(doc.pendingCount)]), id: "review.confirmAll") {
+                            model.editDocument { $0.confirmAll() }
+                        }
+                        NoteText(text: model.t("review.pending", ["count": String(doc.pendingCount)]))
+                            .accessibilityIdentifier("review.pending")
                     }
-                    deductions
+                    SectionLabel(text: model.t("review.inPaystub"), large: false)
+                    ListCard {
+                        ForEach(Array(leadRows.enumerated()), id: \.element.id) { i, field in
+                            if i > 0 { RowDivider() }
+                            FieldRow(field: field, flagged: flagged.contains(field.name))
+                        }
+                        RowDivider()
+                        Button { withAnimation { moreOpen.toggle() } } label: {
+                            ListRow(title: model.t("review.moreValuesShort"), chevron: false, leading: { EmptyView() }) {
+                                HStack(spacing: 6) {
+                                    Text(model.number(Double(restRows.count + doc.deductionsForDisplay.count)))
+                                        .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 15))).foregroundStyle(theme.note)
+                                    Image(systemName: moreShown ? "chevron.down" : "chevron.right").font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(theme.icon)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(model.t("review.moreValues", ["count": String(restRows.count + doc.deductionsForDisplay.count)]))
+                        .accessibilityIdentifier("review.more")
+                        if moreShown {
+                            ForEach(restRows) { field in
+                                RowDivider()
+                                FieldRow(field: field, flagged: false)
+                            }
+                            RowDivider()
+                            deductions
+                        }
+                    }
+                    if let validation { income(validation) }
+                    if let validation { checks(validation) }
+                    if model.incomeChange == nil, validation?.annualization != nil {
+                        SecondaryButton(label: model.t("review.addAnother"), filled: false, id: "review.addAnother") { model.addAnotherPaystub() }
+                    }
+                    changes
                 }
+                .gutter()
+                .padding(.vertical, 8)
             }
-            .padding(.top, 4)
-
-            changes
-        } actions: {
-            blockAction(validation)
+            .onChange(of: scrollTarget) { _, target in
+                guard let target else { return }
+                withAnimation { proxy.scrollTo(target, anchor: .center) }
+                scrollTarget = nil
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 4) { blockAction(validation) }
+                .gutter()
+                .padding(.vertical, 8)
+                .background(theme.ground)
         }
     }
 
     @ViewBuilder private func blockAction(_ validation: ValidationResult?) -> some View {
         if model.incomeChange != nil {
-            BlockAction(label: model.t("q.finish"), id: "review.results") { model.showResults() }
+            PrimaryButton(label: model.t("q.finish"), id: "review.results") { model.showResults() }
         } else if let a = validation?.annualization {
-            BlockAction(label: model.t("review.useIncome", ["amount": model.money(Double(a.annualIncome))]), id: "review.useIncome") {
+            PrimaryButton(label: model.t("review.useIncome", ["amount": model.money(Double(a.annualIncome))]), id: "review.useIncome") {
                 model.useIncome(a.annualIncome)
                 scrollTarget = "review.changes"
             }
             .disabled(model.document.pendingCount > 0)
-            Button(model.t("review.addAnother")) { model.addAnotherPaystub() }
-                .buttonStyle(TextLinkStyle())
-                .frame(maxWidth: .infinity)
-                .accessibilityIdentifier("review.addAnother")
         } else {
-            BlockAction(label: model.t("review.continue"), id: "review.continue") { scrollTarget = "review.annual" }
+            PrimaryButton(label: model.t("review.continue"), id: "review.continue") { scrollTarget = "review.annual" }
                 .disabled(model.document.pendingCount > 0)
         }
     }
@@ -145,38 +166,39 @@ struct DocumentReviewScreen: View {
     // MARK: Yearly income and checks
 
     private func income(_ validation: ValidationResult) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            SectionHeading(text: model.t("review.annualTitle"))
+        Card {
+            Text(model.t("review.annualTitle")).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
+                .accessibilityAddTraits(.isHeader)
             if let a = validation.annualization {
-                DisplayLabel(text: model.money(Double(a.annualIncome)), role: .amount, size: 64, maxLines: 1)
-                    .accessibilityLabel(model.money(Double(a.annualIncome)))
-                    .appear(.pop)
+                Display(text: model.money(Double(a.annualIncome)), size: 64, maxLines: 1)
+                    .padding(.top, 4)
                 Text(basisText(a))
-                    .type(.monoValue, size: 13)
-                    .foregroundStyle(theme.ink)
+                    .font(Font(DesignFonts.uiFont(.mono, weight: 400, size: 13)))
+                    .foregroundStyle(theme.note)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("review.basis")
                 if case .ytd = a.basis {
                     // Which date the yearly income was worked out from: the end of the pay period, else the pay date.
                     let periodEnd = model.document.fieldsForDisplay.first { $0.name == "periodEnd" }?.value != nil
-                    Para(model.t(periodEnd ? "review.basis.dateIsPeriodEnd" : "review.basis.dateIsPayDate"), .small, muted: true)
+                    NoteText(text: model.t(periodEnd ? "review.basis.dateIsPeriodEnd" : "review.basis.dateIsPayDate")).padding(.top, 4)
                         .accessibilityIdentifier("review.basisDate")
                 }
                 if case .average(_, _, _, let used) = a.basis, used.count > 1 {
-                    Para(model.t("review.stubsCount", ["count": String(used.count)]), .small, muted: true)
+                    NoteText(text: model.t("review.stubsCount", ["count": String(used.count)])).padding(.top, 4)
                 }
+                HStack(spacing: 8) {
+                    WhereBadge(kind: .noModel, label: model.t("badge.noModel"))
+                    Text(model.t("review.workedOutHere")).font(.system(size: 13)).foregroundStyle(theme.note)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.top, 10)
             } else if let failure = validation.failure {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle").accessibilityHidden(true)
-                    Text(model.t("review.failure.\(failure)")).fixedSize(horizontal: false, vertical: true)
-                }
-                .type(.label, size: 13.5)
-                .foregroundStyle(theme.ink)
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("review.failure")
+                NoticeCard(text: model.t("review.failure.\(failure)"))
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("review.failure")
+                    .padding(.top, 8)
             }
         }
-        .padding(.top, theme.space("sm"))
         .id("review.annual")
     }
 
@@ -185,28 +207,30 @@ struct DocumentReviewScreen: View {
         let deductionsNotRead = model.document.notRead.contains("deductions") && model.document.deductionsForDisplay.isEmpty
         let shown = (validation.checks.last ?? []).filter { $0.status != .skipped && !(deductionsNotRead && $0.id == "net-sum") }
         if !shown.isEmpty {
-            VStack(alignment: .leading, spacing: 0) {
-                SectionHeading(text: model.t("review.checksTitle")).padding(.bottom, 6)
-                ForEach(shown, id: \.id) { check in
-                    HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Group {
-                            if check.status == .ok { StateIcon(state: .pass) } else {
-                                Image(systemName: "exclamationmark.triangle").font(.system(size: 15, weight: .semibold))
+            VStack(alignment: .leading, spacing: 8) {
+                SectionLabel(text: model.t("review.checksTitle"), large: false)
+                ListCard {
+                    ForEach(Array(shown.enumerated()), id: \.element.id) { i, check in
+                        if i > 0 { RowDivider(inset: 48) }
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
+                            Group {
+                                if check.status == .ok { StateMark(state: .pass) } else {
+                                    Image(systemName: "exclamationmark").font(.system(size: 12, weight: .heavy)).foregroundStyle(theme.ink)
+                                        .frame(width: 22, height: 22).overlay(Circle().strokeBorder(theme.ink, style: StrokeStyle(lineWidth: 1.5, dash: [3, 2])))
+                                }
                             }
+                            .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
+                            Text(model.t("check.\(check.id)")).font(.system(size: 15)).foregroundStyle(theme.ink)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Text(model.t("check.status.\(check.status.rawValue)")).font(.system(size: 12, weight: .semibold)).foregroundStyle(theme.note)
+                                .multilineTextAlignment(.trailing)
                         }
-                        .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 4 }
-                        Text(model.t("check.\(check.id)")).type(.small).foregroundStyle(theme.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Text(model.t("check.status.\(check.status.rawValue)")).type(.label, size: 12).foregroundStyle(theme.ink)
-                            .multilineTextAlignment(.trailing)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: 110, alignment: .trailing)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier("check.\(check.id)")
                     }
-                    .foregroundStyle(theme.ink)
-                    .padding(.vertical, 6)
-                    .accessibilityElement(children: .combine)
-                    .accessibilityIdentifier("check.\(check.id)")
                 }
             }
         }
@@ -214,21 +238,21 @@ struct DocumentReviewScreen: View {
 
     @ViewBuilder private var changes: some View {
         if let change = model.incomeChange {
-            InvertedCard {
-                Text(model.t("review.changesTitle")).type(.heading).accessibilityAddTraits(.isHeader)
-                if change.isEmpty { Para(model.t("review.noChange")) }
-                ForEach(change, id: \.program) { c in
-                    VStack(alignment: .leading, spacing: 4) {
-                        DisplayLabel(text: model.programName(c.program), role: .listItem, size: 26, color: theme.onBlock)
-                        MarkerLine(kind: .verdict(c.after), text: model.t("verdict.\(c.after.rawValue)"))
-                        Text(model.t("review.before", ["verdict": model.t("verdict.\(c.before.rawValue)")]))
-                            .type(.caption).foregroundStyle(theme.onBlockMuted)
+            VStack(alignment: .leading, spacing: 8) {
+                SectionLabel(text: model.t("review.changesTitle"))
+                if change.isEmpty { NoteText(text: model.t("review.noChange"), size: 15) }
+                ListCard {
+                    ForEach(Array(change.enumerated()), id: \.element.program) { i, c in
+                        if i > 0 { RowDivider(inset: 52) }
+                        ListRow(title: model.programName(c.program),
+                                subtitle: "\(model.t("verdict.\(c.after.rawValue)")) · \(model.t("review.before", ["verdict": model.t("verdict.\(c.before.rawValue)")]))",
+                                chevron: false, titleWeight: .semibold) { VerdictMarker(verdict: c.after) }
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(model.t("review.change", ["program": model.programName(c.program),
+                                                                          "before": model.t("verdict.\(c.before.rawValue)"),
+                                                                          "after": model.t("verdict.\(c.after.rawValue)")]))
+                            .accessibilityIdentifier("review.change.\(c.program)")
                     }
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(model.t("review.change", ["program": model.programName(c.program),
-                                                                  "before": model.t("verdict.\(c.before.rawValue)"),
-                                                                  "after": model.t("verdict.\(c.after.rawValue)")]))
-                    .accessibilityIdentifier("review.change.\(c.program)")
                 }
             }
             .accessibilityElement(children: .contain)
@@ -239,17 +263,16 @@ struct DocumentReviewScreen: View {
 
     private var deductions: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeading(text: model.t("field.paystub.deductions"))
+            Text(model.t("field.paystub.deductions")).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
             if model.document.notRead.contains("deductions") && model.document.deductionsForDisplay.isEmpty {
-                Para(model.t("review.deductionsNotRead"), .small, muted: true).accessibilityIdentifier("review.deductionsNotRead")
+                NoteText(text: model.t("review.deductionsNotRead")).accessibilityIdentifier("review.deductionsNotRead")
             }
             ForEach(model.document.deductionsForDisplay) { row in
                 DeductionRowView(row: row)
             }
-            Button(model.t("review.addDeduction")) { model.editDocument { $0.addDeduction() } }
-                .buttonStyle(TextLinkStyle())
-                .accessibilityIdentifier("review.addDeduction")
+            LinkText(label: model.t("review.addDeduction"), id: "review.addDeduction") { model.editDocument { $0.addDeduction() } }
         }
+        .padding(16)
     }
 
     private func basisText(_ a: ValidationResult.Annualization) -> String {
@@ -270,44 +293,49 @@ struct DocumentReviewScreen: View {
 /// Fields that are amounts of money (typed values are confirmed as money in the pack's currency).
 private let moneyFields: Set<String> = ["grossPay", "netPay", "ytdGross", "hourlyRate"]
 
-/// A source line on a paper slip, the found value circled (dashed when a check flags it).
-private struct SourceSlip: View {
+/// The document line a value came from, in IBM Plex Mono on raised, the value circled (dashed when a
+/// check flags it).
+private struct SourceLine: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
     let source: String
     let value: String?
     let flagged: Bool
-    let index: Int
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(model.t("review.source")).type(.caption, size: 12).foregroundStyle(theme.onPaperMuted)
-            ForEach(Array(source.components(separatedBy: "\n").enumerated()), id: \.offset) { _, line in
-                FlowLayout(spacing: 0, lineSpacing: 2) {
-                    ForEach(Array(Self.chunks(line).enumerated()), id: \.offset) { _, chunk in
-                        let ringed = value.map { chunk.trimmingCharacters(in: .whitespaces) == $0 } ?? false
-                        Text(verbatim: chunk)
-                            .type(.monoValue)
-                            .foregroundStyle(theme.onPaper)
-                            .padding(.horizontal, ringed ? 6 : 0)
-                            .overlay {
-                                if ringed {
-                                    Capsule()
-                                        .strokeBorder(theme.onPaper, style: StrokeStyle(lineWidth: theme.border, dash: flagged ? [4, 3] : []))
-                                        .rotationEffect(theme.rotation("ring"))
-                                        .padding(.vertical, -2)
-                                }
+            Text(model.t("review.source")).font(.system(size: 12)).foregroundStyle(theme.note)
+            ScrollView(.horizontal, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(Array(source.components(separatedBy: "\n").enumerated()), id: \.offset) { _, line in
+                        HStack(spacing: 0) {
+                            ForEach(Array(Self.chunks(line).enumerated()), id: \.offset) { _, chunk in
+                                let ringed = value.map { chunk.trimmingCharacters(in: .whitespaces) == $0 } ?? false
+                                Text(verbatim: chunk)
+                                    .font(Font(DesignFonts.uiFont(.mono, weight: ringed ? 600 : 400, size: 13)))
+                                    .foregroundStyle(theme.ink)
+                                    .padding(.horizontal, ringed ? 6 : 0)
+                                    .overlay {
+                                        if ringed {
+                                            Capsule().strokeBorder(theme.ink, style: StrokeStyle(lineWidth: 1.5, dash: flagged ? [4, 3] : []))
+                                                .padding(.vertical, -2)
+                                        }
+                                    }
+                                    .fixedSize()
                             }
+                        }
                     }
                 }
+                .padding(.vertical, 2)
             }
         }
+        .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .paper(tilt: .degrees(theme.tokens.numbers("rotation.paperSmall")[safe: index % 2] ?? -1), size: .small)
+        .background(RoundedRectangle(cornerRadius: 12).fill(theme.raised))
         .accessibilityElement(children: .combine)
     }
 
-    /// Runs of spaces and runs of other characters, so a line can wrap and a value can be circled alone.
+    /// Runs of spaces and runs of other characters, so a value can be circled alone.
     static func chunks(_ line: String) -> [String] {
         var out: [String] = [], chunk = ""
         for ch in line {
@@ -322,9 +350,10 @@ private struct SourceSlip: View {
 private struct FieldRow: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicType
     let field: ReviewField
     let flagged: Bool
-    let index: Int
+    @State private var open = false
     @State private var editing = false
     @State private var text = ""
     @State private var choice = ""
@@ -333,19 +362,60 @@ private struct FieldRow: View {
     private var label: String { model.t("field.paystub.\(field.name)") }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(label).type(.label).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
-                Spacer()
-                if field.confirmed && !editing {
-                    Text(model.t("review.confirmed")).type(.label, size: 12).foregroundStyle(theme.ink)
+        VStack(alignment: .leading, spacing: 10) {
+            let layout = dynamicType.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6)) : AnyLayout(HStackLayout(spacing: 10))
+            HStack(spacing: 10) {
+                // Tapping the row opens where the value was found; the label is the row's button for VoiceOver.
+                layout {
+                    Text(label).font(.system(size: 17)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityHint(model.t("review.source"))
+                        .accessibilityAction { withAnimation { open.toggle() } }
+                    Text(valueText ?? model.t(model.document.notRead.contains(field.name) ? "review.fieldNotRead" : "review.notFound"))
+                        .font(valueText == nil ? .system(size: 13) : Font(DesignFonts.uiFont(.mono, weight: 500, size: 15)))
+                        .foregroundStyle(valueText == nil ? theme.note : theme.ink)
+                        .multilineTextAlignment(.trailing)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("field.\(field.name).value")
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { withAnimation { open.toggle() } }
+                confirmMark
+            }
+            if flagged { NoteText(text: model.t("review.flagged")) }
+            if open || editing {
+                if let source = field.source, !editing { SourceLine(source: source, value: valueText, flagged: flagged) }
+                if editing { editor } else {
+                    LinkText(label: model.t(field.found ? "review.edit" : "review.typeIt"), size: 15, id: "field.\(field.name).edit") { startEditing() }
+                        .accessibilityLabel("\(model.t("review.edit")): \(label)")
                 }
             }
-            if editing { editor } else { display }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(minHeight: 52)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("field.\(field.name)")
+    }
+
+    /// An empty ring to confirm a found value; an ink check disc once confirmed.
+    @ViewBuilder private var confirmMark: some View {
+        if field.confirmed {
+            StateMark(state: .pass)
+                .accessibilityElement()
+                .accessibilityLabel(model.t("review.confirmed"))
+        } else if field.found {
+            Button { model.editDocument { $0.confirm(field.name) } } label: {
+                Circle().strokeBorder(theme.ink, lineWidth: 1.5).frame(width: 22, height: 22).frame(width: 44, height: 44)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .padding(.vertical, -11)
+            .padding(.horizontal, -11)
+            .accessibilityLabel("\(model.t("review.confirm")): \(label)")
+            .accessibilityIdentifier("field.\(field.name).confirm")
+        }
     }
 
     private var valueText: String? {
@@ -358,38 +428,6 @@ private struct FieldRow: View {
         }
     }
 
-    @ViewBuilder private var display: some View {
-        HStack(alignment: .center, spacing: 12) {
-            if let source = field.source {
-                SourceSlip(source: source, value: valueText, flagged: flagged, index: index)
-                    .frame(maxWidth: 240, alignment: .leading)
-            }
-            Spacer(minLength: 0)
-            HStack(spacing: 6) {
-                Text(valueText ?? model.t(model.document.notRead.contains(field.name) ? "review.fieldNotRead" : "review.notFound"))
-                    .type(valueText == nil ? .small : .monoDocument)
-                    .foregroundStyle(valueText == nil ? theme.inkMuted : theme.ink)
-                    .multilineTextAlignment(.trailing)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityIdentifier("field.\(field.name).value")
-                if field.confirmed { StateIcon(state: .pass) }
-            }
-            .layoutPriority(1)
-        }
-        HStack(spacing: 14) {
-            if field.found && !field.confirmed {
-                Button(model.t("review.confirm")) { model.editDocument { $0.confirm(field.name) } }
-                    .buttonStyle(OutlineStyle())
-                    .accessibilityLabel("\(model.t("review.confirm")): \(label)")
-                    .accessibilityIdentifier("field.\(field.name).confirm")
-            }
-            Button(model.t("review.edit")) { startEditing() }
-                .buttonStyle(TextLinkStyle())
-                .accessibilityLabel("\(model.t("review.edit")): \(label)")
-                .accessibilityIdentifier("field.\(field.name).edit")
-        }
-    }
-
     @ViewBuilder private var editor: some View {
         switch field.kind {
         case .choice(let values):
@@ -398,20 +436,26 @@ private struct FieldRow: View {
                 ForEach(values, id: \.self) { v in Button(model.t("option.\(field.name).\(v)")) { choice = v } }
             } label: {
                 HStack {
-                    Text(choice.isEmpty ? model.t("option.none") : model.t("option.\(field.name).\(choice)")).type(.body)
+                    Text(choice.isEmpty ? model.t("option.none") : model.t("option.\(field.name).\(choice)")).font(.system(size: 17))
                     Spacer()
-                    Image(systemName: "chevron.down").font(.system(size: 13, weight: .bold)).accessibilityHidden(true)
+                    Image(systemName: "chevron.up.chevron.down").font(.system(size: 13, weight: .semibold)).accessibilityHidden(true)
                 }
                 .foregroundStyle(theme.ink)
-                .fieldStyle(mono: false)
+                .padding(.horizontal, 14)
+                .frame(minHeight: 48)
+                .background(RoundedRectangle(cornerRadius: 12).fill(theme.raised))
             }
             .accessibilityLabel(label)
             .accessibilityIdentifier("field.\(field.name).input")
         default:
             TextField("", text: $text)
+                .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 17)))
                 .keyboardType(field.kind == .number ? .decimalPad : .default)
                 .autocorrectionDisabled()
-                .fieldStyle(error: invalid)
+                .padding(.horizontal, 14)
+                .frame(minHeight: 48)
+                .background(RoundedRectangle(cornerRadius: 12).fill(theme.raised))
+                .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(invalid ? theme.ink : .clear, style: StrokeStyle(lineWidth: 1.5, dash: [5, 4])))
                 .accessibilityLabel(label)
                 .accessibilityIdentifier("field.\(field.name).input")
                 .toolbar {
@@ -423,25 +467,14 @@ private struct FieldRow: View {
                     }
                 }
             if field.kind == .number, let n = Rehydrator.parseTypedAmount(text) {
-                HStack(spacing: 6) {
-                    Circle().fill(theme.ink).frame(width: 10, height: 10).accessibilityHidden(true)
-                    Text(model.t("review.understood", ["amount": moneyFields.contains(field.name) ? model.money(n, cents: true)
-                                                                                                    : model.documentAmount(n)]))
-                }
-                .type(.label, size: 13.5)
-                .foregroundStyle(theme.ink)
-                .accessibilityElement(children: .combine)
+                Understood(text: model.t("review.understood", ["amount": moneyFields.contains(field.name) ? model.money(n, cents: true)
+                                                                                                         : model.documentAmount(n)]))
             }
         }
-        if invalid {
-            Label(model.t("review.invalidNumber"), systemImage: "exclamationmark.triangle").type(.label, size: 13.5).foregroundStyle(theme.ink)
-        }
+        if invalid { NoticeCard(text: model.t("review.invalidNumber")) }
         HStack(spacing: 10) {
-            Button(model.t("review.save")) { save() }
-                .buttonStyle(ChipStyle(selected: true))
-                .accessibilityIdentifier("field.\(field.name).save")
-            Button(model.t("review.cancel")) { editing = false; invalid = false }
-                .buttonStyle(OutlineStyle())
+            PrimaryButton(label: model.t("review.save"), id: "field.\(field.name).save") { save() }
+            SecondaryButton(label: model.t("review.cancel"), filled: false) { editing = false; invalid = false }
         }
     }
 
@@ -491,59 +524,52 @@ private struct DeductionRowView: View {
         VStack(alignment: .leading, spacing: 8) {
             if editing || row.amount == nil && !row.found {
                 TextField("", text: $text)
+                    .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 17)))
                     .keyboardType(.decimalPad)
-                    .fieldStyle(error: invalid)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 48)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(theme.raised))
                     .accessibilityLabel(model.t("field.deduction.amount"))
                 Menu {
                     Button(model.t("option.none")) { kind = "" }
                     ForEach(Self.kinds, id: \.self) { k in Button(model.t("option.deduction.\(k)")) { kind = k } }
                 } label: {
                     HStack {
-                        Text(kind.isEmpty ? model.t("field.deduction.kind") : model.t("option.deduction.\(kind)")).type(.body)
+                        Text(kind.isEmpty ? model.t("field.deduction.kind") : model.t("option.deduction.\(kind)")).font(.system(size: 17))
                         Spacer()
-                        Image(systemName: "chevron.down").font(.system(size: 13, weight: .bold)).accessibilityHidden(true)
+                        Image(systemName: "chevron.up.chevron.down").font(.system(size: 13, weight: .semibold)).accessibilityHidden(true)
                     }
                     .foregroundStyle(theme.ink)
-                    .fieldStyle(mono: false)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 48)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(theme.raised))
                 }
                 .accessibilityLabel(model.t("field.deduction.kind"))
-                if invalid {
-                    Label(model.t("review.invalidNumber"), systemImage: "exclamationmark.triangle").type(.label, size: 13.5).foregroundStyle(theme.ink)
-                }
-                Button(model.t("review.save")) {
+                if invalid { NoticeCard(text: model.t("review.invalidNumber")) }
+                PrimaryButton(label: model.t("review.save")) {
                     guard let n = Rehydrator.parseTypedAmount(text) else { invalid = true; return }
                     model.editDocument { $0.setDeduction(row.id, amount: n, kind: kind.isEmpty ? nil : kind) }
                     editing = false
                 }
-                .buttonStyle(ChipStyle(selected: true))
             } else {
-                HStack(alignment: .center, spacing: 12) {
-                    if let source = row.source {
-                        SourceSlip(source: source, value: row.amount.map(model.documentAmount), flagged: false, index: 0)
-                            .frame(maxWidth: 240, alignment: .leading)
-                    }
-                    Spacer(minLength: 0)
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(row.kind.map { model.t("option.deduction.\($0)") } ?? model.t("field.deduction.amount")).type(.label, size: 12)
-                        Text(row.amount.map(model.documentAmount) ?? model.t("review.notFound")).type(.monoDocument)
-                    }
-                    .foregroundStyle(theme.ink)
-                    .layoutPriority(1)
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(row.kind.map { model.t("option.deduction.\($0)") } ?? model.t("field.deduction.amount")).font(.system(size: 15))
+                        .foregroundStyle(theme.ink).frame(maxWidth: .infinity, alignment: .leading)
+                    Text(row.amount.map(model.documentAmount) ?? model.t("review.notFound"))
+                        .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 15))).foregroundStyle(theme.ink)
+                    if row.confirmed { StateMark(state: .pass) }
                 }
+                if let source = row.source { SourceLine(source: source, value: row.amount.map(model.documentAmount), flagged: false) }
                 HStack(spacing: 14) {
                     if row.found && !row.confirmed {
-                        Button(model.t("review.confirm")) { model.editDocument { $0.confirmDeduction(row.id) } }.buttonStyle(OutlineStyle())
-                    } else if row.confirmed {
-                        Text(model.t("review.confirmed")).type(.label, size: 12).foregroundStyle(theme.ink)
+                        LinkText(label: model.t("review.confirm"), size: 15) { model.editDocument { $0.confirmDeduction(row.id) } }
                     }
-                    Button(model.t("review.edit")) {
+                    LinkText(label: model.t("review.edit"), size: 15) {
                         text = row.amount.map { $0.rounded() == $0 ? String(Int($0)) : String($0) } ?? ""
                         kind = row.kind ?? ""
                         editing = true
                     }
-                    .buttonStyle(TextLinkStyle())
-                    Button(model.t("review.removeDeduction")) { model.editDocument { $0.removeDeduction(row.id) } }
-                        .buttonStyle(TextLinkStyle())
+                    LinkText(label: model.t("review.removeDeduction"), size: 15) { model.editDocument { $0.removeDeduction(row.id) } }
                 }
             }
         }

@@ -1,4 +1,4 @@
-// The theme: every colour, type size, space, radius, rotation and duration comes from
+// The theme: every colour, type size, space, radius and duration comes from
 // shared/design/tokens.json (bundled under Shared/design/). Colours follow light and dark.
 
 import SilhouetteCore
@@ -49,7 +49,6 @@ struct Theme: Sendable {
     var gutter: CGFloat { space("gutter") }
     var minTapTarget: CGFloat { max(size("minTapTarget"), 44) }
     var border: CGFloat { CGFloat(tokens.number("size.borderStrong") ?? 1.5) }
-    func rotation(_ name: String) -> Angle { .degrees(tokens.number("rotation.\(name)") ?? 0) }
     var readingWidth: CGFloat { size("readingWidth") }
 
     // MARK: Motion
@@ -63,21 +62,6 @@ struct Theme: Sendable {
         guard c.count == 4 else { return .easeOut(duration: d) }
         return .timingCurve(c[0], c[1], c[2], c[3], duration: d)
     }
-
-    // MARK: Shadow (only paper casts one): "0 16px 24px -14px rgba(13,18,48,.5)"
-
-    struct PaperShadow { let y: CGFloat; let blur: CGFloat; let spread: CGFloat; let opacity: Double }
-
-    func shadow(_ name: String) -> PaperShadow {
-        let text = tokens.json["shadow"]?[name]?.stringValue ?? "0 16px 24px -14px rgba(13,18,48,.5)"
-        let parts = text.components(separatedBy: " ").compactMap { Double($0.replacingOccurrences(of: "px", with: "")) }
-        let alpha = text.range(of: #",\s*\.?[0-9.]+\)"#, options: .regularExpression)
-            .flatMap { Double(text[$0].trimmingCharacters(in: CharacterSet(charactersIn: ", )"))) } ?? 0.5
-        return PaperShadow(y: CGFloat(parts[safe: 1] ?? 16), blur: CGFloat(parts[safe: 2] ?? 24), spread: CGFloat(parts[safe: 3] ?? -14), opacity: alpha)
-    }
-
-    /// The colour of every paper shadow (`rgba(13,18,48,…)` in the tokens).
-    static let shadowColor = Color(red: 13 / 255, green: 18 / 255, blue: 48 / 255)
 }
 
 extension Array {
