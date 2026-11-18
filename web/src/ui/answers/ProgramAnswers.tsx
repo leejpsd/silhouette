@@ -150,7 +150,7 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
                   <dl className="limit-rows" data-testid="why-limit">
                     <div>
                       <dt className="visually-hidden">{t('detail.limit')}</dt>
-                      <dd className="limit-of">{l.limit}</dd>
+                      <dd className="limit-of">{l.minimum ? t('why.atLeast', { limit: l.limit }) : l.limit}</dd>
                     </div>
                     <div>
                       <dt className="visually-hidden">{t('detail.you')}</dt>
@@ -160,7 +160,8 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
                       </dd>
                     </div>
                   </dl>
-                  {yours !== null && limit !== null && (
+                  {/* A bar shows how far under a ceiling the person is; a floor ("at least 1") has none. */}
+                  {yours !== null && limit !== null && !l.minimum && (
                     <span className="limit-bar" aria-hidden="true">
                       <span style={{ inlineSize: `${Math.min(100, (yours / limit) * 100)}%` }} />
                     </span>

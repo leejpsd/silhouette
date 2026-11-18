@@ -194,7 +194,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
     await expect(page.getByTestId('annual-income')).toBeVisible();
-    await expect(page.locator('.basis')).toContainText('through 2026-10-20');
+    await expect(page.locator('.basis')).toContainText('through Oct 20, 2026');
     await expect(page.getByTestId('basis-date')).toHaveAttribute('data-source', 'payDate');
     await expect(page.getByTestId('basis-date')).toHaveText('The date is the pay date: no end of the pay period was found.');
     // Without a period end, the pay date is the date shown with the leading values.
@@ -313,20 +313,23 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.getByRole('button', { name: 'Send', exact: true }).click();
     await expect(page.getByTestId('task-error')).toHaveAttribute('data-kind', 'app-check');
     await page.getByRole('button', { name: 'Type the numbers instead' }).click();
-    await expect(page.getByTestId('value-grossPay')).toHaveText('Not found');
+    // Typing the numbers: nothing was looked for, so nothing is "not found".
+    await expect(page.getByTestId('value-grossPay')).toHaveText('Not typed yet');
   });
 
   test('manual entry with no model at all', async ({ page }) => {
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'Type the numbers yourself' }).first().click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Type the numbers yourself');
+    // Nothing typed yet: the action answers the press with what it needs.
+    await page.getByRole('button', { name: 'Check these values' }).click();
+    await expect(page.getByRole('alert')).toContainText('Type at least your gross pay');
+    // A row opens straight into its field, with focus.
     await page.getByTestId('field-grossPay').locator('.field-toggle').click();
-
-    await page.getByRole('button', { name: 'Change: Gross pay this period' }).click();
+    await expect(page.getByTestId('field-grossPay').getByRole('textbox')).toBeFocused();
     await page.getByTestId('field-grossPay').getByRole('textbox').fill('2,500.00');
     await page.getByRole('button', { name: 'Save' }).click();
     await page.getByTestId('field-payFrequency').locator('.field-toggle').click();
-
-    await page.getByRole('button', { name: 'Change: How often you are paid' }).click();
     await page.getByTestId('field-payFrequency').getByRole('combobox').selectOption('biweekly');
     await page.getByRole('button', { name: 'Save' }).click();
     await page.getByRole('button', { name: 'Check these values' }).click();

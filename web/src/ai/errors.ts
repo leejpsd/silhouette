@@ -11,6 +11,7 @@ export type TaskErrorKind =
   | 'cancelled' // the person cancelled; a late reply is never shown
   | 'blocked' // the reply stated a result twice (shared/prompts/OUTPUT_CHECKS.md)
   | 'network'
+  | 'server' // the service answered with an error of its own (5xx): the person's connection is fine
   | 'on-device-unavailable'
   | 'bad-output' // the model answered, but not with JSON of the expected shape
   | 'on-device-unreliable' // the on-device answer failed the checks and the person chose to keep everything on the device
@@ -54,6 +55,7 @@ export function classifyError(error: unknown): TaskError {
     return new TaskError(/per.?day|daily/i.test(message) ? 'quota-daily' : 'quota', message, status);
   }
   if (e.name === 'AbortError' && lower.includes('abort')) return new TaskError('cancelled', message, status);
+  if (status !== undefined && status >= 500) return new TaskError('server', message, status);
   if (code.endsWith('fetch-error') || e.name === 'TypeError' || lower.includes('failed to fetch') || lower.includes('network')) {
     return new TaskError('network', message, status);
   }

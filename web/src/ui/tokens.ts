@@ -110,6 +110,8 @@ export function installTokens(doc: Document): void {
 
 /** Width from which the app uses two columns (content left, block right). */
 export const WIDE_FROM: number = tokens.layout.wide.from;
+/** From this window width the content area has room for two columns (layout.wide.twoColumnsFrom). */
+export const TWO_COLUMNS_FROM: number = tokens.layout.wide.twoColumnsFrom;
 /** Display type scales with the system text size up to this factor. */
 export const DISPLAY_SCALE_CAP: number = tokens.typography.sizeSteps.displayScaleCap;
 export const HEADLINE_FLOOR: number = tokens.typography.sizeSteps.headlineFloor;

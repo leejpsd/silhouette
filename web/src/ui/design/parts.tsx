@@ -179,6 +179,9 @@ export function Sheet({
       aria-labelledby={labelledBy ?? `${id}-label`}
       data-testid={testId}
       onCancel={(e) => {
+        // A sheet opened from inside this one sends its own cancel up through here: only the sheet that
+        // was asked to close closes.
+        if (e.target !== ref.current) return;
         e.preventDefault();
         onClose();
       }}
@@ -215,7 +218,7 @@ export function Sheet({
 export function useFit(
   ref: RefObject<HTMLElement | null>,
   design: number,
-  { maxLines = 4, step = 4, floor = HEADLINE_FLOOR, wideDesign }: { maxLines?: number; step?: number; floor?: number; wideDesign?: number | undefined } = {},
+  { maxLines = 4, step = 4, floor = HEADLINE_FLOOR, wideDesign, cap = DISPLAY_SCALE_CAP }: { maxLines?: number; step?: number; floor?: number; wideDesign?: number | undefined; cap?: number } = {},
   deps: readonly unknown[] = [],
 ) {
   useLayoutEffect(() => {
@@ -225,7 +228,7 @@ export function useFit(
       // Display type scales with the text size up to the cap (root font size relative to 16 px).
       // Headlines on wide screens start at their PC size (typography displayPc / titlePc).
       const root = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
-      const scaled = Math.min(Math.max(root, 1), DISPLAY_SCALE_CAP);
+      const scaled = Math.min(Math.max(root, 1), cap);
       const start = wideDesign !== undefined && window.innerWidth >= WIDE_FROM ? wideDesign * scaled : design * scaled;
       const min = start * floor;
       let size = start;
@@ -268,21 +271,23 @@ export function useFit(
       observer.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [design, maxLines, step, floor, wideDesign, ...deps]);
+  }, [design, maxLines, step, floor, wideDesign, cap, ...deps]);
 }
 
 /** Display text that steps down to fit (for program names, amounts and similar). */
-export function FitText({ as: Tag = 'span', size, maxLines = 2, step = 4, floor = HEADLINE_FLOOR, className, children, ...rest }: {
+export function FitText({ as: Tag = 'span', size, maxLines = 2, step = 4, floor = HEADLINE_FLOOR, cap, className, children, ...rest }: {
   as?: 'span' | 'h1' | 'h2' | 'p' | 'div';
   size: number;
   maxLines?: number;
   step?: number;
   floor?: number;
+  /** How far the size follows the text size; display type stops at the cap, labels follow it all the way. */
+  cap?: number;
   className?: string;
   children: ReactNode;
 } & Omit<React.HTMLAttributes<HTMLElement>, 'className' | 'children'>) {
   const ref = useRef<HTMLElement>(null);
-  useFit(ref, size, { maxLines, step, floor }, [children]);
+  useFit(ref, size, { maxLines, step, floor, ...(cap !== undefined ? { cap } : {}) }, [children]);
   return (
     <Tag ref={ref as never} className={className} {...rest}>
       {children}
@@ -292,8 +297,11 @@ export function FitText({ as: Tag = 'span', size, maxLines = 2, step = 4, floor 
 
 /** The label of a main action: text 17 / 700 on one line, stepping down 1 px at a time (to 80 %) to stay there. */
 export function ActionLabel({ children }: { children: ReactNode }) {
+  // At large text sizes the label grows with the rest of the text and may take two lines; it is not held
+  // at its design size while everything around it doubles.
+  const large = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 > 1.25;
   return (
-    <FitText className="action-label" size={17} maxLines={1} step={1} floor={0.8}>
+    <FitText className="action-label" size={17} maxLines={large ? 2 : 1} step={1} floor={0.8} cap={Infinity}>
       {children}
     </FitText>
   );

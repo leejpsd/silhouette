@@ -8,7 +8,7 @@ import { BANDS, PACK, isDemoPack, isDraftPack } from './pack';
 import { buildSteps, computeVerdicts, sanitizeAnswers, type AnswerValue, type QuickCheckAnswers } from './quickcheck';
 import { navigate, useRoute } from './router';
 import { DemoBanner, Header, LeavingBar, RailSteps } from './Chrome';
-import { BlockProvider, BottomBlock, useWide } from './design/block';
+import { BlockProvider, BottomBlock, useWide, useTwoColumns } from './design/block';
 import { StartScreen } from './screens/Start';
 import { QuestionScreen } from './screens/Question';
 import { ResultsAside, ResultsScreen } from './screens/Results';
@@ -56,6 +56,7 @@ export function App() {
   const [notice, setNotice] = useState<string | null>(null);
   const route = useRoute();
   const wide = useWide();
+  const twoColumns = useTwoColumns();
 
   useEffect(() => {
     let live = true;
@@ -157,13 +158,13 @@ export function App() {
     if (route.name === 'question') screen = <QuestionScreen key={route.id} route={route} />;
     else if (route.name === 'results') screen = <ResultsScreen />;
     else if (route.name === 'program')
-      screen = wide ? (
-        <div className="split">
-          <ResultsAside current={route.id} />
+      // One tree at every width: crossing the two-column width must not start the program page again
+      // (an open step before sending, an answer in progress). The list is added beside it, or not.
+      screen = (
+        <div className={twoColumns ? 'split' : 'unsplit'}>
+          {twoColumns && <ResultsAside current={route.id} />}
           <ProgramScreen key={route.id} id={route.id} />
         </div>
-      ) : (
-        <ProgramScreen key={route.id} id={route.id} />
       );
     else if (route.name === 'doc') screen = <DocumentAddScreen />;
     else if (route.name === 'discover') screen = <DiscoverScreen />;

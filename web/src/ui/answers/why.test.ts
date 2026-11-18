@@ -18,7 +18,7 @@ describe('"Why this result"', () => {
     const { verdict, reasons, rows } = why({ householdSize: 3, numChildren: 0, annualIncome: 36000, housing: 'owner', hasOlderMember: 'yes' }, 'senior-food');
     expect(verdict).toBe('maybe');
     expect(reasons[0]).toMatchObject({ state: 'mixed', exception: ['hasOlderMember'] });
-    expect(rows[0]!.limits).toEqual([{ limit: '$34,000', yours: '$36,000' }]);
+    expect(rows[0]!.limits).toEqual([{ limit: '$34,000', yours: '$36,000', minimum: false }]);
     expect(rows[0]!.stateText).toBe('Over this limit, but still possible because of: Someone 60 or older.');
     expect(rows[0]!.stateText).not.toContain('exact income');
   });
@@ -48,7 +48,7 @@ describe('"Why this result"', () => {
     expect(reasons[0]).toMatchObject({ state: 'mixed' });
     expect(reasons[0]!.exception).toBeUndefined();
     expect(rows[0]!.stateText).toBe('Depends on your exact income');
-    expect(rows[0]!.limits).toEqual([{ limit: '$34,000', yours: '$30,000–$44,999' }]);
+    expect(rows[0]!.limits).toEqual([{ limit: '$34,000', yours: '$30,000–$44,999', minimum: false }]);
   });
 
   it('a plain comparison keeps its limit and state', () => {

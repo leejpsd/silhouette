@@ -178,7 +178,8 @@ export function RailSteps({ route }: { route: Route }) {
       href: routeHref({ name: 'results' }),
       current: route.name === 'results' || route.name === 'program' || route.name === 'discover' || route.name === 'nearby',
       done: checked && route.name !== 'results' && route.name !== 'program',
-      note: Object.keys(answers).length > 0 ? String(results.filter((r) => r.verdict !== 'unlikely').length) : '',
+      // The count stands once every question has been answered or skipped: before that it would change under the eye.
+      note: steps.every((step) => answers[step.id] !== undefined) ? String(results.filter((r) => r.verdict !== 'unlikely').length) : '',
     },
     {
       key: 'paystub',

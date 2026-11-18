@@ -7,7 +7,7 @@
 // the content and only the count row stays pinned.
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { WIDE_FROM } from '../tokens';
+import { TWO_COLUMNS_FROM, WIDE_FROM } from '../tokens';
 
 export type BlockMode = 'compact' | 'standard' | 'decision';
 
@@ -142,7 +142,20 @@ export function BottomBlock({ count, label }: { count: ReactNode; label: string 
 
 /** Whether the wide layout (the rail and the content area) is in use (layout.wide.from). */
 export function useWide(): boolean {
-  const query = `(min-width: ${WIDE_FROM}px)`;
+  return useMinWidth(WIDE_FROM);
+}
+
+/**
+ * Whether the content area has room for two columns (layout.wide.twoColumnsFrom): the results list beside
+ * a program, the two documents of the silhouette, Start's example beside its headline. Between the two
+ * widths the rail is there and the content is one column.
+ */
+export function useTwoColumns(): boolean {
+  return useMinWidth(TWO_COLUMNS_FROM);
+}
+
+function useMinWidth(from: number): boolean {
+  const query = `(min-width: ${from}px)`;
   const [wide, setWide] = useState(() => window.matchMedia?.(query).matches ?? false);
   useEffect(() => {
     const list = window.matchMedia?.(query);

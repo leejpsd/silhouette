@@ -156,3 +156,35 @@ test('an amount the rules would refuse is not read back as understood', async ({
   await expect(page.getByTestId('amount-understood')).toHaveText('');
   await expect(next(page)).toHaveAttribute('data-ready', 'false');
 });
+
+test('Escape on a sheet opened from another sheet closes only that one', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Details', exact: true }).click();
+  const record = page.getByTestId('record-sheet');
+  await expect(record).toBeVisible();
+  await record.getByRole('button', { name: 'Delete everything' }).first().click();
+  const confirmation = record.getByTestId('delete-sheet');
+  await expect(confirmation).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(confirmation).toBeHidden();
+  await expect(record).toBeVisible();
+});
+
+test('on a short phone the first question shows its control above the dock', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'a narrow layout');
+  await page.setViewportSize({ width: 320, height: 568 });
+  await start(page);
+  await expect.poll(() => clearOfDock(page, '.counter')).toBe(true);
+});
+
+test('between 808 and 1100 px the content is one column: a program is not squeezed beside the list', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'phone', 'a wide layout');
+  await page.setViewportSize({ width: 900, height: 800 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Start Quick Check' }).click();
+  for (let i = 0; i < 8; i++) await answerCurrent(page, DEFAULT_ANSWERS);
+  await page.locator('.program-link').first().click();
+  await expect(page.locator('.results-aside')).toHaveCount(0);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(page.locator('.results-aside')).toHaveCount(1);
+});

@@ -117,7 +117,7 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
       setError(
         step.kind === 'int'
           ? isMoneyVariable(step.id)
-            ? t(key, { min: formatMoney(locale, step.min), max: formatMoney(locale, step.max) })
+            ? t(key === 'q.error.integer' ? 'q.error.money' : key, { min: formatMoney(locale, step.min), max: formatMoney(locale, step.max) })
             : t(key, { min: step.min, max: step.max })
           : t(key),
       );
@@ -169,6 +169,16 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
     if (!reducedMotion()) el?.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 250, easing: 'ease-out' });
   }, [refused]);
 
+  // The currency sign of the rule pack, shown in front of a money field (it is not typed).
+  const moneySign = formatMoney(locale, 0).replace(/[\d\s.,]/g, '');
+  // On a short screen the question's own control must be on the first screen: the headline starts
+  // smaller there, and if the control still falls under the dock the page is brought to it.
+  const short = window.innerHeight < 700;
+  const answerArea = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => bringIntoView(answerArea.current?.nextElementSibling, { instant: true }));
+    return () => cancelAnimationFrame(frame);
+  }, []);
   const formId = `${headingId}-form`;
   const formRef = useRef(formId);
   formRef.current = formId;
@@ -222,6 +232,12 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
       if (target && (target.isContentEditable || target instanceof HTMLTextAreaElement || (target instanceof HTMLInputElement && !['radio', 'checkbox'].includes(target.type)))) return;
       if (document.querySelector('dialog[open]')) return;
       const key = e.key.toLowerCase();
+      // A number typed anywhere on a counter question goes into the counter: the field takes focus and
+      // the digit lands in it.
+      if (/^\d$/.test(key) && inputRef.current?.classList.contains('counter-value')) {
+        inputRef.current.focus({ preventScroll: true });
+        return;
+      }
       if (yesNo && (key === 'y' || key === 'n')) {
         e.preventDefault();
         pressKey(key.toUpperCase());
@@ -258,8 +274,8 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
           <span key={s.id} className={i <= index ? (i === index && travel === 'forward' ? 'on filling' : 'on') : i === index + 1 && travel === 'back' ? 'emptying' : ''} />
         ))}
       </div>
-      <div className="stack-10">
-        <ScreenHeading id={headingId} size={50} wideSize={84} maxLines={4}>
+      <div className="stack-10" ref={answerArea}>
+        <ScreenHeading id={headingId} size={short ? 38 : 50} wideSize={84} maxLines={4}>
           {t(dynamicKey(`question.${step.id}.label`))}
         </ScreenHeading>
         {hasHelp && (
@@ -271,24 +287,42 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
 
       {step.kind === 'int' && isMoneyVariable(step.id) && (
         <div className="field amount-field" data-error={error ? 'true' : undefined}>
-          <input
-            ref={inputRef}
-            className="input mono"
-            inputMode="decimal"
-            autoComplete="off"
-            aria-labelledby={headingId}
-            aria-describedby={[describedBy, `${headingId}-understood`].filter(Boolean).join(' ')}
-            aria-invalid={error ? true : undefined}
-            value={draft.text}
-            onChange={(e) => {
-              setDraft({ ...draft, text: moneyOnly(e.target.value) });
-              setError(null);
-            }}
-          />
+          <span className="money-input">
+            <span className="money-sign" aria-hidden="true">
+              {moneySign}
+            </span>
+            <input
+              ref={inputRef}
+              className="input mono"
+              inputMode="decimal"
+              autoComplete="off"
+              maxLength={16}
+              enterKeyHint={isLast ? 'done' : 'next'}
+              aria-labelledby={headingId}
+              aria-describedby={[describedBy, `${headingId}-understood`].filter(Boolean).join(' ')}
+              aria-invalid={error ? true : undefined}
+              value={draft.text}
+              onChange={(e) => {
+                const text = moneyOnly(e.target.value);
+                setDraft({ ...draft, text });
+                // An amount outside what the rules take is said at once, and never read back as understood.
+                const amount = parseTypedAmount(text);
+                setError(amount !== undefined && (amount > step.max || amount < step.min) ? t('q.error.money', { min: formatMoney(locale, step.min), max: formatMoney(locale, step.max) }) : null);
+              }}
+            />
+          </span>
           <p id={`${headingId}-understood`} className="understood" aria-live="polite" data-testid="amount-understood">
             {(() => {
               const amount = parseTypedAmount(draft.text);
-              return draft.text.trim() === '' || amount === undefined ? '' : t('review.understood', { amount: formatMoney(locale, Math.round(amount)) });
+              const shown = draft.text.trim() !== '' && amount !== undefined && amount >= step.min && amount <= step.max;
+              return shown ? (
+                <>
+                  <Check size={14} />
+                  {t('review.understood', { amount: formatMoney(locale, Math.round(amount)) })}
+                </>
+              ) : (
+                ''
+              );
             })()}
           </p>
         </div>
@@ -404,6 +438,10 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
                       {t('q.private')}
                     </span>
                   </div>
+                  <span className="money-input">
+                  <span className="money-sign" aria-hidden="true">
+                    {moneySign}
+                  </span>
                   <input
                     id={`${step.id}-exact`}
                     className="input mono"
@@ -419,6 +457,7 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
                       setError(null);
                     }}
                   />
+                  </span>
                   <p id={`${step.id}-understood`} className="understood" aria-live="polite" data-testid="amount-understood">
                     {amountText !== '' && <Check size={14} />}
                     {amountText}
@@ -456,6 +495,9 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
         </fieldset>
       )}
 
+      {/* The message stands right under what it is about, before the note about privacy. */}
+      {!(step.kind === 'int' && !isMoneyVariable(step.id)) && errorLine}
+
       {step.sensitive && (
         <p id={privateId} className="private">
           <Lock />
@@ -465,8 +507,6 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
           </span>
         </p>
       )}
-
-      {!(step.kind === 'int' && !isMoneyVariable(step.id)) && errorLine}
 
       <BlockActions>
         {/* The action first; beside it the skip link, or under it when the label needs the width. */}

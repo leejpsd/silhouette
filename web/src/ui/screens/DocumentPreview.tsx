@@ -1,4 +1,5 @@
 // Skeleton preview: exactly what could leave the device, before anything is sent.
+import { bringIntoView } from '../design/motion';
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { placeholderCounts, buildReview, type SourceSegment } from '../../core/review';
 import { cancelPreparedReading, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
@@ -22,7 +23,7 @@ import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { phoneLines } from '../doc/phone-view';
 import { rememberReading } from '../doc/last-reading';
-import { BlockActions, useWide } from '../design/block';
+import { BlockActions, useTwoColumns } from '../design/block';
 import { ChevronLeft, ChevronRight, LeaveGlyph } from '../design/icons';
 import { useOnline } from '../design/online';
 import { ActionLabel, Spinner } from '../design/parts';
@@ -64,7 +65,8 @@ function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>, language: s
 export function DocumentPreviewScreen() {
   const { t } = useApp();
   const { doc, update } = useDocument();
-  const wide = useWide();
+  // The two documents stand side by side only where there is room for both (two columns).
+  const wide = useTwoColumns();
   const [sending, setSending] = useState(false);
   // Where a reading is: on this device (main values, then deductions), checking, or sending after the device.
   const [stage, setStage] = useState<PointerStage | null>(null);
@@ -111,6 +113,17 @@ export function DocumentPreviewScreen() {
   const undoRef = useRef<HTMLButtonElement>(null);
   const tall = useTallPaper(docRef);
   const freshRef = useRef<{ skeleton: string; quiet: boolean; set: ReadonlySet<number> } | null>(null);
+  // What happens after Send is seen: the stage line comes into view above the dock when the reading
+  // starts, and what went wrong, with the ways on, when it fails.
+  const statusLine = useRef<HTMLDivElement>(null);
+  const errorTop = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (sending) bringIntoView(statusLine.current);
+  }, [sending]);
+  const failed = doc.error !== null && doc.error !== undefined;
+  useEffect(() => {
+    if (failed) requestAnimationFrame(() => bringIntoView(errorTop.current?.parentElement?.querySelector('.button-row') ?? errorTop.current));
+  }, [failed]);
   const [quiet, setQuiet] = useState(false);
   // Switching views: the values turn into chips (or back) with one short wipe, then the flag is dropped
   // so that hiding a word afterwards does not replay it.
@@ -156,8 +169,12 @@ export function DocumentPreviewScreen() {
   const hide = (word: string, button?: HTMLButtonElement) => {
     const words = [...(docRef.current?.querySelectorAll('button.word') ?? [])];
     focusWord.current = button && button === document.activeElement ? words.indexOf(button) : null;
+    shownAs.current.set(word.toLowerCase(), word);
     setHidden([...new Set([...doc.hiddenWords, word.toLowerCase()])]);
   };
+  // A hidden word is matched without regard to case, but it is named as it stands in the document.
+  const shownAs = useRef(new Map<string, string>());
+  const asShown = (word: string) => shownAs.current.get(word) ?? word;
   const unhide = (word: string) => setHidden(doc.hiddenWords.filter((w) => w !== word));
   const onDeviceFirst = ON_DEVICE_LANGUAGES.has(doc.language) && deviceStatus === 'available';
 
@@ -302,7 +319,7 @@ export function DocumentPreviewScreen() {
       {!wide && <p className="small muted">{t('preview.leadShort')}</p>}
       {lastHidden !== undefined && (
         <div className="hide-row">
-          <p className="small">{t('preview.youHid', { word: lastHidden })}</p>
+          <p className="small">{t('preview.youHid', { word: asShown(lastHidden) })}</p>
           <button ref={undoRef} type="button" className="text-link" disabled={sending} onClick={() => unhide(lastHidden)}>
             {t('preview.undo')}
           </button>
@@ -317,7 +334,7 @@ export function DocumentPreviewScreen() {
             {doc.hiddenWords.map((w) => (
               <li key={w}>
                 <button type="button" className="chip-button" disabled={sending} onClick={() => unhide(w)}>
-                  {t('preview.unhide', { word: w })}
+                  {t('preview.unhide', { word: asShown(w) })}
                 </button>
               </li>
             ))}
@@ -337,7 +354,7 @@ export function DocumentPreviewScreen() {
         <p className="small muted">{t('leaving.network')}</p>
       </details>
       {sending && <Loading />}
-      <div role="status" className="status-line">
+      <div role="status" className="status-line" ref={statusLine}>
         {(sending || readingAhead) && <Spinner />}
         {/* Keyed by the stage: each stage's sentence fades in in place of the last one. */}
         <span key={sending ? (stage ?? 'sending') : readingAhead ? 'ahead' : 'idle'} data-stage>
@@ -346,6 +363,7 @@ export function DocumentPreviewScreen() {
       </div>
       {doc.error && (
         <>
+          <span ref={errorTop} />
           <TaskErrorNotice error={doc.error} />
           <div className="button-row">
             {/* A daily limit does not recover by trying again now. */}
@@ -392,7 +410,7 @@ export function DocumentPreviewScreen() {
             </button>
           ) : (
             <button type="button" className="send-button" disabled={sending} onClick={() => void send()}>
-              <ActionLabel>{t('leaving.send')}</ActionLabel>
+              <ActionLabel>{sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : t('leaving.send')}</ActionLabel>
               <span className="action-arrow">
                 <LeaveGlyph />
               </span>

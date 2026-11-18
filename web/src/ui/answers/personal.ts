@@ -20,7 +20,8 @@ export interface WhyRow {
   /** What the state means here: the state word, or what the state depends on when it is not the income. */
   readonly stateText: string;
   /** `limit {limit}, yours {value}` for each comparison that produces the state (rules in why.ts notes). */
-  readonly limits: readonly { readonly limit: string; readonly yours: string }[];
+  /** `minimum`: the rule asks for at least this much (a floor, not a ceiling): no bar, and the screen says "at least". */
+  readonly limits: readonly { readonly limit: string; readonly yours: string; readonly minimum: boolean }[];
   /** How the criterion was met another way, and which household size a limit is for. */
   readonly notes: readonly string[];
 }
@@ -70,7 +71,7 @@ export function whyRows(t: Translate, locale: Locale, program: Program, reasons:
       stateText,
       limits: shown.map((c) => {
         const isMoney = money && isMoneyVariable(c.variable);
-        return { limit: shownValue(locale, c.limit as number, '', isMoney), yours: shownValue(locale, c.yours, t('send.unanswered'), isMoney) };
+        return { limit: shownValue(locale, c.limit as number, '', isMoney), yours: shownValue(locale, c.yours, t('send.unanswered'), isMoney), minimum: c.op === '>' || c.op === '>=' };
       }),
       notes,
     };

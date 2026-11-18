@@ -7,7 +7,7 @@ import { firstOpenStep } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import type { ReactNode } from 'react';
-import { BlockActions } from '../design/block';
+import { BlockActions, useTwoColumns } from '../design/block';
 import { ArrowRight, Clock, Eye, Phone } from '../design/icons';
 import { Bar, ActionLabel } from '../design/parts';
 
@@ -15,6 +15,7 @@ import { Bar, ActionLabel } from '../design/parts';
 const EXAMPLE_INCOME = 29183;
 
 export function StartScreen({ notice }: { notice: string | null }) {
+  const twoColumns = useTwoColumns();
   const { t, locale, steps, answers, resetAnswers } = useApp();
   const started = Object.keys(answers).length > 0;
   const open = firstOpenStep(steps, answers);
@@ -65,7 +66,7 @@ export function StartScreen({ notice }: { notice: string | null }) {
   };
 
   return (
-    <div className="screen start">
+    <div className="screen start" data-columns={twoColumns ? 2 : 1}>
       <div role="status" className="notice-slot">
         {notice && <p className="notice">{notice}</p>}
       </div>

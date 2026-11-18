@@ -153,7 +153,11 @@ export function basisText(annual: Annualization, stubs: readonly PaystubValues[]
     while (digits < 6 && Math.round((ytd / Number(exact.toFixed(digits))) * 12) !== annual.annualIncome) digits++;
     // Written like the amounts beside it (the pack's number format).
     const months = new Intl.NumberFormat(NUMBER_FORMAT ?? locale, { minimumFractionDigits: 0, maximumFractionDigits: digits }).format(Number(exact.toFixed(digits)));
-    return t('review.basis.ytd', { ytd: money(locale, annual.basis.ytdCents ?? 0), date: annual.basis.referenceDate ?? '', months, amount });
+    const iso = annual.basis.referenceDate ?? '';
+    const parsed = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(`${iso}T00:00:00Z`) : null;
+    // Written as a date, not as 2026-10-15, and never broken across lines.
+    const date = parsed ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(parsed).replace(/ /g, '\u00A0') : iso;
+    return t('review.basis.ytd', { ytd: money(locale, annual.basis.ytdCents ?? 0), date, months, amount });
   }
   const used = annual.basis.stubsUsed.map((i) => Math.round((stubs[i]?.grossPay ?? 0) * 100));
   const periods = annual.basis.periodsPerYear ?? 0;
@@ -226,13 +230,17 @@ export function DocumentReviewScreen() {
     setInvalid(null);
   };
 
+  // Typing the numbers with nothing typed yet: there is nothing to check.
+  const nothingTyped = manual && rows.every((r) => r.text === '') && deductions.length === 0;
+  const [manualHint, setManualHint] = useState(false);
   const annualHeading = useRef<HTMLHeadingElement>(null);
   const checkButton = useRef<HTMLButtonElement>(null);
   const check = () => {
     const current = toValues(rows, deductions);
     setResult(validatePaystubs(Raw.of([...doc.confirmedStubs, current]), PACK.jurisdiction));
-    // The button is replaced by the result: focus goes to the yearly income it worked out.
-    requestAnimationFrame(() => annualHeading.current?.focus());
+    // The button is replaced by the result: focus goes to the yearly income it worked out, and the
+    // figure with its arithmetic comes into view (not only the heading at the bottom edge).
+    requestAnimationFrame(() => bringIntoView(annualHeading.current?.closest('.validation'), { focus: annualHeading.current }));
   };
 
   const currentIndex = doc.confirmedStubs.length;
@@ -281,7 +289,7 @@ export function DocumentReviewScreen() {
           </span>
         );
       }
-      if (row.text === '') return <span className="not-found">{t('review.notFound')}</span>;
+      if (row.text === '') return <span className="not-found">{t(manual ? 'review.notTyped' : 'review.notFound')}</span>;
       if (row.kind === 'enum') return t(dynamicKey(`option.payFrequency.${row.text}`));
       // A found value is shown as the document writes it (its currency is the document's).
       return row.text;
@@ -298,7 +306,16 @@ export function DocumentReviewScreen() {
             className="field-toggle"
             aria-expanded={open || isEditing}
             aria-controls={detailId}
-            onClick={() => setOpened((o) => (o.includes(row.name) ? o.filter((n) => n !== row.name) : [...o, row.name]))}
+            onClick={() => {
+              // Typing the numbers: there is no source line to show, so the row opens straight into its field.
+              if (manual && !isEditing) {
+                setEditing(row.name);
+                setDraft(row.text);
+                setInvalid(null);
+                return;
+              }
+              setOpened((o) => (o.includes(row.name) ? o.filter((n) => n !== row.name) : [...o, row.name]));
+            }}
           >
             <span className="field-label" id={`${inputId}-label`}>
               {label(row.name)}
@@ -522,13 +539,19 @@ export function DocumentReviewScreen() {
       </a>
       <div className="stack-8">
         <ScreenHeading size={50} wideSize={64} maxLines={3}>
-          {t('review.title')}
+          {manual ? t('doc.manual') : t('review.title')}
         </ScreenHeading>
         {doc.extraction && (
           <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
         )}
       </div>
       <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
+      {manual && manualHint && nothingTyped && (
+        <p className="error" role="alert">
+          <Alert />
+          {t('review.manualNothing')}
+        </p>
+      )}
 
       {!manual && pending > 0 && (
         <div className="confirm-all">
@@ -627,7 +650,7 @@ export function DocumentReviewScreen() {
               {t(dynamicKey(`review.failure.${result.failure ?? 'no-gross'}`))}
             </p>
           )}
-          <h2 id="checks-title" className="section-heading">
+          <h2 id="checks-title" className={shownChecks.length > 0 ? 'section-heading' : 'visually-hidden'}>
             {t('review.checksTitle')}
           </h2>
           <ul className="checks">
@@ -674,7 +697,29 @@ export function DocumentReviewScreen() {
             </div>
           </>
         ) : (
-          <button ref={checkButton} type="button" className="action" disabled={leadPending > 0} onClick={check}>
+          <button
+            ref={checkButton}
+            type="button"
+            className="action"
+            data-ready={leadPending === 0 && !nothingTyped}
+            aria-describedby={leadPending > 0 ? pendingId : undefined}
+            onClick={() => {
+              // Not ready: the press is answered. It shows what still needs the person, in view.
+              if (leadPending > 0) {
+                setFoldNotice(true);
+                const first = document.querySelector<HTMLElement>('.doc-review .field-row[data-status="pending"]');
+                bringIntoView(first, { focus: first?.querySelector<HTMLElement>('.state-mark') });
+                return;
+              }
+              if (nothingTyped) {
+                setManualHint(true);
+                const first = document.querySelector<HTMLElement>('.doc-review .field-row .field-toggle');
+                bringIntoView(first, { focus: first });
+                return;
+              }
+              check();
+            }}
+          >
             <ActionLabel>{t('review.continue')}</ActionLabel>
             <span className="action-arrow">
               <ArrowRight />

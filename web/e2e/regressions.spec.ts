@@ -196,7 +196,7 @@ test.describe('regressions', () => {
     const before = await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name).sort());
     expect(before.some((n) => n?.startsWith('firebase'))).toBe(true);
     await (await openDeleteEverything(page, 'demo')).getByRole('button', { name: 'Delete everything' }).click();
-    await expect(page.getByText(/Erased: answers, documents in progress/)).toBeVisible();
+    await expect(page.getByText(/Erased: your answers, documents in progress/)).toBeVisible();
     await expect.poll(() => page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name))).toEqual([]);
     expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('firebase')))).toEqual([]);
   });

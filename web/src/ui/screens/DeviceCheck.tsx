@@ -6,7 +6,7 @@ import { useApp } from '../context';
 import { ScreenHeading } from '../Heading';
 import { BlockActions } from '../design/block';
 import { ArrowRight, Check, ChevronLeft } from '../design/icons';
-import { ActionLabel } from '../design/parts';
+import { ActionLabel, Spinner } from '../design/parts';
 import { dynamicKey } from '../i18n';
 import { routeHref } from '../router';
 import {
@@ -180,11 +180,10 @@ export function DeviceCheckScreen() {
       )}
       {hasModel && (
         <BlockActions>
+          {/* While it runs, the button that started it says which case it is on and cannot be pressed again. */}
           <button type="button" className="action" disabled={view?.kind === 'live' && view.running !== null} onClick={() => void run()} data-testid="run-device-check">
-            <ActionLabel>{t('deviceCheck.run')}</ActionLabel>
-            <span className="action-arrow">
-              <ArrowRight />
-            </span>
+            <ActionLabel>{view?.kind === 'live' && view.running !== null ? t('deviceCheck.running', { n: view.running, total }) : t('deviceCheck.run')}</ActionLabel>
+            <span className="action-arrow">{view?.kind === 'live' && view.running !== null ? <Spinner /> : <ArrowRight />}</span>
           </button>
         </BlockActions>
       )}

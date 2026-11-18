@@ -44,6 +44,7 @@ export function DocumentAddScreen() {
   const [pdfError, setPdfError] = useState(false);
   const [photoError, setPhotoError] = useState<TaskError | null>(null);
   const [photoStatus, setPhotoStatus] = useState<DeviceStatus | null>(null);
+  const recheckPhoto = useCallback(() => void photoDeviceStatus(doc.language).then(setPhotoStatus), [doc.language]);
   const languageId = useId();
   const pasteId = useId();
 
@@ -261,7 +262,8 @@ export function DocumentAddScreen() {
       </button>
       </div>
 
-      <ModelStatus language={doc.language} />
+      {/* When the model's state changes (a download finished), the photo row is asked again. */}
+      <ModelStatus language={doc.language} onStatus={recheckPhoto} />
       <p className="card-note">{t('doc.lead')}</p>
 
       {/* The other samples, behind one row; the one for the document's language is the main action. */}

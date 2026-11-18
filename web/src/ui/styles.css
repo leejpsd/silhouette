@@ -516,10 +516,18 @@ main h3.small {
 /* Not yet: a disabled action is an outline, not faded, so it keeps its contrast. */
 .action:disabled,
 .action[aria-disabled='true'] {
-  border: 1.5px dashed currentColor;
+  border: 0;
+  box-shadow: inset 0 0 0 1.5px rgb(from var(--ink) r g b / 45%);
   background: transparent;
   color: var(--ink);
-  cursor: not-allowed;
+  cursor: default;
+}
+
+.block .action:disabled,
+.block .action[aria-disabled='true'],
+.sheet .action:disabled,
+.sheet .action[aria-disabled='true'] {
+  box-shadow: inset 0 0 0 1.5px rgb(from var(--on-block) r g b / 45%);
 }
 
 .block .action:disabled,
@@ -555,10 +563,17 @@ main h3.small {
   color: var(--redact);
 }
 
-.send-button:disabled {
+.send-button:disabled,
+.send-button[aria-disabled='true'] {
   background: transparent;
-  border: 1.5px dashed currentColor;
+  box-shadow: inset 0 0 0 1.5px rgb(from var(--on-block) r g b / 45%);
   color: var(--on-block);
+  cursor: default;
+}
+
+.send-button[aria-disabled='true'] .action-arrow {
+  background: transparent;
+  color: inherit;
 }
 
 .send-button:disabled .action-arrow {
@@ -1245,10 +1260,21 @@ dialog.sheet .option-word {
 .record-headline {
   margin: 0;
   font-family: var(--font-display);
-  font-size: var(--type-record-headline-size);
+  /* As large as the design where it fits; smaller on a narrow sheet or with longer words (Spanish), so
+     that it never runs off the sheet. Each part ("3 sent," / "0 kept.") stays whole on its line. */
+  font-size: min(var(--type-record-headline-size), 13.5cqi);
   font-weight: 900;
   line-height: 0.9;
   text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+
+.record-headline > span {
+  display: inline-block;
+}
+
+.record {
+  container-type: inline-size;
 }
 
 /* "2 sent," on redact: it left (ink on redact, on every surface). */
@@ -4695,6 +4721,116 @@ main h2.judge-title {
 }
 
 
+/* Money fields show the currency sign in front of what is typed (it is not typed). */
+.money-input {
+  position: relative;
+  display: block;
+}
+
+.money-sign {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--note);
+  pointer-events: none;
+}
+
+.money-input .input.mono {
+  padding-left: 34px;
+}
+
+.exact-row.selected .money-sign {
+  color: rgb(from var(--ground) r g b / 60%);
+}
+
+/* Focus on the ink row is drawn in the row's text colour, not in ink on ink. */
+.exact-row.selected .input:focus-visible {
+  outline-color: var(--ground);
+}
+
+/* A sheet's handle, title and close button stay at its top while its content scrolls (narrow screens;
+   a modal on wide screens is as tall as its content). */
+@media (max-width: 807px) {
+  .sheet-drag {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: -10px calc(-1 * var(--gutter)) 0;
+    padding: 10px var(--gutter) 8px;
+    background: var(--block);
+  }
+}
+
+/* Official sources: rows under a rule, the title at the left with its leave-the-site mark always at
+   the right, the date it was read under it. No browser bullets, and room between the apply button and
+   the heading. */
+.official .official-sources {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.official .official-sources li {
+  margin: 0;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.official .official-sources li a {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: 0;
+}
+
+.official .official-sources li a .icon {
+  margin-top: 4px;
+}
+
+.official .official-sources .source-date {
+  margin-top: 2px;
+}
+
+.official-program > p + .small.strong {
+  margin-top: var(--space-md);
+}
+
+.official-program > .small.strong {
+  margin-bottom: 6px;
+}
+
+/* The draft line and its "More": one paragraph that wraps like text, never a link alone on a line. */
+.demo-line p {
+  text-wrap: pretty;
+}
+
+/* More samples: one sample to a row, so no label wraps inside a chip. */
+.sample-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* A deduction: the amount and its kind one above the other when the kind's name needs the width. */
+.deduction-edit {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+
+.deduction-edit select {
+  width: 100%;
+  min-width: 0;
+}
+
+/* A program page without the list beside it: the wrapper is not a box of its own. */
+.unsplit {
+  display: contents;
+}
+
 /* Sheets and modals: the sheet rises while the page dims; both leave faster than they arrive. The page
    behind does not scroll while one is open. On touch the sheet follows a drag on its handle. */
 html {
@@ -4834,6 +4970,55 @@ dialog.sheet[open][data-closing='true']::backdrop {
 @keyframes segment-empty {
   from {
     background-size: 100% 100%;
+  }
+}
+
+/* ---------- Forced colours (Windows contrast themes) ----------
+   The system replaces every colour and drops backgrounds, so shapes that were told apart by fill get an
+   edge: actions, the dock, a selected answer, token chips, the counter. */
+@media (forced-colors: active) {
+  .action,
+  .send-button,
+  .outline-button,
+  .tile,
+  .range,
+  .exact-row,
+  .option-rows,
+  .counter,
+  .count,
+  .badge,
+  .paper,
+  .card,
+  .toggle,
+  .toggle::before {
+    border: 1px solid CanvasText;
+  }
+
+  .block {
+    border-top: 1px solid CanvasText;
+  }
+
+  .tile.selected,
+  .range.selected,
+  .exact-row.selected,
+  .option-row.selected,
+  .toggle button[aria-pressed='true'] {
+    outline: 3px solid Highlight;
+    outline-offset: -3px;
+  }
+
+  .tok,
+  .bar {
+    border: 1px solid CanvasText;
+    forced-color-adjust: none;
+    background: CanvasText;
+    color: Canvas;
+  }
+
+  .action[data-ready='false'],
+  .action:disabled,
+  .send-button:disabled {
+    border-style: dashed;
   }
 }
 
@@ -5082,7 +5267,8 @@ dialog.sheet[open][data-closing='true']::backdrop {
   }
 
   /* One column up to 760 px on most screens. */
-  main > .screen {
+  main > .screen,
+  main > .unsplit > .screen {
     max-width: var(--size-content-max);
   }
 
@@ -5170,7 +5356,9 @@ dialog.sheet[open][data-closing='true']::backdrop {
 
   /* Start: the headline and the way in on the left, the silhouette beside it. */
   /* Start: the two columns centred in the content area, the legal line at its foot. */
-  main > .start {
+  /* Two columns only where both fit (layout.wide.twoColumnsFrom); before that the example stands under
+     the way in. */
+  main > .start[data-columns='2'] {
     display: grid;
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
     grid-template-rows: auto 1fr auto;
@@ -5307,11 +5495,15 @@ dialog.sheet[open][data-closing='true']::backdrop {
     white-space: nowrap;
   }
 
-  /* On the results page itself there is room for the whole sentence; only the narrow list beside a
-     program keeps it to one line. */
+  /* On the results page itself there is room for the whole sentence. The narrow list beside a program
+     shows the name and the status only: a sentence cut to "A federal tax credit f…" says nothing. */
   .results-main .program-summary {
     overflow: visible;
     white-space: normal;
+  }
+
+  .results-aside .program-summary {
+    display: none;
   }
 
   .program-status-line {

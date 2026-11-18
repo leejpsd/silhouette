@@ -246,7 +246,7 @@ export interface PointerResult extends TaskResult<unknown> {
 }
 
 /** Errors that come from the cloud side; repeating the call in the cloud would not help. */
-const CLOUD_FAILURES: ReadonlySet<TaskErrorKind> = new Set(['app-check', 'permission', 'api-not-enabled', 'quota', 'quota-daily', 'network']);
+const CLOUD_FAILURES: ReadonlySet<TaskErrorKind> = new Set(['app-check', 'permission', 'api-not-enabled', 'quota', 'quota-daily', 'network', 'server']);
 
 async function callPointerModel(
   skeleton: Skeleton,

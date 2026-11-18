@@ -2,7 +2,10 @@
 // an answer with its provenance, read aloud, Google Search Suggestions, source lists, the rule
 // pack's official information, and the hook that ties a request to consent and the session cache.
 
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { leftDevice, outboundState, subscribeOutbound } from '../../data/outbound';
+import { askDeviceStatus } from '../../ai/device-model';
+import { useOnline } from '../design/online';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
 import { pcm16ToFloat, pcmRate, type Source } from '../../core/explain';
 import { classifyError, TaskError } from '../../ai/errors';
 import { planReadAloud, readAloud, requestBody, type ModelAnswer, type PlannedCall, type TaskResult } from '../../ai/tasks';
@@ -159,7 +162,7 @@ export function SendPanel({
   onSkip: () => void;
   publicOnly?: boolean;
 }) {
-  const { t } = useApp();
+  const { t, locale } = useApp();
   const heading = useRef<HTMLHeadingElement>(null);
   const id = useId();
   const [showBody, setShowBody] = useState(false);
@@ -175,7 +178,21 @@ export function SendPanel({
     if (dialog.current?.open) dialog.current.close();
     then();
   };
-  const cloud = destinationOf(plan) === 'cloud';
+  // Device first only means the device when it has a model for this. Without one the request can only go
+  // to the cloud, and the step says so (never "On this device" over a Send that leaves).
+  const [deviceReady, setDeviceReady] = useState<boolean | null>(destinationOf(plan) === 'cloud' ? false : null);
+  useEffect(() => {
+    if (destinationOf(plan) === 'cloud') return;
+    let live = true;
+    void askDeviceStatus(locale).then((status) => live && setDeviceReady(status === 'available'), () => live && setDeviceReady(false));
+    return () => {
+      live = false;
+    };
+  }, [plan, locale]);
+  const cloud = destinationOf(plan) === 'cloud' || deviceReady === false;
+  const online = useOnline();
+  // Nothing has gone to the cloud yet in this session: the first request brings two technical ones with it.
+  const firstRequest = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length === 0, () => true);
   return (
     <dialog
       ref={dialog}
@@ -253,15 +270,23 @@ export function SendPanel({
           </Paper>
         )}
         <BlockActions mode="decision" inline>
-          <p className="routing-line">
-            <strong className={`badge ${cloud ? 'badge-cloud' : 'badge-device'}`}>{cloud ? t('badge.cloud') : t('badge.onDevice')}</strong>
-            <span>{t(dynamicKey(`reason.${plan.reason}`))}</span>
-          </p>
+          {deviceReady !== null && (
+            <p className="routing-line">
+              <strong className={`badge ${cloud ? 'badge-cloud' : 'badge-device'}`}>{cloud ? t('badge.cloud') : t('badge.onDevice')}</strong>
+              <span>{cloud && destinationOf(plan) !== 'cloud' ? `${t(dynamicKey(`reason.${plan.reason}`))} (${t('reason.detail.noDeviceModel')})` : cloud ? t(dynamicKey(`reason.${plan.reason}`)) : t('tasks.first')}</span>
+            </p>
+          )}
+          {!online && (
+            <p className="dashed-note" role="status" data-testid="send-offline">
+              {t('state.offlineSend')}
+            </p>
+          )}
           <div className="decision" data-testid="send-decision">
             <button type="button" className="outline-button tall" onClick={decide(onSkip)}>
               {t('send.keepShort')}
             </button>
-            <button type="button" className="send-button" onClick={decide(onSend)}>
+            {/* Offline, Send cannot act: it is drawn so, and the line above says why. */}
+            <button type="button" className="send-button" aria-disabled={online ? undefined : true} onClick={online ? decide(onSend) : undefined}>
               <ActionLabel>{t('send.send')}</ActionLabel>
               <span className="action-arrow">
                 <LeaveGlyph />
@@ -275,6 +300,9 @@ export function SendPanel({
           ) : (
             <p className="send-note">{t('send.byteForByte')}</p>
           )}
+          {/* What saying yes covers beyond this one request, said before it is given. */}
+          {firstRequest && <p className="send-note">{t('send.firstAlso')}</p>}
+          {!publicOnly && <p className="send-note">{t('send.sessionNote')}</p>}
           <p className="send-note">{t('leaving.network')}</p>
         </BlockActions>
       </div>
@@ -322,6 +350,7 @@ export function errorCopy(error: TaskError): CopyKey {
   if (error.kind === 'quota') return 'error.quota';
   if (error.kind === 'blocked') return 'answers.blocked';
   if (error.kind === 'network') return 'error.network';
+  if (error.kind === 'server') return 'error.server';
   if (error.kind === 'app-check') return 'error.app-check';
   return 'answers.error';
 }
