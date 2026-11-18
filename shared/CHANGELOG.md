@@ -1,5 +1,16 @@
 # Contract changelog
 
+## v1.21 — 2026-11-18
+
+How the interface moves, as tokens every platform shares, and one sentence for the multi-choice question.
+
+| Change | Why |
+|---|---|
+| **Motion tokens** (`design/tokens.json`, `motion`; the file stays version 7, keys are only added): `duration.reveal` 250 (something opening or arriving, and the scroll that brings it into view), `duration.exit` 180 (leaving is faster than arriving), `delay.stagger` 40 (items arriving one after another, capped at 8), `distance.step` 24, `distance.sheet` 32, `distance.press` 0.98 (the scale of a pressed control), and `motion.use`: one sentence per named motion (press, short, reveal, exit, medium, stagger, fade) saying where it is used | 150 ms is too short for a height change and 450 ms is slow under the hand; the platforms had started to choose their own values |
+| `q.noneOfThese` ("None of these" / "Ninguna de estas"): the label of the primary action on a multi-choice question while nothing is ticked | Pressing "Next" with nothing ticked records "none of these"; the action now says what it records |
+
+Platforms: use the motion names for the same moments (`motion.use`); under reduced motion every movement becomes at most a short fade. iOS already uses 250 ms for reveals. Reference tests: 29.
+
 ## v1.20 — 2026-11-18
 
 One name for the thing the person holds, per platform. On the iPhone a single screen said "this iPhone", "On this phone" and "Keep everything on this device".

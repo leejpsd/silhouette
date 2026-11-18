@@ -622,5 +622,6 @@
   "judges.factNotAvailable": "No disponible",
   "judges.factFallback": "Si no está",
   "judges.factReplays": "Muestra una ejecución grabada",
-  "judges.more": "Qué hace cada paso"
+  "judges.more": "Qué hace cada paso",
+  "q.noneOfThese": "Ninguna de estas"
 }
