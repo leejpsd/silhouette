@@ -36,7 +36,7 @@ final class DocumentFlowUITests: XCTestCase {
         app.tapButton("review.results")
         XCTAssertTrue(caleitc.waitForExistence(timeout: 5))
         XCTAssertEqual(caleitc.value as? String, "You may qualify")
-        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
     }
 
     func testHideAWordInThePreview() {
@@ -73,7 +73,7 @@ final class DocumentFlowUITests: XCTestCase {
         XCTAssertTrue(app.element("review.title").waitForExistence(timeout: 15))
         let gross = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "1,271.88")).firstMatch
         XCTAssertTrue(gross.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
         app.tapButton("leaving.details")
         let headline = app.element("record.headline")
         XCTAssertTrue(headline.waitForExistence(timeout: 5))
@@ -91,7 +91,7 @@ final class DocumentFlowUITests: XCTestCase {
         XCTAssertTrue(unreliable.waitForExistence(timeout: 15))
         XCTAssertTrue(unreliable.label.contains("nothing was sent"), unreliable.label)
         XCTAssertFalse(app.element("review.title").exists)
-        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
         XCTAssertTrue(app.buttons["preview.typeInstead"].exists)
 
         app.tapButton("preview.sendSilhouette")
@@ -112,10 +112,10 @@ final class DocumentFlowUITests: XCTestCase {
         let hours = app.element("field.hoursWorked.value")
         app.scrollIntoView(hours)
         XCTAssertTrue(hours.waitForExistence(timeout: 5))
-        XCTAssertTrue(hours.label.hasPrefix("Not read on this device"), hours.label)
+        XCTAssertTrue(hours.label.hasPrefix("Not read on this iPhone"), hours.label)
         let deductions = app.element("review.deductionsNotRead")
         app.scrollIntoView(deductions)
         XCTAssertTrue(deductions.exists)
-        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
     }
 }

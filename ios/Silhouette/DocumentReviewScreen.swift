@@ -11,8 +11,10 @@ import SwiftUI
 struct DocumentReviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Environment(\.pinsActions) private var pinsActions
     @State private var moreOpen = false
     @State private var scrollTarget: String?
+    @State private var pendingNudges = 0
 
     /// What decides the yearly income: shown first. The date is the pay date, or the period end without one.
     static let leadFields = ["grossPay", "ytdGross", "payDate", "payFrequency"]
@@ -94,6 +96,8 @@ struct DocumentReviewScreen: View {
                         }
                         NoteText(text: model.t("review.pending", ["count": String(doc.pendingCount)]))
                             .accessibilityIdentifier("review.pending")
+                            .id("review.pending")
+                            .sensoryFeedback(Haptic.error, trigger: pendingNudges)
                     }
                     SectionLabel(text: model.t("review.inPaystub"), large: false)
                     ListCard {
@@ -134,6 +138,8 @@ struct DocumentReviewScreen: View {
                         SecondaryButton(label: model.t("review.addAnother"), filled: false, id: "review.addAnother") { model.addAnotherPaystub() }
                     }
                     changes
+                    // On a short iPhone and at accessibility sizes the action is part of the content.
+                    if !pinsActions { VStack(spacing: 4) { blockAction(validation) } }
                 }
                 .gutter()
                 .padding(.vertical, 8)
@@ -145,10 +151,12 @@ struct DocumentReviewScreen: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            VStack(spacing: 4) { blockAction(validation) }
-                .gutter()
-                .padding(.vertical, 8)
-                .background(theme.ground)
+            if pinsActions {
+                VStack(spacing: 4) { blockAction(validation) }
+                    .gutter()
+                    .padding(.vertical, 8)
+                    .background(theme.ground)
+            }
         }
     }
 
@@ -156,15 +164,30 @@ struct DocumentReviewScreen: View {
         if model.incomeChange != nil {
             PrimaryButton(label: model.t("q.finish"), id: "review.results") { model.showResults() }
         } else if let a = validation?.annualization {
-            PrimaryButton(label: model.t("review.useIncome", ["amount": model.money(Double(a.annualIncome))]), id: "review.useIncome") {
+            // Quiet while values wait for confirmation; pressed then, it shows which (never silent).
+            PrimaryButton(label: model.t("review.useIncome", ["amount": model.money(Double(a.annualIncome))]), id: "review.useIncome",
+                          ready: model.document.pendingCount == 0) {
+                guard model.document.pendingCount == 0 else { return nudgePending() }
                 model.useIncome(a.annualIncome)
                 scrollTarget = "review.changes"
             }
-            .disabled(model.document.pendingCount > 0)
         } else {
-            PrimaryButton(label: model.t("review.continue"), id: "review.continue") { scrollTarget = "review.annual" }
-                .disabled(model.document.pendingCount > 0)
+            PrimaryButton(label: model.t("review.continue"), id: "review.continue",
+                          ready: model.document.pendingCount == 0 && anyValue) {
+                guard model.document.pendingCount == 0 else { return nudgePending() }
+                scrollTarget = "review.annual"
+            }
         }
+    }
+
+    /// Something has been read or typed (typing the numbers starts with none).
+    private var anyValue: Bool { model.document.fieldsForDisplay.contains { $0.value != nil } }
+
+    /// A press while values still wait: scroll to the line that says how many, read it out, and tap.
+    private func nudgePending() {
+        scrollTarget = "review.pending"
+        pendingNudges += 1
+        AccessibilityNotification.Announcement(model.t("review.pending", ["count": String(model.document.pendingCount)])).post()
     }
 
     // MARK: Yearly income and checks
@@ -196,7 +219,7 @@ struct DocumentReviewScreen: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.top, 10)
-            } else if let failure = validation.failure {
+            } else if let failure = validation.failure, model.document.extraction != nil || anyValue {
                 NoticeCard(text: model.t("review.failure.\(failure)"))
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("review.failure")
@@ -379,7 +402,9 @@ private struct FieldRow: View {
                         .accessibilityAddTraits(.isButton)
                         .accessibilityHint(model.t("review.source"))
                         .accessibilityAction { withMotion(Motion.reveal) { open.toggle() } }
-                    Text(valueText ?? model.t(model.document.notRead.contains(field.name) ? "review.fieldNotRead" : "review.notFound"))
+                    // Typing the numbers: an empty row invites typing ("Type it"), it was never "not found".
+                    Text(valueText ?? model.t(model.document.extraction == nil ? "review.typeIt"
+                                              : model.document.notRead.contains(field.name) ? "review.fieldNotRead" : "review.notFound"))
                         .modifier(ScaledSystemFont(size: valueText == nil ? 13 : 15, weight: .regular, mono: valueText != nil))
                         .foregroundStyle(valueText == nil ? theme.note : theme.ink)
                         .multilineTextAlignment(.trailing)

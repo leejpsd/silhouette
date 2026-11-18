@@ -35,6 +35,35 @@ struct DeviceCheckScreen: View {
         }
     }
 
+    /// "05:05 UTC" from an ISO date-time, when it has a time.
+    static func recordedTime(_ iso: String?) -> String? {
+        guard let iso, let t = iso.firstIndex(of: "T"), iso.count >= iso.distance(from: iso.startIndex, to: t) + 6 else { return nil }
+        let start = iso.index(after: t)
+        return String(iso[start..<iso.index(start, offsetBy: 5)]) + " UTC"
+    }
+
+    /// The run and share actions (or back to the live run from a recording).
+    private var actions: some View {
+            VStack(spacing: 6) {
+            if recording != nil {
+                PrimaryButton(label: model.t("deviceCheck.live"), id: "deviceCheck.live") { recording = nil }
+            } else {
+                if let file = run?.file, let url = run?.savedURL ?? Self.write(file) {
+                    ShareLink(item: url) {
+                        Label(model.t("deviceCheck.download"), systemImage: "square.and.arrow.up")
+                            .sfFont(17, weight: .semibold)
+                            .foregroundStyle(theme.ink)
+                            .frame(maxWidth: .infinity, minHeight: 48)
+                            .background(Capsule().fill(theme.sheet))
+                    }
+                    .accessibilityIdentifier("deviceCheck.share")
+                }
+                PrimaryButton(label: model.t("deviceCheck.run"), id: "deviceCheck.run", busy: run?.running == true) { start() }
+                    .disabled(!available || run?.running == true)
+            }
+        }
+    }
+
     var body: some View {
         let shown = shownFile
         GroundScroll {
@@ -49,7 +78,6 @@ struct DeviceCheckScreen: View {
                     .sfFont(15, weight: .semibold).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("deviceCheck.recordingMeta")
             }
-            if let shown, !(shown["cases"]?.arrayValue ?? []).isEmpty { headlines(shown) }
             if recording != nil {
                 NoticeCard(text: model.t("deviceCheck.recordingNote"), systemImage: "record.circle").accessibilityIdentifier("deviceCheck.recordingNote")
             }
@@ -67,6 +95,9 @@ struct DeviceCheckScreen: View {
                     .background(RoundedRectangle(cornerRadius: 20).fill(theme.sheet))
                     .accessibilityIdentifier("deviceCheck.repeat")
             }
+            // The actions sit in the content, under what they act on: pinned, they covered the
+            // switch and the results as they arrived.
+            actions
             if let run, recording == nil {
                 Group {
                     if run.running {
@@ -81,7 +112,8 @@ struct DeviceCheckScreen: View {
                         .accessibilityIdentifier("deviceCheck.saved")
                 }
             }
-            if let shown, !(shown["cases"]?.arrayValue ?? []).isEmpty { summary(shown); caseList(shown) }
+            // Results arrive below the status line; nothing above them moves while a run streams in.
+            if let shown, !(shown["cases"]?.arrayValue ?? []).isEmpty { headlines(shown); summary(shown); caseList(shown) }
             recordings
           }
           .gutter()
@@ -89,38 +121,17 @@ struct DeviceCheckScreen: View {
         }
         .navigationTitle(model.t("deviceCheck.title"))
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            VStack(spacing: 6) {
-                if recording != nil {
-                    PrimaryButton(label: model.t("deviceCheck.live"), id: "deviceCheck.live") { recording = nil }
-                } else {
-                    if let file = run?.file, let url = run?.savedURL ?? Self.write(file) {
-                        ShareLink(item: url) {
-                            Label(model.t("deviceCheck.download"), systemImage: "square.and.arrow.up")
-                                .sfFont(17, weight: .semibold)
-                                .foregroundStyle(theme.ink)
-                                .frame(maxWidth: .infinity, minHeight: 48)
-                                .background(Capsule().fill(theme.sheet))
-                        }
-                        .accessibilityIdentifier("deviceCheck.share")
-                    }
-                    PrimaryButton(label: model.t("deviceCheck.run"), id: "deviceCheck.run", busy: run?.running == true) { start() }
-                        .disabled(!available || run?.running == true)
-                }
-            }
-            .gutter()
-            .padding(.vertical, 8)
-            .background(theme.ground)
-        }
         .onAppear {
             // The fast snapshot capture opens this screen running, or showing the bundled recording.
             if model.snapshotDeviceCheck == "run" { start() }
             if model.snapshotDeviceCheck == "recording", let r = Self.bundledRecordings.first { recording = (r.file, r.name) }
             model.snapshotDeviceCheck = nil
-            if let repetitions = model.autoRunDeviceCheck, available {
+            if let repetitions = model.autoRunDeviceCheck {
                 model.autoRunDeviceCheck = nil
-                repeatCases = repetitions > 1
-                start()
+                if available {
+                    repeatCases = repetitions > 1
+                    start()
+                }
             }
         }
         .fileImporter(isPresented: $opening, allowedContentTypes: [.json]) { result in
@@ -266,7 +277,9 @@ struct DeviceCheckScreen: View {
                     if i > 0 { RowDivider(inset: 64) }
                     Button { recording = (r.file, r.name) } label: {
                         ListRow(title: model.t("deviceCheck.showRecording", ["date": String((r.file["date"]?.stringValue ?? "").prefix(10))]),
-                                subtitle: r.file["platform"]?.stringValue, titleSize: 15, titleWeight: .semibold) { IconTile(systemImage: "record.circle") }
+                                // The time it was recorded tells two recordings of one day apart.
+                                subtitle: [r.file["platform"]?.stringValue, Self.recordedTime(r.file["date"]?.stringValue)].compactMap { $0 }.joined(separator: " · "),
+                                titleSize: 15, titleWeight: .semibold) { IconTile(systemImage: "record.circle") }
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("deviceCheck.recording")

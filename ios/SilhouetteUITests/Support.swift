@@ -91,9 +91,8 @@ extension XCUIApplication {
 extension XCUIApplication {
     /// The judges' path from the draft-rules sheet: the prepared household's answers, then the results.
     func runPreparedHousehold(file: StaticString = #filePath, line: UInt = #line) {
-        let more = buttons["demo.more"]
-        XCTAssertTrue(more.waitForExistence(timeout: 5), file: file, line: line)
-        more.tap()
+        // The draft notice sits on the ground, under the way in on Start: bring it clear of the pill.
+        tapButton("demo.more", file: file, line: line)
         tapButton("demo.judges", file: file, line: line)
         tapButton("judges.quickCheck", file: file, line: line)
         XCTAssertTrue(element("results.title").waitForExistence(timeout: 5), file: file, line: line)

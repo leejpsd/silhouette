@@ -28,7 +28,7 @@ final class AnswersUITests: XCTestCase {
         XCTAssertTrue(app.element("why.unavailable").exists)
         XCTAssertFalse(app.buttons["why.explain"].exists)
         XCTAssertTrue(app.element("ask.free.unavailable").exists)
-        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
     }
 
     func testStepBeforeSendingKeepAndSend() {
@@ -46,7 +46,7 @@ final class AnswersUITests: XCTestCase {
         XCTAssertTrue(app.buttons["send.send"].exists)
         app.tapButton("send.skip")
         XCTAssertTrue(app.element("send.skipped").waitForExistence(timeout: 5))
-        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."), "keeping sends nothing")
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."), "keeping sends nothing")
 
         // Consent is asked again for the next request; after Send, the answer says where it was written.
         app.tapButton("chip.apply")
@@ -58,6 +58,6 @@ final class AnswersUITests: XCTestCase {
         XCTAssertTrue(app.element("answer.text").label.contains("in general"))
         // The line under the count: nothing of the person's left, one request with general material.
         let status = app.element("leaving.status")
-        XCTAssertTrue(status.label.contains("Nothing of yours sent") && status.label.contains("1 checks and general questions"), status.label)
+        XCTAssertTrue(status.label.contains("Nothing of yours sent") && status.label.contains("1 check or general question,"), status.label)
     }
 }

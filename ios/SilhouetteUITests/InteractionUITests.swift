@@ -16,13 +16,18 @@ final class InteractionUITests: XCTestCase {
         FileManager.default.createFile(atPath: "\(dir)/interaction-\(name).png", contents: XCUIScreen.main.screenshot().pngRepresentation)
     }
 
-    /// Fully on screen, and not under the keyboard, the tab bar or the privacy pill.
-    private func assertClear(_ element: XCUIElement, in app: XCUIApplication, _ what: String, file: StaticString = #filePath, line: UInt = #line) {
+    /// Fully on screen, and not under the keyboard, the tab bar, the privacy pill or a pinned action.
+    private func assertClear(_ element: XCUIElement, in app: XCUIApplication, _ what: String, pinned: [String] = [],
+                             file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(element.waitForExistence(timeout: 5), "missing \(what)", file: file, line: line)
         Thread.sleep(forTimeInterval: 0.8)
-        let frame = element.frame
-        XCTAssertTrue(app.windows.firstMatch.frame.contains(frame), "\(what) is not fully on screen: \(frame)", file: file, line: line)
-        for cover in [app.keyboards.firstMatch, app.tabBars.firstMatch, app.buttons["leaving.details"].firstMatch] where cover.exists {
+        var frame = element.frame
+        let window = app.windows.firstMatch.frame
+        // Taller than the screen (the largest text sizes): its start must be in view.
+        if frame.height > window.height * 0.6 { frame = CGRect(x: frame.minX, y: frame.minY, width: frame.width, height: 60) }
+        XCTAssertTrue(window.contains(frame), "\(what) is not fully on screen: \(frame)", file: file, line: line)
+        for cover in [app.keyboards.firstMatch, app.tabBars.firstMatch, app.buttons["leaving.details"].firstMatch] + pinned.map({ app.buttons[$0].firstMatch })
+            where cover.exists && cover.isHittable {
             XCTAssertFalse(cover.frame.intersects(frame), "\(what) is under \(cover.identifier) (\(frame) / \(cover.frame))", file: file, line: line)
         }
     }
@@ -96,7 +101,13 @@ final class InteractionUITests: XCTestCase {
         let more = app.element("judges.moreText")
         XCTAssertTrue(more.waitForExistence(timeout: 5))
         Thread.sleep(forTimeInterval: 0.8)
-        XCTAssertLessThan(more.frame.minY, app.windows.firstMatch.frame.height * 0.7, "the judges' longer text did not come into view")
+        // Its start is in view, above the pinned "Run the check" (taller than the screen: its start).
+        let run = app.buttons["judges.deviceCheck"]
+        // Pinned (below the text) it is the limit; in the content (above it, small iPhones and large
+        // text) the screen is.
+        let pinnedBelow = run.exists && run.isHittable && run.frame.minY > more.frame.minY
+        let limit = pinnedBelow ? run.frame.minY : app.windows.firstMatch.frame.height * 0.7
+        XCTAssertLessThan(more.frame.minY + 40, limit, "the judges' longer text did not come into view")
         shot("judges-more")
         app.navigationBars.buttons.firstMatch.tap()
         app.tapButton("leaving.details")
@@ -121,5 +132,34 @@ final class InteractionUITests: XCTestCase {
         window.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
             .press(forDuration: 0.05, thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)))
         XCTAssertTrue(app.buttons["start.begin"].waitForExistence(timeout: 5), "swipe back does not return")
+    }
+
+    /// Keeping the document on the device when the reading fails: the result is brought into view,
+    /// clear of the actions (it used to arrive under the pinned buttons).
+    func testResultOfKeepingComesIntoView() {
+        let app = XCUIApplication.silhouette(model: "device-unreliable")
+        app.launch()
+        app.openSample()
+        app.tapButton("preview.keep")
+        let notice = app.element("preview.unreliable")
+        assertClear(notice, in: app, "the reading result", pinned: ["preview.sendSilhouette", "preview.typeInstead"])
+        shot("keep-result")
+    }
+
+    /// "Delete everything?": its title and its warning are on screen above the two buttons, at any
+    /// text size (at accessibility sizes the sheet opens at full height).
+    func testDeleteSheetShowsItsWarning() {
+        let app = XCUIApplication.silhouette()
+        app.launch()
+        app.tapButton("leaving.details")
+        app.tapButton("delete.all")
+        let body = app.element("delete.body")
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        Thread.sleep(forTimeInterval: 1)
+        let confirm = app.buttons["delete.confirm"]
+        // The warning starts on screen, above the buttons (at the largest sizes the rest scrolls).
+        XCTAssertGreaterThan(body.frame.minY, 0, "the warning is above the screen")
+        XCTAssertLessThan(body.frame.minY + 30, confirm.frame.minY, "the warning is under the buttons: \(body.frame) / \(confirm.frame)")
+        shot("delete-sheet")
     }
 }

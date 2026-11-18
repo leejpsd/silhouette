@@ -64,12 +64,17 @@ struct SheetHost: ViewModifier {
 private struct SheetPanel: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicType
     let sheet: AppSheet
 
     var body: some View {
         NavigationStack {
             RevealingScroll {
-                VStack(alignment: .leading, spacing: 16) { content }
+                VStack(alignment: .leading, spacing: 16) {
+                    content
+                    // At accessibility sizes the actions follow the text (pinned, they covered it).
+                    if dynamicType.isAccessibilitySize { footer.padding(.horizontal, -16) }
+                }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                     .padding(.bottom, 24)
@@ -86,9 +91,10 @@ private struct SheetPanel: View {
                         .accessibilityIdentifier(sheet == .record ? "leaving.hide" : "sheet.close")
                 }
             }
-            .safeAreaInset(edge: .bottom, spacing: 0) { footer }
+            .safeAreaInset(edge: .bottom, spacing: 0) { if !dynamicType.isAccessibilitySize { footer } }
         }
-        .presentationDetents(sheet == .language || sheet.isDelete ? [.medium, .large] : [.large])
+        // Short sheets open at half height, except at accessibility sizes, where their text would be cut.
+        .presentationDetents((sheet == .language || sheet.isDelete) && !dynamicType.isAccessibilitySize ? [.medium, .large] : [.large])
         .presentationDragIndicator(.visible)
         .presentationBackground(theme.ground)
         .accessibilityIdentifier(sheet.isSend ? "send.panel" : "sheet")
@@ -99,7 +105,8 @@ private struct SheetPanel: View {
         case .record: model.t("leaving.title")
         case .send: model.t("send.beforeLeaves")
         case .language: model.t("nav.language")
-        case .demo: model.bundle.packInfo.isDraft ? model.t("pack.draft.title") : model.t("demo.title")
+        // The sheet's own headline names it; the bar does not repeat it.
+        case .demo: ""
         case .delete: model.t("delete.all")
         }
     }
@@ -278,7 +285,8 @@ private struct RecordEntry: View {
             switch entry.status {
             case .attempted: StatusPill(label: model.recordStatus(entry), style: .plain)
             case .sent: StatusPill(label: model.t("record.sentShort"), style: .redact, dot: true)
-            case .answeredOnDevice: StatusPill(label: model.recordStatus(entry), style: .outline)
+            // One short word on the pill ("On iPhone"); the full status is the row's VoiceOver label.
+            case .answeredOnDevice: StatusPill(label: model.t("record.keptShort"), style: .outline)
             case .failed, .blocked: StatusPill(label: model.recordStatus(entry), style: .muted)
             }
         }
@@ -324,8 +332,11 @@ private struct LanguageSheet: View {
                     model.setLocale(locale)
                     model.sheet = nil
                 } label: {
-                    ListRow(title: locale.nativeName, chevron: false, titleWeight: selected ? .semibold : .regular, leading: { EmptyView() }) {
-                        if selected { Image(systemName: "checkmark").sfFont(17, weight: .semibold).foregroundStyle(theme.ink) }
+                    // The check mark stays on the row's line at every text size (a trailing view stacks
+                    // under the title at accessibility sizes).
+                    HStack(spacing: 12) {
+                        ListRow(title: locale.nativeName, chevron: false, titleWeight: selected ? .semibold : .regular, leading: { EmptyView() }) { EmptyView() }
+                        if selected { Image(systemName: "checkmark").sfFont(17, weight: .semibold).foregroundStyle(theme.ink).padding(.trailing, 16) }
                     }
                     .environment(\.locale, Locale(identifier: locale.rawValue))
                 }
@@ -350,7 +361,7 @@ private struct DemoSheet: View {
         Display(text: model.t(draft ? "pack.draft.title" : "demo.title"), size: 44)
         Text(draft ? model.t("pack.draft.body", ["date": model.draftDate]) : model.t("demo.body"))
             .type(.lead).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
-        if draft { NoteText(text: model.t("pack.draft.notice", ["date": model.draftDate]), size: 15) }
+        // The body already says it is a draft and when it was read; the short notice is not repeated.
         NoteText(text: model.t("promise.line3"), size: 15)
         // The judges' path, the on-device check and where each task runs.
         ListCard {
@@ -392,5 +403,6 @@ private struct DeleteSheet: View {
         Display(text: model.t("delete.title"), size: 44)
             .accessibilityIdentifier("delete.title")
         Text(model.t("delete.body")).type(.lead).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("delete.body")
     }
 }

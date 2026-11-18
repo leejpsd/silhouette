@@ -75,6 +75,19 @@ enum SnapshotRunner {
                 m.runPreparedHousehold()
                 m.answer("income", .income(.exact(250_000)))
             },
+            // Exactly one program may qualify: the singular headline ("for 1 program").
+            Scene(name: "results-one") { m in
+                m.runPreparedHousehold()
+                for amount in stride(from: 20_000, through: 200_000, by: 2_500) {
+                    m.answer("income", .income(.exact(Double(amount))))
+                    if m.results.filter({ $0.verdict == .likely }).count == 1 { break }
+                }
+            },
+            // Nothing may qualify: the plain results title, never "0 programs" in display type.
+            Scene(name: "results-none") { m in
+                m.runPreparedHousehold()
+                m.answer("income", .income(.exact(Double(QuickCheck.maxExactIncome))))
+            },
             Scene(name: "results-offline") { m in
                 m.forceOffline = true
                 m.runPreparedHousehold()

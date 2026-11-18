@@ -33,21 +33,16 @@ struct DocumentAddScreen: View {
                             Spacer(minLength: 0)
                             LanguageButton()
                         }
-                        DraftLine(onHero: true)
                     }
                 }
                 VStack(alignment: .leading, spacing: 16) {
+                    DraftLine()
                     if model.document.confirmedStubCount > 0 {
                         NoteText(text: model.t("review.stubsCount", ["count": String(model.document.confirmedStubCount)]), size: 15)
                     }
-                    (dynamicType.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8)) : AnyLayout(HStackLayout(spacing: 12))) {
-                        Text(model.t("doc.language")).sfFont(15).foregroundStyle(theme.note)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Segmented(options: AppLocale.allCases.map { ($0, $0.nativeName, "doc.language.\($0.rawValue)") },
-                                  selection: Binding(get: { model.document.language }, set: { model.setDocumentLanguage($0) }))
-                    }
-                    .accessibilityElement(children: .contain)
-                    .accessibilityIdentifier("doc.language")
+                    languageRow
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("doc.language")
                     readingStatus
                     sampleCard
                     ListCard {
@@ -124,6 +119,26 @@ struct DocumentAddScreen: View {
             .buttonStyle(PressScale())
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("doc.sample.\(sample.id)")
+        }
+    }
+
+    /// "Paystub language" and the picker on one line; stacked at accessibility sizes, or when the
+    /// line cannot hold both whole (large text on a small iPhone).
+    @ViewBuilder private var languageRow: some View {
+        let label = Text(model.t("doc.languageShort")).sfFont(15).foregroundStyle(theme.note).lineLimit(1).fixedSize()
+        let picker = Segmented(options: AppLocale.allCases.map { ($0, $0.nativeName, "doc.language.\($0.rawValue)") },
+                               selection: Binding(get: { model.document.language }, set: { model.setDocumentLanguage($0) }))
+        let stacked = VStack(alignment: .leading, spacing: 8) {
+            Text(model.t("doc.languageShort")).sfFont(15).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+            picker
+        }
+        if dynamicType.isAccessibilitySize {
+            stacked
+        } else {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) { label; picker }
+                stacked
+            }
         }
     }
 

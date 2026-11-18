@@ -32,10 +32,9 @@ struct ResultsScreen: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 8) {
                 Spacer(minLength: 0)
-                GlassRound(systemImage: "info", label: model.t("demo.more"), id: "results.info") { model.sheet = .demo }
+                GlassRound(systemImage: "info.circle", label: model.t(model.bundle.packInfo.isDraft ? "pack.draft.title" : "demo.title"), id: "results.info") { model.sheet = .demo }
                 LanguageButton()
             }
-            DraftLine(onHero: true)
         }
     }
 
@@ -44,6 +43,7 @@ struct ResultsScreen: View {
     @ViewBuilder private var beforeAnyAnswer: some View {
         Hero(title: model.t("results.title"), size: 54, lead: model.t("results.empty"), titleId: "results.title") { topRow }
         VStack(alignment: .leading, spacing: 16) {
+            DraftLine()
             ListCard {
                 ForEach(Array(model.bundle.packInfo.programs.enumerated()), id: \.element.id) { i, program in
                     if i > 0 { RowDivider(inset: 52) }
@@ -78,6 +78,7 @@ struct ResultsScreen: View {
             .padding(.top, 16)
         }
         VStack(alignment: .leading, spacing: 12) {
+            DraftLine()
             NoteText(text: model.t(model.anythingLeft ? "results.leadAfterSend" : "results.lead"))
             if model.isOffline {
                 NoticeCard(text: model.t("state.offline"), systemImage: "wifi.slash").accessibilityIdentifier("results.offline")
@@ -172,11 +173,15 @@ private struct ProgramCard: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
     @Environment(\.dynamicTypeSize) private var dynamicType
+    /// Two lines of the 15 pt summary at the current text size.
+    @ScaledMetric(relativeTo: .subheadline) private var twoLines: CGFloat = 44
+    @State private var summaryFits = true
     let result: ProgramVerdict
 
     var body: some View {
         let notes = model.resultNotes(result)
-        let summary = model.bundle.copy.lookup("program.\(result.programId).summary", model.locale)
+        // The summary's first sentence, whole (up to two lines): never a sentence cut with an ellipsis.
+        let summary = model.bundle.copy.lookup("program.\(result.programId).summary", model.locale).map(Self.firstSentence)
         Button { model.openProgram(result.programId) } label: {
             VStack(alignment: .leading, spacing: 12) {
                 let layout = dynamicType.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(alignment: .top, spacing: 12))
@@ -198,11 +203,26 @@ private struct ProgramCard: View {
                             }
                         }
                         if let summary {
-                            // One line here; the whole text is on the program's page.
-                            Text(summary).sfFont(15).foregroundStyle(theme.note).lineLimit(dynamicType.isAccessibilitySize ? nil : 1)
+                            // The summary's first sentence, whole, in at most two lines; a longer one is
+                            // left to the program's page rather than cut with an ellipsis (any size up to
+                            // the accessibility sizes, where it is shown whole).
+                            let text = Text(summary).sfFont(15).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                            if dynamicType.isAccessibilitySize || summaryFits {
+                                text
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    // Measures the summary at the column's width (drawn nowhere) to decide whether it
+                    // fits two lines whole.
+                    .background(alignment: .topLeading) {
+                        if let summary {
+                            Text(summary).sfFont(15).fixedSize(horizontal: false, vertical: true)
+                                .hidden()
+                                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { summaryFits = $0 <= twoLines }
+                                .accessibilityHidden(true)
+                        }
+                    }
                 }
                 if let c = model.incomeComparison(result.programId) {
                     LimitBar(ratio: c.ratio)
@@ -222,6 +242,13 @@ private struct ProgramCard: View {
         .accessibilityValue(model.t("verdict.\(result.verdict.rawValue)"))
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("program.\(result.programId)")
+    }
+
+    /// "A federal tax credit for people who work and have low to moderate income. It lowers…" → the
+    /// first sentence.
+    static func firstSentence(_ text: String) -> String {
+        guard let end = text.range(of: ". ") else { return text }
+        return String(text[..<end.lowerBound]) + "."
     }
 }
 

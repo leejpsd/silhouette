@@ -34,8 +34,18 @@ extension Theme {
     }
     var onHero: Color { .white }
     /// The privacy pill: solid white in light, ink in dark.
+    /// The privacy pill: white in light; in dark the card colour, one step above the ink ground, so it
+    /// reads as a control on every background (with `pillEdge`).
     var pillFill: Color {
-        Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0x0E / 255, green: 0x0E / 255, blue: 0x0E / 255, alpha: 1) : .white })
+        Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0x16 / 255, green: 0x18 / 255, blue: 0x1B / 255, alpha: 1) : .white })
+    }
+
+    /// The pill's 1 pt edge: ink 12 % in light, white 22 % in dark; stronger with Increase Contrast.
+    func pillEdge(_ contrast: ColorSchemeContrast) -> Color {
+        let strong = contrast == .increased
+        return Color(uiColor: UIColor {
+            $0.userInterfaceStyle == .dark ? UIColor(white: 1, alpha: strong ? 0.55 : 0.22) : UIColor(white: 0.055, alpha: strong ? 0.5 : 0.12)
+        })
     }
     var onHeroMuted: Color { .white.opacity(0.82) }
     /// The 1 px border that gives cards their edge (ink at 8 %).
@@ -72,6 +82,8 @@ struct Hero<Top: View, Content: View>: View {
     var titleId: String = ""
     /// A pill above the title (a program's verdict).
     var badge: AnyView? = nil
+    /// The most lines the headline may take; it steps down in size to fit (Start keeps three).
+    var titleLines = 5
     @ViewBuilder let top: Top
     @ViewBuilder let content: Content
 
@@ -88,7 +100,7 @@ struct Hero<Top: View, Content: View>: View {
                     .padding(.top, 20)
             }
             if let badge { badge.padding(.top, eyebrow == nil ? 20 : 8) }
-            Display(text: title, size: size, maxLines: 5, color: theme.onHero)
+            Display(text: title, size: size, maxLines: titleLines, color: theme.onHero)
                 .accessibilityIdentifier(titleId)
                 .padding(.top, badge != nil ? 8 : eyebrow == nil ? 24 : 6)
             if let lead {
@@ -108,8 +120,9 @@ struct Hero<Top: View, Content: View>: View {
 }
 
 extension Hero where Content == EmptyView {
-    init(eyebrow: String? = nil, title: String, size: CGFloat = 54, lead: String? = nil, titleId: String = "", @ViewBuilder top: () -> Top) {
-        self.init(eyebrow: eyebrow, title: title, size: size, lead: lead, titleId: titleId, top: top) { EmptyView() }
+    init(eyebrow: String? = nil, title: String, size: CGFloat = 54, lead: String? = nil, titleId: String = "", titleLines: Int = 5,
+         @ViewBuilder top: () -> Top) {
+        self.init(eyebrow: eyebrow, title: title, size: size, lead: lead, titleId: titleId, titleLines: titleLines, top: top) { EmptyView() }
     }
 }
 
@@ -414,7 +427,7 @@ struct StatusPill: View {
     var body: some View {
         HStack(spacing: 5) {
             if dot { Circle().fill(style == .redact ? theme.onRedact : style == .ink ? theme.color("onPrimary") : theme.ink).frame(width: 6, height: 6) }
-            Text(label).sfFont(12, weight: .semibold).lineLimit(2).multilineTextAlignment(.leading)
+            Text(label).sfFont(12, weight: .semibold).lineLimit(1).fixedSize()
         }
         .padding(.horizontal, 8)
         .frame(minHeight: 24)
@@ -716,19 +729,30 @@ struct Segmented<Value: Hashable>: View {
     @Environment(\.dynamicTypeSize) private var dynamicType
     @Namespace private var slide
 
-    private var shape: AnyShape {
-        dynamicType.isAccessibilitySize ? AnyShape(RoundedRectangle(cornerRadius: 18)) : AnyShape(Capsule())
+    var body: some View {
+        // Side by side while every label fits on one line whole; otherwise (a long language, a small
+        // iPhone, accessibility sizes) the options stack. A label never breaks inside a word.
+        if dynamicType.isAccessibilitySize {
+            control(stacked: true)
+        } else {
+            ViewThatFits(in: .horizontal) {
+                control(stacked: false)
+                control(stacked: true)
+            }
+        }
     }
 
-    var body: some View {
-        // At accessibility sizes the options stack, so each label stays whole.
-        (dynamicType.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 0)) : AnyLayout(HStackLayout(spacing: 0))) {
+    private func control(stacked: Bool) -> some View {
+        let shape = stacked ? AnyShape(RoundedRectangle(cornerRadius: 18)) : AnyShape(Capsule())
+        return (stacked ? AnyLayout(VStackLayout(spacing: 0)) : AnyLayout(HStackLayout(spacing: 0))) {
             ForEach(options, id: \.value) { option in
                 let on = option.value == selection
                 Button { withMotion(Motion.reveal) { selection = option.value } } label: {
                     HStack(spacing: 6) {
                         if dotFor == option.value { Circle().fill(theme.redact).frame(width: 6, height: 6) }
-                        Text(option.label).sfFont(13, weight: on ? .semibold : .medium).lineLimit(2)
+                        Text(option.label).sfFont(13, weight: on ? .semibold : .medium)
+                            .lineLimit(stacked ? nil : 1)
+                            .fixedSize(horizontal: !stacked, vertical: stacked)
                             .multilineTextAlignment(.center)
                     }
                     .foregroundStyle(theme.ink)
@@ -738,7 +762,7 @@ struct Segmented<Value: Hashable>: View {
                         // The selected segment slides to the new choice (a fade under Reduce Motion).
                         if on {
                             Group {
-                                if dynamicType.isAccessibilitySize {
+                                if stacked {
                                     RoundedRectangle(cornerRadius: 16).fill(theme.sheet).overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(theme.cardBorder, lineWidth: 1))
                                 } else {
                                     Capsule().fill(theme.sheet).overlay(Capsule().strokeBorder(theme.cardBorder, lineWidth: 1))

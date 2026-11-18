@@ -16,6 +16,63 @@ struct ContentTests {
         #expect(book.text("missing.key", .ko) == "missing.key")
     }
 
+    @Test("the device noun: every iOS case of shared/fixtures/copy/device-noun.json, through the loader")
+    func deviceNoun() throws {
+        let fixture = try JSON.parse(Data(contentsOf: Repo.shared.appendingPathComponent("fixtures/copy/device-noun.json")))
+        let cases = (fixture["cases"]?.arrayValue ?? []).filter { $0["platform"]?.stringValue == "ios" }
+        // The fixture grows with the copy; what matters is that every case in it holds.
+        #expect(cases.count >= 184)
+        let book = try Repo.bundle().copy
+        for c in cases {
+            let locale = try #require(AppLocale(rawValue: c["language"]?.stringValue ?? ""))
+            let key = try #require(c["key"]?.stringValue)
+            let text = try #require(c["text"]?.stringValue)
+            let shown = try #require(c["shown"]?.stringValue)
+            // The rule itself, and what the loader gives for the key.
+            #expect(book.nouns.apply(text, locale) == shown, "\(locale) \(key)")
+            #expect(book.lookup(key, locale) == shown, "\(locale) \(key) through the loader")
+            // Applying it twice changes nothing.
+            #expect(book.nouns.apply(shown, locale) == shown)
+        }
+        // Left alone: compounds, placeholders, other capitalisation, Spanish "del dispositivo", Korean.
+        #expect(book.nouns.apply("the on-device model on this device-first {this device} Device first", .en)
+                == "the on-device model on this device-first {this device} Device first")
+        #expect(book.nouns.apply("el modelo del dispositivo en este dispositivo", .es) == "el modelo del dispositivo en este iPhone")
+        #expect(book.nouns.apply("this device", .ko) == "this device")
+        #expect(book.nouns.apply("On this phone", .en) == "On this iPhone")
+        // The app's own strings already name the device the iOS way (the rule changes none of them).
+        for locale in [AppLocale.en, .es] {
+            for key in book.keys(.local, locale) {
+                let text = try #require(book.tables[locale]?[.local]?[key]?.stringValue)
+                #expect(book.nouns.apply(text, locale) == text, "\(locale) \(key)")
+            }
+        }
+    }
+
+    @Test("one and many: every .one key is used for a count of 1, in its own language, and only then")
+    func oneAndMany() throws {
+        let book = try Repo.bundle().copy
+        var checked = 0
+        for locale in [AppLocale.en, .es] {
+            for key in book.keys(.shared, locale) where key.hasSuffix(".one") {
+                let plain = String(key.dropLast(4))
+                let one = try #require(book.tables[locale]?[.shared]?[key]?.stringValue)
+                let params = ["count": "1", "list": "x", "program": "p"]
+                #expect(book.text(plain, locale, params) == CopyBook.format(book.nouns.apply(one, locale), params), "\(locale) \(plain)")
+                #expect(book.text(plain, locale, ["count": "2", "list": "x"]) == CopyBook.format(book.lookup(plain, locale) ?? "", ["count": "2", "list": "x"]))
+                checked += 1
+            }
+        }
+        #expect(checked >= 22)
+        #expect(book.text("results.mayQualifyCount", .en, ["count": "1"]) == "You may qualify for 1 program")
+        #expect(book.text("results.mayQualifyCount", .es, ["count": "1"]) == "Es posible que califiques para 1 programa")
+        #expect(book.text("leaving.sentCount", .es, ["count": "1"]) == "1 enviada,")
+        // A Spanish sentence never takes the English singular.
+        let mixed = CopyBook(tables: [.en: [.shared: JSONObject([("k", .string("{count} things")), ("k.one", .string("{count} thing"))])],
+                                      .es: [.shared: JSONObject([("k", .string("{count} cosas"))])]])
+        #expect(mixed.text("k", .es, ["count": "1"]) == "1 cosas")
+    }
+
     @Test("every key the app builds from the pack exists in English")
     func packKeys() throws {
         let (b, s) = try Repo.session()

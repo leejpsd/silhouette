@@ -7,9 +7,18 @@ import SilhouetteCore
 import SilhouetteKit
 import SwiftUI
 
+/// An unsubmitted choice on a question.
+struct QuestionDraft {
+    var number: Int?
+    var choice: String?
+    var picked: [String]
+    var exactText: String
+}
+
 struct QuestionScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicType
     let stepId: String
     let returnTo: ReturnTo?
 
@@ -26,6 +35,11 @@ struct QuestionScreen: View {
     @State private var shownProgress: Double?
     /// Each refused Next, so a second press shows the hint again (scroll, focus, haptic).
     @State private var attempts = 0
+    /// When the question appeared: a press in the first moment belongs to the question before (a
+    /// double press on Next) and is ignored.
+    @State private var appearedAt = Date.distantFuture
+    /// Answered or skipped here: nothing to keep as an unsubmitted choice.
+    @State private var settled = false
 
     private var step: Step? { model.session.step(stepId) }
     private var index: Int { model.session.index(of: stepId) ?? 0 }
@@ -34,7 +48,7 @@ struct QuestionScreen: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-            ScrollView {
+            RevealingScroll {
                 VStack(alignment: .leading, spacing: 16) {
                     if let step {
                         ProgressView(value: shownProgress ?? Double(index), total: Double(max(total, 1)))
@@ -53,14 +67,17 @@ struct QuestionScreen: View {
                         if step.sensitive {
                             SensitiveNote(text: model.t("sensitive.note")).accessibilityIdentifier("question.sensitive")
                         }
-                        if let error {
+                        if let error, !rangeCarriesHint(step) {
                             NoticeCard(text: error, systemImage: "exclamationmark.circle")
                                 .accessibilityElement(children: .combine)
                                 .accessibilityIdentifier("question.error")
                                 .accessibilityFocused($errorFocused)
-                                .id("question.error")
+                                // Scrolled only as far as needed: the question stays in view when
+                                // both fit; the hint wins only when they cannot.
+                                .revealsIntoView(trigger: attempts)
                                 .transition(Motion.revealTransition)
                         }
+                        if !pinsNext && !exactFocused { nextButton(step).padding(.top, 8) }
                     }
                 }
                 .gutter()
@@ -68,10 +85,9 @@ struct QuestionScreen: View {
                 .padding(.bottom, 24)
             }
             .scrollDismissesKeyboard(.interactively)
-            // The hint and the control it is about come into view together; VoiceOver moves to the hint.
+            // VoiceOver moves to the hint each time.
             .onChange(of: attempts) {
                 guard error != nil else { return }
-                withMotion(Motion.reveal) { proxy.scrollTo("question.error", anchor: .bottom) }
                 errorFocused = true
             }
             // The exact-amount field, once open and focused, sits clear of the keyboard and Next.
@@ -94,6 +110,7 @@ struct QuestionScreen: View {
             if let step {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(model.t("q.skipShort")) {
+                        settled = true
                         model.skip(step.id)
                         model.advance(from: step.id, returnTo: returnTo)
                     }
@@ -109,10 +126,10 @@ struct QuestionScreen: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            // While a field is being typed in, Next is the keyboard's own (one Next, not two).
-            if let step, !exactFocused {
-                PrimaryButton(label: isLast ? model.t("q.finish") : model.t("q.next"), id: "q.next",
-                              ready: draftValue(step) != nil, showsArrow: true) { submit(step) }
+            // While a field is being typed in, Next is the keyboard's own (one Next, not two). On a
+            // short iPhone and at accessibility sizes Next is in the content instead.
+            if let step, !exactFocused, pinsNext {
+                nextButton(step)
                     .gutter()
                     .padding(.vertical, 8)
                     .background(theme.ground)
@@ -120,8 +137,33 @@ struct QuestionScreen: View {
         }
         .onAppear {
             loadDraft()
+            settled = false
+            appearedAt = Date()
             withMotion(Motion.medium) { shownProgress = Double(index + 1) }
         }
+        .onDisappear {
+            // Leaving by Back keeps an unsubmitted choice; a submitted one is the stored answer.
+            model.questionDrafts[stepId] = settled ? nil : QuestionDraft(number: number, choice: choice, picked: picked, exactText: exactText)
+        }
+    }
+
+    /// Next stays pinned on every iPhone except at accessibility sizes: it is the screen's only action,
+    /// a question is short, and what opens (the hint, the exact amount) scrolls clear of it. Inline on
+    /// a small iPhone it fell half under the bars on the first screen.
+    private var pinsNext: Bool { !dynamicType.isAccessibilitySize }
+
+    /// Next (or See results). On a multi-choice question with nothing ticked it says what pressing it
+    /// records: "None of these".
+    private func nextButton(_ step: Step) -> some View {
+        let noneTicked: Bool = { if case .multiple = step.kind { return picked.isEmpty } else { return false } }()
+        let label = noneTicked ? model.t("q.noneOfThese") : isLast ? model.t("q.finish") : model.t("q.next")
+        return PrimaryButton(label: label, id: "q.next", ready: draftValue(step) != nil, showsArrow: !noneTicked) { submit(step) }
+    }
+
+    /// The counter that is set with the stepper only: its range line turns into the hint (one line).
+    private func rangeCarriesHint(_ step: Step) -> Bool {
+        if case .integer = step.kind { return !AnswerInputs.isMoneyVariable(step.id) }
+        return false
     }
 
     // MARK: Inputs
@@ -135,9 +177,20 @@ struct QuestionScreen: View {
             VStack(spacing: 6) {
                 Counter(value: $number, min: min, max: max, label: model.t("question.\(step.id).label"),
                         decrease: model.t("q.decrease"), increase: model.t("q.increase"), error: error != nil) { error = nil }
-                NoteText(text: model.t("q.error.integer", ["min": String(min), "max": String(max)]), size: 13)
-                    .multilineTextAlignment(.center)
-                    .accessibilityHidden(true)
+                // "From 1 to 20" under a counter that cannot be typed into; after a refused Next the
+                // same line says what to do, in ink (one line, not a second message).
+                if let error {
+                    Label(error, systemImage: "exclamationmark.circle")
+                        .sfFont(13, weight: .semibold).foregroundStyle(theme.ink)
+                        .multilineTextAlignment(.center)
+                        .accessibilityIdentifier("question.error")
+                        .accessibilityFocused($errorFocused)
+                        .revealsIntoView(trigger: attempts)
+                } else {
+                    NoteText(text: model.t("q.range", ["min": model.number(Double(min)), "max": model.number(Double(max))]), size: 13)
+                        .multilineTextAlignment(.center)
+                        .accessibilityHidden(true)
+                }
             }
         case .single(let values):
             rows(values.map { ($0, model.t("option.\(step.id).\($0)")) })
@@ -225,8 +278,9 @@ struct QuestionScreen: View {
             AmountField(text: $exactText, label: model.t("income.exact.label"), hint: model.t("q.private"), currency: model.currencySymbol,
                         error: error != nil, id: "income.exact", focused: $exactFocused)
                 .onChange(of: exactText) { error = nil }
-            if let amount = Rehydrator.parseTypedAmount(exactText) {
-                // The amount as understood, shown before the user continues.
+            if let amount = Rehydrator.parseTypedAmount(exactText), amount <= Double(QuickCheck.maxExactIncome) {
+                // The amount as understood, shown before the user continues (never a number the
+                // rules would refuse: above the maximum, Next explains instead).
                 Understood(text: model.t("q.amountUnderstood", ["amount": model.money(amount, cents: true)]))
                     .accessibilityIdentifier("income.understood")
             }
@@ -239,6 +293,10 @@ struct QuestionScreen: View {
     private func loadDraft() {
         guard !loaded, let step else { return }
         loaded = true
+        if let draft = model.questionDrafts[step.id], draft.number != nil || draft.choice != nil || !draft.picked.isEmpty || !draft.exactText.isEmpty {
+            number = draft.number; choice = draft.choice; picked = draft.picked; exactText = draft.exactText
+            return
+        }
         guard case .value(let value)? = model.session.displayAnswer(for: step.id) else { return }
         switch value {
         case .integer(let n):
@@ -278,6 +336,8 @@ struct QuestionScreen: View {
     }
 
     private func submit(_ step: Step) {
+        // A press in the first moment after the question appeared was meant for the one before.
+        guard Date().timeIntervalSince(appearedAt) > 0.4 else { return }
         let problem: AnswerProblem? = if let value = draftValue(step) {
             model.answer(step.id, value)
         } else if case .integer = step.kind {
@@ -286,6 +346,7 @@ struct QuestionScreen: View {
             .choose
         }
         guard let problem else {
+            settled = true
             model.advance(from: step.id, returnTo: returnTo)
             return
         }
@@ -453,7 +514,8 @@ private struct Counter: View {
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
                 } else {
-                    RoundedRectangle(cornerRadius: 2).fill(theme.ink).frame(width: 40, height: 10)
+                    // Unanswered: a short faint line (an ink bar read as the masked values elsewhere).
+                    Capsule().fill(theme.faint).frame(width: 36, height: 4)
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 96)

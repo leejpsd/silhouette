@@ -56,7 +56,8 @@ public struct SharedBundle: Sendable {
             tables[locale, default: [:]][.pack] = try json("rulepacks/\(jurisdiction)/copy/\(locale.rawValue).json").objectValue ?? JSONObject()
             tables[locale, default: [:]][.local] = localCopy?[locale.rawValue]?.objectValue ?? JSONObject()
         }
-        copy = CopyBook(tables: tables)
+        // The device noun table ships with the copy; without it strings show as written.
+        copy = CopyBook(tables: tables, nouns: DeviceNoun(json: try? json("copy/platform/device-noun.json")))
         tokens = try DesignTokens(json: json("design/tokens.json"))
         var lists: [AppLocale: JSON] = [:]
         for locale in AppLocale.allCases { lists[locale] = try json("skeleton/allowlist/\(locale.rawValue).json") }

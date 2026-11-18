@@ -63,7 +63,7 @@ final class TestModelPort: ModelPort {
             let reply = call.part.map { p in found.map { part(p, of: $0) } ?? .object(JSONObject()) } ?? found ?? .object(JSONObject())
             return ModelReply(text: reply.jsonText, modelVersion: TaskRunner.onDeviceModelVersion)
         }
-        return ModelReply(text: "This test answer was written on this device.", modelVersion: TaskRunner.onDeviceModelVersion)
+        return ModelReply(text: "This test answer was written on this iPhone.", modelVersion: TaskRunner.onDeviceModelVersion)
     }
 
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply {

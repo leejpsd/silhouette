@@ -11,11 +11,13 @@ struct RootView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
     @Namespace private var zoom
+    @Environment(\.dynamicTypeSize) private var dynamicType
+    @State private var windowHeight: CGFloat = 874
 
     var body: some View {
         @Bindable var model = model
         TabView(selection: $model.tab) {
-            Tab(model.t("tab.check"), systemImage: "checklist", value: AppTab.check) {
+            Tab(model.t("tab.check"), systemImage: "list.bullet.clipboard", value: AppTab.check) {
                 NavigationStack(path: $model.checkPath) {
                     StartScreen().destinations()
                 }
@@ -35,6 +37,9 @@ struct RootView: View {
             .accessibilityIdentifier("tab.paystub")
         }
         .environment(\.zoomSpace, zoom)
+        // A short iPhone (SE) or accessibility text sizes: actions stay in the content (Motion.swift).
+        .environment(\.pinsActions, windowHeight >= 720 && !dynamicType.isAccessibilitySize)
+        .onGeometryChange(for: CGFloat.self) { $0.size.height + $0.safeAreaInsets.top + $0.safeAreaInsets.bottom } action: { windowHeight = $0 }
         .tabViewBottomAccessory { PrivacyPill() }
         // The last line of every page scrolls clear of the pill and the tab bar, which sit over a
         // hard scroll edge so nothing shows through them.
@@ -71,6 +76,7 @@ struct PrivacyPill: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
     @Environment(\.tabViewBottomAccessoryPlacement) private var placement
+    @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
         let count = model.sentCount
@@ -79,7 +85,8 @@ struct PrivacyPill: View {
                 CounterDisc(count: count, size: 28)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(count == 0 ? model.t("pill.none") : model.t("pill.sent", ["count": model.number(Double(count))]))
-                        .contentTransition(.opacity)
+                        // The words change at once (two cross-fading strings overlapped); the disc beside
+                        // them carries the moment.
                         .sfFont(15, weight: .semibold)
                         .lineLimit(1)
                         // Large text on a small iPhone: shrink a little before truncating.
@@ -97,12 +104,12 @@ struct PrivacyPill: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             // Solid, as drawn: white in light, ink in dark, so content never shows through it.
             .background(theme.pillFill)
+            .overlay(Capsule().strokeBorder(theme.pillEdge(contrast), lineWidth: 1))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         // One distinct feedback when the count goes up: something left the device.
         .sensoryFeedback(Haptic.sent, trigger: model.sentCount) { old, new in new > old }
-        .animation(Motion.named(Motion.medium), value: model.sentCount)
         // A bar: it stops growing at the largest standard size; the large content viewer shows it bigger.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityElement(children: .ignore)

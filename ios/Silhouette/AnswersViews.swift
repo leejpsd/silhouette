@@ -162,11 +162,16 @@ struct ChipsFlow: View {
         FlowLayout(spacing: 8, lineSpacing: 8) {
             ForEach(AppModel.chips.filter { model.chipKey(programId, $0) != except }, id: \.self) { chip in
                 Button { model.startChip(programId, chip) } label: {
+                    // One line whenever it fits; a chip that must wrap (large text) hugs its lines and
+                    // keeps a rounded rectangle (a capsule of two lines looked like a cut pill).
                     Text(model.t("ask.chip.\(chip)")).sfFont(15, weight: .medium).foregroundStyle(theme.ink)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
                         .frame(minHeight: 44)
-                        .background(Capsule().fill(theme.sheet))
-                        .overlay(Capsule().strokeBorder(theme.cardBorder, lineWidth: 1))
+                        .background(RoundedRectangle(cornerRadius: 22).fill(theme.sheet))
+                        .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(theme.cardBorder, lineWidth: 1))
                 }
                 .buttonStyle(PressScale())
                 .accessibilityIdentifier("chip.\(chip)")
@@ -272,6 +277,15 @@ struct AnswerScreen: View {
         }
         .navigationTitle(context.map { model.programName($0.program) } ?? "")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            // A long program name takes two lines rather than an ellipsis.
+            ToolbarItem(placement: .principal) {
+                Text(context.map { model.programName($0.program) } ?? "")
+                    .sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
+                    .lineLimit(2).multilineTextAlignment(.center).minimumScaleFactor(0.85)
+                    .accessibilityAddTraits(.isHeader)
+            }
+        }
     }
 }
 
@@ -319,9 +333,6 @@ struct RequestView: View {
             NoticeCard(text: model.t(error.kind == .quotaDaily ? "error.quotaDailyAnswers" : error.copyKey)) {
                 if let retry, error.kind != .quotaDaily, error.kind != .blocked {
                     SecondaryButton(label: model.t("answers.retry"), id: "answer.retry") { retry() }
-                }
-                if let status = error.status {
-                    Text(verbatim: "\(error.kind.rawValue) \(status)").monoFont(12, weight: 400).foregroundStyle(theme.note)
                 }
             }
             .accessibilityIdentifier("answer.error")
@@ -504,8 +515,13 @@ struct SendFooter: View {
     var body: some View {
         let count = lines.filter { $0.contains(": ") }.count
         SheetFooter {
+            // Offline nothing can leave: Send says so instead of looking ready.
+            if model.isOffline {
+                NoticeCard(text: model.t("state.offline"), systemImage: "wifi.slash").accessibilityIdentifier("send.offline")
+            }
             PrimaryButton(label: count > 1 ? model.t("send.sendLines", ["count": model.number(Double(count))]) : model.t("send.send"),
                           sends: true, id: "send.send") { model.send(key) }
+                .disabled(model.isOffline)
             SecondaryButton(label: model.t("send.keepShort"), id: "send.skip") { model.keepOnDevice(key) }
         }
     }

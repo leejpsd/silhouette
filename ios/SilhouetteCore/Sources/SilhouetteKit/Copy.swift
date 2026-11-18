@@ -3,6 +3,7 @@
 // copy.local.json for keys not yet in shared/copy.
 // Per-key lookup: shared/{locale} → pack/{locale} → local/{locale} → the same three for en; a key that
 // names the platform has variants, and `{key}.ios` is looked up first (shared/copy/PLATFORM_VARIANTS.md).
+// Every string found then names the device the iOS way ("this iPhone"; `DeviceNoun`).
 
 import Foundation
 import SilhouetteCore
@@ -31,18 +32,81 @@ public enum AppLocale: String, Sendable, CaseIterable, Identifiable {
     }
 }
 
+/// The device noun (shared/copy/PLATFORM_VARIANTS.md, section "The device noun"): after lookup, the
+/// phrases of `copy/platform/device-noun.json` for the string's language become this platform's name
+/// for the device ("this device" → "this iPhone"). Whole phrases, case-sensitive, longest first; never
+/// inside `{…}` and never next to a letter, a digit or a hyphen ("on-device model" stays).
+public struct DeviceNoun: Sendable {
+    /// Per language, (phrase, replacement) with the longest phrase first.
+    let phrases: [AppLocale: [(from: [Character], to: String)]]
+
+    public init() { phrases = [:] }
+
+    /// - Parameter json: the parsed `device-noun.json`; `platform` is "ios" or "android".
+    public init(json: JSON?, platform: String = CopyBook.platform) {
+        var out: [AppLocale: [(from: [Character], to: String)]] = [:]
+        for locale in AppLocale.allCases {
+            guard let map = json?[locale.rawValue]?[platform]?.objectValue else { continue }
+            let pairs = map.keys.compactMap { key in map[key]?.stringValue.map { (from: Array(key), to: $0) } }
+            out[locale] = pairs.sorted { a, b in a.from.count != b.from.count ? a.from.count > b.from.count : String(a.from) < String(b.from) }
+        }
+        phrases = out
+    }
+
+    /// The text this platform shows for a copy string in `locale`.
+    public func apply(_ text: String, _ locale: AppLocale) -> String {
+        guard let list = phrases[locale], !list.isEmpty else { return text }
+        let chars = Array(text)
+        var out = ""
+        var i = 0
+        scan: while i < chars.count {
+            if chars[i] == "{", let end = chars[i...].firstIndex(of: "}") {
+                out += String(chars[i...end])
+                i = end + 1
+                continue
+            }
+            for (from, to) in list where i + from.count <= chars.count && Array(chars[i..<i + from.count]) == from {
+                let before: Character? = i > 0 ? chars[i - 1] : nil
+                let after: Character? = i + from.count < chars.count ? chars[i + from.count] : nil
+                if Self.joins(before) || Self.joins(after) { continue }
+                out += to
+                i += from.count
+                continue scan
+            }
+            out.append(chars[i])
+            i += 1
+        }
+        return out
+    }
+
+    /// A letter, mark or digit, or a hyphen: a phrase next to it is part of another word.
+    private static func joins(_ c: Character?) -> Bool {
+        guard let c else { return false }
+        if c == "-" { return true }
+        return c.unicodeScalars.contains { scalar in
+            switch scalar.properties.generalCategory {
+            case .uppercaseLetter, .lowercaseLetter, .titlecaseLetter, .modifierLetter, .otherLetter,
+                 .nonspacingMark, .spacingMark, .enclosingMark, .decimalNumber, .letterNumber, .otherNumber: true
+            default: false
+            }
+        }
+    }
+}
+
 public struct CopyBook: Sendable {
     public enum Source: Sendable, CaseIterable { case shared, pack, local }
 
     let tables: [AppLocale: [Source: JSONObject]]
+    let nouns: DeviceNoun
 
-    public init(tables: [AppLocale: [Source: JSONObject]]) {
+    public init(tables: [AppLocale: [Source: JSONObject]], nouns: DeviceNoun = DeviceNoun()) {
         self.tables = tables
+        self.nouns = nouns
     }
 
     private func inLocale(_ locale: AppLocale, _ key: String) -> String? {
         for source in Source.allCases {
-            if let s = tables[locale]?[source]?[key]?.stringValue { return s }
+            if let s = tables[locale]?[source]?[key]?.stringValue { return nouns.apply(s, locale) }
         }
         return nil
     }
@@ -57,12 +121,32 @@ public struct CopyBook: Sendable {
         return inLocale(locale, variant) ?? inLocale(.en, variant) ?? inLocale(locale, key) ?? inLocale(.en, key)
     }
 
+    /// The language the template for `key` comes from (its own, or English as the fallback).
+    private func language(of key: String, _ locale: AppLocale) -> AppLocale? {
+        let variant = "\(key).\(Self.platform)"
+        if inLocale(locale, variant) != nil { return locale }
+        if inLocale(.en, variant) != nil { return .en }
+        if inLocale(locale, key) != nil { return locale }
+        if inLocale(.en, key) != nil { return .en }
+        return nil
+    }
+
+    /// One and many (shared/copy/PLATFORM_VARIANTS.md): with `count` equal to 1, `{key}.one` in the
+    /// same language as the plain key, when that language has it.
+    func counted(_ key: String, _ locale: AppLocale, _ params: [String: String]) -> String? {
+        guard let count = params["count"], Self.isOne(count), let language = language(of: key, locale) else { return nil }
+        return inLocale(language, "\(key).one")
+    }
+
+    /// The count as the app formats it: plain digits.
+    static func isOne(_ count: String) -> Bool { count.trimmingCharacters(in: .whitespaces) == "1" }
+
     public func has(_ key: String) -> Bool { lookup(key, .en) != nil }
 
     /// The text for `key` with `{name}` placeholders filled. A missing key returns the key itself
     /// (tests check that every key the app uses exists).
     public func text(_ key: String, _ locale: AppLocale, _ params: [String: String] = [:]) -> String {
-        Self.format(lookup(key, locale) ?? key, params)
+        Self.format(counted(key, locale, params) ?? lookup(key, locale) ?? key, params)
     }
 
     /// Replaces `{name}` with `params[name]`; unknown placeholders stay as they are.

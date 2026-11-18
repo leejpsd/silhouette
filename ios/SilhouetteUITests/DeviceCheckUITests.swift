@@ -10,9 +10,7 @@ final class DeviceCheckUITests: XCTestCase {
     }
 
     private func openCheck(_ app: XCUIApplication) {
-        let more = app.buttons["demo.more"]
-        XCTAssertTrue(more.waitForExistence(timeout: 5))
-        more.tap()
+        app.tapButton("demo.more")
         app.tapButton("demo.deviceCheck")
         XCTAssertTrue(app.element("deviceCheck.title").waitForExistence(timeout: 5))
     }

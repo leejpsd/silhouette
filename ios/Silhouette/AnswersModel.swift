@@ -116,7 +116,7 @@ extension AppModel {
         openAnswer(key)
     }
 
-    /// "Keep everything on this device".
+    /// "Keep everything on this iPhone".
     func keepOnDevice(_ key: String) {
         if sheet == .send(key) { sheet = nil }
         guard case .confirm = state(key) else { return }

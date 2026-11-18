@@ -92,6 +92,9 @@ final class AppModel {
     private(set) var outbound: [OutboundEntry] = []
     /// A copy key shown once on the start screen (for example after deleting everything).
     var notice: String?
+    /// What was chosen on a question but not submitted, kept when the person leaves it by Back, so
+    /// coming forward again shows the same choice (shared/design/DESIGN.md section 8).
+    var questionDrafts: [String: QuestionDraft] = [:]
     /// The paystub in progress. Raw inside; saved only encrypted.
     private(set) var document: DocumentSession
     /// Verdicts that changed when the yearly income from a paystub was used.
@@ -192,7 +195,7 @@ final class AppModel {
     }
 
     /// The line under the count (shared/RECORD.md section 4): what carried something of the person's,
-    /// then the rest, adding up to the number that left; "Nothing has left this device." when none did.
+    /// then the rest, adding up to the number that left; "Nothing has left this iPhone." when none did.
     /// Answers written on the device and requests stopped before they left are not counted.
     var outboundSummary: String {
         let parts = OutboundLog.split(outbound)
@@ -227,7 +230,8 @@ final class AppModel {
     func time(_ date: Date) -> String {
         let f = DateFormatter()
         f.locale = Locale(identifier: locale.rawValue)
-        f.setLocalizedDateFormatFromTemplate("HHmm")
+        // The locale's own clock (12-hour with AM/PM in en_US), as everywhere else in the app.
+        f.setLocalizedDateFormatFromTemplate("jmm")
         return f.string(from: date)
     }
 
@@ -255,7 +259,8 @@ final class AppModel {
         f.locale = Locale(identifier: locale.rawValue)
         f.timeZone = TimeZone(identifier: "UTC")
         f.dateStyle = .long
-        return f.string(from: date)
+        // A date never breaks across lines ("November / 12, 2026"): no-break spaces inside it.
+        return f.string(from: date).replacingOccurrences(of: " ", with: "\u{00A0}")
     }
 
     /// A program's period as the pack writes it ("Tax year 2025", "October 1, 2026 - September 30,

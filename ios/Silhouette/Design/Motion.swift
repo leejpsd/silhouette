@@ -11,14 +11,16 @@ enum Motion {
     static let press = Animation.timingCurve(0.2, 0.8, 0.2, 1, duration: 0.15)
     /// A state change in place: selection, a ready primary, a stage name (`short`, 150 ms).
     static let short = Animation.timingCurve(0.2, 0.8, 0.2, 1, duration: 0.15)
-    /// A disclosure opening or closing, and the scroll that brings it into view (`reveal`, 250 ms).
+    /// Something opening or arriving, and the scroll that brings it into view (`duration.reveal`, 250 ms).
     static let reveal = Animation.timingCurve(0.2, 0.8, 0.2, 1, duration: 0.25)
+    /// Leaving is faster than arriving: a disclosure closing (`duration.exit`, 180 ms).
+    static let exit = Animation.timingCurve(0.2, 0.8, 0.2, 1, duration: 0.18)
     /// The privacy counter and the progress bar (`medium`, 450 ms).
     static let medium = Animation.timingCurve(0.2, 0.8, 0.2, 1, duration: 0.45)
     /// A cross-fade (`fade` curve, 150 ms): what every movement becomes under Reduce Motion.
     static let fade = Animation.timingCurve(0.25, 0.1, 0.25, 1, duration: 0.15)
-    /// The gap between items that arrive one after another (`tokenStagger`, 60 ms), capped.
-    static let stagger = 0.06
+    /// The gap between items that arrive one after another (`delay.stagger`, 40 ms), capped at 8.
+    static let stagger = 0.04
     static let staggerCap = 8
 
     static var reduceMotion: Bool { UIAccessibility.isReduceMotionEnabled }
@@ -49,58 +51,89 @@ func withMotion<Result>(_ animation: Animation, _ body: () throws -> Result) ret
 
 // MARK: - Bringing what opens into view
 
-/// The scroll view's proxy, for content that reveals more and must bring it into view.
-private struct RevealProxyKey: EnvironmentKey {
-    static var defaultValue: ScrollViewProxy? { nil }
+/// What a revealed view needs from its scroll view: the proxy, and the band of the viewport that is
+/// really visible (inside the bars, the pill, a pinned action and the keyboard).
+struct RevealContext {
+    let proxy: ScrollViewProxy
+    let top: CGFloat
+    let bottom: CGFloat
+}
+
+private struct RevealContextKey: EnvironmentKey {
+    static var defaultValue: RevealContext? { nil }
 }
 
 extension EnvironmentValues {
-    var revealProxy: ScrollViewProxy? {
-        get { self[RevealProxyKey.self] }
-        set { self[RevealProxyKey.self] = newValue }
+    var reveal: RevealContext? {
+        get { self[RevealContextKey.self] }
+        set { self[RevealContextKey.self] = newValue }
     }
 }
 
-/// A vertical scroll view that hands its proxy to its content, so a disclosure can bring what it
-/// opened into view.
+/// A vertical scroll view that hands its proxy and its visible band to its content, so a disclosure,
+/// a hint or the result of an action can bring itself into view.
 struct RevealingScroll<Content: View>: View {
     @ViewBuilder let content: Content
+    @State private var band: (top: CGFloat, bottom: CGFloat) = (0, .infinity)
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                content.environment(\.revealProxy, proxy)
+                content.environment(\.reveal, RevealContext(proxy: proxy, top: band.top, bottom: band.bottom))
             }
+            // The insets include the bars, the pill's margin, a pinned action and the keyboard.
+            .onScrollGeometryChange(for: [CGFloat].self) { g in
+                [g.contentInsets.top, g.containerSize.height - g.contentInsets.bottom]
+            } action: { _, b in band = (b[0], b[1]) }
         }
     }
 }
 
-/// On the content a disclosure inserts: once it has opened, if it is not fully in view (clear of the
-/// pill, the tab bar and the keyboard), scroll just enough to show it, timed with the reveal.
-struct RevealIntoView: ViewModifier {
-    @Environment(\.revealProxy) private var proxy
+/// On what a disclosure inserts, a hint, or the result of an action: once it is there, if it is not
+/// fully inside the visible band, scroll just enough to show all of it (or its start, when it is
+/// taller than the band), timed with the reveal. Content already in view does not move.
+struct RevealIntoView<Trigger: Equatable>: ViewModifier {
+    @Environment(\.reveal) private var reveal
+    let trigger: Trigger
     @State private var id = UUID()
-    @State private var fullyVisible = false
-    @State private var height: CGFloat = 0
+    @State private var frame: CGRect = .zero
 
     func body(content: Content) -> some View {
         content
             .id(id)
-            .onScrollVisibilityChange(threshold: 0.98) { fullyVisible = $0 }
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height = $0 }
-            .task {
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .scrollView(axis: .vertical)) } action: { frame = $0 }
+            .task(id: trigger) {
                 try? await Task.sleep(for: .milliseconds(MotionSwitch.off ? 0 : 280))
-                guard !fullyVisible, let proxy else { return }
-                // Taller than about half the screen: show where it starts; otherwise all of it.
-                let tall = height > UIScreen.main.bounds.height * 0.5
-                withMotion(Motion.reveal) { proxy.scrollTo(id, anchor: tall ? .top : .bottom) }
+                guard let reveal else { return }
+                let top = reveal.top + 4, bottom = reveal.bottom - 4
+                let tall = frame.height > bottom - top
+                guard tall || frame.maxY > bottom || frame.minY < top else { return }
+                withMotion(Motion.reveal) { reveal.proxy.scrollTo(id, anchor: tall || frame.minY < top ? .top : .bottom) }
             }
     }
 }
 
 extension View {
     /// Brings this (newly revealed) view fully into view.
-    func revealsIntoView() -> some View { modifier(RevealIntoView()) }
+    func revealsIntoView() -> some View { modifier(RevealIntoView(trigger: 0)) }
+    /// The same each time `trigger` changes (a hint shown again).
+    func revealsIntoView<T: Equatable>(trigger: T) -> some View { modifier(RevealIntoView(trigger: trigger)) }
+}
+
+// MARK: - Pinned actions
+
+private struct PinsActionsKey: EnvironmentKey {
+    static var defaultValue: Bool { true }
+}
+
+extension EnvironmentValues {
+    /// Whether a screen may pin its primary action above the bars. Not on a short iPhone and not at
+    /// accessibility text sizes: there a pinned action would cover the content, what just opened or
+    /// the result of an action, so it goes back into the content.
+    var pinsActions: Bool {
+        get { self[PinsActionsKey.self] }
+        set { self[PinsActionsKey.self] = newValue }
+    }
 }
 
 // MARK: - First arrival

@@ -10,29 +10,35 @@ struct StartScreen: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var height: CGFloat = 874
 
-    /// A short screen (iPhone SE): a smaller headline and the lead's first sentence, so the way in stays
-    /// in the first screen.
+    /// A short screen (iPhone SE): the hero collapses (no lead; the example card says the same), so the
+    /// way in and the sample stay whole in the first screen. Nothing is pinned on Start.
     private var short: Bool { height < 720 }
-
-    /// On a short screen a long headline (Spanish) takes a smaller size, so it stays at three lines.
-    private var titleSize: CGFloat {
-        guard short else { return 56 }
-        return model.t("start.title").count > 44 ? 32 : 40
-    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Hero(title: model.t("start.title"), size: titleSize,
-                     lead: short ? model.t("start.promiseShort") : "\(model.t("start.leadShort")) \(model.t("start.promiseShort"))", titleId: "start.title") {
+                // The headline keeps three lines (it steps down in size, in Spanish too), so the first
+                // screen holds the hero, the example, the way in and the sample, none of them cut.
+                Hero(title: model.t("start.title"), size: short ? 40 : 56,
+                     lead: short && !typeSize.isAccessibilitySize ? nil : "\(model.t("start.leadShort")) \(model.t("start.promiseShort"))",
+                     titleId: "start.title", titleLines: typeSize.isAccessibilitySize ? 5 : 3) {
                     VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 8) {
-                            Wordmark().fixedSize()
-                            Spacer(minLength: 4)
-                            GlassCapsule(label: model.t("rail.judges"), id: "judges.open") { model.open(.judges) }
-                            LanguageButton()
+                        // "For judges" whole, or, when it cannot fit beside the wordmark (large text), a
+                        // round button with the same label for VoiceOver and the large content viewer.
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 8) {
+                                Wordmark().fixedSize()
+                                Spacer(minLength: 4)
+                                GlassCapsule(label: model.t("rail.judges"), id: "judges.open") { model.open(.judges) }.fixedSize()
+                                LanguageButton()
+                            }
+                            HStack(spacing: 8) {
+                                Wordmark().fixedSize()
+                                Spacer(minLength: 4)
+                                GlassRound(systemImage: "person.2", label: model.t("rail.judges"), id: "judges.open") { model.open(.judges) }
+                                LanguageButton()
+                            }
                         }
-                        DraftLine(onHero: true)
                     }
                 }
                 VStack(alignment: .leading, spacing: 16) {
@@ -44,12 +50,15 @@ struct StartScreen: View {
                     }
                     ExampleCard()
                     VStack(spacing: 4) {
-                        if !pinPrimary { primary }
+                        primary
                         SecondaryButton(label: model.t("sample.try"), filled: false, id: "start.sample") { model.openDocument() }
                         if model.session.isStarted {
                             LinkText(label: model.t("start.restart"), id: "start.restart") { model.restart() }
                         }
                     }
+                    // The draft notice sits on the ground under the way in: the hero keeps the
+                    // board's rhythm and the primary stays in the first screen.
+                    DraftLine()
                     NoteText(text: model.t("promise.line3"), size: 12)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
@@ -58,20 +67,9 @@ struct StartScreen: View {
             }
             .padding(.bottom, 24)
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if pinPrimary {
-                primary
-                    .gutter()
-                    .padding(.top, 8)
-                    .background(theme.ground)
-            }
-        }
         .heroScreen(theme)
         .onGeometryChange(for: CGFloat.self) { $0.size.height + $0.safeAreaInsets.top + $0.safeAreaInsets.bottom } action: { height = $0 }
     }
-
-    /// On a short screen the way in is pinned above the bars, so it is always in the first screen.
-    private var pinPrimary: Bool { short && !typeSize.isAccessibilitySize }
 
     private var primary: some View {
         PrimaryButton(label: startLabel, id: "start.begin") { model.begin() }
@@ -141,7 +139,9 @@ struct SmallIconLabel: LabelStyle {
     }
 }
 
-/// The draft notice on every screen: "Draft rules, read {date}." and More (the draft-rules sheet).
+/// The draft notice on every screen: "Draft rules, read {date}. More", one paragraph that wraps as
+/// text (the link never sits beside a broken line), on the ground. The whole line opens the
+/// draft-rules sheet, with a target at least 44 pt tall that does not make the line taller.
 struct DraftLine: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
@@ -150,26 +150,26 @@ struct DraftLine: View {
     var body: some View {
         let info = model.bundle.packInfo
         if info.isDemo || info.isDraft {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(info.isDraft ? model.t("pack.draft.short", ["date": model.draftDate]) : model.t("demo.short"))
+            let notice = info.isDraft ? model.t("pack.draft.short", ["date": model.draftDate]) : model.t("demo.short")
+            let more = Text(model.t("demo.more"))
+                .fontWeight(.semibold)
+                .underline(true, color: onHero ? .white.opacity(0.35) : theme.underline)
+                .foregroundStyle(onHero ? .white : theme.ink)
+            Button { model.sheet = .demo } label: {
+                Text("\(Text(notice).foregroundStyle(onHero ? theme.onHeroMuted : theme.note)) \(more)")
                     .sfFont(13)
-                    .foregroundStyle(onHero ? theme.onHeroMuted : theme.note)
+                    .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
-                Button { model.sheet = .demo } label: {
-                    Text(model.t("demo.more"))
-                        .sfFont(13, weight: .semibold)
-                        .underline(true, color: onHero ? .white.opacity(0.35) : theme.underline)
-                        .foregroundStyle(onHero ? .white : theme.ink)
-                        .padding(.vertical, 12)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .padding(.vertical, -12)
-                .accessibilityIdentifier("demo.more")
-                Spacer(minLength: 0)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 12)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(RowPress())
+            .padding(.vertical, -12)
+            .accessibilityLabel("\(info.isDraft ? model.t("pack.draft.title") : model.t("demo.title")). \(notice)")
+            .accessibilityHint(model.t("demo.more"))
+            .accessibilityIdentifier("demo.more")
             .accessibilityElement(children: .contain)
-            .accessibilityLabel(info.isDraft ? model.t("pack.draft.title") : model.t("demo.title"))
             .accessibilityIdentifier("demo.banner")
         }
     }

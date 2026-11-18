@@ -11,7 +11,7 @@ import SwiftUI
 struct DocumentPreviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
-    @Environment(\.dynamicTypeSize) private var dynamicType
+    @Environment(\.pinsActions) private var pinsActions
     @State private var leave = true
     @State private var reading = false
 
@@ -33,10 +33,10 @@ struct DocumentPreviewScreen: View {
                                 model.anotherDocument()
                             }
                         }
-                        DraftLine(onHero: true)
                     }
                 }
                 VStack(alignment: .leading, spacing: 12) {
+                    DraftLine()
                     if let silhouette = model.silhouette {
                         Segmented(options: [(false, model.t("preview.onPhone"), "preview.mode.phone"), (true, model.t("preview.couldLeave"), "preview.mode.leave")],
                                   selection: $leave, dotFor: true)
@@ -55,7 +55,7 @@ struct DocumentPreviewScreen: View {
                         NoteText(text: model.t("preview.missing"), size: 15)
                     }
                     if model.silhouette != nil { decisionInfo.padding(.top, 4) }
-                    if model.silhouette != nil && dynamicType.isAccessibilitySize {
+                    if model.silhouette != nil && !pinsActions {
                         VStack(spacing: 2) { decisionActions }
                     }
                 }
@@ -67,13 +67,22 @@ struct DocumentPreviewScreen: View {
         // The decision stays in the first screen, above the pill (in the content at accessibility
         // sizes, where pinned buttons would take the screen).
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if model.silhouette != nil && !dynamicType.isAccessibilitySize {
+            if model.silhouette != nil && pinsActions {
                 VStack(spacing: 2) { decisionActions }
                     .gutter()
                     .padding(.top, 8)
                     .background(theme.ground)
             }
         }
+    }
+
+    /// A hidden word as the document writes it (they are kept lower-cased for matching).
+    private func asWritten(_ lower: String) -> String {
+        guard let silhouette = model.silhouette else { return lower }
+        for segment in DocumentSession.segments(of: silhouette) {
+            if case .placeholder(_, _, let original?) = segment, original.lowercased() == lower { return original }
+        }
+        return lower
     }
 
     @ViewBuilder private var hiddenWords: some View {
@@ -83,7 +92,7 @@ struct DocumentPreviewScreen: View {
                 Text(model.t("preview.hidden")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink).accessibilityAddTraits(.isHeader)
                 ForEach(hidden, id: \.self) { word in
                     HStack {
-                        Text(model.t("preview.youHid", ["word": "“\(word)”"])).sfFont(15).foregroundStyle(theme.ink)
+                        Text(model.t("preview.youHid", ["word": "“\(asWritten(word))”"])).sfFont(15).foregroundStyle(theme.ink)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 8)
                         LinkText(label: model.t("preview.unhide", ["word": word]), size: 13, id: "preview.unhide.\(word)") { model.unhideWord(word) }
@@ -120,11 +129,16 @@ struct DocumentPreviewScreen: View {
                 NoticeCard(text: model.t("error.on-device-unreliable"))
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("preview.unreliable")
+                    // The result of "Keep everything": brought into view above the actions, and read out.
+                    .revealsIntoView()
+                    .onAppear { AccessibilityNotification.Announcement(model.t("error.on-device-unreliable")).post() }
             } else {
                 NoteText(text: model.t(model.deviceModelAvailable ? "preview.onDevice" : "preview.cloud"))
                     .accessibilityIdentifier("preview.modelLead")
                 if let error = model.documentError {
                     NoticeCard(text: model.t(error.copyKey)).accessibilityIdentifier("preview.error")
+                        .revealsIntoView()
+                        .onAppear { AccessibilityNotification.Announcement(model.t(error.copyKey)).post() }
                 }
             }
         case 1:
@@ -178,6 +192,9 @@ struct DocumentCard: View {
     let hidden: Set<String>
     let hide: (String) -> Void
     @State private var width: CGFloat = 340
+    /// Where the sideways scroll is: more to the left, more to the right.
+    @State private var moreLeft = false
+    @State private var moreRight = true
 
     /// IBM Plex Mono's advance is 0.6 em; a token chip adds about two characters of padding.
     static let advance: CGFloat = 0.6
@@ -201,8 +218,8 @@ struct DocumentCard: View {
         let fitting = width / max(columns(lines) * Self.advance, 1)
         let size = min(13, max(9, floor(fitting * 2) / 2))
         let scrolls = fitting < 9
-        ZStack(alignment: .trailing) {
-            ScrollView(.horizontal, showsIndicators: scrolls) {
+        ZStack {
+            ScrollView(.horizontal, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
                         HStack(spacing: 0) {
@@ -211,28 +228,54 @@ struct DocumentCard: View {
                         .frame(minHeight: size + 8, alignment: .leading)
                     }
                 }
-                .padding(.bottom, scrolls ? 8 : 0)
+                // Scrolling, the lines run to the card's own edge (under the cue), not to a cut
+                // inside its padding.
+                .padding(.horizontal, scrolls ? 16 : 0)
             }
+            .padding(.horizontal, scrolls ? -16 : 0)
             .scrollDisabled(!scrolls)
             .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
+            .onScrollGeometryChange(for: [Bool].self) { g in
+                [g.contentOffset.x > 2, g.contentOffset.x + g.containerSize.width < g.contentSize.width - 2]
+            } action: { _, v in
+                withMotion(Motion.short) { moreLeft = v[0]; moreRight = v[1] }
+            }
             if scrolls {
-                // The cue that the lines go on: a fade at the right edge and an arrow.
-                LinearGradient(colors: [theme.sheet.opacity(0), theme.sheet], startPoint: .leading, endPoint: .trailing)
-                    .frame(width: 28)
-                    .overlay(alignment: .trailing) {
-                        Image(systemName: "chevron.right").sfFont(12, weight: .bold).foregroundStyle(theme.icon)
-                    }
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
+                // The cue that the lines go on, on the side where there is more: a soft edge and a
+                // chevron in a disc; none at an end of the line.
+                HStack(spacing: 0) {
+                    cue(leading: true).opacity(moreLeft ? 1 : 0)
+                    Spacer(minLength: 0)
+                    cue(leading: false).opacity(moreRight ? 1 : 0)
+                }
+                .padding(.horizontal, -16)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
             }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 24).fill(theme.sheet))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
         .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(theme.cardBorder, lineWidth: 1))
+        // The two layouts swap at once (a cross-fade doubled the words); the chips then wipe in.
+        .transaction(value: leave) { $0.animation = nil }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(leave ? "preview.skeleton" : "preview.original")
+    }
+
+    private func cue(leading: Bool) -> some View {
+        LinearGradient(stops: [.init(color: theme.sheet, location: 0), .init(color: theme.sheet, location: 0.55), .init(color: theme.sheet.opacity(0), location: 1)],
+                       startPoint: leading ? .leading : .trailing, endPoint: leading ? .trailing : .leading)
+            .frame(width: 44)
+            .overlay(alignment: leading ? .leading : .trailing) {
+                Image(systemName: leading ? "chevron.left" : "chevron.right")
+                    .sfFont(12, weight: .bold).foregroundStyle(theme.ink)
+                    .frame(width: 24, height: 24)
+                    .background(Circle().fill(theme.raised))
+                    .padding(.horizontal, 6)
+            }
     }
 
     enum Token {
@@ -320,17 +363,13 @@ struct DocumentCard: View {
                             .fixedSize()
                     } else {
                         TokenChip(id: id, size: size * 0.92, compact: true)
+                            .modifier(ChipWipe(order: order))
                     }
                 } else {
                     Text(verbatim: original).font(Font(DesignFonts.uiFont(.mono, weight: 500, size: size))).foregroundStyle(theme.ink).fixedSize()
                 }
             }
             .padding(.trailing, 2)
-            // Values turn into chips one after another, a short wipe capped for long documents; a word
-            // hidden by hand turns into its chip in place.
-            .transition(.opacity)
-            .animation(Motion.staggered(Motion.short, index: order), value: leave)
-            .animation(Motion.named(Motion.short), value: mine)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(leave ? model.t(Self.labelKey(id)) + " \(id)" : original)
         }
@@ -342,5 +381,23 @@ struct DocumentCard: View {
         case "D": "placeholder.date"
         default: "placeholder.word"
         }
+    }
+}
+
+/// A chip that arrives with "What could leave": its fill wipes in from the left, one chip after
+/// another (`delay.stagger`, capped at 8); at once under Reduce Motion and in snapshots.
+private struct ChipWipe: ViewModifier {
+    let order: Int
+    @State private var shown = MotionSwitch.off || Motion.reduceMotion
+
+    func body(content: Content) -> some View {
+        content
+            .mask(alignment: .leading) {
+                Rectangle().scaleEffect(x: shown ? 1 : 0.001, anchor: .leading)
+            }
+            .onAppear {
+                guard !shown else { return }
+                withAnimation(Motion.reveal.delay(Double(min(order, Motion.staggerCap)) * Motion.stagger)) { shown = true }
+            }
     }
 }

@@ -14,7 +14,7 @@ final class QuickCheckUITests: XCTestCase {
         let app = XCUIApplication.silhouette()
         app.launch()
         XCTAssertTrue(app.element("demo.banner").waitForExistence(timeout: 5))
-        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
         app.tapButton("start.begin")
 
         app.waitForQuestion(1)
@@ -82,7 +82,7 @@ final class QuickCheckUITests: XCTestCase {
         XCTAssertTrue(eitc.waitForExistence(timeout: 5))
         XCTAssertEqual(eitc.value as? String, "You may qualify")
         XCTAssertTrue(eitc.label.contains("About $"), eitc.label)
-        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this device."))
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
     }
 
     func testSkippedSensitiveQuestionGivesDependsAndCanBeAnsweredFromDetail() {
@@ -114,13 +114,15 @@ final class QuickCheckUITests: XCTestCase {
         app.launch()
         let banner = app.element("demo.banner")
         XCTAssertTrue(banner.waitForExistence(timeout: 5))
-        XCTAssertTrue(banner.staticTexts["Draft rules, read November 12, 2026."].exists, "the draft notice with the date its sources were read")
+        // One paragraph that opens the draft-rules sheet: the date is in its label.
+        XCTAssertTrue(app.buttons["demo.more"].label.replacingOccurrences(of: "\u{00A0}", with: " ").contains("Draft rules, read November 12, 2026."),
+                      "the draft notice with the date its sources were read")
         app.runPreparedHousehold()
         app.tapButton("program.federal-eitc")
         let readOn = app.element("official.readOn").firstMatch
         app.scrollIntoView(readOn)
         XCTAssertTrue(readOn.waitForExistence(timeout: 5))
-        XCTAssertTrue(readOn.label.contains("Read from this source on November 12, 2026"), readOn.label)
+        XCTAssertTrue(readOn.label.replacingOccurrences(of: "\u{00A0}", with: " ").contains("Read from this source on November 12, 2026"), readOn.label)
         XCTAssertTrue(app.element("program.period").label.contains("tax year 2026"), "the period in the reader's language")
     }
 

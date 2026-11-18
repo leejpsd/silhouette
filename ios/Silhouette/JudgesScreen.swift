@@ -9,7 +9,7 @@ import SwiftUI
 struct JudgesScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
-    @Environment(\.dynamicTypeSize) private var dynamicType
+    @Environment(\.pinsActions) private var pinsActions
 
     @State private var showSteps = false
 
@@ -35,7 +35,7 @@ struct JudgesScreen: View {
                         .accessibilityIdentifier("judges.device")
                     fact(model.t("judges.factFallback"), model.t("judges.factReplays"))
                 }
-                if dynamicType.isAccessibilitySize { runButton }
+                if !pinsActions { runButton }
                 ListCard {
                     Button { model.path.append(.tasks) } label: {
                         ListRow(title: model.t("judges.tasks"), titleWeight: .semibold) { IconTile(systemImage: "arrow.triangle.branch") }
@@ -50,7 +50,8 @@ struct JudgesScreen: View {
                         Image(systemName: showSteps ? "chevron.up" : "chevron.down").sfFont(12, weight: .semibold)
                     }
                     .foregroundStyle(theme.ink)
-                    .frame(minHeight: 44)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("judges.more")
@@ -79,7 +80,7 @@ struct JudgesScreen: View {
         // The device check's action stays in the first screen, above the pill (in the content at
         // accessibility sizes).
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !dynamicType.isAccessibilitySize {
+            if pinsActions {
                 runButton
                     .gutter()
                     .padding(.top, 8)
@@ -89,7 +90,12 @@ struct JudgesScreen: View {
     }
 
     private var runButton: some View {
-        PrimaryButton(label: model.t("deviceCheck.run"), id: "judges.deviceCheck") { model.path.append(.deviceCheck) }
+        // It does what it says: opens the check and starts the run (when this iPhone has the model;
+        // otherwise the page says why it cannot run and offers the recording).
+        PrimaryButton(label: model.t("deviceCheck.run"), id: "judges.deviceCheck") {
+            model.autoRunDeviceCheck = 1
+            model.path.append(.deviceCheck)
+        }
     }
 
     private func fact(_ label: String, _ value: String) -> some View {
