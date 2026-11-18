@@ -97,7 +97,7 @@ test.describe('documents', () => {
     await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     const lead = page.getByTestId('lead-fields');
     // The date shown first is the one the yearly income uses: the period end (the sample has one).
     for (const name of ['grossPay', 'ytdGross', 'periodEnd', 'payFrequency']) await expect(lead.getByTestId(`field-${name}`)).toBeVisible();
@@ -105,11 +105,12 @@ test.describe('documents', () => {
     const more = page.getByTestId('more-values');
     await expect(more).toHaveAttribute('aria-expanded', 'false');
     await expect(page.getByTestId('field-hoursWorked')).toBeHidden();
+    const seeAll = page.getByRole('button', { name: /^See all \d+ values$/ });
     const confirmAll = page.getByRole('button', { name: /^Confirm all \d+ values$/ });
-    const count = Number(/(\d+)/.exec((await confirmAll.textContent()) ?? '')?.[1]);
+    const count = Number(/(\d+)/.exec((await seeAll.textContent()) ?? '')?.[1]);
     expect(count).toBeGreaterThan(10);
-    // First press: the folded values are shown, nothing is confirmed yet.
-    await confirmAll.click();
+    // While values are folded away the button says what it does: it shows them, and confirms nothing.
+    await seeAll.click();
     await expect(more).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByTestId('field-hoursWorked')).toBeVisible();
     await expect(page.getByTestId('field-hoursWorked')).toHaveAttribute('data-status', 'pending');
@@ -156,7 +157,7 @@ test.describe('documents', () => {
     await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Document type: paystub': JSON.stringify(fixturePointers('paystub-en-01-correct')) } });
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
     const bar = page.getByTestId('leaving-bar');
     await expect(bar).toHaveAttribute('data-outbound-count', '0');
@@ -177,7 +178,7 @@ test('confirming values is still possible from the keyboard after the fold opens
   await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
   await page.goto('/#/doc');
   await page.getByRole('button', { name: 'English paystub (text)' }).click();
-  await page.getByRole('button', { name: 'Send', exact: true }).click();
+  await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
   await confirmAllValues(page);
   await expect(page.getByRole('button', { name: 'Check these values' })).toBeEnabled();
 });

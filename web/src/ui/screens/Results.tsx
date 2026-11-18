@@ -1,5 +1,7 @@
 // Results: the programs as one list card, each marked by how full its circle is, with its status, and
 // linking to its detail. On wide screens the list also stands beside the program page.
+import { JudgeNext, onJudgesPath, openSamplePaystub } from '../judges/next';
+import { useDocument } from '../doc/state';
 import { useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { leftDevice, outboundState, subscribeOutbound } from '../../data/outbound';
 import type { ProgramVerdict } from '../../core/rules';
@@ -33,6 +35,8 @@ export function ResultsScreen() {
   const sentSomething = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length > 0, () => false);
   const online = useOnline();
   const answered = Object.keys(answers).length > 0;
+  const [judges] = useState(onJudgesPath);
+  const { update } = useDocument();
 
   // The screen's main action, in the block: a paystub turns a possible result into a clearer one.
   const addPaystub = (
@@ -45,12 +49,22 @@ export function ResultsScreen() {
         <strong>{t('results.sharpen')}</strong>
         <span>{t('results.sharpenHelp')}</span>
       </p>
-      <a className="action" href={routeHref({ name: 'doc' })}>
-        <ActionLabel>{t('results.addDocument')}</ActionLabel>
-        <span className="action-arrow">
-          <ArrowRight />
-        </span>
-      </a>
+      {judges ? (
+        // On the judges' path the next step is the main action: the sample paystub, read by a model.
+        <button type="button" className="action" onClick={() => openSamplePaystub(update)} data-testid="judge-primary">
+          <ActionLabel>{t('judges.step2.button')}</ActionLabel>
+          <span className="action-arrow">
+            <ArrowRight />
+          </span>
+        </button>
+      ) : (
+        <a className="action" href={routeHref({ name: 'doc' })}>
+          <ActionLabel>{t('results.addDocument')}</ActionLabel>
+          <span className="action-arrow">
+            <ArrowRight />
+          </span>
+        </a>
+      )}
     </BlockActions>
   );
   const editAnswers = (
@@ -98,7 +112,7 @@ export function ResultsScreen() {
             {t('results.title')}
           </ScreenHeading>
           <div className="badge-line">
-            <strong className="badge badge-none">{t('badge.noModel')}</strong>
+            <strong className="badge badge-none">{t('badge.rulesOnly')}</strong>
             <p className="small muted" data-testid="results-lead">
               {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
             </p>
@@ -110,6 +124,7 @@ export function ResultsScreen() {
           </p>
         )}
         <ResultGroups />
+        <JudgeNext step={2} />
         {addPaystub}
         <div className="results-actions">{editAnswers}</div>
       </div>
@@ -207,6 +222,8 @@ function ProgramRow({ result: r, name, summary, current = false, order = 0 }: { 
         </span>
         <span className="program-status" aria-hidden="true">
           {t(dynamicKey(`verdict.short.${r.verdict}`))}
+          {/* The amount is the point of the result: wide rows show it too. */}
+          {r.estimatedAmount !== undefined && r.estimatedAmount > 0 && <span className="program-amount">{t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}</span>}
         </span>
         <ChevronRight />
       </a>

@@ -17,7 +17,7 @@ async function judgesStepTwo(page: Page) {
   await page.goto('/#/judges');
   await page.getByRole('button', { name: 'Open the sample paystub' }).click();
   await page.getByTestId('skeleton-preview').waitFor();
-  await page.getByRole('button', { name: 'Send', exact: true }).click();
+  await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
 }
 
 test('reCAPTCHA Enterprise and App Check work under the hosting policy; the record names each request', async ({ page, context, baseURL }) => {

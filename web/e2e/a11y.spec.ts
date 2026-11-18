@@ -68,7 +68,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
     await page.getByTestId('skeleton-preview').waitFor();
     await scan('skeleton preview');
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await page.getByTestId('inference-badge').waitFor();
     await scan('review');
     await page.getByTestId('field-grossPay').locator('.field-toggle').click();

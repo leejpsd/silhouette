@@ -1,6 +1,7 @@
 // Extraction review: every field next to its highlighted source, confirm or change each one,
 // type what was not found, then deterministic checks and annualization (core/validate.ts).
 // Confirmed values feed an exact annualIncome into the verdict engine.
+import { JudgeNext } from '../judges/next';
 import { bringIntoView } from '../design/motion';
 import { moneyOnly } from '../design/inputs';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -563,6 +564,8 @@ export function DocumentReviewScreen() {
               // Nothing is confirmed unseen: the first press shows the values that were folded away.
               // Nothing is confirmed unseen: the first press opens the folded values and moves focus there,
               // and the status says how many still need a look.
+              // Nothing is confirmed unseen: while some values are still folded away, the button says "See
+              // all" and opens them; then it says "Confirm all" and confirms.
               if (!moreOpen && moreUnseen) {
                 setMoreOpen(true);
                 setMoreSeen(true);
@@ -584,7 +587,7 @@ export function DocumentReviewScreen() {
               requestAnimationFrame(() => checkButton.current?.focus());
             }}
           >
-            {t('review.confirmAllCount', { count: pending })}
+            {!moreOpen && moreUnseen ? t('review.seeAllCount', { count: pending }) : t('review.confirmAllCount', { count: pending })}
           </button>
           <p className={foldNotice ? 'small strong' : 'small'} id={pendingId} role="status" data-testid="review-pending">
             {t('review.pending', { count: pending })}
@@ -643,6 +646,7 @@ export function DocumentReviewScreen() {
               })()}
               <p className="small muted">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>
               <Changes amount={annual.annualIncome} />
+              <JudgeNext step={3} />
             </>
           ) : (
             <p className="error" role="alert">

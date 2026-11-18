@@ -7,6 +7,7 @@
 // - current information found by search (behind a flag).
 // Nothing here is requested until the person taps.
 
+import { bringIntoView } from '../design/motion';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Raw, asPublic } from '../../core/types';
 import type { CriterionState, Program, Verdict } from '../../core/rules';
@@ -79,7 +80,7 @@ export function ProgramAnswers({ program, verdict }: { program: Program; verdict
   const input = explainInput(programFacts(t, locale, program), locale);
   return (
     <>
-      <AboutSection input={input} program={program} programName={programName(locale, program)} />
+      <AboutSection input={input} program={program} programName={programName(locale, program)} verdict={verdict} />
       <FreeTextQuestion program={program} verdict={verdict} device={device} />
       {config.groundingSearch && <CurrentStatusSection programId={program.id} />}
     </>
@@ -120,13 +121,19 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
       setPersonal({ status: 'error', error: classifyError(error) });
     }
   };
+  // The answer written on this device comes into view above the dock when it arrives (on a phone it
+  // would otherwise land under it, and the press would look like it did nothing).
+  const whyAnswer = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (personal.status === 'done') bringIntoView(whyAnswer.current);
+  }, [personal.status]);
   return (
     <section className="why" aria-labelledby={`${id}-title`} data-testid="why-section">
       <div className="section-head">
         <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className="section-heading">
           {t('why.title')}
         </h2>
-        <strong className="badge badge-none">{t('badge.noModel')}</strong>
+        <strong className="badge badge-none">{t('badge.rulesOnly')}</strong>
       </div>
       <ul className="criteria">
         {rows.map((row) => (
@@ -198,7 +205,7 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
           {personal.status === 'loading' && <Loading />}
           {personal.status === 'error' && <AnswerError error={personal.error} />}
           {personal.status === 'done' && (
-            <div data-testid="why-answer">
+            <div data-testid="why-answer" ref={whyAnswer}>
               <AnswerText result={personal.result} />
             </div>
           )}
@@ -215,7 +222,7 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
 type Answer = TaskResult<ModelAnswer>;
 
 /** "About this program": the general explanation and prepared questions (cloud-capable, no result). */
-function AboutSection({ input, program, programName: name }: { input: ExplainInput; program: Program; programName: string }) {
+function AboutSection({ input, program, programName: name, verdict }: { input: ExplainInput; program: Program; programName: string; verdict: Verdict }) {
   const { t, locale } = useApp();
   const copy = programCopy(locale, program);
   const id = useId();
@@ -243,7 +250,22 @@ function AboutSection({ input, program, programName: name }: { input: ExplainInp
       )}
       {/* The page's main action, in the block: explain the program; once asked, back to the results. */}
       <BlockActions>
-        {again(short.state.status) ? (
+        {verdict === 'maybe' && again(short.state.status) ? (
+          // "Possible — a document can confirm": the document is the main action; the explanation is second.
+          <>
+            <a className="action" href={routeHref({ name: 'doc' })} data-testid="confirm-with-paystub">
+              <ActionLabel>{t('detail.confirmWithPaystub')}</ActionLabel>
+              <span className="action-arrow">
+                <ArrowRight />
+              </span>
+            </a>
+            <div className="block-links">
+              <button type="button" className="text-link" onClick={() => ask('short')}>
+                {t('about.explain')}
+              </button>
+            </div>
+          </>
+        ) : again(short.state.status) ? (
           <button type="button" className="action" onClick={() => ask('short')}>
             <ActionLabel>{t('about.explain')}</ActionLabel>
             <span className="action-arrow">

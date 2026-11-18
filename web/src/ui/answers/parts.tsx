@@ -2,6 +2,7 @@
 // an answer with its provenance, read aloud, Google Search Suggestions, source lists, the rule
 // pack's official information, and the hook that ties a request to consent and the session cache.
 
+import { bringIntoView } from '../design/motion';
 import { leftDevice, outboundState, subscribeOutbound } from '../../data/outbound';
 import { askDeviceStatus } from '../../ai/device-model';
 import { useOnline } from '../design/online';
@@ -414,8 +415,14 @@ export function RequestRegion<T>({
   else if (state.status === 'skipped') status = t('send.skipped');
   else if (state.status === 'error') status = t(errorCopy(state.error));
   else if (state.status === 'done') status = t('answers.ready');
+  // What a press started is seen: the stage while it runs, then the answer or what went wrong, in view
+  // above the dock.
+  const region = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (state.status === 'loading' || state.status === 'done' || state.status === 'error') bringIntoView(region.current);
+  }, [state.status]);
   return (
-    <div className="request" data-testid={testId} data-status={state.status} aria-busy={state.status === 'loading'}>
+    <div ref={region} className="request" data-testid={testId} data-status={state.status} aria-busy={state.status === 'loading'}>
       {state.status === 'confirm' && <SendPanel plan={state.plan} lines={lines} onSend={onSend} onSkip={onSkip} publicOnly={publicOnly === true} />}
       {state.status === 'loading' && <Loading />}
       <p className={state.status === 'done' || state.status === 'error' ? 'visually-hidden' : 'status-line'} role="status" data-testid="request-status">

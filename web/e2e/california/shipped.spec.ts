@@ -62,7 +62,7 @@ test.describe('the California draft pack', () => {
 
     await page.goto('/#/judges');
     await page.getByRole('button', { name: 'Open the sample paystub' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
     await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();

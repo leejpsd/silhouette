@@ -26,7 +26,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(preview).not.toContainText('NORTHWIND');
     await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
     expect(cloud.bodies).toHaveLength(0);
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
 
     // Review: provenance badge and reason chip, value next to its highlighted source.
     await expect(page.getByRole('heading', { level: 1, name: 'Check what was found' })).toBeVisible();
@@ -93,7 +93,7 @@ test.describe('Document silhouette and pointer extraction', () => {
       buffer: Buffer.from(makeTextPdf(sharedText(`fixtures/canary/${canary.document}`))),
     });
     await expect(page.getByTestId('skeleton-preview')).toContainText('Earnings Statement');
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toBeVisible();
     // The canary document's own values are on screen (on device), which proves the flow processed it.
     await expect(page.getByTestId('value-grossPay')).toHaveText('1,487.50');
@@ -117,7 +117,9 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
     await page.getByTestId('preview-more').locator('summary').click();
     await expect(page.getByText('Your device reads this silhouette first.')).toBeVisible();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    // With the model on this device the action says where the reading starts: it is not a "Send".
+    await expect(page.getByRole('button', { name: 'Send', exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Read on this device' }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
     await expect(page.getByTestId('inference-badge')).toContainText('On this device');
     await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
@@ -138,7 +140,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.goto('/#/doc');
     await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'available');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
     await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
     await page.getByTestId('more-values').click();
@@ -164,7 +166,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     const cloud = await fakeCloudModel(page, { pointers: correct });
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-reason', 'on-device-failed');
     expect(cloud.bodies).toHaveLength(1);
@@ -189,7 +191,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.goto('/#/doc');
     await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'available');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
     await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
@@ -218,7 +220,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     // A word hidden: the changed silhouette is read again from the start.
     await page.getByRole('button', { name: 'Hide “Earnings”' }).first().click();
     await expect.poll(prompts, { timeout: 10_000 }).toBe(4);
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
     await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
     expect(await prompts()).toBe(4);
@@ -235,7 +237,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.goto('/#/doc');
     await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'available');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
     await page.getByTestId('more-values').click();
     await expect(page.getByTestId('not-read-hoursWorked')).toContainText('Not read on this device.');
@@ -255,7 +257,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.locator('input[type="file"][accept*="image"]').setInputFiles({ name: 'stub.png', mimeType: 'image/png', buffer: png });
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-reason', 'photo-never-leaves');
     await expect(page.getByTestId('skeleton-preview')).toContainText('Gross Pay');
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
     expect(requests.filter((r) => new URL(r.url()).origin !== new URL(page.url()).origin)).toEqual([]);
   });
@@ -287,7 +289,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(page.getByTestId('skeleton-preview')).toContainText('지급합계');
     await expect(page.getByTestId('skeleton-preview')).not.toContainText('김지원');
     await expect(page.getByTestId('model-status')).toContainText("does not support this document's language");
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('value-grossPay')).toHaveText('2,485,000');
     expect(cloud.bodies[0]).not.toContain('2,485,000');
     await confirmAllValues(page);
@@ -310,7 +312,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     });
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('task-error')).toHaveAttribute('data-kind', 'app-check');
     await page.getByRole('button', { name: 'Type the numbers instead' }).click();
     // Typing the numbers: nothing was looked for, so nothing is "not found".

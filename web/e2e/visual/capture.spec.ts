@@ -204,7 +204,7 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByRole('button', { name: 'Hide “Federal”' }).first().click();
       await shot(page, '29-preview-hidden', theme);
       await page.getByRole('button', { name: 'Show “federal” again' }).click();
-      await page.getByRole('button', { name: 'Send', exact: true }).click();
+      await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
       await page.getByTestId('inference-badge').waitFor();
       await shot(page, '30-review', theme);
       await confirmAllValues(page);
@@ -219,7 +219,7 @@ for (const theme of ['light', 'dark'] as const) {
       await fakeCloudModel(page, { pointers: {} });
       await page.goto('/#/doc');
       await page.getByRole('button', { name: 'English paystub (text)' }).click();
-      await page.getByRole('button', { name: 'Send', exact: true }).click();
+      await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
       await page.getByTestId('not-a-document').waitFor();
       await shot(page, '32-not-a-paystub', theme);
     });
@@ -294,7 +294,7 @@ for (const width of [808, 1280, 1440] as const) {
       await page.getByRole('button', { name: 'English paystub (text)' }).click();
       await page.getByTestId('skeleton-preview').waitFor();
       await shot(page, `48-${width}-preview`, theme, false);
-      await page.getByRole('button', { name: 'Send', exact: true }).click();
+      await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
       await page.getByTestId('inference-badge').waitFor();
       await shot(page, `49-${width}-review`, theme, false);
     });
@@ -308,7 +308,7 @@ for (const theme of ['light', 'dark'] as const) {
     await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Document type: paystub': JSON.stringify(fixturePointers('paystub-en-01-correct')) } });
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await page.getByTestId('inference-badge').waitFor();
     await page.getByTestId('more-values').click();
     await shot(page, '37-review-more-open', theme);
@@ -428,7 +428,7 @@ for (const size of [
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
     await page.getByTestId('skeleton-preview').waitFor();
     await view(page, `${p}-silhouette`);
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await page.getByTestId('inference-badge').waitFor();
     await view(page, `${p}-review`);
   });

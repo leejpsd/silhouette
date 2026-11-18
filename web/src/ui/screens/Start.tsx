@@ -1,6 +1,6 @@
 // Start screen: the promise as a picture (what stays on this device, what could leave), and the way in.
 import { useApp } from '../context';
-import { formatMoney } from '../i18n';
+import { dynamicKey, formatMoney, lookup } from '../i18n';
 import { BANDS } from '../pack';
 import { bandLabel } from './Question';
 import { firstOpenStep } from '../quickcheck';
@@ -53,6 +53,11 @@ export function StartScreen({ notice }: { notice: string | null }) {
         <Row label={t('review.annualTitle')} value={formatMoney(locale, EXAMPLE_INCOME)}>
           <span className="paper-value">{exampleBand}</span>
         </Row>
+        {/* What is different here, in one line: the model points at a placeholder and never sees the value. */}
+        <p className="example-pointer">
+          <Bar id="N12" label={t('placeholder.number')} />
+          <span>{t('start.pointer')}</span>
+        </p>
       </div>
       <figcaption className="example-note">{t('start.exampleNote')}</figcaption>
     </figure>
@@ -72,6 +77,8 @@ export function StartScreen({ notice }: { notice: string | null }) {
       </div>
       <div className="start-main">
         <div className="stack-8">
+          {/* Who it is for, from the rule pack in use (the first thing a judge needs to know). */}
+          {lookup(locale, 'pack.audience') !== undefined && <p className="eyebrow">{t(dynamicKey('pack.audience'))}</p>}
           <ScreenHeading size={54} wideSize={104} maxLines={4}>
             {t('start.title')}
           </ScreenHeading>

@@ -188,3 +188,22 @@ test('between 808 and 1100 px the content is one column: a program is not squeez
   await page.setViewportSize({ width: 1280, height: 800 });
   await expect(page.locator('.results-aside')).toHaveCount(1);
 });
+
+test('the judges’ path stays on rails: the step is pressable as a whole, and the results lead to the sample paystub', async ({ page }) => {
+  await page.goto('/#/judges');
+  // The title of a step starts it, not only the small disc.
+  await page.getByTestId('judge-quick-check').getByRole('heading').click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your results');
+  await expect(page.getByTestId('judge-next-2')).toBeVisible();
+  await page.getByTestId('judge-primary').click();
+  await expect(page.getByTestId('skeleton-preview')).toHaveAttribute('data-mode', 'leave');
+});
+
+test('a result that a document can confirm leads to the document', async ({ page }) => {
+  await page.goto('/#/judges');
+  await page.getByTestId('judge-quick-check').getByRole('heading').click();
+  await page.locator('li[data-verdict="maybe"] .program-link').first().click();
+  await expect(page.getByTestId('confirm-with-paystub')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Explain this program' })).toBeVisible();
+});
+

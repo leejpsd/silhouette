@@ -1,13 +1,12 @@
 // "For judges: try it in two minutes" (#/judges): three steps, one button each, with invented data
 // only. It works in any browser: without an on-device model the sample's silhouette goes to the cloud
 // (offline, the bundled answer key is used), and the page says which steps run on this device.
-import { useEffect, useState } from 'react';
-import { Raw } from '../../core/types';
-import { skeletonize } from '../../core/skeleton';
-import { pointerDeviceStatus } from '../../ai/device-model';
+import { useCallback, useEffect, useState } from 'react';
+import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
+import { ModelStatus } from '../doc/ModelStatus';
+import { openSamplePaystub, startJudgesPath } from '../judges/next';
 import { useApp } from '../context';
 import { ScreenHeading } from '../Heading';
-import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { useDocument } from '../doc/state';
 import { ArrowRight, ChevronLeft, ChevronRight, Doc, Phone, Play } from '../design/icons';
 import { BlockActions } from '../design/block';
@@ -15,32 +14,33 @@ import { ActionLabel } from '../design/parts';
 import { navigate, routeHref } from '../router';
 import { preparedHousehold } from '../judges/household';
 import { OPEN_RECORD_EVENT } from '../Chrome';
-import sampleText from '../../../../shared/samples/paystub-en-01.txt?raw';
 
 export function JudgesScreen() {
   const { t, steps, resetAnswers, setAnswer } = useApp();
   const { update } = useDocument();
-  const [device, setDevice] = useState<'checking' | 'available' | 'other'>('checking');
+  // Three states matter to a judge: the model is here, it can be downloaded (then step 2 can run on this
+  // device after one press), or this browser has none.
+  const [device, setDevice] = useState<'checking' | 'available' | 'downloadable' | 'other'>('checking');
+  const onStatus = useCallback((s: DeviceStatus) => setDevice(s === 'available' ? 'available' : s === 'downloadable' || s === 'downloading' ? 'downloadable' : 'other'), []);
 
   useEffect(() => {
     let live = true;
-    void pointerDeviceStatus('paystub', 'en').then((s) => live && setDevice(s === 'available' ? 'available' : 'other'));
+    void pointerDeviceStatus('paystub', 'en').then((s) => live && onStatus(s));
     return () => {
       live = false;
     };
-  }, []);
+  }, [onStatus]);
 
   const quickCheck = () => {
+    startJudgesPath();
     resetAnswers();
     for (const [id, value] of Object.entries(preparedHousehold(steps))) setAnswer(id, value);
     navigate({ name: 'results' });
   };
 
   const sample = () => {
-    const text = Raw.of(sampleText);
-    const { skeleton, map } = skeletonize(text, allowlistFor('en'), introducersFor('en'));
-    update({ text, skeleton, map, sourceKind: 'sample', language: 'en', extraction: null, error: null, hiddenWords: [], photoSource: null });
-    navigate({ name: 'doc-preview' });
+    startJudgesPath();
+    openSamplePaystub(update);
   };
 
   const record = () => window.dispatchEvent(new Event(OPEN_RECORD_EVENT));
@@ -71,7 +71,8 @@ export function JudgesScreen() {
       )}
       <ol className="judge-steps">
         {stepsList.map((s, i) => (
-          <li key={s.id} className="judge-step" data-testid={`judge-${s.id}`}>
+          // The whole step is the control (the disc is its mark): a press on the title starts it too.
+          <li key={s.id} className="judge-step" data-testid={`judge-${s.id}`} onClick={(e) => { if (!(e.target as Element).closest('button')) s.run(); }}>
             <span className="judge-number" aria-hidden="true">
               {i + 1}
             </span>
@@ -86,8 +87,10 @@ export function JudgesScreen() {
         ))}
       </ol>
       <p className="card-note" role="status" data-testid="judges-device" data-device={device}>
-        {device === 'checking' ? t('judges.checking') : device === 'available' ? t('judges.withModel') : t('judges.withoutModel')}
+        {device === 'checking' ? t('judges.checking') : device === 'available' ? t('judges.withModel') : device === 'downloadable' ? t('judges.canDownload') : t('judges.withoutModel')}
       </p>
+      {/* The model can be downloaded here, with its progress: then step 2 runs on this device. */}
+      {device === 'downloadable' && <ModelStatus language="en" onStatus={onStatus} />}
       <ul className="link-card">
         <li>
           <a href={routeHref({ name: 'tasks' })}>

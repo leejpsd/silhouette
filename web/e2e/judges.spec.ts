@@ -25,7 +25,7 @@ test.describe('for judges: try it in two minutes', () => {
     await page.goto('/#/judges');
     await page.getByRole('button', { name: 'Open the sample paystub' }).click();
     await expect(page.getByTestId('skeleton-preview')).toHaveAttribute('data-mode', 'leave');
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
     expect(cloud.bodies.length).toBeGreaterThan(0);
     expect(cloud.bodies.join('\n')).not.toContain('1,271.88');

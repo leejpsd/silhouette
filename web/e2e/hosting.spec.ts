@@ -29,7 +29,7 @@ test('the hosting content security policy allows everything the app does, and no
   await page.getByTestId('more-samples').locator('summary').click();
   await page.getByRole('button', { name: 'English paystub (PDF)' }).click();
   await page.getByTestId('skeleton-preview').waitFor();
-  await page.getByRole('button', { name: 'Send', exact: true }).click();
+  await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
   await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
   await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
   await expect(page.getByTestId('record-sheet')).toBeVisible();

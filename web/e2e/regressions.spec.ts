@@ -8,7 +8,7 @@ async function sendSample(page: Page) {
   await page.goto('/#/doc');
   await page.getByRole('button', { name: 'English paystub (text)' }).click();
   await page.getByTestId('skeleton-preview').waitFor();
-  await page.getByRole('button', { name: 'Send', exact: true }).click();
+  await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
   await page.getByTestId('inference-badge').waitFor();
 }
 
@@ -109,7 +109,7 @@ test.describe('regressions', () => {
     await fakeCloudModel(page, { status: 429, body: { error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, limit: 500' } } });
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     const notice = page.getByTestId('task-error');
     await expect(notice).toHaveAttribute('data-kind', 'quota-daily');
     await expect(notice).toContainText("free daily limit has been reached");
@@ -231,7 +231,7 @@ test.describe('regressions', () => {
     await page.keyboard.press('Enter');
     await expect(preview).toContainText('Net Pay');
     await page.getByRole('button', { name: 'Hide “Net”' }).click();
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await page.getByTestId('inference-badge').waitFor();
     expect(cloud.bodies[0]).not.toContain('Net Pay');
   });
@@ -250,7 +250,7 @@ test.describe('regressions', () => {
     await expect(preview).toContainText('W1 W2 W3');
     await expect(preview).not.toContainText('Employee');
     await expect(preview).toContainText('Gross Pay');
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await page.getByTestId('inference-badge').waitFor();
     expect(cloud.bodies[0]).not.toContain('Employee');
     expect(cloud.bodies[0]).not.toContain('Lindqvist');
@@ -277,7 +277,7 @@ test.describe('regressions', () => {
       await page.getByRole('button', { name: 'English paystub (text)' }).click();
       await page.getByTestId('skeleton-preview').waitFor();
       expect(await noOverflow(page), `preview ${width}`).toBe(true);
-      await page.getByRole('button', { name: 'Send', exact: true }).click();
+      await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
       await page.getByTestId('inference-badge').waitFor();
       expect(await noOverflow(page), `review ${width}`).toBe(true);
     }

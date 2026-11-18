@@ -24,7 +24,7 @@ import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { phoneLines } from '../doc/phone-view';
 import { rememberReading } from '../doc/last-reading';
 import { BlockActions, useTwoColumns } from '../design/block';
-import { ChevronLeft, ChevronRight, LeaveGlyph } from '../design/icons';
+import { ArrowRight, ChevronLeft, ChevronRight, LeaveGlyph } from '../design/icons';
 import { useOnline } from '../design/online';
 import { ActionLabel, Spinner } from '../design/parts';
 import { Loading } from '../answers/parts';
@@ -317,6 +317,13 @@ export function DocumentPreviewScreen() {
         {t('preview.legend.number')} <span className="legend-note">{t('preview.labelsStay')}</span>
       </p>
       {!wide && <p className="small muted">{t('preview.leadShort')}</p>}
+      {/* Without a model here, the on-device half of the story is one press away: the recorded run. */}
+      {!onDeviceFirst && deviceStatus !== null && !offlineSample && (
+        <a className="text-link recorded-link" href={routeHref({ name: 'device-check' })} data-testid="see-recorded">
+          {t('preview.seeRecorded')}
+          <ChevronRight />
+        </a>
+      )}
       {lastHidden !== undefined && (
         <div className="hide-row">
           <p className="small">{t('preview.youHid', { word: asShown(lastHidden) })}</p>
@@ -407,6 +414,13 @@ export function DocumentPreviewScreen() {
           {offlineSample ? (
             <button type="button" className="action centered" disabled={sending} onClick={() => void send()}>
               <span className="action-label small-label">{t('preview.sampleButton')}</span>
+            </button>
+          ) : onDeviceFirst ? (
+            // The model is on this device: the reading starts here, and the action says so. It leaves only
+            // if this device cannot read it (the line above the document says that), never as a first step.
+            <button type="button" className="action" disabled={sending} onClick={() => void send()} data-testid="read-here">
+              <ActionLabel>{sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : t('preview.readHere')}</ActionLabel>
+              <span className="action-arrow">{sending ? <Spinner /> : <ArrowRight />}</span>
             </button>
           ) : (
             <button type="button" className="send-button" disabled={sending} onClick={() => void send()}>

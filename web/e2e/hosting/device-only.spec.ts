@@ -44,7 +44,7 @@ test('the two-minute path with a ready device model leaves nothing at all', asyn
   await page.getByRole('button', { name: 'Open the sample paystub' }).click();
   // The read-ahead asks the device before Send.
   await expect.poll(() => page.evaluate(() => (window as unknown as { __fakePrompts: string[] }).__fakePrompts.length), { timeout: 10_000 }).toBeGreaterThan(0);
-  await page.getByRole('button', { name: 'Send', exact: true }).click();
+  await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
   await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
   await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
   // 3. What left: nothing.
