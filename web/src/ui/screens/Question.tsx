@@ -5,7 +5,7 @@ import { bringIntoView, pressKey, reducedMotion, Reveal, useTravel } from '../de
 import { digitsOnly, moneyOnly } from '../design/inputs';
 import { useApp } from '../context';
 import { dynamicKey, formatMoney, lookup, type CopyKey, type Translate, type Locale } from '../i18n';
-import { isIncomeAnswer, isMoneyVariable, validateAnswer, type AnswerValue, type IncomeAnswer, type Step } from '../quickcheck';
+import { isIncomeAnswer, isMoneyVariable, MAX_EXACT_INCOME, validateAnswer, type AnswerValue, type IncomeAnswer, type Step } from '../quickcheck';
 import { parseTypedAmount, readTypedAmount } from '../../core/skeleton';
 import { navigate, type Route } from '../router';
 import { ScreenHeading } from '../Heading';
@@ -135,6 +135,11 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
   };
 
   const back = () => {
+    // Back keeps what was chosen here, when it is a complete answer: nobody chooses an answer to have it
+    // forgotten. (Saved by this press, never from an effect, so "Delete everything" is never followed by
+    // a write.)
+    const chosen = draftToValue(step, draft);
+    if (touched.current && chosen !== undefined && validateAnswer(step, chosen) === null) setAnswer(step.id, chosen);
     if (route.then) return goNext();
     const prev = steps[index - 1];
     navigate(prev ? { name: 'question', id: prev.id, then: null } : { name: 'start' });
@@ -172,7 +177,8 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
   const asTiles = (step.kind === 'bool' || step.kind === 'enum') && choices.length === 2;
   const amountText = (() => {
     const amount = parseTypedAmount(draft.text);
-    return draft.text.trim() === '' || amount === undefined ? '' : t('q.amountUnderstood', { amount: formatMoney(locale, amount) });
+    // Never read back an amount that Next would refuse.
+    return draft.text.trim() === '' || amount === undefined || amount > MAX_EXACT_INCOME ? '' : t('q.amountUnderstood', { amount: formatMoney(locale, amount) });
   })();
   // While typing, the block above the keyboard changes size: keep the understood amount in view.
   useEffect(() => {
@@ -403,6 +409,7 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
                     className="input mono"
                     inputMode="decimal"
                     autoComplete="off"
+                    maxLength={16}
                     aria-describedby={[`${step.id}-understood`, privateId, error ? errorId : ''].filter(Boolean).join(' ')}
                     aria-invalid={error ? true : undefined}
                     value={draft.text}

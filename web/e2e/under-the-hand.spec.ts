@@ -133,3 +133,26 @@ test('with reduced motion nothing travels: the next question is simply there', a
   const moving = await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length);
   expect(moving).toBe(0);
 });
+
+test('Back keeps an answer that was chosen but not yet confirmed with Next', async ({ page }) => {
+  await start(page);
+  await page.getByRole('textbox').fill('3');
+  await next(page).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/How many children/);
+  await page.getByRole('textbox').fill('2');
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/How many people/);
+  await page.waitForTimeout(350);
+  await next(page).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/How many children/);
+  await expect(page.getByRole('textbox')).toHaveValue('2');
+});
+
+test('an amount the rules would refuse is not read back as understood', async ({ page }) => {
+  await page.goto('/#/q/income');
+  await page.getByLabel('I know the exact amount').check();
+  const field = page.getByLabel('Yearly household income');
+  await field.fill('9999999999999999');
+  await expect(page.getByTestId('amount-understood')).toHaveText('');
+  await expect(next(page)).toHaveAttribute('data-ready', 'false');
+});
