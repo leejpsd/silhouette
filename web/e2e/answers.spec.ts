@@ -134,7 +134,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     await completeQuickCheck(page);
     await openProgram(page, 'utility-discount');
     await explainButton(page).click();
-    await page.getByRole('button', { name: 'Keep everything on this device' }).click();
+    await page.getByTestId('send-decision').getByRole('button', { name: 'Keep on device' }).click();
     await expect(page.getByTestId('explain-short').getByTestId('request-status')).toHaveText(/Nothing was sent/);
     await expect(explainButton(page)).toBeVisible();
     expect(cloud.bodies).toHaveLength(0);

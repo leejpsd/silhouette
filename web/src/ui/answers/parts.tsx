@@ -259,7 +259,7 @@ export function SendPanel({
           </p>
           <div className="decision" data-testid="send-decision">
             <button type="button" className="outline-button tall" onClick={decide(onSkip)}>
-              {t('send.skip')}
+              {t('send.keepShort')}
             </button>
             <button type="button" className="send-button" onClick={decide(onSend)}>
               <ActionLabel>{t('send.send')}</ActionLabel>

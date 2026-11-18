@@ -463,6 +463,10 @@ function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: 
                   <span>
                     {at} · {title} · {t('record.bytes', { count: e.bytes })}
                   </span>
+                  <span className="payload-where">
+                    {t('outbound.requestTo', { destination: e.destination, path: e.path })}
+                    {e.model ? ` · ${t('outbound.model', { model: e.model })}` : ''}
+                  </span>
                 </p>
                 {e.channel === 'ai-cloud' && <strong className="badge badge-cloud">{t('badge.cloud')}</strong>}
                 <button

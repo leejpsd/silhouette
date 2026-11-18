@@ -120,7 +120,7 @@ test.describe('documents', () => {
     await expect(page.getByTestId('annual-income')).toHaveText(/^\$[\d,]+$/);
   });
 
-  test('preview: long lines wrap inside the card on a phone, chips are compact, and both views show the same placeholders', async ({ page, context }) => {
+  test('preview on a phone: no line breaks (the card scrolls sideways, the page does not), chips are compact, both views show the same placeholders', async ({ page, context }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await noOnDeviceModel(context);
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -128,7 +128,9 @@ test.describe('documents', () => {
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
     const doc = page.getByTestId('skeleton-preview');
     await expect(doc).toHaveAttribute('data-mode', 'leave');
-    expect(await doc.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    expect(await doc.evaluate((el) => getComputedStyle(el).whiteSpace)).toBe('pre');
+    expect(await doc.evaluate((el) => getComputedStyle(el).overflowX)).toBe('auto');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     // A chip is as wide as its id (N12), never stretched to the width of the value it hides.
     const chips = await doc.locator('.tok').evaluateAll((els) => els.map((e) => [e.textContent ?? '', e.getBoundingClientRect().width] as const));
     for (const [id, width] of chips) expect(width, id).toBeLessThan(id.length * 9 + 16);

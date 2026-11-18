@@ -115,6 +115,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.goto('/#/doc');
     await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'available');
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await page.getByTestId('preview-more').locator('summary').click();
     await expect(page.getByText('Your device reads this silhouette first.')).toBeVisible();
     await page.getByRole('button', { name: 'Send', exact: true }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');

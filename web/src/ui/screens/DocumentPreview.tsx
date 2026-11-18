@@ -23,7 +23,7 @@ import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { phoneLines } from '../doc/phone-view';
 import { rememberReading } from '../doc/last-reading';
 import { BlockActions, useWide } from '../design/block';
-import { ChevronLeft, LeaveGlyph } from '../design/icons';
+import { ChevronLeft, ChevronRight, LeaveGlyph } from '../design/icons';
 import { useOnline } from '../design/online';
 import { ActionLabel, Spinner } from '../design/parts';
 import { Loading } from '../answers/parts';
@@ -232,9 +232,12 @@ export function DocumentPreviewScreen() {
 
   return (
     <div className="screen doc-preview">
-      <ScreenHeading size={46} wideSize={72} maxLines={4}>
-        {t('preview.title')}
-      </ScreenHeading>
+      <div className="preview-head">
+        <ScreenHeading size={46} wideSize={72} maxLines={4}>
+          {t('preview.title')}
+        </ScreenHeading>
+        {wide && <p className="small muted">{t('preview.leadShort')}</p>}
+      </div>
       {doc.photoSource && <InferenceBadge source={doc.photoSource.inferenceSource} reason={doc.photoSource.reason} />}
       {/* Where the reading will run, in one line; the full sentence is under the document. */}
       <p className="routing-line">
@@ -282,20 +285,15 @@ export function DocumentPreviewScreen() {
         <span className="bar">W</span> {t('preview.legend.word')} <span className="bar">D</span> {t('preview.legend.date')} <span className="bar">N</span>{' '}
         {t('preview.legend.number')} <span className="legend-note">{t('preview.labelsStay')}</span>
       </p>
-      <p className="small muted">{t('preview.lead')}</p>
-      <p className="small muted">{offlineSample ? t('preview.sample') : onDeviceFirst ? t('preview.onDevice') : t('preview.cloud')}</p>
-      <p className="small muted">{t('preview.counts', { numbers: counts.N, dates: counts.D, words: counts.W })}</p>
-      <div className="hide-row">
-        <p className="small">
-          {t('preview.hideHelp')}
-          {lastHidden !== undefined && ` ${t('preview.youHid', { word: lastHidden })}`}
-        </p>
-        {lastHidden !== undefined && (
+      {!wide && <p className="small muted">{t('preview.leadShort')}</p>}
+      {lastHidden !== undefined && (
+        <div className="hide-row">
+          <p className="small">{t('preview.youHid', { word: lastHidden })}</p>
           <button ref={undoRef} type="button" className="text-link" disabled={sending} onClick={() => unhide(lastHidden)}>
             {t('preview.undo')}
           </button>
-        )}
-      </div>
+        </div>
+      )}
       {doc.hiddenWords.length > 0 && (
         <section className="hidden-words" aria-labelledby="hidden-words-title" data-testid="hidden-words">
           <h2 id="hidden-words-title" className="small strong">
@@ -312,8 +310,18 @@ export function DocumentPreviewScreen() {
           </ul>
         </section>
       )}
-      <ModelStatus language={doc.language} onStatus={setDeviceStatus} />
-      <p className="small muted">{t('leaving.network')}</p>
+      {/* What the board does not show on the first screen: the full explanation, behind one row. */}
+      <details className="more-about" data-testid="preview-more">
+        <summary>
+          {t('preview.more')}
+          <ChevronRight />
+        </summary>
+        <p className="small muted">{t('preview.lead')}</p>
+        <p className="small muted">{offlineSample ? t('preview.sample') : onDeviceFirst ? t('preview.onDevice') : t('preview.cloud')}</p>
+        <p className="small muted">{t('preview.hideHelp')}</p>
+        <ModelStatus language={doc.language} onStatus={setDeviceStatus} />
+        <p className="small muted">{t('leaving.network')}</p>
+      </details>
       {sending && <Loading />}
       <div role="status" className="status-line">
         {(sending || readingAhead) && <Spinner />}
@@ -346,6 +354,7 @@ export function DocumentPreviewScreen() {
         {t('q.back')}
       </a>
       <BlockActions mode="decision">
+        <p className="preview-counts">{t('preview.counts', { numbers: counts.N, dates: counts.D, words: counts.W })}</p>
         <div className="decision decision-send">
           <button
             type="button"

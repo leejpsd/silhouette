@@ -960,6 +960,12 @@ main h3.small {
   gap: 10px;
 }
 
+/* Keep and Send fit one line each, down to 320 px. */
+.decision .outline-button {
+  padding-inline: 8px;
+  white-space: nowrap;
+}
+
 .samples {
   display: flex;
   flex-direction: column;
@@ -1405,6 +1411,11 @@ dialog.sheet .option-word {
 .payload-head span {
   font-family: var(--font-mono);
   color: var(--on-block-muted);
+}
+
+.payload-where {
+  display: none;
+  overflow-wrap: anywhere;
 }
 
 .copy-button {
@@ -3120,6 +3131,56 @@ progress {
   min-width: 0;
 }
 
+/* One line under each row's title. */
+.source-sub {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.source-paste {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+}
+
+.source-row-button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.source-row-button .chevron {
+  color: var(--icon);
+  transition: transform var(--duration-short) ease;
+}
+
+.source-row-button[aria-expanded='true'] .chevron {
+  transform: rotate(90deg);
+}
+
+.source-paste .source-icon {
+  background: var(--raised);
+  color: inherit;
+}
+
+.paste-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: 0 16px 14px;
+}
+
 .source-text .small,
 .source-text p {
   color: var(--note);
@@ -3220,15 +3281,26 @@ main h2.source-title {
 }
 
 /* The document in mono: as it is on this device, or with every hidden value as a token chip. */
+/* The document in mono. A line never breaks: the type is sized so the longest line fits the card
+   (never under 9 px), and beyond that the card scrolls sideways, with a fading edge as the cue. */
+.preview-pair {
+  container-type: inline-size;
+}
+
 .doc {
+  display: block;
   margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--type-mono-document-size);
-  line-height: var(--type-mono-document-line);
-  /* Long lines wrap inside the card (breaking anywhere when they must); the characters are the ones that would be sent. */
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  display: block;
+  font-size: clamp(9px, calc((100cqi - 38px) / (var(--doc-cols, 40) * 0.6)), 13px);
+  line-height: 1.5;
+  white-space: pre;
+  overflow-x: auto;
+  background:
+    linear-gradient(to right, var(--paper) 30%, transparent) left / 24px 100% no-repeat local,
+    linear-gradient(to left, var(--paper) 30%, transparent) right / 24px 100% no-repeat local,
+    linear-gradient(to left, rgb(from var(--ink) r g b / 14%), transparent) right / 14px 100% no-repeat scroll,
+    linear-gradient(to right, rgb(from var(--ink) r g b / 14%), transparent) left / 14px 100% no-repeat scroll,
+    var(--paper);
 }
 
 .doc[data-mode='leave'] {
@@ -3374,6 +3446,51 @@ main h2.source-title {
 
 .decision-send .keep-link {
   align-self: center;
+}
+
+/* The counts stand in the action row on wide screens only. */
+.preview-counts {
+  display: none;
+  color: var(--note);
+  font-size: var(--type-caption-size);
+}
+
+.preview-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* "More about this": the explanation the first screen leaves out, behind one row. */
+.more-about {
+  border-top: 1px solid var(--line);
+}
+
+.more-about summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--size-min-tap-target);
+  font-size: var(--type-control-size);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.more-about summary::-webkit-details-marker {
+  display: none;
+}
+
+.more-about summary .chevron {
+  color: var(--icon);
+}
+
+.more-about[open] summary .chevron {
+  transform: rotate(90deg);
+}
+
+.more-about > :not(summary) {
+  margin-bottom: var(--space-xs);
 }
 
 /* Review: what was found, as one list card of compact rows (label, value in mono, state), with
@@ -4431,16 +4548,24 @@ main h2.judge-title {
   }
 
   /* Start: the headline and the way in on the left, the silhouette beside it. */
+  /* Start: the two columns centred in the content area, the legal line at its foot. */
   main > .start {
     display: grid;
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
     align-items: center;
-    gap: var(--space-xxl) clamp(24px, 4vw, 56px);
+    gap: var(--space-lg) clamp(24px, 4vw, 56px);
     max-width: var(--wide-content-max);
-    min-height: calc(100dvh - 2 * clamp(28px, 5vw, 64px) - var(--space-xxl));
+    min-height: calc(100dvh - 2 * clamp(28px, 5vw, 64px) - var(--space-xxl) - 3rem);
+  }
+
+  .start-main,
+  .start .start-example {
+    grid-row: 2;
   }
 
   .start .notice-slot {
+    grid-row: 1;
     grid-column: 1 / -1;
   }
 
@@ -4490,7 +4615,9 @@ main h2.judge-title {
   }
 
   .start .legal-note {
+    grid-row: 3;
     grid-column: 1 / -1;
+    align-self: end;
   }
 
   .example-head,
@@ -4718,10 +4845,6 @@ main h2.judge-title {
     text-underline-offset: 4px;
   }
 
-  .preview-pair[data-wide='true'] {
-    container-type: inline-size;
-  }
-
   .chip-legend {
     display: flex;
   }
@@ -4764,16 +4887,49 @@ main h2.judge-title {
   .preview-pair[data-wide='true'] .doc {
     grid-row: 2;
     align-self: start;
-    /* A line of the document never breaks: the type is sized so the longest line fits its column
-       (never under 9 px), and the card scrolls sideways beyond that. */
-    white-space: pre;
-    overflow-x: auto;
-    font-size: clamp(9px, calc((50cqi - var(--space-xl) / 2 - 38px) / (var(--doc-cols) * 0.6)), 13px);
+    max-height: calc(100dvh - 440px);
+    overflow-y: auto;
+    font-size: clamp(9px, calc((50cqi - var(--space-xl) / 2 - 38px) / (var(--doc-cols, 40) * 0.6)), 13px);
+  }
+
+  /* The preview's action row: pinned to the bottom of the content area, the counts at the left. */
+  main > .doc-preview {
+    min-height: calc(100dvh - 2 * clamp(28px, 5vw, 64px) - var(--space-xxl));
+  }
+
+  .doc-preview > .screen-actions {
+    flex-direction: row;
+    align-items: center;
+    margin-top: auto;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--line);
+  }
+
+  .doc-preview > .screen-actions .preview-counts {
+    display: block;
+    flex: 1;
+    margin-right: auto;
+  }
+
+  .doc-preview > .screen-actions .decision {
+    width: auto;
+  }
+
+  .preview-head {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-xl);
+  }
+
+  .preview-head > p {
+    max-width: 22rem;
+    padding-bottom: 6px;
   }
 
   .screen-actions .decision-send {
-    flex-direction: row-reverse;
-    justify-content: flex-start;
+    flex-direction: row;
+    justify-content: flex-end;
     align-items: center;
     gap: var(--space-lg);
   }
@@ -4935,6 +5091,42 @@ main h2.judge-title {
     border-color: var(--ink-border-strong);
     background: var(--card);
     color: var(--ink);
+  }
+
+  /* Wide: each request is one line; selecting it shows its details in the card at the right. */
+  [data-testid='record-sheet'] .outbound-list li {
+    margin: 0 -16px;
+    padding: 10px 16px;
+  }
+
+  [data-testid='record-sheet'] .outbound-list li[data-open='true'] {
+    background: var(--raised);
+  }
+
+  [data-testid='record-sheet'] .outbound-main {
+    display: contents;
+  }
+
+  [data-testid='record-sheet'] .outbound-main .disclosure {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    align-self: stretch;
+    z-index: 1;
+    min-height: 0;
+    opacity: 0;
+  }
+
+  [data-testid='record-sheet'] .outbound-list li:has(.disclosure:focus-visible) {
+    outline: var(--size-focus-ring) solid var(--focus);
+    outline-offset: -2px;
+  }
+
+  [data-testid='record-sheet'] .outbound-details {
+    display: none;
+  }
+
+  [data-testid='record-sheet'] .payload-where {
+    display: block;
   }
 
   /* The open request, or the hint, in the right column. */

@@ -74,6 +74,7 @@ test.describe('regressions', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/#/doc');
     const line = 'Regular Hours 40.00 18.50 740.00 Overtime 4.00 27.75 111.00 Gross Pay 851.00 Northwind Staffing LLC\n';
+    await page.getByRole('button', { name: /^Paste the text/ }).click();
     await page.locator('textarea').first().fill(line.repeat(120));
     await page.getByRole('button', { name: 'Continue with this text' }).click();
     const preview = page.getByTestId('skeleton-preview');
@@ -239,6 +240,7 @@ test.describe('regressions', () => {
     await noOnDeviceModel(context);
     const cloud = await fakeCloudModel(page, { pointers: {} });
     await page.goto('/#/doc');
+    await page.getByRole('button', { name: /^Paste the text/ }).click();
     await page.getByLabel('Paystub text').fill('Employee Lucia Lindqvist   ID 004417\nGross Pay 1,200.00\nNet Pay 950.00');
     await page.getByRole('button', { name: 'Continue with this text' }).click();
     const preview = page.getByTestId('skeleton-preview');

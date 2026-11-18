@@ -117,7 +117,6 @@ export function DocumentAddScreen() {
         <ScreenHeading size={54} wideSize={72} maxLines={3}>
           {t('doc.title')}
         </ScreenHeading>
-        <p className="lead">{t('doc.lead')}</p>
       </div>
 
       <div className="field field-inline">
@@ -158,7 +157,7 @@ export function DocumentAddScreen() {
           </h2>
           {photoStatus === 'available' ? (
             <>
-              <p className="small">{t('doc.photo.help')}</p>
+              <p className="small source-sub">{t('doc.photo.short')}</p>
               <input
                 type="file"
                 accept="image/jpeg,image/png"
@@ -174,7 +173,12 @@ export function DocumentAddScreen() {
               />
             </>
           ) : (
-            <p className="small">{t('doc.photo.unavailable')}</p>
+            <>
+              <p className="small source-sub" aria-hidden="true">
+                {t('doc.photo.notHere')}
+              </p>
+              <p className="visually-hidden">{t('doc.photo.unavailable')}</p>
+            </>
           )}
           {photoError && <TaskErrorNotice error={photoError} />}
         </div>
@@ -189,7 +193,7 @@ export function DocumentAddScreen() {
           <h2 id="opt-pdf" className="source-title">
             {t('doc.pdf')}
           </h2>
-          <p className="small">{t('doc.pdf.help')}</p>
+          <p className="small source-sub">{t('doc.pdf.short')}</p>
           <input
             type="file"
             accept="application/pdf,.pdf"
@@ -212,30 +216,29 @@ export function DocumentAddScreen() {
         <ChevronRight />
       </section>
 
-      <section className="source-card" aria-labelledby="opt-paste">
-        <span className="source-icon">
-          <Clipboard />
-        </span>
-        <div className="source-text">
-          <h2 id="opt-paste" className="source-title">
-            {t('doc.paste')}
-          </h2>
-          <p className="small">{t('doc.pdf.help').split('. ')[0]}.</p>
-          <label htmlFor={pasteId} className="visually-hidden">
-            {t('doc.paste.label')}
-          </label>
-          <textarea
-            id={pasteId}
-            className="input textarea mono"
-            rows={pasteOpen || pasted !== '' ? 6 : 2}
-            value={pasted}
-            onFocus={() => setPasteOpen(true)}
-            onChange={(e) => setPasted(e.target.value)}
-          />
-          <button type="button" className="outline-button" disabled={pasted.trim() === ''} onClick={() => acceptText(Raw.of(pasted), 'paste')}>
-            {t('doc.paste.continue')}
-          </button>
-        </div>
+      {/* Paste: the row opens to show the text box and its button. */}
+      <section className="source-card source-paste" data-open={pasteOpen || pasted !== ''}>
+        <button type="button" className="source-row-button" aria-expanded={pasteOpen || pasted !== ''} aria-controls={pasteId} onClick={() => setPasteOpen(!pasteOpen)}>
+          <span className="source-icon" aria-hidden="true">
+            <Clipboard />
+          </span>
+          <span className="source-text">
+            <span className="source-title">{t('doc.paste')}</span>
+            <span className="small source-sub">{t('doc.paste.short')}</span>
+          </span>
+          <ChevronRight />
+        </button>
+        {(pasteOpen || pasted !== '') && (
+          <div className="paste-box">
+            <label htmlFor={pasteId} className="visually-hidden">
+              {t('doc.paste.label')}
+            </label>
+            <textarea id={pasteId} className="input textarea mono" rows={6} value={pasted} autoFocus onChange={(e) => setPasted(e.target.value)} />
+            <button type="button" className="outline-button" disabled={pasted.trim() === ''} onClick={() => acceptText(Raw.of(pasted), 'paste')}>
+              {t('doc.paste.continue')}
+            </button>
+          </div>
+        )}
       </section>
 
       <button
@@ -252,12 +255,14 @@ export function DocumentAddScreen() {
         </span>
         <span className="source-text">
           <span className="source-title">{t('doc.manual')}</span>
+          <span className="small source-sub">{t('doc.manual.short')}</span>
         </span>
         <ChevronRight />
       </button>
       </div>
 
       <ModelStatus language={doc.language} />
+      <p className="card-note">{t('doc.lead')}</p>
 
       {/* The other samples, behind one row; the one for the document's language is the main action. */}
       <details className="more-samples" data-testid="more-samples">

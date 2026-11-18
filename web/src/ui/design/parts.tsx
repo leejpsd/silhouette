@@ -219,7 +219,11 @@ export function FitText({ as: Tag = 'span', size, maxLines = 2, step = 4, floor 
   );
 }
 
-/** The label of a main action (text 17 / 700; it wraps rather than shrinking). */
+/** The label of a main action: text 17 / 700 on one line, stepping down 1 px at a time (to 80 %) to stay there. */
 export function ActionLabel({ children }: { children: ReactNode }) {
-  return <span className="action-label">{children}</span>;
+  return (
+    <FitText className="action-label" size={17} maxLines={1} step={1} floor={0.8}>
+      {children}
+    </FitText>
+  );
 }
