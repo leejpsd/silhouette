@@ -20,7 +20,7 @@ Platform apps treat this folder as **read-only**. A change here is a contract ch
 | `rulepacks/kr/` | Reserved for a second jurisdiction; not started |
 | `bands/` | Generalization bands per jurisdiction |
 | `prompts/` | Versioned prompts |
-| `copy/` | UI strings. `en.json` is complete; `es.json` and `ko.json` fall back to English for missing keys |
+| `copy/` | UI strings. `en.json` is complete; `es.json` and `ko.json` fall back to English for missing keys. `PLATFORM_VARIANTS.md`: keys with one text per platform, and the rule by which iOS and Android name the device (`platform/device-noun.json`, fixture `fixtures/copy/device-noun.json`) |
 | `design/tokens.json`, `design/DESIGN.md` | The visual design every platform shares: colours with a dark scheme, type, spacing, radii, sizes and layout as tokens, and the rules for components and for each platform |
 | `fixtures/conformance/` | Input → expected output cases every platform must pass (skeleton, rehydrate with typed amounts, generalize, evaluator, verdict, silhouette-verdict, validate, model-schema, output-check) |
 | `fixtures/canary/` | Documents seeded with canary strings for leak tests |

@@ -338,7 +338,7 @@
   "results.notAnswered": "Not answered yet",
   "results.none": "None of the programs in this rule set fit your answers.",
   "results.noneHelp": "This can change if an answer was a guess. A paystub or a changed answer may give a different result.",
-  "preview.onPhone": "On this phone",
+  "preview.onPhone": "On this device",
   "preview.couldLeave": "What could leave",
   "preview.youHid": "You hid {word}.",
   "detail.limit": "Limit",
@@ -613,5 +613,14 @@
   "verdict.short.depends": "Needs an answer",
   "verdict.short.likely": "May qualify",
   "verdict.short.maybe": "Possible",
-  "verdict.short.unlikely": "Probably not"
+  "verdict.short.unlikely": "Probably not",
+  "doc.languageShort": "Paystub language",
+  "doc.where.device": "Read on this device first",
+  "doc.where.cloud": "Only its silhouette is read, in the cloud",
+  "judges.factModel": "On-device model",
+  "judges.factAvailable": "Available",
+  "judges.factNotAvailable": "Not available",
+  "judges.factFallback": "If unavailable",
+  "judges.factReplays": "Replays a recorded run",
+  "judges.more": "What each step does"
 }

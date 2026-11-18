@@ -338,7 +338,7 @@
   "results.notAnswered": "Aún sin responder",
   "results.none": "Ningún programa de este conjunto de reglas encaja con tus respuestas.",
   "results.noneHelp": "Esto puede cambiar si una respuesta fue aproximada. Un talón de pago o una respuesta distinta puede dar otro resultado.",
-  "preview.onPhone": "En este teléfono",
+  "preview.onPhone": "En este dispositivo",
   "preview.couldLeave": "Lo que podría salir",
   "preview.youHid": "Ocultaste {word}.",
   "detail.limit": "Límite",
@@ -613,5 +613,14 @@
   "verdict.short.depends": "Falta una respuesta",
   "verdict.short.likely": "Podrías calificar",
   "verdict.short.maybe": "Posible",
-  "verdict.short.unlikely": "Probablemente no"
+  "verdict.short.unlikely": "Probablemente no",
+  "doc.languageShort": "Idioma del recibo",
+  "doc.where.device": "Se lee primero en este dispositivo",
+  "doc.where.cloud": "Solo su silueta se lee, en la nube",
+  "judges.factModel": "Modelo del dispositivo",
+  "judges.factAvailable": "Disponible",
+  "judges.factNotAvailable": "No disponible",
+  "judges.factFallback": "Si no está",
+  "judges.factReplays": "Muestra una ejecución grabada",
+  "judges.more": "Qué hace cada paso"
 }

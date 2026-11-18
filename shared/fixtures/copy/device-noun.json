@@ -1,0 +1,2581 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "badge.onDevice",
+      "text": "On this device",
+      "shown": "On this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "delete.body",
+      "text": "This erases your answers, documents, settings and the record of what was sent from this device. It cannot be undone.",
+      "shown": "This erases your answers, documents, settings and the record of what was sent from this iPhone. It cannot be undone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "delete.done",
+      "text": "Everything on this device was deleted.",
+      "shown": "Everything on this iPhone was deleted."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "delete.title",
+      "text": "Delete everything on this device?",
+      "shown": "Delete everything on this iPhone?"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "device.noModel",
+      "text": "Your device can't read documents privately yet. You can share a text PDF, paste text, or type the numbers.",
+      "shown": "Your iPhone can't read documents privately yet. You can share a text PDF, paste text, or type the numbers."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.lead",
+      "text": "A paystub makes your results more exact. Before anything leaves this device, you will see exactly what would be sent.",
+      "shown": "A paystub makes your results more exact. Before anything leaves this iPhone, you will see exactly what would be sent."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.pdf.help",
+      "text": "The text is read on this device. The file is not uploaded.",
+      "shown": "The text is read on this iPhone. The file is not uploaded."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.photo.help",
+      "text": "Photos are read only on this device. They never leave it.",
+      "shown": "Photos are read only on this iPhone. They never leave it."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.photo.reading",
+      "text": "Reading the photo on this device…",
+      "shown": "Reading the photo on this iPhone…"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.photo.unavailable",
+      "text": "Photos can only be read on this device, and this device can't do that yet. Use a text PDF, paste the text, or type the numbers.",
+      "shown": "Photos can only be read on this iPhone, and this iPhone can't do that yet. Use a text PDF, paste the text, or type the numbers."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.reading",
+      "text": "Reading the document on this device…",
+      "shown": "Reading the document on this iPhone…"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "error.on-device-unavailable",
+      "text": "This device can't read it privately.",
+      "shown": "This iPhone can't read it privately."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "leaving.body",
+      "text": "Your answers are saved on this device, encrypted. No answers, results or documents have been sent anywhere. If a later step needs the cloud, you will see exactly what would be sent and decide whether to send it.",
+      "shown": "Your answers are saved on this iPhone, encrypted. No answers, results or documents have been sent anywhere. If a later step needs the cloud, you will see exactly what would be sent and decide whether to send it."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "leaving.none",
+      "text": "Nothing has left this device.",
+      "shown": "Nothing has left this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "leaving.skip",
+      "text": "Keep everything on this device",
+      "shown": "Keep everything on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "leaving.title",
+      "text": "Leaving your device",
+      "shown": "Leaving your iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "model.available",
+      "text": "Ready. Documents are read on this device first.",
+      "shown": "Ready. Documents are read on this iPhone first."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "model.downloadable",
+      "text": "This browser can download a reading model so documents are read on this device. The download can take several minutes.",
+      "shown": "This browser can download a reading model so documents are read on this iPhone. The download can take several minutes."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "model.title",
+      "text": "Reading documents on this device",
+      "shown": "Reading documents on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.cloud",
+      "text": "This device can't read it privately, so the silhouette will be sent to Firebase AI Logic in the cloud.",
+      "shown": "This iPhone can't read it privately, so the silhouette will be sent to Firebase AI Logic in the cloud."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.counts",
+      "text": "Hidden on this device: {numbers} numbers, {dates} dates, {words} words.",
+      "shown": "Hidden on this iPhone: {numbers} numbers, {dates} dates, {words} words."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.onDevice",
+      "text": "Your device reads this silhouette first. If it can't, the silhouette is sent to Firebase AI Logic in the cloud.",
+      "shown": "Your iPhone reads this silhouette first. If it can't, the silhouette is sent to Firebase AI Logic in the cloud."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.title",
+      "text": "This is what could leave your device",
+      "shown": "This is what could leave your iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "promise.line1",
+      "text": "Your paperwork stays on this device.",
+      "shown": "Your paperwork stays on this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "q.private",
+      "text": "Stays on this device",
+      "shown": "Stays on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "reason.long-or-unsupported-locale",
+      "text": "long text or language not available on device",
+      "shown": "long text or language not available on iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "results.lead",
+      "text": "These come from the rules on this device. Nothing you entered has been sent anywhere.",
+      "shown": "These come from the rules on this iPhone. Nothing you entered has been sent anywhere."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "sensitive.note",
+      "text": "This answer never leaves your device. You can skip it.",
+      "shown": "This answer never leaves your iPhone. You can skip it."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "leaving.bodySent",
+      "text": "Your answers and documents stay on this device, encrypted. Only the requests listed below have left it, each exactly as recorded here.",
+      "shown": "Your answers and documents stay on this iPhone, encrypted. Only the requests listed below have left it, each exactly as recorded here."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "leaving.cleared",
+      "text": "The record of what left this device was deleted on {date}. Nothing has left this device since then.",
+      "shown": "The record of what left this iPhone was deleted on {date}. Nothing has left this iPhone since then."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "answers.lead",
+      "text": "Explanations are written by a model from your silhouette and this program's rules. The result above comes from the rules on this device and does not change.",
+      "shown": "Explanations are written by a model from your silhouette and this program's rules. The result above comes from the rules on this iPhone and does not change."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "ask.free.help",
+      "text": "Answered on this device only. What you type never leaves it.",
+      "shown": "Answered on this iPhone only. What you type never leaves it."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "ask.free.send",
+      "text": "Ask on this device",
+      "shown": "Ask on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "ask.free.unavailable",
+      "text": "Typing your own question needs a model on this device, because what you type might be personal. This device doesn't have one, so only the prepared questions are offered.",
+      "shown": "Typing your own question needs a model on this iPhone, because what you type might be personal. This iPhone doesn't have one, so only the prepared questions are offered."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "send.title",
+      "text": "Leaving your device",
+      "shown": "Leaving your iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "send.lead",
+      "text": "To write this answer, the lines below may be sent to Firebase AI Logic in the cloud, if this device can't write it itself.",
+      "shown": "To write this answer, the lines below may be sent to Firebase AI Logic in the cloud, if this iPhone can't write it itself."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "send.skip",
+      "text": "Keep everything on this device",
+      "shown": "Keep everything on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "send.once",
+      "text": "Your silhouette was sent with your earlier question in this session. Each request is listed under “Leaving your device”.",
+      "shown": "Your silhouette was sent with your earlier question in this session. Each request is listed under “Leaving your iPhone”."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "reason.detail.locale",
+      "text": "{language} not available on this device",
+      "shown": "{language} not available on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "nearby.lead",
+      "text": "Find offices and free help sites near the center of your county. Your device's location is never used.",
+      "shown": "Find offices and free help sites near the center of your county. Your iPhone's location is never used."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "answers.criterion.notSent",
+      "text": "not known: this answer stays on the device or was skipped",
+      "shown": "not known: this answer stays on the iPhone or was skipped"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.sample",
+      "text": "This is a built-in sample. Its fields are filled in from fixed sample answers on this device. Nothing is sent.",
+      "shown": "This is a built-in sample. Its fields are filled in from fixed sample answers on this iPhone. Nothing is sent."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "outbound.status.answeredOnDevice",
+      "text": "Not sent: answered on this device",
+      "shown": "Not sent: answered on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "model.device.downloadable",
+      "text": "This device can download a reading model, so photos and documents are read on the device. The download can take several minutes.",
+      "shown": "This iPhone can download a reading model, so photos and documents are read on the iPhone. The download can take several minutes."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "model.device.unavailable",
+      "text": "This device has no on-device reading model. The document silhouette can be read in the cloud instead.",
+      "shown": "This iPhone has no on-device reading model. The document silhouette can be read in the cloud instead."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.onPhone",
+      "text": "On this device",
+      "shown": "On this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "outbound.status.answeredShort",
+      "text": "Answered on this device",
+      "shown": "Answered on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "state.offline",
+      "text": "You are offline. Your answers and results still work on this device.",
+      "shown": "You are offline. Your answers and results still work on this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.photo.staysHere",
+      "text": "Photos never leave this device.",
+      "shown": "Photos never leave this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "answers.retried",
+      "text": "This device could not finish the answer, so the same silhouette was sent to the cloud. Nothing else was sent.",
+      "shown": "This iPhone could not finish the answer, so the same silhouette was sent to the cloud. Nothing else was sent."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "results.leadAfterSend",
+      "text": "These come from the rules on this device. Only what is listed under “Leaving your device” has left it.",
+      "shown": "These come from the rules on this iPhone. Only what is listed under “Leaving your iPhone” has left it."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "reason.your-result-stays-on-device",
+      "text": "your result stays on this device",
+      "shown": "your result stays on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "reason.detail.noDeviceModel",
+      "text": "no model on this device",
+      "shown": "no model on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "why.lead",
+      "text": "These reasons come from the rules on this device, using your exact answers.",
+      "shown": "These reasons come from the rules on this iPhone, using your exact answers."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "why.explain",
+      "text": "Explain my result on this device",
+      "shown": "Explain my result on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "why.unavailable",
+      "text": "Explaining your own result in words needs a model on this device, because it uses your exact answers. This device doesn't have one. The reasons above are complete without it.",
+      "shown": "Explaining your own result in words needs a model on this iPhone, because it uses your exact answers. This iPhone doesn't have one. The reasons above are complete without it."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "about.lead",
+      "text": "A model explains the program in general. It does not know your result: your exact answers stay on this device.",
+      "shown": "A model explains the program in general. It does not know your result: your exact answers stay on this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "badge.sentence.device",
+      "text": "Written on this device: {reason}",
+      "shown": "Written on this iPhone: {reason}"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "start.promise",
+      "text": "Your paperwork stays on this device. Only a silhouette with the values hidden can leave, and only when you say so.",
+      "shown": "Your paperwork stays on this iPhone. Only a silhouette with the values hidden can leave, and only when you say so."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.stage.deviceReading",
+      "text": "Reading the silhouette on this device…",
+      "shown": "Reading the silhouette on this iPhone…"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.stage.deviceGross",
+      "text": "Reading gross pay and year to date again on this device…",
+      "shown": "Reading gross pay and year to date again on this iPhone…"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.stage.deviceDeductions",
+      "text": "Reading the deductions on this device…",
+      "shown": "Reading the deductions on this iPhone…"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.stage.sendingAfterDevice",
+      "text": "This device could not read it reliably. Sending the silhouette you approved…",
+      "shown": "This iPhone could not read it reliably. Sending the silhouette you approved…"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "error.on-device-unreliable",
+      "text": "This device could not read the document reliably, so nothing was filled in, and nothing was sent. You can send the silhouette (never the values) to be read in the cloud, or type the numbers yourself.",
+      "shown": "This iPhone could not read the document reliably, so nothing was filled in, and nothing was sent. You can send the silhouette (never the values) to be read in the cloud, or type the numbers yourself."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "review.deductionsNotRead",
+      "text": "Deductions were not read on this device. They are not needed for the yearly income or the results; you can add them if you like.",
+      "shown": "Deductions were not read on this iPhone. They are not needed for the yearly income or the results; you can add them if you like."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "review.fieldNotRead",
+      "text": "Not read on this device. This value is not needed for the yearly income or the results.",
+      "shown": "Not read on this iPhone. This value is not needed for the yearly income or the results."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "deviceCheck.cloudNote",
+      "text": "If this device cannot answer a case, the request goes to Firebase AI Logic in the cloud with the same invented input. It is counted as a cloud run, never as an on-device one, and listed under “Leaving your device”. Cases that may only run on this device are never sent.",
+      "shown": "If this iPhone cannot answer a case, the request goes to Firebase AI Logic in the cloud with the same invented input. It is counted as a cloud run, never as an on-device one, and listed under “Leaving your iPhone”. Cases that may only run on this iPhone are never sent."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "deviceCheck.deductionsNotRead",
+      "text": "The deductions were left out and marked “not read on this device”.",
+      "shown": "The deductions were left out and marked “not read on this iPhone”."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "deviceCheck.headline.onDevice",
+      "text": "cases answered on this device",
+      "shown": "cases answered on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "deviceCheck.ran.ON_DEVICE",
+      "text": "On this device",
+      "shown": "On this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "deviceCheck.repeat",
+      "text": "Run each extraction case 3 times, to see how stable the device’s reading is",
+      "shown": "Run each extraction case 3 times, to see how stable the iPhone’s reading is"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "deviceCheck.summary",
+      "text": "Where each case was finally answered: {onDevice} of {total} on this device; {afterDevice} in the cloud after a failed on-device attempt; {inCloud} in the cloud; {notRun} did not run.",
+      "shown": "Where each case was finally answered: {onDevice} of {total} on this iPhone; {afterDevice} in the cloud after a failed on-device attempt; {inCloud} in the cloud; {notRun} did not run."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "deviceCheck.summaryFirst",
+      "text": "First attempt: {firstOnDevice} of {total} were tried on this device. Extraction, first answer: {correct} of {fields} fields correct.",
+      "shown": "First attempt: {firstOnDevice} of {total} were tried on this iPhone. Extraction, first answer: {correct} of {fields} fields correct."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "deviceCheck.summaryNotRead",
+      "text": "Answered on this device with the deductions not read: {count}.",
+      "shown": "Answered on this iPhone with the deductions not read: {count}."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "judges.step1.body",
+      "text": "Fills in the answers of an invented household and shows the results that the rules on this device give it. Nothing is sent.",
+      "shown": "Fills in the answers of an invented household and shows the results that the rules on this iPhone give it. Nothing is sent."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "judges.step3.body.ios",
+      "text": "Opens “Leaving your device”: each request that left, as the app built it, and each answer that stayed on this device.",
+      "shown": "Opens “Leaving your iPhone”: each request that left, as the app built it, and each answer that stayed on this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "judges.step3.button",
+      "text": "Open “Leaving your device”",
+      "shown": "Open “Leaving your iPhone”"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "judges.withModel.ios",
+      "text": "This iPhone has the on-device model: in step 2 the silhouette is read on this device first, and nothing leaves when that reading passes its checks. If the device cannot read it reliably, the silhouette (never the values) is sent to the cloud. A program page can explain your own result here.",
+      "shown": "This iPhone has the on-device model: in step 2 the silhouette is read on this iPhone first, and nothing leaves when that reading passes its checks. If the iPhone cannot read it reliably, the silhouette (never the values) is sent to the cloud. A program page can explain your own result here."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "judges.withoutModel.ios",
+      "text": "This iPhone has no on-device model available: step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Apple Intelligence on, step 2 runs on this device.",
+      "shown": "This iPhone has no on-device model available: step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Apple Intelligence on, step 2 runs on this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.readingAhead",
+      "text": "Getting the on-device model ready. It starts reading here, on this device; nothing is sent.",
+      "shown": "Getting the on-device model ready. It starts reading here, on this iPhone; nothing is sent."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.paste.short",
+      "text": "Read on this device",
+      "shown": "Read on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.photo.notHere",
+      "text": "Not available on this device yet",
+      "shown": "Not available on this iPhone yet"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.photo.short",
+      "text": "Read on this device only",
+      "shown": "Read on this iPhone only"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "keys.keep",
+      "text": "keeps it on this device. Nothing is sent until you press Send.",
+      "shown": "keeps it on this iPhone. Nothing is sent until you press Send."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "record.answerNote",
+      "text": "The model answered with placeholders only. This device put the real values back.",
+      "shown": "The model answered with placeholders only. This iPhone put the real values back."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "results.sharpenHelp",
+      "text": "Read on this device. Only its silhouette can leave.",
+      "shown": "Read on this iPhone. Only its silhouette can leave."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "send.keepShort",
+      "text": "Keep on device",
+      "shown": "Keep on iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "send.staysHere",
+      "text": "Stays on this device",
+      "shown": "Stays on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "start.factRules",
+      "text": "The rules run on this device",
+      "shown": "The rules run on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "start.promiseShort",
+      "text": "Your paperwork stays on this device. Only a silhouette can leave.",
+      "shown": "Your paperwork stays on this iPhone. Only a silhouette can leave."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.device",
+      "text": "On this device only",
+      "shown": "On this iPhone only"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.foot",
+      "text": "If a device-first task fails on this device, it is tried once in the cloud with the same safe input.",
+      "shown": "If a device-first task fails on this iPhone, it is tried once in the cloud with the same safe input."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.lead",
+      "text": "Every task follows one routing table. Your exact values only go to tasks that run on this device.",
+      "shown": "Every task follows one routing table. Your exact values only go to tasks that run on this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.none.note",
+      "text": "Plain code on this device.",
+      "shown": "Plain code on this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "doc.where.device",
+      "text": "Read on this device first",
+      "shown": "Read on this iPhone first"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "badge.onDevice",
+      "text": "On this device",
+      "shown": "On this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "delete.body",
+      "text": "This erases your answers, documents, settings and the record of what was sent from this device. It cannot be undone.",
+      "shown": "This erases your answers, documents, settings and the record of what was sent from this phone. It cannot be undone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "delete.done",
+      "text": "Everything on this device was deleted.",
+      "shown": "Everything on this phone was deleted."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "delete.title",
+      "text": "Delete everything on this device?",
+      "shown": "Delete everything on this phone?"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "device.noModel",
+      "text": "Your device can't read documents privately yet. You can share a text PDF, paste text, or type the numbers.",
+      "shown": "Your phone can't read documents privately yet. You can share a text PDF, paste text, or type the numbers."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.lead",
+      "text": "A paystub makes your results more exact. Before anything leaves this device, you will see exactly what would be sent.",
+      "shown": "A paystub makes your results more exact. Before anything leaves this phone, you will see exactly what would be sent."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.pdf.help",
+      "text": "The text is read on this device. The file is not uploaded.",
+      "shown": "The text is read on this phone. The file is not uploaded."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.photo.help",
+      "text": "Photos are read only on this device. They never leave it.",
+      "shown": "Photos are read only on this phone. They never leave it."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.photo.reading",
+      "text": "Reading the photo on this device…",
+      "shown": "Reading the photo on this phone…"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.photo.unavailable",
+      "text": "Photos can only be read on this device, and this device can't do that yet. Use a text PDF, paste the text, or type the numbers.",
+      "shown": "Photos can only be read on this phone, and this phone can't do that yet. Use a text PDF, paste the text, or type the numbers."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.reading",
+      "text": "Reading the document on this device…",
+      "shown": "Reading the document on this phone…"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "error.on-device-unavailable",
+      "text": "This device can't read it privately.",
+      "shown": "This phone can't read it privately."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "leaving.body",
+      "text": "Your answers are saved on this device, encrypted. No answers, results or documents have been sent anywhere. If a later step needs the cloud, you will see exactly what would be sent and decide whether to send it.",
+      "shown": "Your answers are saved on this phone, encrypted. No answers, results or documents have been sent anywhere. If a later step needs the cloud, you will see exactly what would be sent and decide whether to send it."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "leaving.none",
+      "text": "Nothing has left this device.",
+      "shown": "Nothing has left this phone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "leaving.skip",
+      "text": "Keep everything on this device",
+      "shown": "Keep everything on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "leaving.title",
+      "text": "Leaving your device",
+      "shown": "Leaving your phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "model.available",
+      "text": "Ready. Documents are read on this device first.",
+      "shown": "Ready. Documents are read on this phone first."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "model.downloadable",
+      "text": "This browser can download a reading model so documents are read on this device. The download can take several minutes.",
+      "shown": "This browser can download a reading model so documents are read on this phone. The download can take several minutes."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "model.title",
+      "text": "Reading documents on this device",
+      "shown": "Reading documents on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.cloud",
+      "text": "This device can't read it privately, so the silhouette will be sent to Firebase AI Logic in the cloud.",
+      "shown": "This phone can't read it privately, so the silhouette will be sent to Firebase AI Logic in the cloud."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.counts",
+      "text": "Hidden on this device: {numbers} numbers, {dates} dates, {words} words.",
+      "shown": "Hidden on this phone: {numbers} numbers, {dates} dates, {words} words."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.onDevice",
+      "text": "Your device reads this silhouette first. If it can't, the silhouette is sent to Firebase AI Logic in the cloud.",
+      "shown": "Your phone reads this silhouette first. If it can't, the silhouette is sent to Firebase AI Logic in the cloud."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.title",
+      "text": "This is what could leave your device",
+      "shown": "This is what could leave your phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "promise.line1",
+      "text": "Your paperwork stays on this device.",
+      "shown": "Your paperwork stays on this phone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "q.private",
+      "text": "Stays on this device",
+      "shown": "Stays on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "reason.long-or-unsupported-locale",
+      "text": "long text or language not available on device",
+      "shown": "long text or language not available on phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "results.lead",
+      "text": "These come from the rules on this device. Nothing you entered has been sent anywhere.",
+      "shown": "These come from the rules on this phone. Nothing you entered has been sent anywhere."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "sensitive.note",
+      "text": "This answer never leaves your device. You can skip it.",
+      "shown": "This answer never leaves your phone. You can skip it."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "leaving.bodySent",
+      "text": "Your answers and documents stay on this device, encrypted. Only the requests listed below have left it, each exactly as recorded here.",
+      "shown": "Your answers and documents stay on this phone, encrypted. Only the requests listed below have left it, each exactly as recorded here."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "leaving.cleared",
+      "text": "The record of what left this device was deleted on {date}. Nothing has left this device since then.",
+      "shown": "The record of what left this phone was deleted on {date}. Nothing has left this phone since then."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "answers.lead",
+      "text": "Explanations are written by a model from your silhouette and this program's rules. The result above comes from the rules on this device and does not change.",
+      "shown": "Explanations are written by a model from your silhouette and this program's rules. The result above comes from the rules on this phone and does not change."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "ask.free.help",
+      "text": "Answered on this device only. What you type never leaves it.",
+      "shown": "Answered on this phone only. What you type never leaves it."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "ask.free.send",
+      "text": "Ask on this device",
+      "shown": "Ask on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "ask.free.unavailable",
+      "text": "Typing your own question needs a model on this device, because what you type might be personal. This device doesn't have one, so only the prepared questions are offered.",
+      "shown": "Typing your own question needs a model on this phone, because what you type might be personal. This phone doesn't have one, so only the prepared questions are offered."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "send.title",
+      "text": "Leaving your device",
+      "shown": "Leaving your phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "send.lead",
+      "text": "To write this answer, the lines below may be sent to Firebase AI Logic in the cloud, if this device can't write it itself.",
+      "shown": "To write this answer, the lines below may be sent to Firebase AI Logic in the cloud, if this phone can't write it itself."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "send.skip",
+      "text": "Keep everything on this device",
+      "shown": "Keep everything on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "send.once",
+      "text": "Your silhouette was sent with your earlier question in this session. Each request is listed under “Leaving your device”.",
+      "shown": "Your silhouette was sent with your earlier question in this session. Each request is listed under “Leaving your phone”."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "reason.detail.locale",
+      "text": "{language} not available on this device",
+      "shown": "{language} not available on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "nearby.lead",
+      "text": "Find offices and free help sites near the center of your county. Your device's location is never used.",
+      "shown": "Find offices and free help sites near the center of your county. Your phone's location is never used."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "answers.criterion.notSent",
+      "text": "not known: this answer stays on the device or was skipped",
+      "shown": "not known: this answer stays on the phone or was skipped"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.sample",
+      "text": "This is a built-in sample. Its fields are filled in from fixed sample answers on this device. Nothing is sent.",
+      "shown": "This is a built-in sample. Its fields are filled in from fixed sample answers on this phone. Nothing is sent."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "outbound.status.answeredOnDevice",
+      "text": "Not sent: answered on this device",
+      "shown": "Not sent: answered on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "model.device.downloadable",
+      "text": "This device can download a reading model, so photos and documents are read on the device. The download can take several minutes.",
+      "shown": "This phone can download a reading model, so photos and documents are read on the phone. The download can take several minutes."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "model.device.unavailable",
+      "text": "This device has no on-device reading model. The document silhouette can be read in the cloud instead.",
+      "shown": "This phone has no on-device reading model. The document silhouette can be read in the cloud instead."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.onPhone",
+      "text": "On this device",
+      "shown": "On this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "outbound.status.answeredShort",
+      "text": "Answered on this device",
+      "shown": "Answered on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "state.offline",
+      "text": "You are offline. Your answers and results still work on this device.",
+      "shown": "You are offline. Your answers and results still work on this phone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.photo.staysHere",
+      "text": "Photos never leave this device.",
+      "shown": "Photos never leave this phone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "answers.retried",
+      "text": "This device could not finish the answer, so the same silhouette was sent to the cloud. Nothing else was sent.",
+      "shown": "This phone could not finish the answer, so the same silhouette was sent to the cloud. Nothing else was sent."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "results.leadAfterSend",
+      "text": "These come from the rules on this device. Only what is listed under “Leaving your device” has left it.",
+      "shown": "These come from the rules on this phone. Only what is listed under “Leaving your phone” has left it."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "reason.your-result-stays-on-device",
+      "text": "your result stays on this device",
+      "shown": "your result stays on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "reason.detail.noDeviceModel",
+      "text": "no model on this device",
+      "shown": "no model on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "why.lead",
+      "text": "These reasons come from the rules on this device, using your exact answers.",
+      "shown": "These reasons come from the rules on this phone, using your exact answers."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "why.explain",
+      "text": "Explain my result on this device",
+      "shown": "Explain my result on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "why.unavailable",
+      "text": "Explaining your own result in words needs a model on this device, because it uses your exact answers. This device doesn't have one. The reasons above are complete without it.",
+      "shown": "Explaining your own result in words needs a model on this phone, because it uses your exact answers. This phone doesn't have one. The reasons above are complete without it."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "about.lead",
+      "text": "A model explains the program in general. It does not know your result: your exact answers stay on this device.",
+      "shown": "A model explains the program in general. It does not know your result: your exact answers stay on this phone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "badge.sentence.device",
+      "text": "Written on this device: {reason}",
+      "shown": "Written on this phone: {reason}"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "start.promise",
+      "text": "Your paperwork stays on this device. Only a silhouette with the values hidden can leave, and only when you say so.",
+      "shown": "Your paperwork stays on this phone. Only a silhouette with the values hidden can leave, and only when you say so."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.stage.deviceReading",
+      "text": "Reading the silhouette on this device…",
+      "shown": "Reading the silhouette on this phone…"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.stage.deviceGross",
+      "text": "Reading gross pay and year to date again on this device…",
+      "shown": "Reading gross pay and year to date again on this phone…"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.stage.deviceDeductions",
+      "text": "Reading the deductions on this device…",
+      "shown": "Reading the deductions on this phone…"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.stage.sendingAfterDevice",
+      "text": "This device could not read it reliably. Sending the silhouette you approved…",
+      "shown": "This phone could not read it reliably. Sending the silhouette you approved…"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "error.on-device-unreliable",
+      "text": "This device could not read the document reliably, so nothing was filled in, and nothing was sent. You can send the silhouette (never the values) to be read in the cloud, or type the numbers yourself.",
+      "shown": "This phone could not read the document reliably, so nothing was filled in, and nothing was sent. You can send the silhouette (never the values) to be read in the cloud, or type the numbers yourself."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "review.deductionsNotRead",
+      "text": "Deductions were not read on this device. They are not needed for the yearly income or the results; you can add them if you like.",
+      "shown": "Deductions were not read on this phone. They are not needed for the yearly income or the results; you can add them if you like."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "review.fieldNotRead",
+      "text": "Not read on this device. This value is not needed for the yearly income or the results.",
+      "shown": "Not read on this phone. This value is not needed for the yearly income or the results."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "deviceCheck.cloudNote",
+      "text": "If this device cannot answer a case, the request goes to Firebase AI Logic in the cloud with the same invented input. It is counted as a cloud run, never as an on-device one, and listed under “Leaving your device”. Cases that may only run on this device are never sent.",
+      "shown": "If this phone cannot answer a case, the request goes to Firebase AI Logic in the cloud with the same invented input. It is counted as a cloud run, never as an on-device one, and listed under “Leaving your phone”. Cases that may only run on this phone are never sent."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "deviceCheck.deductionsNotRead",
+      "text": "The deductions were left out and marked “not read on this device”.",
+      "shown": "The deductions were left out and marked “not read on this phone”."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "deviceCheck.headline.onDevice",
+      "text": "cases answered on this device",
+      "shown": "cases answered on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "deviceCheck.ran.ON_DEVICE",
+      "text": "On this device",
+      "shown": "On this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "deviceCheck.repeat",
+      "text": "Run each extraction case 3 times, to see how stable the device’s reading is",
+      "shown": "Run each extraction case 3 times, to see how stable the phone’s reading is"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "deviceCheck.summary",
+      "text": "Where each case was finally answered: {onDevice} of {total} on this device; {afterDevice} in the cloud after a failed on-device attempt; {inCloud} in the cloud; {notRun} did not run.",
+      "shown": "Where each case was finally answered: {onDevice} of {total} on this phone; {afterDevice} in the cloud after a failed on-device attempt; {inCloud} in the cloud; {notRun} did not run."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "deviceCheck.summaryFirst",
+      "text": "First attempt: {firstOnDevice} of {total} were tried on this device. Extraction, first answer: {correct} of {fields} fields correct.",
+      "shown": "First attempt: {firstOnDevice} of {total} were tried on this phone. Extraction, first answer: {correct} of {fields} fields correct."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "deviceCheck.summaryNotRead",
+      "text": "Answered on this device with the deductions not read: {count}.",
+      "shown": "Answered on this phone with the deductions not read: {count}."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "judges.step1.body",
+      "text": "Fills in the answers of an invented household and shows the results that the rules on this device give it. Nothing is sent.",
+      "shown": "Fills in the answers of an invented household and shows the results that the rules on this phone give it. Nothing is sent."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "judges.step3.body.android",
+      "text": "Opens “Leaving your device”: each request that left, as the app built it, and each answer that stayed on this device.",
+      "shown": "Opens “Leaving your phone”: each request that left, as the app built it, and each answer that stayed on this phone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "judges.step3.button",
+      "text": "Open “Leaving your device”",
+      "shown": "Open “Leaving your phone”"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "judges.withModel.android",
+      "text": "This phone has the on-device model: in step 2 the silhouette is read on this device first, and nothing leaves when that reading passes its checks. If the device cannot read it reliably, the silhouette (never the values) is sent to the cloud. A program page can explain your own result here.",
+      "shown": "This phone has the on-device model: in step 2 the silhouette is read on this phone first, and nothing leaves when that reading passes its checks. If the phone cannot read it reliably, the silhouette (never the values) is sent to the cloud. A program page can explain your own result here."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "judges.withoutModel.android",
+      "text": "This phone has no on-device model available: step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Gemini Nano ready on this phone, step 2 runs on this device.",
+      "shown": "This phone has no on-device model available: step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Gemini Nano ready on this phone, step 2 runs on this phone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.readingAhead",
+      "text": "Getting the on-device model ready. It starts reading here, on this device; nothing is sent.",
+      "shown": "Getting the on-device model ready. It starts reading here, on this phone; nothing is sent."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.paste.short",
+      "text": "Read on this device",
+      "shown": "Read on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.photo.notHere",
+      "text": "Not available on this device yet",
+      "shown": "Not available on this phone yet"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.photo.short",
+      "text": "Read on this device only",
+      "shown": "Read on this phone only"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "keys.keep",
+      "text": "keeps it on this device. Nothing is sent until you press Send.",
+      "shown": "keeps it on this phone. Nothing is sent until you press Send."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "record.answerNote",
+      "text": "The model answered with placeholders only. This device put the real values back.",
+      "shown": "The model answered with placeholders only. This phone put the real values back."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "results.sharpenHelp",
+      "text": "Read on this device. Only its silhouette can leave.",
+      "shown": "Read on this phone. Only its silhouette can leave."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "send.keepShort",
+      "text": "Keep on device",
+      "shown": "Keep on phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "send.staysHere",
+      "text": "Stays on this device",
+      "shown": "Stays on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "start.factRules",
+      "text": "The rules run on this device",
+      "shown": "The rules run on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "start.promiseShort",
+      "text": "Your paperwork stays on this device. Only a silhouette can leave.",
+      "shown": "Your paperwork stays on this phone. Only a silhouette can leave."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.device",
+      "text": "On this device only",
+      "shown": "On this phone only"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.foot",
+      "text": "If a device-first task fails on this device, it is tried once in the cloud with the same safe input.",
+      "shown": "If a device-first task fails on this phone, it is tried once in the cloud with the same safe input."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.lead",
+      "text": "Every task follows one routing table. Your exact values only go to tasks that run on this device.",
+      "shown": "Every task follows one routing table. Your exact values only go to tasks that run on this phone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.none.note",
+      "text": "Plain code on this device.",
+      "shown": "Plain code on this phone."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "doc.where.device",
+      "text": "Read on this device first",
+      "shown": "Read on this phone first"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "badge.onDevice",
+      "text": "En este dispositivo",
+      "shown": "En este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "delete.body",
+      "text": "Esto borra de este dispositivo tus respuestas, documentos, ajustes y el registro de lo enviado. No se puede deshacer.",
+      "shown": "Esto borra de este iPhone tus respuestas, documentos, ajustes y el registro de lo enviado. No se puede deshacer."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "delete.done",
+      "text": "Se borró todo en este dispositivo.",
+      "shown": "Se borró todo en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "delete.title",
+      "text": "¿Borrar todo en este dispositivo?",
+      "shown": "¿Borrar todo en este iPhone?"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "device.noModel",
+      "text": "Tu dispositivo aún no puede leer documentos de forma privada. Puedes compartir un PDF de texto, pegar texto o escribir los números.",
+      "shown": "Tu iPhone aún no puede leer documentos de forma privada. Puedes compartir un PDF de texto, pegar texto o escribir los números."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.lead",
+      "text": "Un talón de pago hace tus resultados más exactos. Antes de que algo salga de este dispositivo, verás exactamente qué se enviaría.",
+      "shown": "Un talón de pago hace tus resultados más exactos. Antes de que algo salga de este iPhone, verás exactamente qué se enviaría."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.pdf.help",
+      "text": "El texto se lee en este dispositivo. El archivo no se sube.",
+      "shown": "El texto se lee en este iPhone. El archivo no se sube."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.photo.help",
+      "text": "Las fotos solo se leen en este dispositivo. Nunca salen de él.",
+      "shown": "Las fotos solo se leen en este iPhone. Nunca salen de él."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.photo.reading",
+      "text": "Leyendo la foto en este dispositivo…",
+      "shown": "Leyendo la foto en este iPhone…"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.photo.unavailable",
+      "text": "Las fotos solo se pueden leer en este dispositivo, y este dispositivo todavía no puede hacerlo. Usa un PDF con texto, pega el texto o escribe los números.",
+      "shown": "Las fotos solo se pueden leer en este iPhone, y este iPhone todavía no puede hacerlo. Usa un PDF con texto, pega el texto o escribe los números."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.reading",
+      "text": "Leyendo el documento en este dispositivo…",
+      "shown": "Leyendo el documento en este iPhone…"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "error.on-device-unavailable",
+      "text": "Este dispositivo no puede leerlo en privado.",
+      "shown": "Este iPhone no puede leerlo en privado."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "leaving.body",
+      "text": "Tus respuestas se guardan cifradas en este dispositivo. No se ha enviado ninguna respuesta, resultado ni documento. Si un paso futuro necesita la nube, verás exactamente qué se enviaría y tú decides si enviarlo.",
+      "shown": "Tus respuestas se guardan cifradas en este iPhone. No se ha enviado ninguna respuesta, resultado ni documento. Si un paso futuro necesita la nube, verás exactamente qué se enviaría y tú decides si enviarlo."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "leaving.none",
+      "text": "Nada ha salido de este dispositivo.",
+      "shown": "Nada ha salido de este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "leaving.skip",
+      "text": "Dejar todo en este dispositivo",
+      "shown": "Dejar todo en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "leaving.title",
+      "text": "Lo que sale de tu dispositivo",
+      "shown": "Lo que sale de tu iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "model.available",
+      "text": "Listo. Los documentos se leen primero en este dispositivo.",
+      "shown": "Listo. Los documentos se leen primero en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "model.downloadable",
+      "text": "Este navegador puede descargar un modelo para leer documentos en este dispositivo. La descarga puede tardar varios minutos.",
+      "shown": "Este navegador puede descargar un modelo para leer documentos en este iPhone. La descarga puede tardar varios minutos."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "model.title",
+      "text": "Lectura de documentos en este dispositivo",
+      "shown": "Lectura de documentos en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.cloud",
+      "text": "Este dispositivo no puede leerla en privado, así que la silueta se enviará a Firebase AI Logic en la nube.",
+      "shown": "Este iPhone no puede leerla en privado, así que la silueta se enviará a Firebase AI Logic en la nube."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.counts",
+      "text": "Ocultos en este dispositivo: {numbers} números, {dates} fechas, {words} palabras.",
+      "shown": "Ocultos en este iPhone: {numbers} números, {dates} fechas, {words} palabras."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.onDevice",
+      "text": "Tu dispositivo lee esta silueta primero. Si no puede, la silueta se envía a Firebase AI Logic en la nube.",
+      "shown": "Tu iPhone lee esta silueta primero. Si no puede, la silueta se envía a Firebase AI Logic en la nube."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.title",
+      "text": "Esto es lo que podría salir de tu dispositivo",
+      "shown": "Esto es lo que podría salir de tu iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "promise.line1",
+      "text": "Tus documentos se quedan en este dispositivo.",
+      "shown": "Tus documentos se quedan en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "q.private",
+      "text": "Se queda en este dispositivo",
+      "shown": "Se queda en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "results.lead",
+      "text": "Salen de las reglas en este dispositivo. Nada de lo que escribiste se ha enviado.",
+      "shown": "Salen de las reglas en este iPhone. Nada de lo que escribiste se ha enviado."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "sensitive.note",
+      "text": "Esta respuesta nunca sale de tu dispositivo. Puedes omitirla.",
+      "shown": "Esta respuesta nunca sale de tu iPhone. Puedes omitirla."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "leaving.bodySent",
+      "text": "Tus respuestas y documentos se quedan cifrados en este dispositivo. Solo las solicitudes de esta lista han salido, cada una tal como se registra aquí.",
+      "shown": "Tus respuestas y documentos se quedan cifrados en este iPhone. Solo las solicitudes de esta lista han salido, cada una tal como se registra aquí."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "leaving.cleared",
+      "text": "El registro de lo que salió de este dispositivo se borró el {date}. Desde entonces no ha salido nada.",
+      "shown": "El registro de lo que salió de este iPhone se borró el {date}. Desde entonces no ha salido nada."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "answers.lead",
+      "text": "Las explicaciones las escribe un modelo a partir de tu silueta y de las reglas de este programa. El resultado de arriba viene de las reglas en este dispositivo y no cambia.",
+      "shown": "Las explicaciones las escribe un modelo a partir de tu silueta y de las reglas de este programa. El resultado de arriba viene de las reglas en este iPhone y no cambia."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "ask.free.help",
+      "text": "Se responde solo en este dispositivo. Lo que escribas nunca sale de él.",
+      "shown": "Se responde solo en este iPhone. Lo que escribas nunca sale de él."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "ask.free.send",
+      "text": "Preguntar en este dispositivo",
+      "shown": "Preguntar en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "ask.free.unavailable",
+      "text": "Para escribir tu propia pregunta hace falta un modelo en este dispositivo, porque lo que escribas podría ser personal. Este dispositivo no tiene uno, así que solo se ofrecen las preguntas preparadas.",
+      "shown": "Para escribir tu propia pregunta hace falta un modelo en este iPhone, porque lo que escribas podría ser personal. Este iPhone no tiene uno, así que solo se ofrecen las preguntas preparadas."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "send.title",
+      "text": "Lo que sale de tu dispositivo",
+      "shown": "Lo que sale de tu iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "send.lead",
+      "text": "Para escribir esta respuesta, las líneas de abajo podrían enviarse a Firebase AI Logic en la nube, si este dispositivo no puede escribirla por sí mismo.",
+      "shown": "Para escribir esta respuesta, las líneas de abajo podrían enviarse a Firebase AI Logic en la nube, si este iPhone no puede escribirla por sí mismo."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "send.skip",
+      "text": "Dejar todo en este dispositivo",
+      "shown": "Dejar todo en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "send.once",
+      "text": "Tu silueta se envió con tu pregunta anterior en esta sesión. Cada solicitud aparece en «Lo que sale de tu dispositivo».",
+      "shown": "Tu silueta se envió con tu pregunta anterior en esta sesión. Cada solicitud aparece en «Lo que sale de tu iPhone»."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "reason.detail.locale",
+      "text": "{language} no disponible en este dispositivo",
+      "shown": "{language} no disponible en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "nearby.lead",
+      "text": "Encuentra oficinas y lugares de ayuda gratuita cerca del centro de tu condado. Nunca se usa la ubicación de tu dispositivo.",
+      "shown": "Encuentra oficinas y lugares de ayuda gratuita cerca del centro de tu condado. Nunca se usa la ubicación de tu iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.sample",
+      "text": "Este es un documento de muestra incluido. Sus campos se llenan con respuestas de muestra fijas en este dispositivo. No se envía nada.",
+      "shown": "Este es un documento de muestra incluido. Sus campos se llenan con respuestas de muestra fijas en este iPhone. No se envía nada."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "outbound.status.answeredOnDevice",
+      "text": "No enviado: se respondió en este dispositivo",
+      "shown": "No enviado: se respondió en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "model.device.downloadable",
+      "text": "Este dispositivo puede descargar un modelo de lectura para leer fotos y documentos en el dispositivo. La descarga puede tardar varios minutos.",
+      "shown": "Este iPhone puede descargar un modelo de lectura para leer fotos y documentos en el dispositivo. La descarga puede tardar varios minutos."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "model.device.unavailable",
+      "text": "Este dispositivo no tiene un modelo de lectura. La silueta del documento se puede leer en la nube.",
+      "shown": "Este iPhone no tiene un modelo de lectura. La silueta del documento se puede leer en la nube."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.onPhone",
+      "text": "En este dispositivo",
+      "shown": "En este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "outbound.status.answeredShort",
+      "text": "Respondido en este dispositivo",
+      "shown": "Respondido en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "state.offline",
+      "text": "No tienes conexión. Tus respuestas y resultados siguen funcionando en este dispositivo.",
+      "shown": "No tienes conexión. Tus respuestas y resultados siguen funcionando en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.photo.staysHere",
+      "text": "Las fotos nunca salen de este dispositivo.",
+      "shown": "Las fotos nunca salen de este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "answers.retried",
+      "text": "Este dispositivo no pudo terminar la respuesta, así que la misma silueta se envió a la nube. No se envió nada más.",
+      "shown": "Este iPhone no pudo terminar la respuesta, así que la misma silueta se envió a la nube. No se envió nada más."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "results.leadAfterSend",
+      "text": "Estos resultados vienen de las reglas en este dispositivo. Solo ha salido lo que aparece en «Lo que sale de tu dispositivo».",
+      "shown": "Estos resultados vienen de las reglas en este iPhone. Solo ha salido lo que aparece en «Lo que sale de tu iPhone»."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "reason.your-result-stays-on-device",
+      "text": "tu resultado se queda en este dispositivo",
+      "shown": "tu resultado se queda en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "reason.detail.noDeviceModel",
+      "text": "no hay modelo en este dispositivo",
+      "shown": "no hay modelo en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "why.lead",
+      "text": "Estas razones vienen de las reglas en este dispositivo, con tus respuestas exactas.",
+      "shown": "Estas razones vienen de las reglas en este iPhone, con tus respuestas exactas."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "why.explain",
+      "text": "Explicar mi resultado en este dispositivo",
+      "shown": "Explicar mi resultado en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "why.unavailable",
+      "text": "Explicar tu resultado con palabras requiere un modelo en este dispositivo, porque usa tus respuestas exactas. Este dispositivo no tiene uno. Las razones de arriba están completas sin él.",
+      "shown": "Explicar tu resultado con palabras requiere un modelo en este iPhone, porque usa tus respuestas exactas. Este iPhone no tiene uno. Las razones de arriba están completas sin él."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "about.lead",
+      "text": "Un modelo explica el programa en general. No conoce tu resultado: tus respuestas exactas se quedan en este dispositivo.",
+      "shown": "Un modelo explica el programa en general. No conoce tu resultado: tus respuestas exactas se quedan en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "badge.sentence.device",
+      "text": "Escrito en este dispositivo: {reason}",
+      "shown": "Escrito en este iPhone: {reason}"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "start.promise",
+      "text": "Tus papeles se quedan en este dispositivo. Solo puede salir una silueta con los valores ocultos, y solo cuando tú lo decidas.",
+      "shown": "Tus papeles se quedan en este iPhone. Solo puede salir una silueta con los valores ocultos, y solo cuando tú lo decidas."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.stage.deviceReading",
+      "text": "Leyendo la silueta en este dispositivo…",
+      "shown": "Leyendo la silueta en este iPhone…"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.stage.deviceGross",
+      "text": "Leyendo de nuevo el pago bruto y el acumulado del año en este dispositivo…",
+      "shown": "Leyendo de nuevo el pago bruto y el acumulado del año en este iPhone…"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.stage.deviceDeductions",
+      "text": "Leyendo las deducciones en este dispositivo…",
+      "shown": "Leyendo las deducciones en este iPhone…"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.stage.sendingAfterDevice",
+      "text": "Este dispositivo no pudo leerlo de forma fiable. Enviando la silueta que aprobaste…",
+      "shown": "Este iPhone no pudo leerlo de forma fiable. Enviando la silueta que aprobaste…"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "error.on-device-unreliable",
+      "text": "Este dispositivo no pudo leer el documento de forma fiable, así que no se completó nada y no se envió nada. Puedes enviar la silueta (nunca los valores) para que se lea en la nube, o escribir los números tú.",
+      "shown": "Este iPhone no pudo leer el documento de forma fiable, así que no se completó nada y no se envió nada. Puedes enviar la silueta (nunca los valores) para que se lea en la nube, o escribir los números tú."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "review.deductionsNotRead",
+      "text": "Las deducciones no se leyeron en este dispositivo. No hacen falta para el ingreso anual ni para los resultados; puedes añadirlas si quieres.",
+      "shown": "Las deducciones no se leyeron en este iPhone. No hacen falta para el ingreso anual ni para los resultados; puedes añadirlas si quieres."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "review.fieldNotRead",
+      "text": "No se leyó en este dispositivo. Este valor no hace falta para el ingreso anual ni para los resultados.",
+      "shown": "No se leyó en este iPhone. Este valor no hace falta para el ingreso anual ni para los resultados."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "deviceCheck.cloudNote",
+      "text": "Si este dispositivo no puede responder un caso, la solicitud va a Firebase AI Logic en la nube con la misma entrada inventada. Se cuenta como ejecución en la nube, nunca como ejecución en el dispositivo, y aparece en «Lo que sale de tu dispositivo». Los casos que solo pueden ejecutarse en este dispositivo nunca se envían.",
+      "shown": "Si este iPhone no puede responder un caso, la solicitud va a Firebase AI Logic en la nube con la misma entrada inventada. Se cuenta como ejecución en la nube, nunca como ejecución en el dispositivo, y aparece en «Lo que sale de tu iPhone». Los casos que solo pueden ejecutarse en este iPhone nunca se envían."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "deviceCheck.deductionsNotRead",
+      "text": "Las deducciones se dejaron fuera y se marcaron como «no leídas en este dispositivo».",
+      "shown": "Las deducciones se dejaron fuera y se marcaron como «no leídas en este iPhone»."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "deviceCheck.headline.onDevice",
+      "text": "casos respondidos en este dispositivo",
+      "shown": "casos respondidos en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "deviceCheck.ran.ON_DEVICE",
+      "text": "En este dispositivo",
+      "shown": "En este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "deviceCheck.summary",
+      "text": "Dónde se respondió finalmente cada caso: {onDevice} de {total} en este dispositivo; {afterDevice} en la nube tras un intento fallido en el dispositivo; {inCloud} en la nube; {notRun} no se ejecutaron.",
+      "shown": "Dónde se respondió finalmente cada caso: {onDevice} de {total} en este iPhone; {afterDevice} en la nube tras un intento fallido en el dispositivo; {inCloud} en la nube; {notRun} no se ejecutaron."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "deviceCheck.summaryFirst",
+      "text": "Primer intento: {firstOnDevice} de {total} se intentaron en este dispositivo. Extracción, primera respuesta: {correct} de {fields} campos correctos.",
+      "shown": "Primer intento: {firstOnDevice} de {total} se intentaron en este iPhone. Extracción, primera respuesta: {correct} de {fields} campos correctos."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "deviceCheck.summaryNotRead",
+      "text": "Respondidos en este dispositivo con las deducciones sin leer: {count}.",
+      "shown": "Respondidos en este iPhone con las deducciones sin leer: {count}."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "judges.step1.body",
+      "text": "Rellena las respuestas de un hogar inventado y muestra los resultados que le dan las reglas en este dispositivo. No se envía nada.",
+      "shown": "Rellena las respuestas de un hogar inventado y muestra los resultados que le dan las reglas en este iPhone. No se envía nada."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "judges.step3.body.ios",
+      "text": "Abre «Lo que sale de tu dispositivo»: cada solicitud que salió, tal como la preparó la app, y cada respuesta que se quedó en este dispositivo.",
+      "shown": "Abre «Lo que sale de tu iPhone»: cada solicitud que salió, tal como la preparó la app, y cada respuesta que se quedó en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "judges.step3.button",
+      "text": "Abrir «Lo que sale de tu dispositivo»",
+      "shown": "Abrir «Lo que sale de tu iPhone»"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "judges.withModel.ios",
+      "text": "Este iPhone tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este dispositivo, y no sale nada si esa lectura pasa sus comprobaciones. Si el dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado.",
+      "shown": "Este iPhone tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este iPhone, y no sale nada si esa lectura pasa sus comprobaciones. Si el dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "judges.withoutModel.ios",
+      "text": "Este iPhone no tiene disponible el modelo del dispositivo: el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube. Sin conexión, se usa la clave de respuestas del ejemplo. Con Apple Intelligence activado, el paso 2 se hace en este dispositivo.",
+      "shown": "Este iPhone no tiene disponible el modelo del dispositivo: el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube. Sin conexión, se usa la clave de respuestas del ejemplo. Con Apple Intelligence activado, el paso 2 se hace en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.readingAhead",
+      "text": "Preparando el modelo del dispositivo. Empieza a leer aquí, en este dispositivo; no se envía nada.",
+      "shown": "Preparando el modelo del dispositivo. Empieza a leer aquí, en este iPhone; no se envía nada."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.paste.short",
+      "text": "Se lee en este dispositivo",
+      "shown": "Se lee en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.photo.short",
+      "text": "Solo se lee en este dispositivo",
+      "shown": "Solo se lee en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "keys.keep",
+      "text": "lo deja en este dispositivo. No se envía nada hasta que pulses Enviar.",
+      "shown": "lo deja en este iPhone. No se envía nada hasta que pulses Enviar."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "record.answerNote",
+      "text": "El modelo respondió solo con marcadores. Este dispositivo volvió a poner los valores reales.",
+      "shown": "El modelo respondió solo con marcadores. Este iPhone volvió a poner los valores reales."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "results.sharpenHelp",
+      "text": "Se lee en este dispositivo. Solo puede salir su silueta.",
+      "shown": "Se lee en este iPhone. Solo puede salir su silueta."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "send.staysHere",
+      "text": "Se queda en este dispositivo",
+      "shown": "Se queda en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "start.factRules",
+      "text": "Las reglas se aplican en este dispositivo",
+      "shown": "Las reglas se aplican en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "start.promiseShort",
+      "text": "Tus papeles se quedan en este dispositivo. Solo puede salir una silueta.",
+      "shown": "Tus papeles se quedan en este iPhone. Solo puede salir una silueta."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "tasks.device",
+      "text": "Solo en este dispositivo",
+      "shown": "Solo en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "tasks.lead",
+      "text": "Cada tarea sigue una sola tabla de rutas. Tus valores exactos solo van a tareas que se ejecutan en este dispositivo.",
+      "shown": "Cada tarea sigue una sola tabla de rutas. Tus valores exactos solo van a tareas que se ejecutan en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "tasks.none.note",
+      "text": "Código simple en este dispositivo.",
+      "shown": "Código simple en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "doc.where.device",
+      "text": "Se lee primero en este dispositivo",
+      "shown": "Se lee primero en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "badge.onDevice",
+      "text": "En este dispositivo",
+      "shown": "En este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "delete.body",
+      "text": "Esto borra de este dispositivo tus respuestas, documentos, ajustes y el registro de lo enviado. No se puede deshacer.",
+      "shown": "Esto borra de este teléfono tus respuestas, documentos, ajustes y el registro de lo enviado. No se puede deshacer."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "delete.done",
+      "text": "Se borró todo en este dispositivo.",
+      "shown": "Se borró todo en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "delete.title",
+      "text": "¿Borrar todo en este dispositivo?",
+      "shown": "¿Borrar todo en este teléfono?"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "device.noModel",
+      "text": "Tu dispositivo aún no puede leer documentos de forma privada. Puedes compartir un PDF de texto, pegar texto o escribir los números.",
+      "shown": "Tu teléfono aún no puede leer documentos de forma privada. Puedes compartir un PDF de texto, pegar texto o escribir los números."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.lead",
+      "text": "Un talón de pago hace tus resultados más exactos. Antes de que algo salga de este dispositivo, verás exactamente qué se enviaría.",
+      "shown": "Un talón de pago hace tus resultados más exactos. Antes de que algo salga de este teléfono, verás exactamente qué se enviaría."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.pdf.help",
+      "text": "El texto se lee en este dispositivo. El archivo no se sube.",
+      "shown": "El texto se lee en este teléfono. El archivo no se sube."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.photo.help",
+      "text": "Las fotos solo se leen en este dispositivo. Nunca salen de él.",
+      "shown": "Las fotos solo se leen en este teléfono. Nunca salen de él."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.photo.reading",
+      "text": "Leyendo la foto en este dispositivo…",
+      "shown": "Leyendo la foto en este teléfono…"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.photo.unavailable",
+      "text": "Las fotos solo se pueden leer en este dispositivo, y este dispositivo todavía no puede hacerlo. Usa un PDF con texto, pega el texto o escribe los números.",
+      "shown": "Las fotos solo se pueden leer en este teléfono, y este teléfono todavía no puede hacerlo. Usa un PDF con texto, pega el texto o escribe los números."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.reading",
+      "text": "Leyendo el documento en este dispositivo…",
+      "shown": "Leyendo el documento en este teléfono…"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "error.on-device-unavailable",
+      "text": "Este dispositivo no puede leerlo en privado.",
+      "shown": "Este teléfono no puede leerlo en privado."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "leaving.body",
+      "text": "Tus respuestas se guardan cifradas en este dispositivo. No se ha enviado ninguna respuesta, resultado ni documento. Si un paso futuro necesita la nube, verás exactamente qué se enviaría y tú decides si enviarlo.",
+      "shown": "Tus respuestas se guardan cifradas en este teléfono. No se ha enviado ninguna respuesta, resultado ni documento. Si un paso futuro necesita la nube, verás exactamente qué se enviaría y tú decides si enviarlo."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "leaving.none",
+      "text": "Nada ha salido de este dispositivo.",
+      "shown": "Nada ha salido de este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "leaving.skip",
+      "text": "Dejar todo en este dispositivo",
+      "shown": "Dejar todo en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "leaving.title",
+      "text": "Lo que sale de tu dispositivo",
+      "shown": "Lo que sale de tu teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "model.available",
+      "text": "Listo. Los documentos se leen primero en este dispositivo.",
+      "shown": "Listo. Los documentos se leen primero en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "model.downloadable",
+      "text": "Este navegador puede descargar un modelo para leer documentos en este dispositivo. La descarga puede tardar varios minutos.",
+      "shown": "Este navegador puede descargar un modelo para leer documentos en este teléfono. La descarga puede tardar varios minutos."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "model.title",
+      "text": "Lectura de documentos en este dispositivo",
+      "shown": "Lectura de documentos en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.cloud",
+      "text": "Este dispositivo no puede leerla en privado, así que la silueta se enviará a Firebase AI Logic en la nube.",
+      "shown": "Este teléfono no puede leerla en privado, así que la silueta se enviará a Firebase AI Logic en la nube."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.counts",
+      "text": "Ocultos en este dispositivo: {numbers} números, {dates} fechas, {words} palabras.",
+      "shown": "Ocultos en este teléfono: {numbers} números, {dates} fechas, {words} palabras."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.onDevice",
+      "text": "Tu dispositivo lee esta silueta primero. Si no puede, la silueta se envía a Firebase AI Logic en la nube.",
+      "shown": "Tu teléfono lee esta silueta primero. Si no puede, la silueta se envía a Firebase AI Logic en la nube."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.title",
+      "text": "Esto es lo que podría salir de tu dispositivo",
+      "shown": "Esto es lo que podría salir de tu teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "promise.line1",
+      "text": "Tus documentos se quedan en este dispositivo.",
+      "shown": "Tus documentos se quedan en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "q.private",
+      "text": "Se queda en este dispositivo",
+      "shown": "Se queda en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "results.lead",
+      "text": "Salen de las reglas en este dispositivo. Nada de lo que escribiste se ha enviado.",
+      "shown": "Salen de las reglas en este teléfono. Nada de lo que escribiste se ha enviado."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "sensitive.note",
+      "text": "Esta respuesta nunca sale de tu dispositivo. Puedes omitirla.",
+      "shown": "Esta respuesta nunca sale de tu teléfono. Puedes omitirla."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "leaving.bodySent",
+      "text": "Tus respuestas y documentos se quedan cifrados en este dispositivo. Solo las solicitudes de esta lista han salido, cada una tal como se registra aquí.",
+      "shown": "Tus respuestas y documentos se quedan cifrados en este teléfono. Solo las solicitudes de esta lista han salido, cada una tal como se registra aquí."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "leaving.cleared",
+      "text": "El registro de lo que salió de este dispositivo se borró el {date}. Desde entonces no ha salido nada.",
+      "shown": "El registro de lo que salió de este teléfono se borró el {date}. Desde entonces no ha salido nada."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "answers.lead",
+      "text": "Las explicaciones las escribe un modelo a partir de tu silueta y de las reglas de este programa. El resultado de arriba viene de las reglas en este dispositivo y no cambia.",
+      "shown": "Las explicaciones las escribe un modelo a partir de tu silueta y de las reglas de este programa. El resultado de arriba viene de las reglas en este teléfono y no cambia."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "ask.free.help",
+      "text": "Se responde solo en este dispositivo. Lo que escribas nunca sale de él.",
+      "shown": "Se responde solo en este teléfono. Lo que escribas nunca sale de él."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "ask.free.send",
+      "text": "Preguntar en este dispositivo",
+      "shown": "Preguntar en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "ask.free.unavailable",
+      "text": "Para escribir tu propia pregunta hace falta un modelo en este dispositivo, porque lo que escribas podría ser personal. Este dispositivo no tiene uno, así que solo se ofrecen las preguntas preparadas.",
+      "shown": "Para escribir tu propia pregunta hace falta un modelo en este teléfono, porque lo que escribas podría ser personal. Este teléfono no tiene uno, así que solo se ofrecen las preguntas preparadas."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "send.title",
+      "text": "Lo que sale de tu dispositivo",
+      "shown": "Lo que sale de tu teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "send.lead",
+      "text": "Para escribir esta respuesta, las líneas de abajo podrían enviarse a Firebase AI Logic en la nube, si este dispositivo no puede escribirla por sí mismo.",
+      "shown": "Para escribir esta respuesta, las líneas de abajo podrían enviarse a Firebase AI Logic en la nube, si este teléfono no puede escribirla por sí mismo."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "send.skip",
+      "text": "Dejar todo en este dispositivo",
+      "shown": "Dejar todo en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "send.once",
+      "text": "Tu silueta se envió con tu pregunta anterior en esta sesión. Cada solicitud aparece en «Lo que sale de tu dispositivo».",
+      "shown": "Tu silueta se envió con tu pregunta anterior en esta sesión. Cada solicitud aparece en «Lo que sale de tu teléfono»."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "reason.detail.locale",
+      "text": "{language} no disponible en este dispositivo",
+      "shown": "{language} no disponible en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "nearby.lead",
+      "text": "Encuentra oficinas y lugares de ayuda gratuita cerca del centro de tu condado. Nunca se usa la ubicación de tu dispositivo.",
+      "shown": "Encuentra oficinas y lugares de ayuda gratuita cerca del centro de tu condado. Nunca se usa la ubicación de tu teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.sample",
+      "text": "Este es un documento de muestra incluido. Sus campos se llenan con respuestas de muestra fijas en este dispositivo. No se envía nada.",
+      "shown": "Este es un documento de muestra incluido. Sus campos se llenan con respuestas de muestra fijas en este teléfono. No se envía nada."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "outbound.status.answeredOnDevice",
+      "text": "No enviado: se respondió en este dispositivo",
+      "shown": "No enviado: se respondió en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "model.device.downloadable",
+      "text": "Este dispositivo puede descargar un modelo de lectura para leer fotos y documentos en el dispositivo. La descarga puede tardar varios minutos.",
+      "shown": "Este teléfono puede descargar un modelo de lectura para leer fotos y documentos en el dispositivo. La descarga puede tardar varios minutos."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "model.device.unavailable",
+      "text": "Este dispositivo no tiene un modelo de lectura. La silueta del documento se puede leer en la nube.",
+      "shown": "Este teléfono no tiene un modelo de lectura. La silueta del documento se puede leer en la nube."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.onPhone",
+      "text": "En este dispositivo",
+      "shown": "En este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "outbound.status.answeredShort",
+      "text": "Respondido en este dispositivo",
+      "shown": "Respondido en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "state.offline",
+      "text": "No tienes conexión. Tus respuestas y resultados siguen funcionando en este dispositivo.",
+      "shown": "No tienes conexión. Tus respuestas y resultados siguen funcionando en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.photo.staysHere",
+      "text": "Las fotos nunca salen de este dispositivo.",
+      "shown": "Las fotos nunca salen de este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "answers.retried",
+      "text": "Este dispositivo no pudo terminar la respuesta, así que la misma silueta se envió a la nube. No se envió nada más.",
+      "shown": "Este teléfono no pudo terminar la respuesta, así que la misma silueta se envió a la nube. No se envió nada más."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "results.leadAfterSend",
+      "text": "Estos resultados vienen de las reglas en este dispositivo. Solo ha salido lo que aparece en «Lo que sale de tu dispositivo».",
+      "shown": "Estos resultados vienen de las reglas en este teléfono. Solo ha salido lo que aparece en «Lo que sale de tu teléfono»."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "reason.your-result-stays-on-device",
+      "text": "tu resultado se queda en este dispositivo",
+      "shown": "tu resultado se queda en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "reason.detail.noDeviceModel",
+      "text": "no hay modelo en este dispositivo",
+      "shown": "no hay modelo en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "why.lead",
+      "text": "Estas razones vienen de las reglas en este dispositivo, con tus respuestas exactas.",
+      "shown": "Estas razones vienen de las reglas en este teléfono, con tus respuestas exactas."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "why.explain",
+      "text": "Explicar mi resultado en este dispositivo",
+      "shown": "Explicar mi resultado en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "why.unavailable",
+      "text": "Explicar tu resultado con palabras requiere un modelo en este dispositivo, porque usa tus respuestas exactas. Este dispositivo no tiene uno. Las razones de arriba están completas sin él.",
+      "shown": "Explicar tu resultado con palabras requiere un modelo en este teléfono, porque usa tus respuestas exactas. Este teléfono no tiene uno. Las razones de arriba están completas sin él."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "about.lead",
+      "text": "Un modelo explica el programa en general. No conoce tu resultado: tus respuestas exactas se quedan en este dispositivo.",
+      "shown": "Un modelo explica el programa en general. No conoce tu resultado: tus respuestas exactas se quedan en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "badge.sentence.device",
+      "text": "Escrito en este dispositivo: {reason}",
+      "shown": "Escrito en este teléfono: {reason}"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "start.promise",
+      "text": "Tus papeles se quedan en este dispositivo. Solo puede salir una silueta con los valores ocultos, y solo cuando tú lo decidas.",
+      "shown": "Tus papeles se quedan en este teléfono. Solo puede salir una silueta con los valores ocultos, y solo cuando tú lo decidas."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.stage.deviceReading",
+      "text": "Leyendo la silueta en este dispositivo…",
+      "shown": "Leyendo la silueta en este teléfono…"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.stage.deviceGross",
+      "text": "Leyendo de nuevo el pago bruto y el acumulado del año en este dispositivo…",
+      "shown": "Leyendo de nuevo el pago bruto y el acumulado del año en este teléfono…"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.stage.deviceDeductions",
+      "text": "Leyendo las deducciones en este dispositivo…",
+      "shown": "Leyendo las deducciones en este teléfono…"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.stage.sendingAfterDevice",
+      "text": "Este dispositivo no pudo leerlo de forma fiable. Enviando la silueta que aprobaste…",
+      "shown": "Este teléfono no pudo leerlo de forma fiable. Enviando la silueta que aprobaste…"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "error.on-device-unreliable",
+      "text": "Este dispositivo no pudo leer el documento de forma fiable, así que no se completó nada y no se envió nada. Puedes enviar la silueta (nunca los valores) para que se lea en la nube, o escribir los números tú.",
+      "shown": "Este teléfono no pudo leer el documento de forma fiable, así que no se completó nada y no se envió nada. Puedes enviar la silueta (nunca los valores) para que se lea en la nube, o escribir los números tú."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.deductionsNotRead",
+      "text": "Las deducciones no se leyeron en este dispositivo. No hacen falta para el ingreso anual ni para los resultados; puedes añadirlas si quieres.",
+      "shown": "Las deducciones no se leyeron en este teléfono. No hacen falta para el ingreso anual ni para los resultados; puedes añadirlas si quieres."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.fieldNotRead",
+      "text": "No se leyó en este dispositivo. Este valor no hace falta para el ingreso anual ni para los resultados.",
+      "shown": "No se leyó en este teléfono. Este valor no hace falta para el ingreso anual ni para los resultados."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "deviceCheck.cloudNote",
+      "text": "Si este dispositivo no puede responder un caso, la solicitud va a Firebase AI Logic en la nube con la misma entrada inventada. Se cuenta como ejecución en la nube, nunca como ejecución en el dispositivo, y aparece en «Lo que sale de tu dispositivo». Los casos que solo pueden ejecutarse en este dispositivo nunca se envían.",
+      "shown": "Si este teléfono no puede responder un caso, la solicitud va a Firebase AI Logic en la nube con la misma entrada inventada. Se cuenta como ejecución en la nube, nunca como ejecución en el dispositivo, y aparece en «Lo que sale de tu teléfono». Los casos que solo pueden ejecutarse en este teléfono nunca se envían."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "deviceCheck.deductionsNotRead",
+      "text": "Las deducciones se dejaron fuera y se marcaron como «no leídas en este dispositivo».",
+      "shown": "Las deducciones se dejaron fuera y se marcaron como «no leídas en este teléfono»."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "deviceCheck.headline.onDevice",
+      "text": "casos respondidos en este dispositivo",
+      "shown": "casos respondidos en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "deviceCheck.ran.ON_DEVICE",
+      "text": "En este dispositivo",
+      "shown": "En este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "deviceCheck.summary",
+      "text": "Dónde se respondió finalmente cada caso: {onDevice} de {total} en este dispositivo; {afterDevice} en la nube tras un intento fallido en el dispositivo; {inCloud} en la nube; {notRun} no se ejecutaron.",
+      "shown": "Dónde se respondió finalmente cada caso: {onDevice} de {total} en este teléfono; {afterDevice} en la nube tras un intento fallido en el dispositivo; {inCloud} en la nube; {notRun} no se ejecutaron."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "deviceCheck.summaryFirst",
+      "text": "Primer intento: {firstOnDevice} de {total} se intentaron en este dispositivo. Extracción, primera respuesta: {correct} de {fields} campos correctos.",
+      "shown": "Primer intento: {firstOnDevice} de {total} se intentaron en este teléfono. Extracción, primera respuesta: {correct} de {fields} campos correctos."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "deviceCheck.summaryNotRead",
+      "text": "Respondidos en este dispositivo con las deducciones sin leer: {count}.",
+      "shown": "Respondidos en este teléfono con las deducciones sin leer: {count}."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "judges.step1.body",
+      "text": "Rellena las respuestas de un hogar inventado y muestra los resultados que le dan las reglas en este dispositivo. No se envía nada.",
+      "shown": "Rellena las respuestas de un hogar inventado y muestra los resultados que le dan las reglas en este teléfono. No se envía nada."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "judges.step3.body.android",
+      "text": "Abre «Lo que sale de tu dispositivo»: cada solicitud que salió, tal como la preparó la app, y cada respuesta que se quedó en este dispositivo.",
+      "shown": "Abre «Lo que sale de tu teléfono»: cada solicitud que salió, tal como la preparó la app, y cada respuesta que se quedó en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "judges.step3.button",
+      "text": "Abrir «Lo que sale de tu dispositivo»",
+      "shown": "Abrir «Lo que sale de tu teléfono»"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "judges.withModel.android",
+      "text": "Este teléfono tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este dispositivo, y no sale nada si esa lectura pasa sus comprobaciones. Si el dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado.",
+      "shown": "Este teléfono tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este teléfono, y no sale nada si esa lectura pasa sus comprobaciones. Si el dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "judges.withoutModel.android",
+      "text": "Este teléfono no tiene disponible el modelo del dispositivo: el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube. Sin conexión, se usa la clave de respuestas del ejemplo. Con Gemini Nano listo en este teléfono, el paso 2 se hace en este dispositivo.",
+      "shown": "Este teléfono no tiene disponible el modelo del dispositivo: el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube. Sin conexión, se usa la clave de respuestas del ejemplo. Con Gemini Nano listo en este teléfono, el paso 2 se hace en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.readingAhead",
+      "text": "Preparando el modelo del dispositivo. Empieza a leer aquí, en este dispositivo; no se envía nada.",
+      "shown": "Preparando el modelo del dispositivo. Empieza a leer aquí, en este teléfono; no se envía nada."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.paste.short",
+      "text": "Se lee en este dispositivo",
+      "shown": "Se lee en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.photo.short",
+      "text": "Solo se lee en este dispositivo",
+      "shown": "Solo se lee en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "keys.keep",
+      "text": "lo deja en este dispositivo. No se envía nada hasta que pulses Enviar.",
+      "shown": "lo deja en este teléfono. No se envía nada hasta que pulses Enviar."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "record.answerNote",
+      "text": "El modelo respondió solo con marcadores. Este dispositivo volvió a poner los valores reales.",
+      "shown": "El modelo respondió solo con marcadores. Este teléfono volvió a poner los valores reales."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "results.sharpenHelp",
+      "text": "Se lee en este dispositivo. Solo puede salir su silueta.",
+      "shown": "Se lee en este teléfono. Solo puede salir su silueta."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "send.staysHere",
+      "text": "Se queda en este dispositivo",
+      "shown": "Se queda en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "start.factRules",
+      "text": "Las reglas se aplican en este dispositivo",
+      "shown": "Las reglas se aplican en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "start.promiseShort",
+      "text": "Tus papeles se quedan en este dispositivo. Solo puede salir una silueta.",
+      "shown": "Tus papeles se quedan en este teléfono. Solo puede salir una silueta."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "tasks.device",
+      "text": "Solo en este dispositivo",
+      "shown": "Solo en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "tasks.lead",
+      "text": "Cada tarea sigue una sola tabla de rutas. Tus valores exactos solo van a tareas que se ejecutan en este dispositivo.",
+      "shown": "Cada tarea sigue una sola tabla de rutas. Tus valores exactos solo van a tareas que se ejecutan en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "tasks.none.note",
+      "text": "Código simple en este dispositivo.",
+      "shown": "Código simple en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "doc.where.device",
+      "text": "Se lee primero en este dispositivo",
+      "shown": "Se lee primero en este teléfono"
+    }
+  ]
+}

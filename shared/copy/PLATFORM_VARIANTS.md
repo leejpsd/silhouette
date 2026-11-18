@@ -20,3 +20,18 @@ Keys with variants in v1.18 (en, es; ko holds the English text):
 The Web and iOS variants are the two apps' current wording, unchanged. The Android variants are proposed here.
 
 Web-only keys that other platforms do not need: `outbound.field.recaptcha-check`, `leaving.recaptchaNote`, `outbound.status.refusedByBrowser` (native apps use App Attest or Play Integrity, and have no content security policy). They stay unsuffixed: they only appear where the Web shows them.
+
+## The device noun
+
+Most sentences do not need a variant: they only name the thing the person holds. The plain copy says "this device", which is what the Web shows. An iPhone app that says "this iPhone" on one line and "this device" on the next reads as unfinished, so iOS and Android rename the device by rule, and no key is tripled for it.
+
+**Rule.** After looking up a string (its own variant when the key has one, the plain key otherwise), iOS and Android replace the phrases in `platform/device-noun.json` for the language of the string. The Web replaces nothing.
+
+- Phrases are matched case-sensitively and whole: the character before and after must not be a letter, a digit or a hyphen. "on-device model" and "device-first" are left alone, and so is "Device first".
+- The longest phrase that matches at a position wins. Text inside `{…}` is never changed.
+- English: "this device", "your device", "the device" and "on device" (with their capitalised forms) become "this iPhone", "your iPhone", "the iPhone", "on iPhone" on iOS and "this phone", "your phone", "the phone", "on phone" on Android; "this phone" becomes "this iPhone" on iOS.
+- Spanish: "este dispositivo" and "tu dispositivo" become "este iPhone" / "este teléfono" and "tu iPhone" / "tu teléfono". "el dispositivo" and "del dispositivo" are left alone: Spanish uses them for "on-device" ("el modelo del dispositivo").
+- The rule also runs over a platform's own variants, so "…is read on this device first" inside `judges.withModel.ios` says "this iPhone" too. Applying it twice changes nothing.
+- A platform's local copy follows the same wording; the table is only for strings from `shared/copy`.
+
+`fixtures/copy/device-noun.json` lists every string the rule changes, per language and platform (`text` → `shown`). A platform passes when its loader gives `shown` for each case. Reference: `reference/device-noun.mjs`; the fixture is rebuilt with `node reference/device-noun.generate.mjs` whenever the copy changes, and the reference tests fail when it is stale.

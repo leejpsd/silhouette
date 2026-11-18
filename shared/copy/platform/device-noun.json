@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "note": "How iOS and Android name the thing the person holds. Rule: ../PLATFORM_VARIANTS.md, section 'The device noun'. Phrases are matched whole and case-sensitively, longest first; never inside a {placeholder} or a hyphenated compound such as on-device.",
+  "en": {
+    "ios": {
+      "this device": "this iPhone",
+      "This device": "This iPhone",
+      "your device": "your iPhone",
+      "Your device": "Your iPhone",
+      "the device": "the iPhone",
+      "The device": "The iPhone",
+      "this phone": "this iPhone",
+      "This phone": "This iPhone",
+      "On device": "On iPhone",
+      "on device": "on iPhone"
+    },
+    "android": {
+      "this device": "this phone",
+      "This device": "This phone",
+      "your device": "your phone",
+      "Your device": "Your phone",
+      "the device": "the phone",
+      "The device": "The phone",
+      "On device": "On phone",
+      "on device": "on phone"
+    }
+  },
+  "es": {
+    "ios": {
+      "este dispositivo": "este iPhone",
+      "Este dispositivo": "Este iPhone",
+      "tu dispositivo": "tu iPhone",
+      "Tu dispositivo": "Tu iPhone",
+      "este teléfono": "este iPhone",
+      "Este teléfono": "Este iPhone"
+    },
+    "android": {
+      "este dispositivo": "este teléfono",
+      "Este dispositivo": "Este teléfono",
+      "tu dispositivo": "tu teléfono",
+      "Tu dispositivo": "Tu teléfono"
+    }
+  }
+}

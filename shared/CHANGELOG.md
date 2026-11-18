@@ -1,5 +1,17 @@
 # Contract changelog
 
+## v1.20 — 2026-11-18
+
+One name for the thing the person holds, per platform. On the iPhone a single screen said "this iPhone", "On this phone" and "Keep everything on this device".
+
+| Change | Why |
+|---|---|
+| **The device noun** (`copy/PLATFORM_VARIANTS.md`, new section; table `copy/platform/device-noun.json`; fixture `fixtures/copy/device-noun.json`, 368 cases; reference `reference/device-noun.mjs`): iOS shows "this iPhone" and Android "this phone" wherever the plain copy says "this device", by a whole-phrase replacement after lookup. The Web shows the plain text. No key is tripled | The design names the device the same way on every line of a platform |
+| `preview.onPhone` is now "On this device" / "En este dispositivo" (was "On this phone"): the Web shows it on computers too; iOS and Android get their noun from the rule | The label was wrong on a computer |
+| **9 copy keys** (en, es; ko holds the English text): `doc.languageShort` ("Paystub language", a label that fits beside a three-option picker), `doc.where.device`, `doc.where.cloud` (the one-line reading place on the add-a-paystub screen), `judges.factModel`, `judges.factAvailable`, `judges.factNotAvailable`, `judges.factFallback`, `judges.factReplays`, `judges.more` (the compact on-device check card and the disclosure for the long step descriptions) | iOS needed them for the denser screens; every platform shows the same words |
+
+Platforms: iOS and Android apply the rule in their copy loader and run the fixture. The Web has nothing to apply. Reference tests: 29.
+
 ## v1.19 — 2026-11-18
 
 The "Brand & UI" design replaces the Duplicator look on every platform: ink, a grey ramp and one orange (redact, only for what can leave or has left) on a cool grey ground; Big Shoulders Display, Inter Tight (web) and IBM Plex Mono; result markers by fill; the privacy dock (narrow), the ink rail (wide), and a dark scheme by the Android conventions.
