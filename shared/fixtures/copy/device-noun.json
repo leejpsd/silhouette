@@ -635,8 +635,8 @@
       "language": "en",
       "platform": "ios",
       "key": "start.promiseShort",
-      "text": "Your paperwork stays on this device. Only a silhouette can leave.",
-      "shown": "Your paperwork stays on this iPhone. Only a silhouette can leave."
+      "text": "Your paperwork stays on this device. A model only ever sees a silhouette and answers by pointing at it.",
+      "shown": "Your paperwork stays on this iPhone. A model only ever sees a silhouette and answers by pointing at it."
     },
     {
       "language": "en",
@@ -686,6 +686,27 @@
       "key": "send.sessionNote",
       "text": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your device”.",
       "shown": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your iPhone”."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "judges.canDownload",
+      "text": "This browser can download Chrome’s on-device model. With it, step 2 is read on this device and nothing leaves. Without it, step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud.",
+      "shown": "This browser can download Chrome’s on-device model. With it, step 2 is read on this iPhone and nothing leaves. Without it, step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.readHere",
+      "text": "Read on this device",
+      "shown": "Read on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "start.pointer",
+      "text": "The model answers “gross pay is N12”. It never sees 1,271.88: this device puts the value back.",
+      "shown": "The model answers “gross pay is N12”. It never sees 1,271.88: this iPhone puts the value back."
     },
     {
       "language": "en",
@@ -1321,8 +1342,8 @@
       "language": "en",
       "platform": "android",
       "key": "start.promiseShort",
-      "text": "Your paperwork stays on this device. Only a silhouette can leave.",
-      "shown": "Your paperwork stays on this phone. Only a silhouette can leave."
+      "text": "Your paperwork stays on this device. A model only ever sees a silhouette and answers by pointing at it.",
+      "shown": "Your paperwork stays on this phone. A model only ever sees a silhouette and answers by pointing at it."
     },
     {
       "language": "en",
@@ -1372,6 +1393,27 @@
       "key": "send.sessionNote",
       "text": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your device”.",
       "shown": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your phone”."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "judges.canDownload",
+      "text": "This browser can download Chrome’s on-device model. With it, step 2 is read on this device and nothing leaves. Without it, step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud.",
+      "shown": "This browser can download Chrome’s on-device model. With it, step 2 is read on this phone and nothing leaves. Without it, step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.readHere",
+      "text": "Read on this device",
+      "shown": "Read on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "start.pointer",
+      "text": "The model answers “gross pay is N12”. It never sees 1,271.88: this device puts the value back.",
+      "shown": "The model answers “gross pay is N12”. It never sees 1,271.88: this phone puts the value back."
     },
     {
       "language": "es",
@@ -1993,8 +2035,8 @@
       "language": "es",
       "platform": "ios",
       "key": "start.promiseShort",
-      "text": "Tus papeles se quedan en este dispositivo. Solo puede salir una silueta.",
-      "shown": "Tus papeles se quedan en este iPhone. Solo puede salir una silueta."
+      "text": "Tus papeles se quedan en este dispositivo. Un modelo solo ve una silueta y responde señalándola.",
+      "shown": "Tus papeles se quedan en este iPhone. Un modelo solo ve una silueta y responde señalándola."
     },
     {
       "language": "es",
@@ -2037,6 +2079,27 @@
       "key": "send.sessionNote",
       "text": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu dispositivo».",
       "shown": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu iPhone»."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "judges.canDownload",
+      "text": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 2 se lee en este dispositivo y no sale nada. Sin él, el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube.",
+      "shown": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 2 se lee en este iPhone y no sale nada. Sin él, el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.readHere",
+      "text": "Leer en este dispositivo",
+      "shown": "Leer en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "start.pointer",
+      "text": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este dispositivo vuelve a poner el valor.",
+      "shown": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este iPhone vuelve a poner el valor."
     },
     {
       "language": "es",
@@ -2658,8 +2721,8 @@
       "language": "es",
       "platform": "android",
       "key": "start.promiseShort",
-      "text": "Tus papeles se quedan en este dispositivo. Solo puede salir una silueta.",
-      "shown": "Tus papeles se quedan en este teléfono. Solo puede salir una silueta."
+      "text": "Tus papeles se quedan en este dispositivo. Un modelo solo ve una silueta y responde señalándola.",
+      "shown": "Tus papeles se quedan en este teléfono. Un modelo solo ve una silueta y responde señalándola."
     },
     {
       "language": "es",
@@ -2702,6 +2765,27 @@
       "key": "send.sessionNote",
       "text": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu dispositivo».",
       "shown": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu teléfono»."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "judges.canDownload",
+      "text": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 2 se lee en este dispositivo y no sale nada. Sin él, el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube.",
+      "shown": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 2 se lee en este teléfono y no sale nada. Sin él, el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.readHere",
+      "text": "Leer en este dispositivo",
+      "shown": "Leer en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "start.pointer",
+      "text": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este dispositivo vuelve a poner el valor.",
+      "shown": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este teléfono vuelve a poner el valor."
     }
   ]
 }

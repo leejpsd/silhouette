@@ -581,7 +581,7 @@
   "start.factRequests": "Ves cada solicitud antes de que salga",
   "start.factRules": "Las reglas se aplican en este dispositivo",
   "start.leadShort": "Responde unas preguntas cortas.",
-  "start.promiseShort": "Tus papeles se quedan en este dispositivo. Solo puede salir una silueta.",
+  "start.promiseShort": "Tus papeles se quedan en este dispositivo. Un modelo solo ve una silueta y responde señalándola.",
   "tasks.cloud": "En la nube",
   "tasks.cloud.note": "Solo información pública o general. Ves cada solicitud antes de que salga.",
   "tasks.device": "Solo en este dispositivo",
@@ -643,5 +643,12 @@
   "why.atLeast": "al menos {limit}",
   "error.server": "El servicio en la nube tuvo un problema propio. Inténtalo de nuevo en un momento.",
   "send.firstAlso": "Con la primera solicitud la app también pide su configuración y le dice al servicio qué instalación pregunta. Las dos aparecen en «Lo que sale de tu dispositivo»; ninguna lleva nada tuyo.",
-  "send.sessionNote": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu dispositivo»."
+  "send.sessionNote": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu dispositivo».",
+  "detail.confirmWithPaystub": "Agrega un talón de pago para confirmarlo",
+  "judges.canDownload": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 2 se lee en este dispositivo y no sale nada. Sin él, el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube.",
+  "preview.readHere": "Leer en este dispositivo",
+  "judges.next": "Siguiente para el jurado · paso {n} de 3",
+  "review.seeAllCount": "Ver los {count} valores",
+  "preview.seeRecorded.web": "Este navegador no tiene modelo en el dispositivo. Mira la misma lectura hecha en un dispositivo (una grabación)",
+  "start.pointer": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este dispositivo vuelve a poner el valor."
 }

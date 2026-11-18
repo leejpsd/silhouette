@@ -152,5 +152,6 @@
   "variable.housing": "Vivienda",
   "variable.investmentIncome": "Ingresos de inversiones",
   "variable.numQualifyingChildren": "Niños que puedes declarar",
-  "variable.taxIdType": "Número de identificación para impuestos"
+  "variable.taxIdType": "Número de identificación para impuestos",
+  "pack.audience": "Para hogares de California"
 }

@@ -643,5 +643,12 @@
   "why.atLeast": "at least {limit}",
   "error.server": "The cloud service had a problem of its own. Try again in a moment.",
   "send.firstAlso": "With the first request the app also fetches its settings and tells the service which installation is asking. Both are listed under “Leaving your device”; neither carries anything of yours.",
-  "send.sessionNote": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your device”."
+  "send.sessionNote": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your device”.",
+  "detail.confirmWithPaystub": "Add a paystub to confirm",
+  "judges.canDownload": "This browser can download Chrome’s on-device model. With it, step 2 is read on this device and nothing leaves. Without it, step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud.",
+  "preview.readHere": "Read on this device",
+  "judges.next": "Next for judges · step {n} of 3",
+  "review.seeAllCount": "See all {count} values",
+  "preview.seeRecorded.web": "No on-device model in this browser. See the same reading done on a device (a recording)",
+  "start.pointer": "The model answers “gross pay is N12”. It never sees 1,271.88: this device puts the value back."
 }

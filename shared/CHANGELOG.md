@@ -1,5 +1,18 @@
 # Contract changelog
 
+## v1.24 — 2026-11-19
+
+Words for what a mid-term review of the main path asked for.
+
+| Change | Why |
+|---|---|
+| `pack.audience` in the rule pack's copy ("For households in California") | The first screen names who it is for |
+| `start.promiseShort` reworded and `start.pointer` added: "The model answers “gross pay is N12”. It never sees 1,271.88: this device puts the value back." | The first screen says what is different (the model points and never sees a value), not only that something is hidden |
+| `preview.readHere` ("Read on this device"): the primary action of the silhouette screen when the device has a model | With a model on the device the reading starts there; the action is not a "Send" |
+| `judges.canDownload`, `judges.next`, `preview.seeRecorded.web`, `detail.confirmWithPaystub`, `review.seeAllCount` | The judges' page says when the model can be downloaded; the path names its next step; a browser without a model is led to the recorded on-device reading; a result a document can confirm leads to the document; the button that first shows folded values says so |
+
+Platforms: iOS and Android take `pack.audience`, `start.pointer`, `preview.readHere` and `detail.confirmWithPaystub` where they show the same screens. Reference tests: 30.
+
 ## v1.23 — 2026-11-19
 
 What two independent hands-on passes (Web and iOS) found in the words and the tokens.
