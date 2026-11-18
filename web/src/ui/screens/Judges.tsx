@@ -9,7 +9,9 @@ import { useApp } from '../context';
 import { ScreenHeading } from '../Heading';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { useDocument } from '../doc/state';
-import { ArrowRight, ChevronLeft } from '../design/icons';
+import { ArrowRight, ChevronLeft, ChevronRight, Doc, Phone, Play } from '../design/icons';
+import { BlockActions } from '../design/block';
+import { ActionLabel } from '../design/parts';
 import { navigate, routeHref } from '../router';
 import { preparedHousehold } from '../judges/household';
 import { OPEN_RECORD_EVENT } from '../Chrome';
@@ -60,9 +62,13 @@ export function JudgesScreen() {
         {t('judges.title')}
       </ScreenHeading>
       <p className="lead">{t('judges.lead')}</p>
-      <p className="dashed-note" role="status" data-testid="judges-device" data-device={device}>
-        {device === 'checking' ? t('judges.checking') : device === 'available' ? t('judges.withModel') : t('judges.withoutModel')}
-      </p>
+      {/* Where step 2 runs, in one line; the full sentence is under the steps. */}
+      {device !== 'checking' && (
+        <p className="routing-line">
+          <strong className={`badge ${device === 'available' ? 'badge-device' : 'badge-cloud'}`}>{device === 'available' ? t('badge.onDevice') : t('badge.cloud')}</strong>
+          <span>{t('reason.document-silhouette-only')}</span>
+        </p>
+      )}
       <ol className="judge-steps">
         {stepsList.map((s, i) => (
           <li key={s.id} className="judge-step" data-testid={`judge-${s.id}`}>
@@ -70,16 +76,51 @@ export function JudgesScreen() {
               {i + 1}
             </span>
             <div className="judge-text">
-              <h2 className="section-heading">{s.title}</h2>
-              <p className="small">{s.body}</p>
-              <button type="button" className="outline-button" onClick={s.run}>
-                {s.button}
-                <ArrowRight />
-              </button>
+              <h2 className="judge-title">{s.title}</h2>
+              <p className="judge-body">{s.body}</p>
             </div>
+            <button type="button" className="play-disc" aria-label={s.button} onClick={s.run}>
+              <Play />
+            </button>
           </li>
         ))}
       </ol>
+      <p className="card-note" role="status" data-testid="judges-device" data-device={device}>
+        {device === 'checking' ? t('judges.checking') : device === 'available' ? t('judges.withModel') : t('judges.withoutModel')}
+      </p>
+      <ul className="link-card">
+        <li>
+          <a href={routeHref({ name: 'tasks' })}>
+            <span className="source-icon" aria-hidden="true">
+              <Phone size={16} />
+            </span>
+            <span className="source-text">
+              <span className="source-title">{t('judges.tasks')}</span>
+              <span className="small muted">{t('tasks.lead')}</span>
+            </span>
+            <ChevronRight />
+          </a>
+        </li>
+        <li>
+          <a href={routeHref({ name: 'device-check' })}>
+            <span className="source-icon" aria-hidden="true">
+              <Doc />
+            </span>
+            <span className="source-text">
+              <span className="source-title">{t('demo.deviceCheck')}</span>
+            </span>
+            <ChevronRight />
+          </a>
+        </li>
+      </ul>
+      <BlockActions>
+        <button type="button" className="action" onClick={quickCheck}>
+          <ActionLabel>{t('judges.start')}</ActionLabel>
+          <span className="action-arrow">
+            <ArrowRight />
+          </span>
+        </button>
+      </BlockActions>
     </div>
   );
 }

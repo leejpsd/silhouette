@@ -121,6 +121,8 @@ test.describe('regressions', () => {
     await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
     await sendSample(page);
     const gross = page.getByTestId('field-grossPay');
+    await page.getByTestId('field-grossPay').locator('.field-toggle').click();
+
     await gross.getByRole('button', { name: 'Change: Gross pay this period' }).click();
     await gross.getByRole('textbox').fill('1.271');
     await gross.getByRole('button', { name: 'Save' }).click();

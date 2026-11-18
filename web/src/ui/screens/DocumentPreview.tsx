@@ -21,6 +21,7 @@ import { useDocument } from '../doc/state';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { phoneLines } from '../doc/phone-view';
+import { rememberReading } from '../doc/last-reading';
 import { BlockActions, useWide } from '../design/block';
 import { ChevronLeft, LeaveGlyph } from '../design/icons';
 import { useOnline } from '../design/online';
@@ -164,6 +165,8 @@ export function DocumentPreviewScreen() {
         return;
       }
       const result = await extractPointers(skeleton, doc.docType, doc.language, { validate: checkAnswer, checkParts, onProgress: setStage });
+      // Ids only (the model never sees a value): shown in the record beside the exact request.
+      if (result.inferenceSource === 'IN_CLOUD') rememberReading(result.value as Readonly<Record<string, unknown>>);
       const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
       update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead } });
@@ -212,6 +215,8 @@ export function DocumentPreviewScreen() {
 
   const offlineSample = doc.sourceKind === 'sample' && doc.hiddenWords.length === 0 && !online && deviceStatus !== 'available';
   const lines = phoneLines(skeleton, map);
+  // The longest line, in characters: wide screens size the mono type so no line breaks.
+  const docCols = Math.max(20, ...lines.map((l) => l.reduce((n, seg) => n + seg.text.length, 0)));
   // Placeholder id → the original text's length (for bar widths) and whether the person hid it.
   const original = new Map(lines.flatMap((l) => l.filter((seg) => seg.ref).map((seg) => [seg.ref as string, seg.text] as const)));
   const lastHidden = doc.hiddenWords[doc.hiddenWords.length - 1];
@@ -230,9 +235,15 @@ export function DocumentPreviewScreen() {
       <ScreenHeading size={46} wideSize={72} maxLines={4}>
         {t('preview.title')}
       </ScreenHeading>
-      <p className="small muted">{t('preview.lead')}</p>
       {doc.photoSource && <InferenceBadge source={doc.photoSource.inferenceSource} reason={doc.photoSource.reason} />}
-      <div className="preview-pair" data-wide={wide}>
+      {/* Where the reading will run, in one line; the full sentence is under the document. */}
+      <p className="routing-line">
+        <strong className={`badge ${offlineSample ? 'badge-sample' : onDeviceFirst ? 'badge-device' : 'badge-cloud'}`}>
+          {offlineSample ? t('badge.sampleKey') : onDeviceFirst ? t('badge.onDevice') : t('badge.cloud')}
+        </strong>
+        <span>{t(offlineSample ? 'reason.sample-answer-key' : 'reason.document-silhouette-only')}</span>
+      </p>
+      <div className="preview-pair" data-wide={wide} style={{ '--doc-cols': docCols, '--hide-hint': JSON.stringify(t('preview.hideToo')) } as CSSProperties}>
       <div className="toggle" role="group" aria-label={t('preview.title')}>
         <button type="button" aria-pressed={mode === 'phone'} onClick={() => { setQuiet(true); setMode('phone'); }}>
           {t('preview.onPhone')}
@@ -266,6 +277,13 @@ export function DocumentPreviewScreen() {
         </pre>
       )}
       </div>
+      {/* The legend of the chips (wide screens show it under the two documents). */}
+      <p className="chip-legend" aria-hidden="true">
+        <span className="bar">W</span> {t('preview.legend.word')} <span className="bar">D</span> {t('preview.legend.date')} <span className="bar">N</span>{' '}
+        {t('preview.legend.number')} <span className="legend-note">{t('preview.labelsStay')}</span>
+      </p>
+      <p className="small muted">{t('preview.lead')}</p>
+      <p className="small muted">{offlineSample ? t('preview.sample') : onDeviceFirst ? t('preview.onDevice') : t('preview.cloud')}</p>
       <p className="small muted">{t('preview.counts', { numbers: counts.N, dates: counts.D, words: counts.W })}</p>
       <div className="hide-row">
         <p className="small">
@@ -328,16 +346,10 @@ export function DocumentPreviewScreen() {
         {t('q.back')}
       </a>
       <BlockActions mode="decision">
-        <p className="routing-line">
-          <strong className={`badge ${offlineSample ? 'badge-sample' : onDeviceFirst ? 'badge-device' : 'badge-cloud'}`}>
-            {offlineSample ? t('badge.sampleKey') : onDeviceFirst ? t('badge.onDevice') : t('badge.cloud')}
-          </strong>
-          <span>{offlineSample ? t('preview.sample') : onDeviceFirst ? t('preview.onDevice') : t('preview.cloud')}</span>
-        </p>
-        <div className="decision">
+        <div className="decision decision-send">
           <button
             type="button"
-            className="outline-button tall"
+            className="text-link keep-link"
             disabled={sending}
             onClick={() => {
               // With a model on this device, keeping everything here still reads the silhouette, on the device.
@@ -382,9 +394,7 @@ type T = (key: 'placeholder.word' | 'placeholder.number' | 'placeholder.date') =
  * A placeholder takes the same width in both views (the longer of its text and its id, in characters
  * of the document font), so the two views wrap into the same lines and the cross-fade lines up.
  */
-function tokenStyle(text: string, id: string, extra: CSSProperties = {}): CSSProperties {
-  return { '--chars': Math.max(text.length, id.length), ...extra } as CSSProperties;
-}
+
 
 function renderSkeleton(
   skeleton: Skeleton,
@@ -409,7 +419,7 @@ function renderSkeleton(
         <span
           key={`p${i}`}
           className={`tok ph${mine ? ' tok-mine' : ''}${isNew ? ' tok-new' : ''}`}
-          style={tokenStyle(text, id, isNew ? { animationDelay: `${Math.min(n++, 20) * 60}ms` } : {})}
+          style={isNew ? { animationDelay: `${Math.min(n++, 20) * 60}ms` } : undefined}
           aria-label={`${t(kind)} ${id}`}
         >
           {id}
@@ -489,7 +499,7 @@ function renderPhone(lines: readonly (readonly SourceSegment[])[], label: (word:
     <span key={i}>
       {line.map((seg, j) =>
         seg.ref ? (
-          <span key={j} className="tok tok-phone" style={tokenStyle(seg.text, seg.ref)}>
+          <span key={j} className="tok tok-phone">
             {seg.text}
           </span>
         ) : (

@@ -650,9 +650,18 @@ main h3.small {
   list-style: none;
 }
 
+/* Prepared questions: chips in a row; one with its answer open takes the full width. */
 .chips {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.chip-question:has(.request:not(:empty)) {
+  flex-basis: 100%;
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: var(--space-xs);
 }
 
 /* Choice chips: 44, pill, white with a 16 % border. */
@@ -1282,11 +1291,11 @@ dialog.sheet .option-word {
 
 .outbound-list li {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
-  align-items: baseline;
-  gap: 4px var(--space-xs);
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px var(--space-xs);
   min-height: 56px;
-  padding: 14px 0;
+  padding: 10px 0;
 }
 
 .outbound-list li + li {
@@ -1300,10 +1309,26 @@ dialog.sheet .option-word {
 }
 
 .outbound-main {
+  grid-column: 2 / -1;
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+}
+
+.outbound-main .disclosure {
+  min-height: 32px;
+  font-size: var(--type-caption-size);
+}
+
+.outbound-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.outbound-details[hidden] {
+  display: none;
 }
 
 .outbound-what {
@@ -1320,8 +1345,7 @@ dialog.sheet .option-word {
 
 /* Status pills: Sent (redact), On device (outlined), the others (track grey) with the reason. */
 .outbound-status {
-  grid-column: 2;
-  justify-self: start;
+  justify-self: end;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1366,13 +1390,47 @@ dialog.sheet .option-word {
 
 .payload-head {
   display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  font-size: var(--type-caption-size);
+}
+
+.payload-head > p {
+  flex: 1;
+  display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: var(--type-caption-size);
 }
 
 .payload-head span {
   font-family: var(--font-mono);
+  color: var(--on-block-muted);
+}
+
+.copy-button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--on-ink-border);
+  border-radius: var(--radius-pill);
+  background: var(--on-ink-fill);
+  color: var(--on-block);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+}
+
+.answer-received {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--type-caption-size);
+}
+
+.answer-received code {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.answer-received span {
   color: var(--on-block-muted);
 }
 
@@ -1546,9 +1604,7 @@ main h2.marker-line {
 .validation,
 .deductions,
 .hidden-words,
-.source-card,
 .model-status,
-.judge-step,
 .device-results,
 .recordings,
 .changes {
@@ -1587,19 +1643,34 @@ main h2.marker-line {
   margin-top: 8px;
 }
 
+/* The promise: its own muted paragraph on phones, the muted end of the lead on wide screens. */
 .start-promise {
+  display: block;
+  margin-top: 14px;
   color: var(--note);
   font-size: var(--type-body-size);
   line-height: 1.5;
 }
 
-.start-example {
-  margin: 10px 0 0;
+.start-facts {
+  display: none;
 }
 
+.legal-note {
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
+}
+
+.start-example {
+  margin: 8px 0 0;
+}
+
+/* The silhouette as a table: on phones each field and what could leave of it; on wide screens the
+   value on this device beside it. */
 .example-table {
   border: 1px solid var(--ink-border);
-  border-radius: var(--radius-card-large);
+  border-radius: var(--radius-panel);
   background: var(--card);
   overflow: hidden;
 }
@@ -1607,7 +1678,8 @@ main h2.marker-line {
 .example-head,
 .example-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
 }
 
 .example-head {
@@ -1625,6 +1697,15 @@ main h2.marker-line {
   padding: 11px 16px;
 }
 
+.example-side .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.example-side .dot {
+  display: none;
+}
+
 .example-row + .example-row {
   border-top: 1px solid var(--ground);
 }
@@ -1632,19 +1713,38 @@ main h2.marker-line {
 .example-cell {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
+  justify-content: flex-end;
+  padding: 12px 16px;
   min-width: 0;
 }
 
-.example-cell + .example-cell,
-.example-side + .example-side {
-  border-left: 1px solid var(--ground);
+.example-cell.paper-field {
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.example-cell.paper-field .paper-label {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.example-cell.paper-field .paper-value {
+  display: none;
 }
 
 .example-note {
   padding-top: var(--space-xs);
   color: var(--note);
   font-size: var(--type-caption-size);
+}
+
+.start .example-note {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .example-tag {
@@ -2160,16 +2260,24 @@ main h2.group-label {
   line-height: 1.4;
 }
 
-.featured {
-  padding-bottom: 12px;
+/* Wide screens show the program's summary as the subline and the status at the right. */
+.program-summary,
+.program-status {
+  display: none;
 }
 
-.featured > :not(.program-link) {
-  margin-inline: 52px 16px;
+.program-status-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wide-only {
+  display: none;
 }
 
 /* Probably not: the whole row dims to note grey (the word still says it). */
-.verdict-unlikely .program-link {
+[data-verdict='unlikely'] > .program-link {
   color: var(--note);
 }
 
@@ -2282,6 +2390,20 @@ main h2.group-label {
 
 .verdict-line {
   margin-top: 4px;
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+}
+
+.program-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.program-title .marker {
+  width: 24px;
+  height: 24px;
 }
 
 .amount-block {
@@ -2299,6 +2421,7 @@ main h2.group-label {
   white-space: nowrap;
 }
 
+/* "Why this result": one row per reason; a limit has the amounts in mono and, for one number, a 6 px bar. */
 .criteria {
   margin: 0;
   padding: 0;
@@ -2306,31 +2429,146 @@ main h2.group-label {
 }
 
 .criterion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   padding: 10px 0;
   border-top: 1px solid var(--ground);
 }
 
+.criterion-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
 .criterion-label {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 .criterion-state {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-xs);
+  gap: 4px;
+  flex: none;
+  max-width: 50%;
   font-size: var(--type-control-size);
+  font-weight: 700;
+  text-align: right;
 }
 
-.criterion .limit-rows {
-  padding-top: 4px;
+.criterion-state .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.limit-line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.limit-line .limit-rows {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 0;
+  color: var(--note);
+}
+
+.limit-line .limit-rows div {
+  display: block;
+}
+
+.limit-line .limit-rows dd {
+  font-size: var(--type-caption-size);
+}
+
+.limit-line .limit-rows .limit-of::before {
+  content: '/ ' / '';
+}
+
+.limit-line .limit-rows .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.limit-bar {
+  position: relative;
+  display: block;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--ground);
+  overflow: hidden;
+}
+
+.limit-bar > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.criterion-note {
+  color: var(--note);
+  font-size: var(--type-caption-size);
+}
+
+.card-note {
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  line-height: 1.5;
 }
 
 .caveats {
   margin: 0;
   padding-left: var(--gutter);
   font-size: var(--type-small-size);
+}
+
+/* Official information: rows that open the pack's text. */
+.info-rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0 -16px;
+}
+
+.info-row {
+  border-top: 1px solid var(--ground);
+}
+
+.info-row summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: var(--size-min-tap-target);
+  padding: 0 16px;
+  font-size: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.info-row summary::-webkit-details-marker {
+  display: none;
+}
+
+.info-row summary .chevron {
+  color: var(--icon);
+  transition: transform var(--duration-short) ease;
+}
+
+.info-row[open] summary .chevron {
+  transform: rotate(90deg);
+}
+
+.info-row > p {
+  padding: 0 16px 12px;
+  font-size: var(--type-small-size);
+  line-height: 1.5;
 }
 
 .why,
@@ -2550,25 +2788,37 @@ main h2.group-label {
   gap: var(--space-xs);
 }
 
-/* The step before a request leaves: an ink sheet with the request in the night inset. */
+/* The step before a request leaves: the dock grown into a bottom sheet (a modal on wide screens) with
+   the request in the night inset. */
 .send-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  padding: 18px 18px 20px;
-  border-radius: var(--radius-sheet-top);
-  background: var(--block);
+  gap: 14px;
+  padding: 10px var(--gutter) calc(22px + env(safe-area-inset-bottom));
   color: var(--on-block);
-  animation: sheet-up var(--duration-sheet-up) var(--ease-standard) both;
 }
 
-.send-panel > .sheet-label {
-  color: var(--on-block);
+.send-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.send-title {
+  margin: 0;
   font-family: var(--font-display);
-  font-size: var(--type-heading-size);
+  font-size: 40px;
   font-weight: 900;
-  line-height: 0.95;
+  line-height: 0.9;
   text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.send-lead {
+  color: var(--on-block-muted);
+  font-size: var(--type-body-size);
+  line-height: 1.5;
 }
 
 .send-slip {
@@ -2583,16 +2833,128 @@ main h2.group-label {
 }
 
 .send-slip > .leave-tab {
+  justify-content: space-between;
+  margin: 0;
   padding: 10px 14px;
-  border-bottom: 1px dashed var(--on-ink-border);
+  border-bottom: 1px dashed rgb(from var(--redact) r g b / 60%);
   font-size: var(--type-caption-size);
   font-weight: 700;
 }
 
+.send-slip > .leave-tab::before {
+  order: -1;
+}
+
+.send-slip > .leave-tab > span:first-child {
+  flex: 1;
+}
+
 .send-slip .paper {
+  padding: 12px 14px;
   border: 0;
   border-radius: 0;
   background: transparent;
+}
+
+.slip-foot {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--on-ink-divider);
+  font-size: var(--type-caption-size);
+  line-height: 1.45;
+}
+
+.slip-foot .icon {
+  margin-top: 1px;
+}
+
+.stays-card {
+  border: 1px solid var(--on-ink-border);
+  border-radius: var(--radius-button);
+  background: var(--night);
+  overflow: hidden;
+}
+
+.stays-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--on-ink-divider);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+}
+
+.stays-head .icon {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  color: var(--on-block-muted);
+}
+
+.dot-ring {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.stays-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stays-rows li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: 36px;
+  padding: 0 14px;
+  color: var(--on-block-muted);
+  font-size: var(--type-caption-size);
+}
+
+.stays-rows li + li {
+  border-top: 1px solid var(--on-ink-divider);
+}
+
+.masked {
+  display: block;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--on-block);
+  opacity: 0.85;
+}
+
+.send-note {
+  color: var(--on-block-muted);
+  font-size: var(--type-caption-size);
+  text-align: center;
+}
+
+.send-panel .screen-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.send-panel .routing-line {
+  font-size: var(--type-caption-size);
+}
+
+.send-panel .key-hint {
+  justify-content: center;
+  color: var(--on-block-muted);
+}
+
+.send-panel .key {
+  border-color: var(--on-ink-border);
+  background: var(--on-ink-fill);
+  color: var(--on-block);
 }
 
 .send-lines {
@@ -2658,48 +3020,164 @@ progress {
   accent-color: var(--ink);
 }
 
-/* The ways to add a paystub: rows with an icon tile (raised, radius 12). */
-.source-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
+/* The ways to add a paystub: one list card, a row each (icon tile, title, subline, chevron). A file
+   picker covers its whole row. */
+.source-list,
+.more-samples {
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  overflow: hidden;
 }
 
-.source-card.unavailable {
-  border-style: dashed;
-  border-color: var(--line);
+.source-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.source-card + .source-card {
+  border-top: 1px solid var(--ground);
+}
+
+.source-card > .chevron,
+.more-samples summary > .chevron {
+  color: var(--icon);
+}
+
+.source-card:has(input[type='file']:focus-visible) {
+  outline: var(--size-focus-ring) solid var(--focus);
+  outline-offset: calc(-1 * var(--size-focus-ring));
+}
+
+.source-card input[type='file'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.source-card .textarea {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  margin-top: 6px;
+}
+
+.source-card.unavailable .source-title {
+  color: var(--note);
 }
 
 .source-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-tile);
   background: var(--raised);
   flex: none;
 }
 
-.source-card:first-of-type .source-icon {
+.source-icon .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.source-card:first-child .source-icon {
   background: var(--ink);
   color: var(--ground);
+}
+
+.source-card.unavailable:first-child .source-icon {
+  background: var(--raised);
+  color: var(--note);
+}
+
+.source-icon-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .source-text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 2px;
   flex: 1;
   min-width: 0;
 }
 
+.source-text .small,
+.source-text p {
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  line-height: 1.4;
+}
+
+.source-title,
 main h2.source-title {
   margin: 0;
+  font-family: var(--font-text);
   font-size: var(--type-row-title-size);
+  font-weight: 700;
   line-height: 1.3;
 }
+
+.field-inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.field-inline .select {
+  width: auto;
+  min-width: 8rem;
+  font-weight: 600;
+}
+
+.field-inline label {
+  color: var(--note);
+  font-size: var(--type-control-size);
+  font-weight: 400;
+}
+
+.more-samples summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.more-samples summary::-webkit-details-marker {
+  display: none;
+}
+
+.more-samples[open] summary > .chevron {
+  transform: rotate(90deg);
+}
+
+.more-samples .sample-grid {
+  padding: 0 16px 14px;
+}
+
+
 
 /* Segmented control: a track pill, the selected segment white with an 8 % border. */
 .toggle {
@@ -2757,13 +3235,12 @@ main h2.source-title {
   border: 1px dashed rgb(from var(--ink) r g b / 30%);
 }
 
+/* A token chip in the document: compact (its id only), never stretched to the hidden value's width. */
 .tok {
   display: inline-block;
-  /* Same box in both views: the width of --chars document characters, one chip height. */
-  inline-size: calc(var(--chars, 1) * 1ch);
   max-inline-size: 100%;
   box-sizing: content-box;
-  padding: 0 3px;
+  padding: 0 5px;
   border-radius: var(--radius-token);
   line-height: calc(var(--type-placeholder-id-line) * var(--type-placeholder-id-size));
   vertical-align: top;
@@ -2795,6 +3272,7 @@ main h2.source-title {
 }
 
 .doc[data-mode='phone'] .tok-phone {
+  padding: 0;
   font-weight: 500;
   border-radius: 0;
   text-decoration: underline;
@@ -2825,6 +3303,49 @@ main h2.source-title {
   cursor: default;
 }
 
+/* On hover or focus a visible word says what pressing it does (the button's name says it too). */
+.doc .word:not(:disabled) {
+  position: relative;
+}
+
+.doc .word:not(:disabled):hover::after,
+.doc .word:not(:disabled):focus-visible::after {
+  content: var(--hide-hint) / '';
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  z-index: 2;
+  margin-left: 6px;
+  padding: 3px 8px;
+  border-radius: var(--radius-token);
+  background: var(--ink);
+  color: var(--ground);
+  font-family: var(--font-text);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.chip-legend {
+  display: none;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--note);
+  font-size: var(--type-caption-size);
+}
+
+.chip-legend .bar {
+  padding: 0 5px;
+  font-size: 10px;
+}
+
+.legend-note {
+  margin-left: 8px;
+}
+
 .doc .word:disabled:hover {
   background: none;
   color: inherit;
@@ -2843,58 +3364,112 @@ main h2.source-title {
   gap: var(--space-sm);
 }
 
-/* Review: what was found, as a list card with the values in mono. */
-.fields {
+/* The dock of the preview: the redact Send first, "Keep everything on this device" as a link under it. */
+.decision-send {
   display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.decision-send .keep-link {
+  align-self: center;
+}
+
+/* Review: what was found, as one list card of compact rows (label, value in mono, state), with
+   "More values" as its last row. */
+.fields-card {
   border: 1px solid var(--ink-border);
   border-radius: var(--radius-card);
   background: var(--card);
   overflow: hidden;
 }
 
+.fields {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .field-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 16px;
 }
 
-.field-row + .field-row {
+.field-row + .field-row,
+.more-values {
   border-top: 1px solid var(--ground);
 }
 
-.field-head {
+.field-line {
   display: flex;
-  justify-content: space-between;
-  gap: var(--space-xs);
-  font-size: 14px;
-  font-weight: 600;
+  align-items: center;
+  gap: 4px;
+  padding-right: 10px;
 }
 
-.field-body {
+.field-toggle {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-sm);
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 6px 8px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
 }
 
-.field-body .source {
-  min-width: 0;
-  flex: 1;
+.field-label {
+  font-size: 14px;
+  line-height: 1.35;
 }
 
 .field-value {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 500;
   text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.state-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-min-tap-target);
+  height: var(--size-min-tap-target);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  flex: none;
+}
+
+.state-ring {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--faint);
+  border-radius: 50%;
+}
+
+button.state-mark:hover .state-ring {
+  border-color: var(--ink);
+}
+
+.field-detail-row,
+.field-row .field-edit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0 16px 12px;
 }
 
 .not-found {
@@ -2916,6 +3491,13 @@ main h2.source-title {
   gap: 4px;
   font-size: var(--type-caption-size);
   font-weight: 700;
+}
+
+.fields-card .deductions {
+  padding: 12px 16px;
+  border: 0;
+  border-top: 1px solid var(--ground);
+  border-radius: 0;
 }
 
 .source-line {
@@ -3033,12 +3615,27 @@ main h2.source-title {
 .more-values {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
 }
 
 .more-values-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--size-min-tap-target);
+  padding: 0 16px;
   font-size: var(--type-control-size);
   font-weight: 600;
+  text-decoration: none;
+}
+
+.more-values-button .chevron {
+  color: var(--icon);
+  transition: transform var(--duration-short) ease;
+}
+
+.more-values-button[aria-expanded='true'] .chevron {
+  transform: rotate(90deg);
 }
 
 .more-values > div {
@@ -3081,19 +3678,29 @@ main h2.source-title {
   font-weight: 700;
 }
 
+/* The judges' steps: one list card, a row each (number in display type, title, subline, play disc). */
 .judge-steps {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
   margin: 0;
   padding: 0;
   list-style: none;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  overflow: hidden;
 }
 
 .judge-step {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--space-sm);
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 12px 16px;
+}
+
+.judge-step + .judge-step {
+  border-top: 1px solid var(--ground);
 }
 
 .judge-number {
@@ -3106,12 +3713,179 @@ main h2.source-title {
 .judge-text {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-xs);
+  gap: 2px;
+  min-width: 0;
 }
 
-.judge-text .section-heading {
+.judge-title,
+main h2.judge-title {
   margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--type-row-title-size);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.judge-body {
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  line-height: 1.45;
+}
+
+.play-disc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-min-tap-target);
+  height: var(--size-min-tap-target);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ground);
+}
+
+.play-disc .icon {
+  box-sizing: content-box;
+  padding: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+/* A card of link rows (judges: where each task runs, the on-device check). */
+.link-card {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.link-card li + li {
+  border-top: 1px solid var(--ground);
+}
+
+.link-card a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 16px;
+  text-decoration: none;
+}
+
+.link-card .chevron {
+  color: var(--icon);
+}
+
+/* Where each task runs: four cards by where the task may run. */
+.task-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+
+.task-device {
+  border-color: transparent;
+  background: var(--block);
+  color: var(--on-block);
+}
+
+.task-cloud {
+  border: 1.25px dashed var(--on-redact);
+  background: var(--redact-tint);
+  color: var(--on-redact);
+}
+
+.task-none {
+  border-color: transparent;
+  background: var(--track);
+}
+
+.task-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-head .icon {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+}
+
+.task-title {
+  font-size: var(--type-row-title-size);
+  font-weight: 700;
+}
+
+.task-mark {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.task-mark-device {
+  background: currentColor;
+}
+
+.task-mark-first {
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+  border: 1.5px solid currentColor;
+}
+
+.task-mark-cloud {
+  background: var(--redact);
+}
+
+.task-mark-none {
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+
+.task-flag {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+}
+
+.task-names {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.task-note {
+  font-size: var(--type-caption-size);
+  opacity: 1;
+  color: inherit;
+}
+
+.task-device .task-note {
+  color: var(--on-block-muted);
+}
+
+.task-first .task-note,
+.task-none .task-note {
+  color: var(--note);
 }
 
 .table-scroll {
@@ -3421,10 +4195,18 @@ main h2.source-title {
     color: var(--on-block);
   }
 
-  .demo-line {
-    padding: 4px var(--space-md) 0;
-    padding-right: calc(var(--space-md) + var(--size-min-tap-target) + var(--space-xs));
-    color: var(--on-block-muted);
+  /* The draft-rules notice stands at the top of the content on wide screens. */
+  main > .demo-line {
+    max-width: var(--wide-content-max);
+    margin: calc(-1 * clamp(12px, 3vw, 40px)) 0 var(--space-lg);
+    padding: 0;
+    color: var(--note);
+  }
+
+  .rail-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
   }
 
   .rail-nav {
@@ -3438,6 +4220,10 @@ main h2.source-title {
     padding: 0 4px;
     color: var(--on-block-muted);
     font-size: var(--type-caption-size);
+  }
+
+  .rail-links .text-link {
+    color: var(--on-block-muted);
   }
 
   .rail-links .text-link.inline {
@@ -3679,6 +4465,80 @@ main h2.source-title {
     margin: 0;
   }
 
+  .start .start-promise {
+    display: inline;
+    margin: 0;
+    font-size: inherit;
+  }
+
+  .start-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: var(--space-md) 0 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+    color: var(--note);
+    font-size: var(--type-caption-size);
+  }
+
+  .start-facts li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .start .legal-note {
+    grid-column: 1 / -1;
+  }
+
+  .example-head,
+  .example-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .example-side .dot {
+    display: inline-block;
+  }
+
+  .example-side .icon {
+    display: none;
+  }
+
+  .example-cell {
+    justify-content: flex-start;
+  }
+
+  .example-cell + .example-cell,
+  .example-side + .example-side {
+    border-left: 1px solid var(--ground);
+  }
+
+  .example-cell.paper-field {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .example-cell.paper-field .paper-label {
+    color: var(--note);
+    font-size: var(--type-caption-size);
+  }
+
+  .example-cell.paper-field .paper-value {
+    display: block;
+  }
+
+  .start .example-note {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+
   /* Results: the list, and beside it on a program page, the program. */
   main > .results {
     display: grid;
@@ -3690,6 +4550,81 @@ main h2.source-title {
 
   .results .more-help {
     padding-top: 74px;
+  }
+
+  .program-summary {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .program-status-line {
+    display: none;
+  }
+
+  .program-status {
+    display: block;
+    flex: none;
+    max-width: 9rem;
+    font-size: var(--type-caption-size);
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .verdict-unlikely .program-status,
+  [data-verdict='unlikely'] .program-status {
+    font-weight: 600;
+  }
+
+  /* The paystub action under the list: a card with why it helps. */
+  .results-main > .screen-actions {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 14px 14px 16px;
+    border: 1px solid var(--ink-border);
+    border-radius: var(--radius-panel);
+    background: var(--card);
+  }
+
+  .results-main > .screen-actions .wide-only {
+    display: flex;
+  }
+
+  .results-main > .screen-actions .action {
+    min-width: 0;
+    min-height: var(--size-compact-action);
+    padding: 4px 6px 4px 14px;
+    border-radius: var(--radius-input);
+    font-size: var(--type-control-size);
+  }
+
+  .results-main > .screen-actions .action-arrow {
+    width: 28px;
+    height: 28px;
+  }
+
+  .sharpen-icon {
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-tile);
+    background: var(--raised);
+  }
+
+  .sharpen-text {
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--type-caption-size);
+    color: var(--note);
+  }
+
+  .sharpen-text strong {
+    color: var(--ink);
+    font-size: var(--type-control-size);
   }
 
   .split {
@@ -3783,9 +4718,64 @@ main h2.source-title {
     text-underline-offset: 4px;
   }
 
+  .preview-pair[data-wide='true'] {
+    container-type: inline-size;
+  }
+
+  .chip-legend {
+    display: flex;
+  }
+
+  /* A question: the action row pinned to the bottom of the content area, under a rule. */
+  main > .question {
+    min-height: calc(100dvh - 2 * clamp(28px, 5vw, 64px) - var(--space-xxl));
+  }
+
+  .question > .screen-actions {
+    margin-top: auto;
+  }
+
+  .question .private {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--note);
+    font-size: var(--type-caption-size);
+  }
+
+  /* A program page beside the results: its official rows as tiles. */
+  .split .info-rows {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 4px 0 0;
+  }
+
+  .split .info-row {
+    border: 0;
+    border-radius: var(--radius-input);
+    background: var(--raised);
+  }
+
+  .split .info-row[open] {
+    grid-column: 1 / -1;
+  }
+
   .preview-pair[data-wide='true'] .doc {
     grid-row: 2;
     align-self: start;
+    /* A line of the document never breaks: the type is sized so the longest line fits its column
+       (never under 9 px), and the card scrolls sideways beyond that. */
+    white-space: pre;
+    overflow-x: auto;
+    font-size: clamp(9px, calc((50cqi - var(--space-xl) / 2 - 38px) / (var(--doc-cols) * 0.6)), 13px);
+  }
+
+  .screen-actions .decision-send {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    align-items: center;
+    gap: var(--space-lg);
   }
 
   .preview-pair[data-wide='true'] .doc[data-mode='phone'] {
@@ -3822,33 +4812,35 @@ main h2.source-title {
     padding: var(--space-xl) var(--space-xl) var(--space-xl);
   }
 
-  dialog.send-modal {
-    background: transparent;
-  }
-
   dialog.send-modal .send-panel {
     padding: var(--space-xl);
-    border-radius: var(--radius-modal);
   }
 
-  .send-modal .screen-actions .decision .outline-button {
+  .send-panel .screen-actions .outline-button {
     border-color: var(--on-ink-ring);
     background: transparent;
     color: var(--on-block);
   }
 
-  .send-modal .key-hint {
-    color: var(--on-block-muted);
-  }
-
-  .send-modal .key {
-    border-color: var(--on-ink-border);
-    background: var(--on-ink-fill);
+  .send-panel .screen-actions .routing-line {
     color: var(--on-block);
   }
 
-  .send-modal .screen-actions .routing-line {
-    color: var(--on-block);
+  .send-panel .screen-actions .send-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .send-panel .screen-actions .text-link {
+    text-decoration-color: var(--on-ink-underline);
+  }
+
+  .send-modal .send-title {
+    font-size: 36px;
+  }
+
+  .send-modal .grab {
+    display: none;
   }
 
   /* The record: the content area, the list on the left and exactly what was sent beside it. */

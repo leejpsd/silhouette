@@ -40,14 +40,17 @@ export function ProgramScreen({ id }: { id: string }) {
         <ChevronLeft />
         {t('detail.back')}
       </a>
-      <p className="marker-line verdict-line">
+      <p className="verdict-line">{t(dynamicKey(`verdict.${result.verdict}`))}</p>
+      <div className="program-title">
         <Marker verdict={result.verdict} />
-        <span>{t(dynamicKey(`verdict.${result.verdict}`))}</span>
-      </p>
-      <ScreenHeading size={50} wideSize={64} maxLines={2}>
-        {programName(locale, program)}
-      </ScreenHeading>
+        <ScreenHeading size={50} wideSize={64} maxLines={2}>
+          {programName(locale, program)}
+        </ScreenHeading>
+      </div>
 
+      <Suspense fallback={null}>
+        <ProgramWhy program={program} verdict={result.verdict} />
+      </Suspense>
       {result.estimatedAmount !== undefined && result.estimatedAmount > 0 && (
         <div className="amount-block">
           <FitText className="amount" size={44} maxLines={1} step={2} floor={LABEL_FLOOR} aria-hidden="true">
@@ -57,9 +60,6 @@ export function ProgramScreen({ id }: { id: string }) {
         </div>
       )}
 
-      <Suspense fallback={null}>
-        <ProgramWhy program={program} verdict={result.verdict} />
-      </Suspense>
 
       {result.dependsOn.length > 0 && (
         <section className="depends" aria-labelledby="depends-title">
@@ -82,6 +82,11 @@ export function ProgramScreen({ id }: { id: string }) {
         </section>
       )}
 
+      <OfficialInfo programs={[program]} withCopy />
+
+      <Suspense fallback={null}>
+        <ProgramAnswers program={program} verdict={result.verdict} />
+      </Suspense>
       {program.period && <p className="small" data-testid="program-period">{t('detail.period', { period: packPeriod(locale, program.period, t) })}</p>}
 
       <section className="things" aria-labelledby="things-title">
@@ -104,11 +109,6 @@ export function ProgramScreen({ id }: { id: string }) {
         </p>
       </section>
 
-      <OfficialInfo programs={[program]} withCopy />
-
-      <Suspense fallback={null}>
-        <ProgramAnswers program={program} verdict={result.verdict} />
-      </Suspense>
       <MoreHelpLinks />
     </article>
   );

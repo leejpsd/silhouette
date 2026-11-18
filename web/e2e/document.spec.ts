@@ -16,6 +16,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.getByRole('link', { name: 'Add a paystub' }).last().click();
     await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'unavailable');
     await expect(page.getByTestId('photo-option')).toContainText("this device can't do that yet");
+    await page.getByTestId('more-samples').locator('summary').click();
     await page.getByRole('button', { name: 'English paystub (PDF)' }).click();
 
     // Preview: the skeleton, before anything is sent.
@@ -34,6 +35,8 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(page.getByTestId('inference-badge')).toContainText('document silhouette only');
     const gross = page.getByTestId('field-grossPay');
     await expect(gross.getByTestId('value-grossPay')).toHaveText('1,271.88');
+    // Where the value was found shows when the row is opened.
+    await gross.locator('.field-toggle').click();
     await expect(gross.locator('mark')).toHaveText('1,271.88');
     await expect(page.getByTestId('field-hoursWorked')).toContainText('62.00');
 
@@ -278,6 +281,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await noOnDeviceModel(context);
     const cloud = await fakeCloudModel(page, { pointers: fixturePointers('payslip-ko-01-correct') });
     await page.goto('/#/doc');
+    await page.getByTestId('more-samples').locator('summary').click();
     await page.getByRole('button', { name: 'Korean payslip (PDF)' }).click();
     await expect(page.getByTestId('skeleton-preview')).toContainText('지급합계');
     await expect(page.getByTestId('skeleton-preview')).not.toContainText('김지원');
@@ -288,6 +292,8 @@ test.describe('Document silhouette and pointer extraction', () => {
     await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
     await expect(page.getByText('Choose how often you are paid to work out a yearly income.')).toBeVisible();
+    await page.getByTestId('field-payFrequency').locator('.field-toggle').click();
+
     await page.getByRole('button', { name: 'Change: How often you are paid' }).click();
     await page.getByTestId('field-payFrequency').getByRole('combobox').selectOption('monthly');
     await page.getByRole('button', { name: 'Save' }).click();
@@ -312,9 +318,13 @@ test.describe('Document silhouette and pointer extraction', () => {
   test('manual entry with no model at all', async ({ page }) => {
     await page.goto('/#/doc');
     await page.getByRole('button', { name: 'Type the numbers yourself' }).first().click();
+    await page.getByTestId('field-grossPay').locator('.field-toggle').click();
+
     await page.getByRole('button', { name: 'Change: Gross pay this period' }).click();
     await page.getByTestId('field-grossPay').getByRole('textbox').fill('2,500.00');
     await page.getByRole('button', { name: 'Save' }).click();
+    await page.getByTestId('field-payFrequency').locator('.field-toggle').click();
+
     await page.getByRole('button', { name: 'Change: How often you are paid' }).click();
     await page.getByTestId('field-payFrequency').getByRole('combobox').selectOption('biweekly');
     await page.getByRole('button', { name: 'Save' }).click();

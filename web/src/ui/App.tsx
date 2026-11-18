@@ -17,6 +17,7 @@ import { resetModelInstances } from '../ai/model-port';
 import { resetConfig } from '../data/remote-config';
 import { resetCloudRequests } from '../data/net-monitor';
 import { clearSession } from './answers/session';
+import { forgetReading } from './doc/last-reading';
 import { forgetCounty } from './answers/county-choice';
 import { LEDGER_CLEARED_KEY, startOutboundPersistence } from '../data/outbound-store';
 
@@ -29,6 +30,7 @@ const DiscoverScreen = lazy(() => import('./answers/MoreHelp').then((m) => ({ de
 const NearbyScreen = lazy(() => import('./answers/MoreHelp').then((m) => ({ default: m.NearbyScreen })));
 const DeviceCheckScreen = lazy(() => import('./screens/DeviceCheck').then((m) => ({ default: m.DeviceCheckScreen })));
 const JudgesScreen = lazy(() => import('./screens/Judges').then((m) => ({ default: m.JudgesScreen })));
+const TasksScreen = lazy(() => import('./screens/Tasks').then((m) => ({ default: m.TasksScreen })));
 
 const ANSWERS_RECORD = 'quickcheck.answers';
 const LOCALE_PREF = `${PREF_PREFIX}locale`;
@@ -119,6 +121,7 @@ export function App() {
     await shutdownFirebase();
     resetModelInstances();
     (await import('../ai/tasks')).dropPreparedReadings();
+    forgetReading();
     resetCloudRequests();
     clearSession();
     forgetCounty();
@@ -156,6 +159,7 @@ export function App() {
     else if (route.name === 'nearby') screen = <NearbyScreen />;
     else if (route.name === 'device-check') screen = <DeviceCheckScreen />;
     else if (route.name === 'judges') screen = <JudgesScreen />;
+    else if (route.name === 'tasks') screen = <TasksScreen />;
     else if (route.name === 'doc-preview') screen = <DocumentPreviewScreen />;
     else if (route.name === 'doc-review') screen = <DocumentReviewScreen key={doc.extraction ? 'extracted' : 'manual'} />;
     else screen = <StartScreen notice={notice} />;
@@ -174,10 +178,13 @@ export function App() {
         <div className="app" data-route={route.name}>
           <div className="rail-top">
             <Header onLocale={changeLocale} />
-            {(isDemoPack(PACK) || isDraftPack()) && <DemoBanner onDelete={onDelete} />}
+            {/* Narrow: the notice under the wordmark; wide: the rail carries a short link and the notice
+                stands at the top of the content. */}
+            {!wide && (isDemoPack(PACK) || isDraftPack()) && <DemoBanner onDelete={onDelete} />}
             <RailSteps route={route} />
           </div>
           <main id="main" tabIndex={-1} aria-busy={!loaded}>
+            {wide && (isDemoPack(PACK) || isDraftPack()) && <DemoBanner onDelete={onDelete} />}
             <Suspense fallback={null}>{screen}</Suspense>
           </main>
           <BottomBlock label={t('leaving.title')} count={<LeavingBar onDelete={onDelete} />} />

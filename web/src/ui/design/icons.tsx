@@ -152,3 +152,20 @@ export const Caret = ({ open }: { open: boolean }) => (
     <path d="M1.5 3.5h9L6 9.5z" />
   </svg>
 );
+export const Clock = () => (
+  <Svg size={16} view={16} stroke={1.5}>
+    <circle cx="8" cy="8" r="5.75" />
+    <path d="M8 5v3l2 1.5" />
+  </Svg>
+);
+export const Eye = () => (
+  <Svg size={16} view={16} stroke={1.5}>
+    <path d="M1.75 8S4 3.75 8 3.75 14.25 8 14.25 8 12 12.25 8 12.25 1.75 8 1.75 8z" />
+    <circle cx="8" cy="8" r="2" />
+  </Svg>
+);
+export const Play = () => (
+  <svg className="icon" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+    <path d="M3.5 2.2v7.6L9.8 6z" fill="currentColor" />
+  </svg>
+);

@@ -10,7 +10,7 @@ import type { Program } from '../../core/rules';
 import { useApp } from '../context';
 import { InferenceBadge } from '../InferenceBadge';
 import { dynamicKey, type CopyKey } from '../i18n';
-import { Alert, Caret, LeaveGlyph, Retry } from '../design/icons';
+import { Alert, Caret, Check, ChevronRight, Close, External, LeaveGlyph, Lock, Retry } from '../design/icons';
 import { Paper, ActionLabel } from '../design/parts';
 import { BlockActions, useWide } from '../design/block';
 import { useConfig } from './config';
@@ -141,113 +141,143 @@ function splitLine(line: string): [string, string] {
 }
 
 /**
- * The step before a request leaves: what it carries on a paper slip and the exact body, in the page;
- * where it goes and the decision (keep or send) in the bottom block, as the screen's main action.
+ * The step before a request leaves: a bottom sheet over the page (narrow) or a modal (wide), with what
+ * the request carries, the exact body on demand, and the decision. Esc or the close button keeps the
+ * request on this device. `publicOnly`: the request carries nothing about the person, so the modal can
+ * show what stays here.
  */
 export function SendPanel({
   plan,
   lines,
   onSend,
   onSkip,
+  publicOnly = false,
 }: {
   plan: PlannedCall;
   lines: readonly string[];
   onSend: () => void;
   onSkip: () => void;
+  publicOnly?: boolean;
 }) {
   const { t } = useApp();
   const heading = useRef<HTMLHeadingElement>(null);
   const id = useId();
   const [showBody, setShowBody] = useState(false);
-  // Wide screens: the step is a modal over the page (Esc keeps the request on this device).
   const wide = useWide();
   const dialog = useRef<HTMLDialogElement>(null);
   useLayoutEffect(() => {
     const d = dialog.current;
-    if (wide && d && !d.open) d.showModal();
-  }, [wide]);
+    if (d && !d.open) d.showModal();
+  }, []);
   useEffect(() => heading.current?.focus(), [wide]);
-  // The modal closes before the page acts on the decision, so focus can move back into the page.
+  // The sheet closes before the page acts on the decision, so focus can move back into the page.
   const decide = (then: () => void) => () => {
     if (dialog.current?.open) dialog.current.close();
     then();
   };
   const cloud = destinationOf(plan) === 'cloud';
-  const panel = (
-    <div className="send-panel" role="group" aria-labelledby={`${id}-title`} data-testid="send-panel" data-task={plan.taskId} data-destination={destinationOf(plan)}>
-      <h3 id={`${id}-title`} ref={heading} tabIndex={-1} className="sheet-label">
-        {t('send.title')}
-      </h3>
-      <p className="small">{cloud ? t('send.leadCloud') : t('send.lead')}</p>
-      <div className="send-slip">
-        <span className="leave-tab">{t('preview.couldLeave')}</span>
-        <Paper>
-          <ul className="send-lines" data-testid="send-lines">
-            {lines.map((line) => {
-              const [label, value] = splitLine(line);
-              return (
-                <li key={line}>
-                  {label && <span className="paper-label">{label}: </span>}
-                  <span className="paper-value">{value}</span>
-                </li>
-              );
-            })}
-            <li>
-              <span className="paper-label">{t('outbound.model', { model: '' }).replace(/[:\s]+$/, '')}: </span>
-              <span className="paper-value">{plan.model}</span>
-            </li>
-          </ul>
-        </Paper>
-      </div>
-      <p className="small">{t('send.notSent')}</p>
-      <p className="small muted-on-block">{t('leaving.network')}</p>
-      <button type="button" className="disclosure" aria-expanded={showBody} aria-controls={`${id}-body`} onClick={() => setShowBody(!showBody)}>
-        <Caret open={showBody} />
-        {t('send.showJson')}
-      </button>
-      {showBody && (
-        <Paper className="payload-slip" id={`${id}-body`}>
-          <pre className="payload" data-testid="send-payload" tabIndex={0} aria-label={t('send.showJson')}>
-            {requestBody(plan)}
-          </pre>
-        </Paper>
-      )}
-      <BlockActions mode="decision">
-        <p className="routing-line">
-          <strong className={`badge ${cloud ? 'badge-cloud' : 'badge-device'}`}>{cloud ? t('badge.cloud') : t('badge.onDevice')}</strong>
-          <span>{t(dynamicKey(`reason.${plan.reason}`))}</span>
-        </p>
-        <div className="decision" data-testid="send-decision">
-          <button type="button" className="outline-button tall" onClick={decide(onSkip)}>
-            {t('send.skip')}
-          </button>
-          <button type="button" className="send-button" onClick={decide(onSend)}>
-            <ActionLabel>{t('send.send')}</ActionLabel>
-            <span className="action-arrow">
-              <LeaveGlyph />
-            </span>
-          </button>
-        </div>
-        {wide && (
-          <p className="key-hint" aria-hidden="true">
-            <kbd className="key">Esc</kbd> {t('keys.keep')}
-          </p>
-        )}
-      </BlockActions>
-    </div>
-  );
-  if (!wide) return panel;
   return (
     <dialog
       ref={dialog}
-      className="sheet send-modal"
+      className={`sheet send-sheet${wide ? ' send-modal' : ''}`}
       aria-labelledby={`${id}-title`}
       onCancel={(e) => {
         e.preventDefault();
         decide(onSkip)();
       }}
     >
-      {panel}
+      <div className="send-panel" role="group" aria-labelledby={`${id}-title`} data-testid="send-panel" data-task={plan.taskId} data-destination={destinationOf(plan)}>
+        <span className="grab" aria-hidden="true" />
+        <div className="send-head">
+          <h3 id={`${id}-title`} ref={heading} tabIndex={-1} className="send-title">
+            {wide ? t('send.beforeLeaves') : t('send.title')}
+          </h3>
+          <button type="button" className="icon-button" aria-label={t('nav.close')} onClick={decide(onSkip)}>
+            <Close />
+          </button>
+        </div>
+        <p className="send-lead">{cloud ? t('send.leadCloud') : t('send.lead')}</p>
+        <div className="send-slip">
+          <p className="leave-tab">
+            <span>{wide && cloud ? t('send.goesCloud') : t('preview.couldLeave')}</span>
+          </p>
+          <Paper>
+            <ul className="send-lines" data-testid="send-lines">
+              {lines.map((line) => {
+                const [label, value] = splitLine(line);
+                return (
+                  <li key={line}>
+                    {label && <span className="paper-label">{label}: </span>}
+                    <span className="paper-value">{value}</span>
+                  </li>
+                );
+              })}
+              <li>
+                <span className="paper-label">{t('outbound.model', { model: '' }).replace(/[:\s]+$/, '')}: </span>
+                <span className="paper-value">{plan.model}</span>
+              </li>
+            </ul>
+          </Paper>
+          <p className="slip-foot">
+            <Check size={14} />
+            {t('send.notSent')}
+          </p>
+        </div>
+        {/* Wide: what stays here, as masked bars (no values), for a request that carries nothing of the person's. */}
+        {wide && publicOnly && (
+          <div className="stays-card" data-testid="stays-card">
+            <p className="stays-head">
+              <span className="dot-ring" aria-hidden="true" />
+              {t('send.staysHere')}
+              <Lock />
+            </p>
+            <ul className="stays-rows">
+              {(['send.stays.answers', 'send.stays.income', 'send.stays.household'] as const).map((key, i) => (
+                <li key={key}>
+                  <span>{t(key)}</span>
+                  <span className="masked" style={{ inlineSize: `${[70, 40, 26][i]}px` }} aria-hidden="true" />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <button type="button" className="disclosure" aria-expanded={showBody} aria-controls={`${id}-body`} onClick={() => setShowBody(!showBody)}>
+          <Caret open={showBody} />
+          {t('send.showJson')}
+        </button>
+        {showBody && (
+          <Paper className="payload-slip" id={`${id}-body`}>
+            <pre className="payload" data-testid="send-payload" tabIndex={0} aria-label={t('send.showJson')}>
+              {requestBody(plan)}
+            </pre>
+          </Paper>
+        )}
+        <BlockActions mode="decision" inline>
+          <p className="routing-line">
+            <strong className={`badge ${cloud ? 'badge-cloud' : 'badge-device'}`}>{cloud ? t('badge.cloud') : t('badge.onDevice')}</strong>
+            <span>{t(dynamicKey(`reason.${plan.reason}`))}</span>
+          </p>
+          <div className="decision" data-testid="send-decision">
+            <button type="button" className="outline-button tall" onClick={decide(onSkip)}>
+              {t('send.skip')}
+            </button>
+            <button type="button" className="send-button" onClick={decide(onSend)}>
+              <ActionLabel>{t('send.send')}</ActionLabel>
+              <span className="action-arrow">
+                <LeaveGlyph />
+              </span>
+            </button>
+          </div>
+          {wide ? (
+            <p className="key-hint" aria-hidden="true">
+              <kbd className="key">Esc</kbd> {t('keys.keep')}
+            </p>
+          ) : (
+            <p className="send-note">{t('send.byteForByte')}</p>
+          )}
+          <p className="send-note">{t('leaving.network')}</p>
+        </BlockActions>
+      </div>
     </dialog>
   );
 }
@@ -357,7 +387,7 @@ export function RequestRegion<T>({
   else if (state.status === 'done') status = t('answers.ready');
   return (
     <div className="request" data-testid={testId} data-status={state.status} aria-busy={state.status === 'loading'}>
-      {state.status === 'confirm' && <SendPanel plan={state.plan} lines={lines} onSend={onSend} onSkip={onSkip} />}
+      {state.status === 'confirm' && <SendPanel plan={state.plan} lines={lines} onSend={onSend} onSkip={onSkip} publicOnly={publicOnly === true} />}
       {state.status === 'loading' && <Loading />}
       <p className={state.status === 'done' || state.status === 'error' ? 'visually-hidden' : 'status-line'} role="status" data-testid="request-status">
         {status}
@@ -544,16 +574,36 @@ export function OfficialInfo({ programs, headingLevel = 2, withCopy = false }: {
   return (
     <section className="official" aria-label={t('official.title')} data-testid="official-info">
       <H>{t('official.title')}</H>
+      {/* On a program's page: how to apply, papers and the office as rows that open the pack's text. */}
       {(copy.apply || copy.documents || copy.office) && (
-        <div className="program-copy" data-testid="program-copy-official">
-          {copy.apply && <p>{copy.apply}</p>}
-          {copy.documents && (
-            <>
-              <p className="small strong">{t('official.docs')}</p>
-              <p>{copy.documents}</p>
-            </>
+        <div className="program-copy info-rows" data-testid="program-copy-official">
+          {copy.apply && (
+            <details className="info-row">
+              <summary>
+                {t('official.howToApply')}
+                <ChevronRight />
+              </summary>
+              <p>{copy.apply}</p>
+            </details>
           )}
-          {copy.office && <p className="strong">{copy.office}</p>}
+          {copy.documents && (
+            <details className="info-row">
+              <summary>
+                {t('official.docs')}
+                <ChevronRight />
+              </summary>
+              <p>{copy.documents}</p>
+            </details>
+          )}
+          {copy.office && (
+            <details className="info-row">
+              <summary>
+                {t('official.office')}
+                <ChevronRight />
+              </summary>
+              <p>{copy.office}</p>
+            </details>
+          )}
         </div>
       )}
       {!any && <p className="small muted">{t('official.none')}</p>}
@@ -565,6 +615,7 @@ export function OfficialInfo({ programs, headingLevel = 2, withCopy = false }: {
               <p>
                 <a className="outline-button" href={apply} target="_blank" rel="noopener noreferrer">
                   {t('official.apply')}
+                  <External />
                 </a>
               </p>
             )}
@@ -576,6 +627,7 @@ export function OfficialInfo({ programs, headingLevel = 2, withCopy = false }: {
                     <li key={s.url}>
                       <a href={s.url} target="_blank" rel="noopener noreferrer">
                         {s.title}
+                        <External />
                       </a>
                       {/* A draft pack's numbers were read on a date; a confirmed source says when it was compared. */}
                       {s.checkedAt ? (

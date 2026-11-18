@@ -31,7 +31,8 @@ test.describe('the person\'s result, and the program explained in general', () =
 
     await explainButton(page).click();
     const panel = page.getByTestId('send-panel');
-    await expect(panel.getByRole('heading', { name: 'Leaving your device' })).toBeFocused();
+    // A bottom sheet on a phone ("Leaving your device"), a modal on wide screens ("Before this leaves").
+    await expect(panel.getByRole('heading', { name: /^(Leaving your device|Before this leaves)$/ })).toBeFocused();
     const lines = page.getByTestId('send-lines');
     await expect(lines).toContainText('Nothing about you. Only the program, its public information and the question.');
     await expect(lines).toContainText('Program: Test Utility Discount');

@@ -50,14 +50,15 @@ function useBlock(): BlockContextValue {
  * Puts a screen's main action into the bottom block. The block carries one main action: when a step
  * opens over the page (the decision before sending), its actions replace the page's until it closes.
  */
-export function BlockActions({ mode = 'standard', children }: { mode?: Exclude<BlockMode, 'compact'>; children: ReactNode }) {
+export function BlockActions({ mode = 'standard', inline = false, children }: { mode?: Exclude<BlockMode, 'compact'>; inline?: boolean; children: ReactNode }) {
   const { slot, register, top } = useBlock();
   const [id] = useState(() => ++nextId);
   const wide = useWide();
+  // `inline`: actions inside a sheet or modal stay there, and the dock keeps the page's own actions.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useLayoutEffect(() => register(id, mode), [mode]);
+  useLayoutEffect(() => (inline ? undefined : register(id, mode)), [mode, inline]);
   // Wide screens: the actions stay where the screen declares them, in the content.
-  if (wide) {
+  if (wide || inline) {
     return (
       <div className={`screen-actions block-${mode}`} data-testid="screen-actions">
         {children}

@@ -15,13 +15,21 @@ import { LOCALES, LOCALE_NAMES, isLocale, type Locale } from '../i18n';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { BlockActions } from '../design/block';
-import { Alert, ArrowRight, Camera, ChevronLeft, Clipboard, Doc, Keyboard } from '../design/icons';
+import { Alert, ArrowRight, Camera, ChevronLeft, ChevronRight, Clipboard, Doc } from '../design/icons';
 import { ActionLabel } from '../design/parts';
 import { Loading } from '../answers/parts';
 import { ModelStatus } from '../doc/ModelStatus';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { useDocument, type SourceKind } from '../doc/state';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
+
+type SampleButton = { key: string; lang: 'en' | 'ko'; as: 'text' | 'pdf'; label: 'doc.sample.enText' | 'doc.sample.enPdf' | 'doc.sample.koText' | 'doc.sample.koPdf' };
+const SAMPLE_BUTTONS: readonly SampleButton[] = [
+  { key: 'en-text', lang: 'en', as: 'text', label: 'doc.sample.enText' },
+  { key: 'en-pdf', lang: 'en', as: 'pdf', label: 'doc.sample.enPdf' },
+  { key: 'ko-text', lang: 'ko', as: 'text', label: 'doc.sample.koText' },
+  { key: 'ko-pdf', lang: 'ko', as: 'pdf', label: 'doc.sample.koPdf' },
+];
 
 const SAMPLES = {
   en: { text: enSampleText, pdf: '/samples/paystub-en-01.pdf', language: 'en' },
@@ -96,6 +104,8 @@ export function DocumentAddScreen() {
   };
 
   const [pasteOpen, setPasteOpen] = useState(false);
+  // The sample in the document's language (a Korean payslip for Korean, otherwise the English paystub).
+  const main = SAMPLE_BUTTONS.find((b) => b.lang === (doc.language === 'ko' ? 'ko' : 'en') && b.as === 'text') ?? (SAMPLE_BUTTONS[0] as SampleButton);
 
   return (
     <div className="screen doc-add">
@@ -110,7 +120,7 @@ export function DocumentAddScreen() {
         <p className="lead">{t('doc.lead')}</p>
       </div>
 
-      <div className="field">
+      <div className="field field-inline">
         <label htmlFor={languageId}>{t('doc.language')}</label>
         <select
           id={languageId}
@@ -126,13 +136,13 @@ export function DocumentAddScreen() {
         </select>
       </div>
 
-      <ModelStatus language={doc.language} />
-
       {busy && <Loading />}
       <div role="status" className="status-line">
         {busy}
       </div>
 
+      {/* The four ways in, as one list: a row each, the file pickers cover their row. */}
+      <div className="source-list">
       <section
         className={`source-card${photoStatus === 'available' ? '' : ' unavailable'}`}
         aria-labelledby="opt-photo"
@@ -168,6 +178,7 @@ export function DocumentAddScreen() {
           )}
           {photoError && <TaskErrorNotice error={photoError} />}
         </div>
+        {photoStatus === 'available' && <ChevronRight />}
       </section>
 
       <section className="source-card" aria-labelledby="opt-pdf">
@@ -198,6 +209,7 @@ export function DocumentAddScreen() {
             </p>
           )}
         </div>
+        <ChevronRight />
       </section>
 
       <section className="source-card" aria-labelledby="opt-paste">
@@ -226,53 +238,56 @@ export function DocumentAddScreen() {
         </div>
       </section>
 
-      <section className="source-card" aria-labelledby="opt-manual">
-        <span className="source-icon">
-          <Keyboard />
+      <button
+        type="button"
+        className="source-card source-button"
+        onClick={() => {
+          reset(true);
+          update({ sourceKind: 'manual' });
+          navigate({ name: 'doc-review' });
+        }}
+      >
+        <span className="source-icon source-icon-mono" aria-hidden="true">
+          123
         </span>
-        <div className="source-text">
-          <h2 id="opt-manual" className="source-title">
-            {t('doc.manual')}
-          </h2>
-          <button
-            type="button"
-            className="outline-button"
-            onClick={() => {
-              reset(true);
-              update({ sourceKind: 'manual' });
-              navigate({ name: 'doc-review' });
-            }}
-          >
-            {t('doc.manual')}
-          </button>
+        <span className="source-text">
+          <span className="source-title">{t('doc.manual')}</span>
+        </span>
+        <ChevronRight />
+      </button>
+      </div>
+
+      <ModelStatus language={doc.language} />
+
+      {/* The other samples, behind one row; the one for the document's language is the main action. */}
+      <details className="more-samples" data-testid="more-samples">
+        <summary>
+          <span className="source-icon" aria-hidden="true">
+            <Doc />
+          </span>
+          <span className="source-text">
+            <span className="source-title">{t('doc.moreSamples')}</span>
+            <span className="small muted">{t('doc.samples.help')}</span>
+          </span>
+          <ChevronRight />
+        </summary>
+        <div className="sample-grid">
+          {SAMPLE_BUTTONS.filter((b) => b.key !== main.key).map((b) => (
+            <button key={b.key} type="button" className="outline-button" disabled={busy !== null} onClick={() => void sample(b.lang, b.as)}>
+              {t(b.label)}
+            </button>
+          ))}
         </div>
-      </section>
+      </details>
 
       <BlockActions>
-        <section className="samples" aria-labelledby="opt-samples">
-          <h2 id="opt-samples" className="block-title">
-            {t('doc.samples')}
-          </h2>
-          <p className="block-note left">{t('doc.samples.help')}</p>
-          {/* The screen's main action: the quickest way to see a silhouette made. */}
-          <button type="button" className="action" disabled={busy !== null} onClick={() => void sample('en', 'text')}>
-            <ActionLabel>{t('doc.sample.enText')}</ActionLabel>
-            <span className="action-arrow">
-              <ArrowRight />
-            </span>
-          </button>
-          <div className="sample-grid">
-            <button type="button" className="outline-button on-block" disabled={busy !== null} onClick={() => void sample('en', 'pdf')}>
-              {t('doc.sample.enPdf')}
-            </button>
-            <button type="button" className="outline-button on-block" disabled={busy !== null} onClick={() => void sample('ko', 'text')}>
-              {t('doc.sample.koText')}
-            </button>
-            <button type="button" className="outline-button on-block" disabled={busy !== null} onClick={() => void sample('ko', 'pdf')}>
-              {t('doc.sample.koPdf')}
-            </button>
-          </div>
-        </section>
+        {/* The screen's main action: the quickest way to see a silhouette made. */}
+        <button type="button" className="action" disabled={busy !== null} onClick={() => void sample(main.lang, main.as)}>
+          <ActionLabel>{t(main.label)}</ActionLabel>
+          <span className="action-arrow">
+            <ArrowRight />
+          </span>
+        </button>
       </BlockActions>
     </div>
   );

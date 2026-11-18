@@ -270,13 +270,11 @@ for (const width of [320, 768, 808, 1024, 1280, 1440] as const) {
         await page.keyboard.press('Escape');
         await page.getByRole('button', { name: lang === 'es' ? 'Explicar este programa' : 'Explain this program' }).click();
         await shot(page, `45-${width}-${lang}-send-step`, theme, false);
-        // Wide screens show the step as a modal: send, so the record has something in it.
-        if (width >= 808) {
-          await page.getByTestId('send-decision').getByRole('button', { name: lang === 'es' ? 'Enviar' : 'Send' }).click();
-          await page.getByTestId('answer').first().waitFor();
-          await page.getByTestId('bottom-block').getByRole('button', { name: /^(Details|Detalles)$/ }).click();
-          await page.getByTestId('record-sheet').getByText(/Show exactly what was sent|Ver exactamente lo que se envió/).first().click();
-        } else await page.getByTestId('bottom-block').getByRole('button', { name: /^(Details|Detalles)$/ }).click();
+        // The step is a sheet (a modal on wide screens): send, so the record has something in it.
+        await page.getByTestId('send-decision').getByRole('button', { name: lang === 'es' ? 'Enviar' : 'Send' }).click();
+        await page.getByTestId('answer').first().waitFor();
+        await page.getByTestId('bottom-block').getByRole('button', { name: /^(Details|Detalles)$/ }).click();
+        if (width >= 808) await page.getByTestId('record-sheet').getByText(/Show exactly what was sent|Ver exactamente lo que se envió/).first().click();
         await shot(page, `46-${width}-${lang}-record`, theme, false);
       });
     }
@@ -413,6 +411,9 @@ for (const size of [
     await page.goto('/#/device-check');
     await page.getByTestId('no-model').waitFor();
     await view(page, `${p}-device-check`);
+    await page.goto('/#/tasks');
+    await page.getByTestId('tasks').waitFor();
+    await view(page, `${p}-tasks`);
   });
 
   test(`compare, ${size.prefix}: add a paystub, the silhouette, the review`, async ({ page, context }) => {

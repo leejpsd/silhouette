@@ -13,11 +13,14 @@ import { useDocument } from './doc/state';
 import { Count, Paper, Sheet, ActionLabel } from './design/parts';
 import { Caret, Check, CrossCircle, Phone, Trash } from './design/icons';
 import { useWide } from './design/block';
+import { useLastReading } from './doc/last-reading';
 
 const SHORT_NAMES: Record<Locale, string> = { en: 'EN', es: 'ES', ko: '한국어' };
 
 /** Opens the record of what left this device (the "Leaving your device" sheet) from anywhere. */
 export const OPEN_RECORD_EVENT = 'silhouette:open-record';
+/** Opens the draft-rules (or demo-rules) sheet from the rail. */
+export const OPEN_RULES_EVENT = 'silhouette:open-rules';
 
 export function Header({ onLocale }: { onLocale: (locale: Locale) => void }) {
   const { t, locale } = useApp();
@@ -81,6 +84,11 @@ export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
   const more = useRef<HTMLButtonElement>(null);
   const headline = useId();
   const draft = !isDemoPack(PACK) && isDraftPack();
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener(OPEN_RULES_EVENT, show);
+    return () => window.removeEventListener(OPEN_RULES_EVENT, show);
+  }, []);
   const date = SOURCES_READ_ON ? packDate(locale, SOURCES_READ_ON) : '';
   const title = draft ? t('pack.draft.title') : t('demo.title');
   return (
@@ -129,6 +137,11 @@ export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
           <li>
             <a className="text-link" href={routeHref({ name: 'device-check' })} onClick={() => setOpen(false)}>
               {t('demo.deviceCheck')}
+            </a>
+          </li>
+          <li>
+            <a className="text-link" href={routeHref({ name: 'tasks' })} onClick={() => setOpen(false)}>
+              {t('judges.tasks')}
             </a>
           </li>
         </ul>
@@ -182,6 +195,11 @@ export function RailSteps({ route }: { route: Route }) {
         <a className="text-link inline" href={routeHref({ name: 'judges' })}>
           {t('rail.judges')}
         </a>
+        {(isDemoPack(PACK) || isDraftPack()) && (
+          <button type="button" className="text-link inline" aria-haspopup="dialog" onClick={() => window.dispatchEvent(new Event(OPEN_RULES_EVENT))}>
+            {isDemoPack(PACK) ? t('rail.demoRules') : t('rail.draftRules')}
+          </button>
+        )}
       </p>
       <nav aria-label={t('rail.steps')}>
         <ol className="rail-steps">
@@ -299,6 +317,13 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   // Wide screens: the record fills the content area, with the open request beside the list.
   const wide = useWide();
   const [shown, setShown] = useState<string | null>(null);
+  // Wide: opening the record shows the latest request that carried a body beside the list.
+  useEffect(() => {
+    if (!open || !wide) return;
+    const latest = [...entries].reverse().find((e) => e.body !== undefined);
+    setShown((current) => current ?? latest?.id ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, wide]);
   useEffect(() => {
     const show = () => setOpen(true);
     window.addEventListener(OPEN_RECORD_EVENT, show);
@@ -350,9 +375,6 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
           )}
           {entries.length === 0 && clearedAt !== null && <p className="record-deleted">{t('leaving.recordDeleted', { date: shortDate })}</p>}
           {entries.length > 0 ? <p>{t('leaving.bodySent')}</p> : clearedAt !== null ? <p>{t('leaving.cleared', { date })}</p> : <p>{t('leaving.body')}</p>}
-          {left.length > 0 && !carriesProfile && <p>{t('leaving.noValues')}</p>}
-          {entries.length > 0 && clearedAt !== null && <p className="record-note">{t('leaving.cleared', { date })}</p>}
-          <p className="record-note">{t('leaving.network')}</p>
           {entries.length > 0 && (
             <ol className="outbound-list" data-testid="outbound-list">
               {entries.map((e) => (
@@ -362,7 +384,7 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
                   title={e.fields.map(fieldName).join(', ')}
                   status={statusLine(e)}
                   at={time(locale, e.at)}
-                  {...(wide ? { open: shown === e.id, onToggle: () => setShown(shown === e.id ? null : e.id) } : {})}
+                  {...(wide ? { open: shown === e.id, onToggle: () => setShown(e.id) } : {})}
                 />
               ))}
             </ol>
@@ -373,6 +395,9 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
               <span>{t('record.pick')}</span>
             </p>
           )}
+          {left.length > 0 && !carriesProfile && <p className="record-note">{t('leaving.noValues')}</p>}
+          {entries.length > 0 && clearedAt !== null && <p className="record-note">{t('leaving.cleared', { date })}</p>}
+          <p className="record-note">{t('leaving.network')}</p>
           {entries.some((e) => e.channel === 'recaptcha') && (
             <p className="record-note" data-testid="recaptcha-note">
               {t('leaving.recaptchaNote')}
@@ -399,45 +424,71 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   );
 }
 
+/**
+ * One row of the leaving label: the time, what it carried and its status; where it went, the model and
+ * the exact request open under "Show exactly what was sent" (on wide screens, beside the list).
+ */
 function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: OutboundEntry; title: string; status: string; at: string; open?: boolean; onToggle?: () => void }) {
   const { t } = useApp();
   const [own, setOwn] = useState(false);
   const show = open ?? own;
   const setShow = (next: boolean) => (onToggle ? onToggle() : setOwn(next));
   const body = useId();
+  const reading = useLastReading();
+  const [copied, setCopied] = useState(false);
+  const isReading = e.fields.includes('document-silhouette') && e.status === 'sent';
   return (
-    <li data-channel={e.channel} data-status={e.status}>
+    <li data-channel={e.channel} data-status={e.status} data-open={show}>
       <span className="outbound-time">{at}</span>
-      <div className="outbound-main">
-        <span className="outbound-what">{title}</span>
-        {e.status !== 'answered' && <span className="outbound-where">{t('outbound.requestTo', { destination: e.destination, path: e.path })}</span>}
-        {e.model && <span className="outbound-where">{t('outbound.model', { model: e.model })}</span>}
-        {e.body !== undefined && (
-          <>
-            <button type="button" className="disclosure" aria-expanded={show} aria-controls={body} onClick={() => setShow(!show)}>
-              <Caret open={show} />
-              {t('outbound.showPayload')}
-            </button>
-            {show && (
-              <Paper className="payload-slip" id={body}>
-                <p className="payload-head" aria-hidden="true">
-                  <strong>{t('record.exactlySent')}</strong>
-                  <span>
-                    {at} · {title}
-                  </span>
-                </p>
-                <pre className="payload" data-testid="outbound-payload" tabIndex={0} aria-label={t('outbound.showPayload')}>
-                  {e.body}
-                </pre>
-              </Paper>
-            )}
-          </>
-        )}
-      </div>
+      <span className="outbound-what">{title}</span>
       <span className={`outbound-status status-${e.status}`} data-testid="outbound-status">
-        {e.status === 'answered' ? <Phone /> : e.status === 'attempted' ? <span className="marker marker-loading" aria-hidden="true" /> : e.status === 'sent' ? <Check size={14} /> : <CrossCircle />}
+        {e.status === 'answered' ? <Phone size={12} /> : e.status === 'attempted' ? <span className="spinner" aria-hidden="true" /> : e.status === 'sent' ? null : <CrossCircle />}
         <span>{status}</span>
       </span>
+      {e.status !== 'answered' && (
+        <div className="outbound-main">
+          <button type="button" className="disclosure" aria-expanded={show} aria-controls={body} onClick={() => setShow(!show)}>
+            <Caret open={show} />
+            {e.body !== undefined ? t('outbound.showPayload') : t('send.showRequest')}
+          </button>
+          <div className="outbound-details" hidden={!show}>
+            <span className="outbound-where">{t('outbound.requestTo', { destination: e.destination, path: e.path })}</span>
+            {e.model && <span className="outbound-where">{t('outbound.model', { model: e.model })}</span>}
+          </div>
+          {show && e.body !== undefined && (
+            <Paper className="payload-slip" id={body}>
+              <div className="payload-head">
+                <p>
+                  <strong>{t('record.exactlySent')}</strong>
+                  <span>
+                    {at} · {title} · {t('record.bytes', { count: e.bytes })}
+                  </span>
+                </p>
+                {e.channel === 'ai-cloud' && <strong className="badge badge-cloud">{t('badge.cloud')}</strong>}
+                <button
+                  type="button"
+                  className="copy-button"
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(e.body ?? '').then(() => setCopied(true), () => undefined);
+                  }}
+                >
+                  {copied ? t('record.copied') : t('record.copy')}
+                </button>
+              </div>
+              <pre className="payload" data-testid="outbound-payload" tabIndex={0} aria-label={t('outbound.showPayload')}>
+                {e.body}
+              </pre>
+              {isReading && reading && (
+                <div className="answer-received" data-testid="answer-received">
+                  <strong>{t('record.answerReceived')}</strong>
+                  <code>{JSON.stringify(reading.ids)}</code>
+                  <span>{t('record.answerNote')}</span>
+                </div>
+              )}
+            </Paper>
+          )}
+        </div>
+      )}
     </li>
   );
 }

@@ -1,6 +1,6 @@
 // Start screen: the promise as a picture (what stays on this device, what could leave), and the way in.
 import { useApp } from '../context';
-import { dynamicKey, formatMoney } from '../i18n';
+import { formatMoney } from '../i18n';
 import { BANDS } from '../pack';
 import { bandLabel } from './Question';
 import { firstOpenStep } from '../quickcheck';
@@ -8,7 +8,7 @@ import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import type { ReactNode } from 'react';
 import { BlockActions } from '../design/block';
-import { ArrowRight } from '../design/icons';
+import { ArrowRight, Clock, Eye, Phone } from '../design/icons';
 import { Bar, ActionLabel } from '../design/parts';
 
 /** The example paystub's yearly income (invented). */
@@ -31,6 +31,7 @@ export function StartScreen({ notice }: { notice: string | null }) {
           <span className="example-side">
             <span className="dot dot-ink" />
             {t('preview.onPhone')}
+            <ArrowRight />
           </span>
           <span className="example-side">
             <span className="dot dot-leave" />
@@ -51,13 +52,8 @@ export function StartScreen({ notice }: { notice: string | null }) {
         <Row label={t('review.annualTitle')} value={formatMoney(locale, EXAMPLE_INCOME)}>
           <span className="paper-value">{exampleBand}</span>
         </Row>
-        <Row label={t(dynamicKey('variable.householdSize'))} value="3">
-          <span className="paper-value">3</span>
-        </Row>
       </div>
-      <figcaption className="example-note">
-        <span className="example-tag">{t('start.example')}</span>
-      </figcaption>
+      <figcaption className="example-note">{t('start.exampleNote')}</figcaption>
     </figure>
   );
 
@@ -78,9 +74,11 @@ export function StartScreen({ notice }: { notice: string | null }) {
           <ScreenHeading size={54} wideSize={104} maxLines={4}>
             {t('start.title')}
           </ScreenHeading>
-          <p className="lead">{t('start.lead')}</p>
-          <p className="start-promise" data-testid="start-promise">
-            {t('start.promise')}
+          <p className="lead">
+            {t('start.leadShort')}{' '}
+            <span className="start-promise" data-testid="start-promise">
+              {t('start.promiseShort')}
+            </span>
           </p>
         </div>
         <BlockActions>
@@ -107,10 +105,25 @@ export function StartScreen({ notice }: { notice: string | null }) {
             </button>
           )}
         </div>
-        <p className="block-note">{t('promise.line3')}</p>
         </BlockActions>
+        {/* What the Quick Check is, in three facts (wide screens show them under the way in). */}
+        <ul className="start-facts">
+          <li>
+            <Clock />
+            {t('start.factQuestions', { count: steps.length })}
+          </li>
+          <li>
+            <Phone size={16} />
+            {t('start.factRules')}
+          </li>
+          <li>
+            <Eye />
+            {t('start.factRequests')}
+          </li>
+        </ul>
       </div>
       {example}
+      <p className="legal-note">{t('promise.line3')}</p>
     </div>
   );
 }

@@ -120,7 +120,7 @@ test.describe('documents', () => {
     await expect(page.getByTestId('annual-income')).toHaveText(/^\$[\d,]+$/);
   });
 
-  test('preview: long lines wrap inside the paper, and both views place every placeholder alike', async ({ page, context }) => {
+  test('preview: long lines wrap inside the card on a phone, chips are compact, and both views show the same placeholders', async ({ page, context }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await noOnDeviceModel(context);
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -129,20 +129,25 @@ test.describe('documents', () => {
     const doc = page.getByTestId('skeleton-preview');
     await expect(doc).toHaveAttribute('data-mode', 'leave');
     expect(await doc.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
-    const places = () => doc.locator('.tok').evaluateAll((els) => els.map((e) => {
-      const r = e.getBoundingClientRect();
-      return [Math.round(r.left), Math.round(r.top), Math.round(r.width)];
-    }));
-    const leave = await places();
+    // A chip is as wide as its id (N12), never stretched to the width of the value it hides.
+    const chips = await doc.locator('.tok').evaluateAll((els) => els.map((e) => [e.textContent ?? '', e.getBoundingClientRect().width] as const));
+    for (const [id, width] of chips) expect(width, id).toBeLessThan(id.length * 9 + 16);
     await page.getByRole('button', { name: 'On this phone' }).click();
     await expect(doc).toHaveAttribute('data-mode', 'phone');
-    // The paper turns slightly between the two views, so compare positions with the turn undone.
-    await doc.evaluate((el) => (el.style.transform = 'none'));
-    const phone = await places();
-    await page.getByRole('button', { name: 'What could leave' }).click();
-    await doc.evaluate((el) => (el.style.transform = 'none'));
-    expect(phone).toEqual(await places());
-    expect(leave.length).toBe(phone.length);
+    expect(await doc.locator('.tok').count()).toBe(chips.length);
+  });
+
+  test('wide screens: the two documents stand side by side and no line of them breaks', async ({ page, context }, testInfo) => {
+    test.skip(testInfo.project.name === 'phone', 'a wide layout');
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await noOnDeviceModel(context);
+    await page.goto('/#/doc');
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    const docs = page.locator('.preview-pair .doc');
+    await expect(docs).toHaveCount(2);
+    const [a, b] = [(await docs.nth(0).boundingBox())!, (await docs.nth(1).boundingBox())!];
+    expect(Math.abs(a.y - b.y)).toBeLessThan(2);
+    for (let i = 0; i < 2; i++) expect(await docs.nth(i).evaluate((el) => getComputedStyle(el).whiteSpace)).toBe('pre');
   });
 
   test('an answer written on this device is recorded as kept: no host, no body, not counted as sent', async ({ page, context }) => {

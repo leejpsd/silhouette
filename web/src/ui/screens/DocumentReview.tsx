@@ -15,7 +15,7 @@ import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
 import { emptyDocument, useDocument } from '../doc/state';
 import { BlockActions } from '../design/block';
-import { Alert, ArrowRight, Caret, Check, ChevronLeft } from '../design/icons';
+import { Alert, ArrowRight, Check, ChevronLeft, ChevronRight } from '../design/icons';
 import { Marker, Paper, ActionLabel } from '../design/parts';
 import { computeVerdicts } from '../quickcheck';
 import { BANDS } from '../pack';
@@ -179,6 +179,8 @@ export function DocumentReviewScreen() {
   const [rows, setRows] = useState<Row[]>(initial.rows);
   const [deductions, setDeductions] = useState<DeductionRow[]>(initial.deductions);
   const [editing, setEditing] = useState<string | null>(null);
+  // Rows opened to show where the value was found and Change.
+  const [opened, setOpened] = useState<readonly string[]>([]);
   const [draft, setDraft] = useState('');
   const [invalid, setInvalid] = useState<'q.error.amountDecimals' | 'review.invalidNumber' | null>(null);
   const [deductionProblem, setDeductionProblem] = useState<{ index: number; key: 'q.error.amountDecimals' | 'review.invalidNumber' } | null>(null);
@@ -267,16 +269,41 @@ export function DocumentReviewScreen() {
       // A found value is shown as the document writes it (its currency is the document's).
       return row.text;
     };
+    const open = opened.includes(row.name);
+    const detailId = `${inputId}-detail`;
     return (
-      <li key={row.name} className={`field-row status-${row.status}`} data-testid={`field-${row.name}`} data-status={row.status}>
-        <div className="field-head">
-          <span className="field-label" id={`${inputId}-label`}>
-            {label(row.name)}
-          </span>
-          {row.status === 'confirmed' && <span className="confirmed">{t('review.confirmed')}</span>}
+      <li key={row.name} className={`field-row status-${row.status}`} data-testid={`field-${row.name}`} data-status={row.status} data-open={open || isEditing}>
+        {/* A compact row: the label and the value in mono (opening it shows the source and Change),
+            then the state: an empty ring to confirm, an ink check once confirmed. */}
+        <div className="field-line">
+          <button
+            type="button"
+            className="field-toggle"
+            aria-expanded={open || isEditing}
+            aria-controls={detailId}
+            onClick={() => setOpened((o) => (o.includes(row.name) ? o.filter((n) => n !== row.name) : [...o, row.name]))}
+          >
+            <span className="field-label" id={`${inputId}-label`}>
+              {label(row.name)}
+            </span>
+            <span className="field-value" data-testid={`value-${row.name}`}>
+              {shownValue()}
+            </span>
+          </button>
+          {row.status === 'pending' ? (
+            <button type="button" className="state-mark" aria-label={`${t('review.confirm')}: ${label(row.name)}`} onClick={() => setRow(row.name, { status: 'confirmed' })}>
+              <span className="state-ring" aria-hidden="true" />
+            </button>
+          ) : row.status === 'confirmed' ? (
+            <span className="state-mark done" role="img" aria-label={t('review.confirmed')}>
+              <Check size={18} />
+            </span>
+          ) : (
+            <span className="state-mark" aria-hidden="true" />
+          )}
         </div>
         {isEditing ? (
-          <div className="field-edit">
+          <div className="field-edit" id={detailId}>
             {row.kind === 'enum' ? (
               <select id={inputId} className="input" aria-labelledby={`${inputId}-label`} value={draft} onChange={(e) => setDraft(e.target.value)}>
                 <option value="">{t('option.none')}</option>
@@ -326,25 +353,9 @@ export function DocumentReviewScreen() {
             </div>
           </div>
         ) : (
-          <>
-            <div className="field-body">
+          open && (
+            <div className="field-detail-row" id={detailId}>
               <Source lines={row.source} t={t} />
-              <p className="field-value" data-testid={`value-${row.name}`}>
-                {shownValue()}
-                {row.status === 'confirmed' && <Check size={20} />}
-              </p>
-            </div>
-            <div className="button-row compact">
-              {row.status === 'pending' && (
-                <button
-                  type="button"
-                  className="outline-button small"
-                  aria-label={`${t('review.confirm')}: ${label(row.name)}`}
-                  onClick={() => setRow(row.name, { status: 'confirmed' })}
-                >
-                  {t('review.confirm')}
-                </button>
-              )}
               <button
                 type="button"
                 className="text-link"
@@ -358,7 +369,7 @@ export function DocumentReviewScreen() {
                 {t('review.edit')}
               </button>
             </div>
-          </>
+          )
         )}
       </li>
     );
@@ -535,9 +546,35 @@ export function DocumentReviewScreen() {
         </div>
       )}
 
-      <ul className="fields" data-testid="lead-fields">
-        {leadRows.map(fieldItem)}
-      </ul>
+      {/* One list: the values that decide the result, then "More values" as its last row. */}
+      <div className="fields-card">
+        <ul className="fields" data-testid="lead-fields">
+          {leadRows.map(fieldItem)}
+        </ul>
+
+        <div className="more-values">
+          <button
+            ref={moreButton}
+            type="button"
+            className="disclosure more-values-button"
+            aria-expanded={moreOpen}
+            aria-controls={moreId}
+            data-testid="more-values"
+            onClick={() => {
+              setMoreOpen(!moreOpen);
+              setMoreSeen(true);
+            }}
+          >
+            {t('review.moreValues', { count: restRows.length + deductions.length })}
+            <ChevronRight />
+          </button>
+          <div id={moreId} hidden={!moreOpen}>
+            <ul className="fields">{restRows.map(fieldItem)}</ul>
+            {deductionsSection}
+          </div>
+        </div>
+
+      </div>
 
       {result && (
         <section className="validation" aria-labelledby="checks-title" data-testid="validation">
@@ -581,28 +618,6 @@ export function DocumentReviewScreen() {
           </ul>
         </section>
       )}
-
-      <div className="more-values">
-        <button
-          ref={moreButton}
-          type="button"
-          className="disclosure more-values-button"
-          aria-expanded={moreOpen}
-          aria-controls={moreId}
-          data-testid="more-values"
-          onClick={() => {
-            setMoreOpen(!moreOpen);
-            setMoreSeen(true);
-          }}
-        >
-          <Caret open={moreOpen} />
-          {t('review.moreValues', { count: restRows.length + deductions.length })}
-        </button>
-        <div id={moreId} hidden={!moreOpen}>
-          <ul className="fields">{restRows.map(fieldItem)}</ul>
-          {deductionsSection}
-        </div>
-      </div>
 
       <BlockActions>
         {annual ? (

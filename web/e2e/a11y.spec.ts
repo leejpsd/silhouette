@@ -71,6 +71,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.getByRole('button', { name: 'Send', exact: true }).click();
     await page.getByTestId('inference-badge').waitFor();
     await scan('review');
+    await page.getByTestId('field-grossPay').locator('.field-toggle').click();
+
     await page.getByRole('button', { name: 'Change: Gross pay this period' }).click();
     await scan('review, editing a field');
     await page.getByRole('button', { name: 'Cancel' }).click();

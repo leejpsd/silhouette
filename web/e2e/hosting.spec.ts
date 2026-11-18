@@ -26,6 +26,7 @@ test('the hosting content security policy allows everything the app does, and no
   await page.goto('/');
   await completeQuickCheck(page);
   await page.goto('/#/doc');
+  await page.getByTestId('more-samples').locator('summary').click();
   await page.getByRole('button', { name: 'English paystub (PDF)' }).click();
   await page.getByTestId('skeleton-preview').waitFor();
   await page.getByRole('button', { name: 'Send', exact: true }).click();

@@ -128,33 +128,46 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
         </h2>
         <strong className="badge badge-none">{t('badge.noModel')}</strong>
       </div>
-      <p className="small muted">{t('why.lead')}</p>
       <ul className="criteria">
         {rows.map((row) => (
           <li key={row.id} className={`criterion state-${row.state}`} data-state={row.state} data-testid={`why-${row.id}`}>
-            <p className="criterion-label">{row.label}</p>
-            {row.limits.length > 0 ? (
-              row.limits.map((l) => (
-                <dl key={l.limit} className="limit-rows" data-testid="why-limit">
-                  <div>
-                    <dt>{t('detail.limit')}</dt>
-                    <dd>{l.limit}</dd>
-                  </div>
-                  <div>
-                    <dt>{t('detail.you')}</dt>
-                    <dd>
-                      {l.yours}
-                      <StateIcon state={row.state} />
-                    </dd>
-                  </div>
-                </dl>
-              ))
-            ) : (
-              <p className="criterion-state">
-                <span>{row.stateText}</span>
-                <StateIcon state={row.state} />
-              </p>
-            )}
+            <div className="criterion-row">
+              <p className="criterion-label">{row.label}</p>
+              {row.limits.length === 0 && (
+                <p className="criterion-state">
+                  <StateIcon state={row.state} />
+                  <span>{row.stateText}</span>
+                </p>
+              )}
+            </div>
+            {row.limits.map((l) => {
+              // A bar only where the person's value is one number (a range has no position on it).
+              const amount = (v: string) => (/[–—]|\bto\b|\ba\b/.test(v) ? null : Number(v.replace(/[^0-9.]/g, '')) || null);
+              const yours = amount(l.yours);
+              const limit = amount(l.limit);
+              return (
+                <div key={l.limit} className="limit-line">
+                  <dl className="limit-rows" data-testid="why-limit">
+                    <div>
+                      <dt className="visually-hidden">{t('detail.limit')}</dt>
+                      <dd className="limit-of">{l.limit}</dd>
+                    </div>
+                    <div>
+                      <dt className="visually-hidden">{t('detail.you')}</dt>
+                      <dd>
+                        <StateIcon state={row.state} />
+                        {l.yours}
+                      </dd>
+                    </div>
+                  </dl>
+                  {yours !== null && limit !== null && (
+                    <span className="limit-bar" aria-hidden="true">
+                      <span style={{ inlineSize: `${Math.min(100, (yours / limit) * 100)}%` }} />
+                    </span>
+                  )}
+                </div>
+              );
+            })}
             {row.limits.length > 0 &&
               (row.stateText === t(dynamicKey(`state.${row.state}`)) ? (
                 <p className="visually-hidden">{row.stateText}</p>
@@ -169,6 +182,7 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
           </li>
         ))}
       </ul>
+      <p className="card-note">{t('why.lead')}</p>
       {device === 'available' ? (
         <>
           {(personal.status === 'idle' || personal.status === 'error') && (
@@ -189,7 +203,7 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
           )}
         </>
       ) : device === 'checking' ? null : (
-        <p className="dashed-note" data-testid="why-unavailable">
+        <p className="card-note" data-testid="why-unavailable">
           {t('why.unavailable')}
         </p>
       )}
@@ -226,9 +240,6 @@ function AboutSection({ input, program, programName: name }: { input: ExplainInp
           {copy.renewal && <p className="small">{copy.renewal}</p>}
         </div>
       )}
-      <p className="small muted" data-testid="about-lead">
-        {t('about.leadPublic')}
-      </p>
       {/* The page's main action, in the block: explain the program; once asked, back to the results. */}
       <BlockActions>
         {again(short.state.status) ? (
@@ -286,6 +297,9 @@ function AboutSection({ input, program, programName: name }: { input: ExplainInp
           <ChipQuestion key={chip.id} chipId={chip.id} question={t(chip.key)} input={input} programName={name} />
         ))}
       </ul>
+      <p className="card-note" data-testid="about-lead">
+        {t('about.leadPublic')}
+      </p>
     </section>
   );
 }
