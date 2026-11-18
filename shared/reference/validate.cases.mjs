@@ -27,7 +27,8 @@ export const cases = [
   { id: 'net-sum-skipped-without-net', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 1000 })] },
   // ---- rate-hours ----
   { id: 'rate-hours-ok', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 740, hourlyRate: 18.5, hoursWorked: 40 })] },
-  { id: 'rate-hours-overtime-warn', jurisdiction: 'us-ca', stubs: [stub()] },
+  { id: 'rate-hours-overtime-ok', jurisdiction: 'us-ca', stubs: [stub()] },
+  { id: 'rate-hours-above-gross-warn', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 740, hourlyRate: 18.5, hoursWorked: 45 })] },
   { id: 'rate-hours-exactly-1pct-ok', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 1000, hourlyRate: 25, hoursWorked: 40.4 })] },
   { id: 'rate-hours-skipped-salaried', jurisdiction: 'us-ca', stubs: [bare({ grossPay: 3000, payFrequency: 'monthly' })] },
   // ---- period-length ----

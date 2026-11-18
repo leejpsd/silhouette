@@ -1,5 +1,17 @@
 # Contract changelog
 
+## v1.25 — 2026-11-19
+
+The app's own sample paystub no longer raises a warning.
+
+| Change | Why |
+|---|---|
+| **`rate-hours` check** (`validation/SPEC.md` section 4): `ok` when rate × hours is not more than 1 % above gross pay. It may be less, because overtime and other earnings add to the regular pay. Before, any difference over 1 % was a warning. Fixture `fixtures/conformance/validate.json`: case `rate-hours-overtime-warn` is now `rate-hours-overtime-ok`, and `rate-hours-above-gross-warn` is new | Every paystub with overtime, the bundled sample among them, showed "Please check" on a correct reading; on the review three correct values were flagged |
+| `check.rate-hours` reads "Rate × hours is not more than gross pay (overtime and other pay add to it)" | The sentence says what is checked |
+| `deviceCheck.headline.onRecordingDevice` ("cases answered on the device that made this recording") | A recording shown on another device said "answered on this device" |
+
+Platforms: port the one-line rule and run the validate fixture; a recording's headline uses the new key. Reference tests: 30.
+
 ## v1.24 — 2026-11-19
 
 Words for what a mid-term review of the main path asked for.

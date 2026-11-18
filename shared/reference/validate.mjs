@@ -153,8 +153,9 @@ function checkStub(s, raw) {
   if (s.rate !== null && s.hoursHundredths !== null && s.gross !== null) {
     const product = BigInt(s.rate) * BigInt(s.hoursHundredths);
     const gross = BigInt(s.gross) * 100n;
-    const diff = product > gross ? product - gross : gross - product;
-    add('rate-hours', diff * 100n <= gross ? 'ok' : 'warn');
+    // Rate × hours is the regular pay: overtime and other earnings add to it, so gross may be more. Only
+    // a product that is above gross (by more than 1 %) cannot be right.
+    add('rate-hours', (product - gross) * 100n <= gross ? 'ok' : 'warn');
   } else add('rate-hours', 'skipped');
 
   if (s.periodStart && s.periodEnd) {

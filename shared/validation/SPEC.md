@@ -87,7 +87,7 @@ Each paystub gets every check, in this order, with status `ok`, `warn` or `skipp
 | Id | Needs | `ok` when |
 |---|---|---|
 | `net-sum` | gross, net | `abs(gross − Σ deductions − net) × 100 ≤ gross`, in cents. No deductions means Σ = 0 |
-| `rate-hours` | rate, hours, gross | `abs(rateCents × hoursHundredths − grossCents × 100) × 100 ≤ grossCents × 100` |
+| `rate-hours` | rate, hours, gross | `(rateCents × hoursHundredths − grossCents × 100) × 100 ≤ grossCents × 100`: rate × hours is not more than 1 % above gross. It may be less: overtime and other earnings add to the regular pay (since v1.25; before, any difference over 1 % was a warning, which flagged every paystub with overtime) |
 | `period-length` | both period dates | see below |
 | `pay-date` | pay date, period end | `abs(payDay − periodEndDay) ≤ 31` |
 | `ytd-gross` | YTD, gross | `ytd ≥ gross` |

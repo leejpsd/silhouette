@@ -710,6 +710,13 @@
     },
     {
       "language": "en",
+      "platform": "ios",
+      "key": "deviceCheck.headline.onRecordingDevice",
+      "text": "cases answered on the device that made this recording",
+      "shown": "cases answered on the iPhone that made this recording"
+    },
+    {
+      "language": "en",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "On this device",
@@ -1414,6 +1421,13 @@
       "key": "start.pointer",
       "text": "The model answers “gross pay is N12”. It never sees 1,271.88: this device puts the value back.",
       "shown": "The model answers “gross pay is N12”. It never sees 1,271.88: this phone puts the value back."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "deviceCheck.headline.onRecordingDevice",
+      "text": "cases answered on the device that made this recording",
+      "shown": "cases answered on the phone that made this recording"
     },
     {
       "language": "es",

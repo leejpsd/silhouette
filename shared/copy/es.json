@@ -6,7 +6,7 @@
   "check.net-sum": "El pago bruto menos las deducciones coincide con el pago neto",
   "check.pay-date": "La fecha de pago está cerca del final del período",
   "check.period-length": "La duración del período coincide con la frecuencia de pago",
-  "check.rate-hours": "Tarifa × horas coincide con el pago bruto (horas extra u otros pagos pueden explicar una diferencia)",
+  "check.rate-hours": "Tarifa × horas no supera el pago bruto (las horas extra y otros pagos se suman)",
   "check.status.ok": "Correcto",
   "check.status.warn": "Revisa esto",
   "check.ytd-gross": "El acumulado del año es al menos el bruto de este período",
@@ -650,5 +650,6 @@
   "judges.next": "Siguiente para el jurado · paso {n} de 3",
   "review.seeAllCount": "Ver los {count} valores",
   "preview.seeRecorded.web": "Este navegador no tiene modelo en el dispositivo. Mira la misma lectura hecha en un dispositivo (una grabación)",
-  "start.pointer": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este dispositivo vuelve a poner el valor."
+  "start.pointer": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este dispositivo vuelve a poner el valor.",
+  "deviceCheck.headline.onRecordingDevice": "casos respondidos en el dispositivo que hizo esta grabación"
 }

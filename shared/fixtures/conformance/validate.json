@@ -41,7 +41,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",
@@ -382,7 +382,7 @@
       }
     },
     {
-      "id": "rate-hours-overtime-warn",
+      "id": "rate-hours-overtime-ok",
       "jurisdiction": "us-ca",
       "stubs": [
         {
@@ -421,7 +421,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",
@@ -462,6 +462,54 @@
             ]
           }
         }
+      }
+    },
+    {
+      "id": "rate-hours-above-gross-warn",
+      "jurisdiction": "us-ca",
+      "stubs": [
+        {
+          "grossPay": 740,
+          "hourlyRate": 18.5,
+          "hoursWorked": 45
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "net-sum",
+              "status": "skipped"
+            },
+            {
+              "id": "rate-hours",
+              "status": "warn"
+            },
+            {
+              "id": "period-length",
+              "status": "skipped"
+            },
+            {
+              "id": "pay-date",
+              "status": "skipped"
+            },
+            {
+              "id": "ytd-gross",
+              "status": "skipped"
+            },
+            {
+              "id": "ytd-periods",
+              "status": "skipped"
+            },
+            {
+              "id": "dates-parsed",
+              "status": "skipped"
+            }
+          ]
+        ],
+        "duplicates": [],
+        "failure": "no-frequency",
+        "annualization": null
       }
     },
     {
@@ -2051,7 +2099,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",
@@ -2259,7 +2307,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",
@@ -2338,7 +2386,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",
@@ -4024,7 +4072,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",
@@ -4107,7 +4155,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",
@@ -4190,7 +4238,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",
@@ -4273,7 +4321,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",
@@ -4356,7 +4404,7 @@
             },
             {
               "id": "rate-hours",
-              "status": "warn"
+              "status": "ok"
             },
             {
               "id": "period-length",

@@ -6,7 +6,7 @@
   "check.net-sum": "Gross pay minus deductions matches net pay",
   "check.pay-date": "The pay date is close to the end of the pay period",
   "check.period-length": "The pay period length matches how often you are paid",
-  "check.rate-hours": "Rate × hours matches gross pay (overtime or other pay can explain a difference)",
+  "check.rate-hours": "Rate × hours is not more than gross pay (overtime and other pay add to it)",
   "check.status.ok": "OK",
   "check.status.warn": "Please check",
   "check.ytd-gross": "Year-to-date gross is at least this period's gross",
@@ -650,5 +650,6 @@
   "judges.next": "Next for judges · step {n} of 3",
   "review.seeAllCount": "See all {count} values",
   "preview.seeRecorded.web": "No on-device model in this browser. See the same reading done on a device (a recording)",
-  "start.pointer": "The model answers “gross pay is N12”. It never sees 1,271.88: this device puts the value back."
+  "start.pointer": "The model answers “gross pay is N12”. It never sees 1,271.88: this device puts the value back.",
+  "deviceCheck.headline.onRecordingDevice": "cases answered on the device that made this recording"
 }
