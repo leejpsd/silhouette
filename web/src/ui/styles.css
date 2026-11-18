@@ -3304,7 +3304,7 @@ main h2.source-title {
 
 /* The document in mono: as it is on this device, or with every hidden value as a token chip. */
 /* The document in mono. A line never breaks: the type is sized so the longest line fits the card
-   (never under 9 px), and beyond that the card scrolls sideways, with a fading edge as the cue. */
+   (never under 9 px), and beyond that the card scrolls sideways, with a fading edge and a chevron as the cue. */
 .preview-pair {
   container-type: inline-size;
 }
@@ -3317,11 +3317,16 @@ main h2.source-title {
   line-height: 1.5;
   white-space: pre;
   overflow-x: auto;
+  /* The cue that the card scrolls sideways: a soft edge and a chevron on the side where more of the line
+     is. The first two layers travel with the text and cover the cue at that end of the line, so a
+     document that fits, or one scrolled to its end, shows none. */
   background:
-    linear-gradient(to right, var(--paper) 30%, transparent) left / 24px 100% no-repeat local,
-    linear-gradient(to left, var(--paper) 30%, transparent) right / 24px 100% no-repeat local,
-    linear-gradient(to left, rgb(from var(--ink) r g b / 14%), transparent) right / 14px 100% no-repeat scroll,
-    linear-gradient(to right, rgb(from var(--ink) r g b / 14%), transparent) left / 14px 100% no-repeat scroll,
+    linear-gradient(to right, var(--paper) 70%, transparent) left / 34px 100% no-repeat local,
+    linear-gradient(to left, var(--paper) 70%, transparent) right / 34px 100% no-repeat local,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M3 4l6 6-6 6' fill='none' stroke='%238a8f98' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 6px center / 12px 20px no-repeat scroll,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M9 4l-6 6 6 6' fill='none' stroke='%238a8f98' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") left 6px center / 12px 20px no-repeat scroll,
+    linear-gradient(to left, rgb(from var(--ink) r g b / 16%), transparent) right / 22px 100% no-repeat scroll,
+    linear-gradient(to right, rgb(from var(--ink) r g b / 16%), transparent) left / 22px 100% no-repeat scroll,
     var(--paper);
 }
 
@@ -4431,6 +4436,15 @@ main h2.judge-title {
 
 .toggle button {
   transition: color var(--duration-short) var(--ease-fade);
+}
+
+/* Narrow screens and longer languages: the two labels stay on one line each. */
+@media (max-width: 359px) {
+  .toggle button {
+    font-size: 13px;
+    letter-spacing: -0.01em;
+    padding-inline: 4px;
+  }
 }
 
 .toggle button:active {

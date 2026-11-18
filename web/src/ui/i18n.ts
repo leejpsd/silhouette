@@ -53,7 +53,10 @@ export type Translate = (key: CopyKey, params?: Params) => string;
 
 export function translator(locale: Locale): Translate {
   return (key, params) => {
-    const template = lookup(locale, key);
+    // A counted sentence has its own form for exactly one (`{key}.one`, shared/copy/PLATFORM_VARIANTS.md,
+    // "One and many"), looked up in the same language.
+    const one = params?.['count'] === 1 ? inLocale(locale, `${key}.one`) : undefined;
+    const template = one ?? lookup(locale, key);
     if (template === undefined) throw new Error(`Missing copy key: ${key}`);
     return format(template, params);
   };
