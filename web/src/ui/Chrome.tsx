@@ -438,7 +438,7 @@ function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: 
   const [copied, setCopied] = useState(false);
   const isReading = e.fields.includes('document-silhouette') && e.status === 'sent';
   return (
-    <li data-channel={e.channel} data-status={e.status} data-open={show}>
+    <li data-channel={e.channel} data-status={e.status} data-open={show} data-new={Date.now() - e.at < 5000 ? 'true' : undefined}>
       <span className="outbound-time">{at}</span>
       <span className="outbound-what">{title}</span>
       <span className={`outbound-status status-${e.status}`} data-testid="outbound-status">

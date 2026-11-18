@@ -1,6 +1,6 @@
 // Results: the programs as one list card, each marked by how full its circle is, with its status, and
 // linking to its detail. On wide screens the list also stands beside the program page.
-import { useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { leftDevice, outboundState, subscribeOutbound } from '../../data/outbound';
 import type { ProgramVerdict } from '../../core/rules';
 import { useApp } from '../context';
@@ -15,6 +15,17 @@ import { BlockActions } from '../design/block';
 import { ArrowRight, ChevronRight, Doc } from '../design/icons';
 import { Marker, ActionLabel } from '../design/parts';
 import { useOnline } from '../design/online';
+
+/** The results arrive once (markers and rows, one after another); coming back to them later is quiet. */
+let arrived = false;
+/** The verdict each program was last shown with, so a result that a paystub changed can show the change. */
+const lastShown = new Map<string, ProgramVerdict['verdict']>();
+
+/** For tests and "Delete everything": the next results are a first arrival again. */
+export function forgetResultsShown(): void {
+  arrived = false;
+  lastShown.clear();
+}
 
 export function ResultsScreen() {
   const { t, locale, steps, answers } = useApp();
@@ -117,6 +128,11 @@ export function ResultGroups({ current }: { current?: string }) {
   const groups = groupByVerdict(results);
   const answered = Object.keys(answers).length > 0;
   const nothingFits = answered && results.length > 0 && results.every((r) => r.verdict === 'unlikely');
+  const [arriving] = useState(() => answered && !arrived && current === undefined);
+  useEffect(() => {
+    if (answered) arrived = true;
+  }, [answered]);
+  let order = 0;
   return (
     <>
       {nothingFits && (
@@ -130,7 +146,7 @@ export function ResultGroups({ current }: { current?: string }) {
           </div>
         </section>
       )}
-      <ul className="programs" aria-label={t('results.title')}>
+      <ul className="programs" aria-label={t('results.title')} data-arrive={arriving ? 'true' : undefined}>
         {groups.flatMap((group) =>
           group.programs.map((r) => {
             const program = PACK.programs.find((p) => p.id === r.programId);
@@ -141,6 +157,7 @@ export function ResultGroups({ current }: { current?: string }) {
                 name={program ? programName(locale, program) : r.programId}
                 summary={program ? programCopy(locale, program).summary : undefined}
                 current={current === r.programId}
+                order={order++}
               />
             );
           }),
@@ -161,8 +178,13 @@ export function ResultsAside({ current }: { current: string }) {
   );
 }
 
-function ProgramRow({ result: r, name, summary, current = false }: { result: ProgramVerdict; name: string; summary: string | undefined; current?: boolean }) {
+function ProgramRow({ result: r, name, summary, current = false, order = 0 }: { result: ProgramVerdict; name: string; summary: string | undefined; current?: boolean; order?: number }) {
   const { t, locale } = useApp();
+  // Shown with another verdict before (the paystub changed it): the row says so once, by its marker.
+  const [changed] = useState(() => lastShown.has(r.programId) && lastShown.get(r.programId) !== r.verdict);
+  useEffect(() => {
+    lastShown.set(r.programId, r.verdict);
+  }, [r.programId, r.verdict]);
   // The status line: what it depends on when an answer is missing, otherwise the verdict.
   const verdict =
     r.verdict === 'depends' && r.dependsOn.length > 0
@@ -171,7 +193,7 @@ function ProgramRow({ result: r, name, summary, current = false }: { result: Pro
   // The rules' estimate, when there is one, joins the status on the same line.
   const status = r.estimatedAmount !== undefined && r.estimatedAmount > 0 ? `${verdict} · ${t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}` : verdict;
   return (
-    <li data-testid={`program-${r.programId}`} data-verdict={r.verdict}>
+    <li data-testid={`program-${r.programId}`} data-verdict={r.verdict} data-changed={changed ? 'true' : undefined} style={{ '--i': order } as CSSProperties}>
       <a href={routeHref({ name: 'program', id: r.programId })} className="program-link" aria-current={current ? 'page' : undefined}>
         <Marker verdict={r.verdict} />
         <span className="program-text">

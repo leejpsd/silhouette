@@ -79,7 +79,7 @@ test.describe('Quick Check to first result', () => {
     await expect(verdictOf(page, 'phone-discount')).toContainText('Benefits you receive');
 
     await page.goto('/#/q/benefits?then=results');
-    await page.getByRole('button', { name: 'Next' }).click(); // nothing ticked = "none of these"
+    await page.getByRole('button', { name: 'None of these' }).click(); // nothing ticked: the action says what it records
     await expect(verdictOf(page, 'phone-discount')).toHaveAttribute('data-verdict', 'depends');
     await expect(verdictOf(page, 'phone-discount')).toContainText('Depends on: Yearly income');
     await expect(verdictOf(page, 'phone-discount')).not.toContainText('Benefits you receive');
@@ -150,7 +150,7 @@ test.describe('Quick Check to first result', () => {
     };
     const heading = () => page.getByRole('heading', { level: 1 });
     const next = async () => {
-      await tabTo(/^(Next|See results)$/);
+      await tabTo(/^(Next|See results|None of these)$/);
       await page.keyboard.press('Enter');
     };
 

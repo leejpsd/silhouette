@@ -1,3 +1,5 @@
+import { forgetResultsShown } from './screens/Results';
+import { forgetTravel, useDisclosures, useKeyboardFollow } from './design/motion';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { deleteEverything, loadRecord, saveRecord, PREF_PREFIX } from '../data/store';
 import { isLocale, translator, type Locale } from './i18n';
@@ -74,6 +76,14 @@ export function App() {
     document.documentElement.lang = locale;
   }, [locale]);
 
+  useKeyboardFollow();
+  useDisclosures();
+
+  // Outside the questions there is no direction of travel: the next question arrives without one.
+  useEffect(() => {
+    if (route.name !== 'question') forgetTravel();
+  }, [route.name]);
+
   const changeLocale = useCallback((next: Locale) => {
     setLocale(next);
     try {
@@ -125,6 +135,7 @@ export function App() {
     resetCloudRequests();
     clearSession();
     forgetCounty();
+    forgetResultsShown();
     const report = await deleteEverything();
     resetConfig();
     answersRef.current = {};

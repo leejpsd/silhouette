@@ -292,6 +292,15 @@ main:focus {
   line-height: 0.86;
 }
 
+/* Spanish capitals carry accents above and "¿" below the line: the lines need room not to touch. */
+:lang(es) .display,
+:lang(es) .display.tight,
+:lang(es) .sheet-headline,
+:lang(es) .record-headline,
+:lang(es) .card-headline {
+  line-height: 1;
+}
+
 :lang(ko) .display,
 .display:lang(ko) {
   line-height: 1.08;
@@ -1851,10 +1860,17 @@ fieldset {
   background: var(--raised);
 }
 
+/* "Choose an answer": a dashed outline on the shape that waits for the answer, drawn inside its own
+   edge so no rounded corner or clipping parent can cut it. Each tile and range is its own shape; a list
+   card, the counter and the exact-amount row are one shape each. */
 [data-error='true'] .tile,
-[data-error='true'] .option-row,
-[data-error='true'] .range {
-  border: 1.5px dashed var(--ink);
+[data-error='true'] .range,
+[data-error='true'] .exact-row,
+.option-rows[data-error='true'],
+.counter[data-error='true'] {
+  border-color: transparent;
+  outline: 1.5px dashed var(--ink);
+  outline-offset: -1.5px;
 }
 
 /* Options and multi-choice: list rows in a white card, the radio or check at the right. */
@@ -1912,7 +1928,8 @@ fieldset {
   cursor: pointer;
 }
 
-.range .radio {
+.range .radio,
+.option-row .radio {
   order: 2;
 }
 
@@ -2131,7 +2148,13 @@ fieldset {
 }
 
 .input[aria-invalid='true'] {
-  border: 1.5px dashed var(--ink);
+  border-color: transparent;
+  outline: 1.5px dashed var(--ink);
+  outline-offset: -1.5px;
+}
+
+.exact-row.selected .input[aria-invalid='true'] {
+  outline-color: var(--ground);
 }
 
 .select {
@@ -2277,10 +2300,9 @@ main h2.group-label {
   display: none;
 }
 
+/* The status is never cut: an estimate at its end ("… · About $847 a year") is the point of the line. */
 .program-status-line {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .wide-only {
@@ -4219,6 +4241,588 @@ main h2.judge-title {
   }
 }
 
+/* ---------- Under the hand (design/motion.tsx; tokens motion.use) ----------
+   press: at once, released on pointer up. short: a state changing in place. reveal: something opening
+   or arriving, with the scroll that brings it into view. exit: leaving, faster than arriving. medium:
+   the moments that should be read. Everything below is switched off by the reduced-motion rule at the
+   end of this section, where movement becomes at most a short fade. */
+
+/* The page never grows sideways while something travels in. `clip`, not `hidden`: sticky parts and
+   focus rings are unaffected. On the app's own box, not on body: overflow set on body is handed to the
+   viewport, and the travelling content would still count towards the page's width. */
+.app {
+  overflow-x: clip;
+}
+
+/* Selection: the tile or row takes its colour in place, the mark arrives with it. */
+.tile,
+.range,
+.exact-row,
+.option-row {
+  transition:
+    transform var(--duration-press) ease,
+    background-color var(--duration-short) var(--ease-standard),
+    border-color var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard);
+}
+
+.radio,
+.checkbox {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    border-color var(--duration-short) var(--ease-standard);
+}
+
+.radio:checked,
+.checkbox:checked {
+  animation: mark-in var(--duration-short) var(--ease-standard);
+}
+
+@keyframes mark-in {
+  from {
+    transform: scale(0.6);
+  }
+}
+
+.range:active,
+.exact-option:active {
+  transform: scale(var(--press-scale));
+}
+
+/* The primary action says whether it has something to take. Quiet: an outline and the label, no arrow.
+   Ready: filled, and the arrow chip arrives. It can be pressed in both (quiet answers with the hint). */
+.action {
+  transition:
+    transform var(--duration-press) ease,
+    background-color var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+
+.action-arrow {
+  transition:
+    transform var(--duration-short) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard);
+}
+
+.action[data-ready='false'] {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px rgb(from var(--ink) r g b / 45%);
+}
+
+.block .action[data-ready='false'],
+.sheet .action[data-ready='false'],
+.send-panel .action[data-ready='false'] {
+  background: transparent;
+  color: var(--on-block);
+  box-shadow: inset 0 0 0 1.5px rgb(from var(--on-block) r g b / 45%);
+}
+
+.action[data-ready='false'] .action-arrow {
+  opacity: 0;
+  transform: translateX(-10px) scale(0.6);
+}
+
+/* A control that cannot act now: no press, and it says so by more than colour. */
+.counter-button:disabled {
+  border-style: dashed;
+  background: transparent;
+  color: var(--faint);
+  cursor: default;
+  transform: none;
+}
+
+/* The counter's message stands where the range hint stood. */
+.counter .error {
+  grid-column: 1 / -1;
+  justify-content: center;
+  text-align: center;
+}
+
+.counter-hint[hidden] {
+  display: none;
+}
+
+/* Once the hint has been shown, its line stays reserved: choosing an answer makes the words go, not the
+   page jump under the finger. */
+.error[data-held='true']:empty {
+  display: flex;
+  min-height: calc(var(--type-small-size) * 1.45);
+}
+
+.counter .error[data-held='true']:empty {
+  display: none;
+}
+
+/* The check beside "Understood as …" on the selected (ink) row: a light disc with an ink mark. */
+.exact-row.selected .icon-check .icon-check-mark {
+  stroke: var(--ink);
+}
+
+/* Rows in a list card show focus inside the card, where its rounded corners cannot cut the ring. */
+.option-row:has(input:focus-visible) {
+  outline-offset: -3px;
+  border-radius: 12px;
+}
+
+.option-row:first-child:has(input:focus-visible) {
+  border-radius: calc(var(--radius-card-large) - 2px) calc(var(--radius-card-large) - 2px) 12px 12px;
+}
+
+.option-row:last-child:has(input:focus-visible) {
+  border-radius: 12px 12px calc(var(--radius-card-large) - 2px) calc(var(--radius-card-large) - 2px);
+}
+
+/* Reveal: it grows and fades in together. The inner box keeps room for a focus ring on a field at its
+   edge, so opening never cuts one. */
+.reveal {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition:
+    grid-template-rows var(--duration-reveal) var(--ease-standard),
+    opacity var(--duration-reveal) var(--ease-fade);
+}
+
+@starting-style {
+  .reveal {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+.reveal-inner {
+  min-height: 0;
+  margin: -5px;
+  padding: 5px;
+  overflow: hidden;
+}
+
+/* The segmented control: the selection slides from one side to the other (narrow screens; wide screens
+   show both documents with a heading each). */
+.toggle {
+  position: relative;
+  isolation: isolate;
+}
+
+.toggle::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 6px);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-toggle-thumb);
+  background: var(--card);
+  transition: transform var(--duration-short) var(--ease-standard);
+}
+
+.toggle:has(button:last-child[aria-pressed='true'])::before {
+  transform: translateX(calc(100% + 4px));
+}
+
+.toggle button[aria-pressed='true'] {
+  border-color: transparent;
+  background: transparent;
+}
+
+.toggle button {
+  transition: color var(--duration-short) var(--ease-fade);
+}
+
+.toggle button:active {
+  transform: scale(var(--press-scale));
+}
+
+/* Switching between "on this device" and "what could leave": the values turn into chips one after
+   another, quickly and capped, so a long document takes no longer than a short one. */
+.doc[data-mode='leave'][data-wipe='true'] .tok {
+  animation: token-in var(--duration-short) var(--ease-fade) both;
+  animation-delay: calc(min(var(--i, 0), 14) * 16ms);
+}
+
+.doc[data-mode='phone'][data-wipe='true'] {
+  animation: fade-in var(--duration-short) var(--ease-fade) both;
+}
+
+/* Press: every control answers the finger at once. Blocks give a little; text-like controls dim (above). */
+:where(.outline-button, .chip-button, .icon-button, .details-button, .lang-button, .source-row-button, .source-button, .copy-button, .small-action, .play-disc, .state-mark, .secondary-action, .send-button, .more-samples > summary, .info-row > summary) {
+  transition:
+    transform var(--duration-press) ease,
+    background-color var(--duration-short) var(--ease-fade),
+    border-color var(--duration-short) var(--ease-fade),
+    color var(--duration-short) var(--ease-fade);
+}
+
+:where(.outline-button, .chip-button, .icon-button, .details-button, .lang-button, .source-row-button, .source-button, .copy-button, .small-action, .play-disc, .state-mark, .secondary-action, .more-samples > summary, .info-row > summary):not(:disabled):active {
+  transform: scale(var(--press-scale));
+}
+
+:where(.program-link, .field-toggle) {
+  transition: background-color var(--duration-short) var(--ease-fade);
+}
+
+:where(.program-link, .field-toggle):active {
+  background-color: var(--raised);
+}
+
+/* Hover, where there is a pointer that hovers: rows lift to the raised tone, outlines firm up, the
+   arrow of a ready action leans forward. Never the only sign of anything. */
+@media (hover: hover) {
+  .program-link:hover,
+  .field-toggle:hover,
+  .option-row:not(.selected):hover,
+  .source-row-button:hover,
+  .more-samples > summary:hover {
+    background-color: var(--raised);
+  }
+
+  .tile:not(.selected):hover,
+  .range:not(.selected):hover,
+  .exact-row:not(.selected):hover,
+  .outline-button:not(:disabled):hover,
+  .counter-button:not(:disabled):hover {
+    border-color: rgb(from var(--ink) r g b / 45%);
+  }
+
+  .block .outline-button:not(:disabled):hover,
+  .sheet .outline-button:not(:disabled):hover,
+  .send-panel .outline-button:not(:disabled):hover,
+  .notice-card .outline-button:not(:disabled):hover,
+  .details-button:hover,
+  .icon-button:hover {
+    border-color: var(--on-block);
+  }
+
+  .action:not([data-ready='false']):not(:disabled):hover .action-arrow,
+  .send-button:not(:disabled):hover .action-arrow {
+    transform: translateX(3px);
+  }
+
+  .action[data-ready='false']:hover {
+    box-shadow: inset 0 0 0 1.5px var(--ink);
+  }
+
+  .block .action[data-ready='false']:hover,
+  .sheet .action[data-ready='false']:hover {
+    box-shadow: inset 0 0 0 1.5px var(--on-block);
+  }
+}
+
+.send-button .action-arrow {
+  transition: transform var(--duration-short) var(--ease-standard);
+}
+
+/* A keycap goes down when its key is used (design/motion.tsx, pressKey). */
+.key[data-down='true'] {
+  transform: translateY(1px);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.key {
+  transition:
+    transform var(--duration-press) ease,
+    border-color var(--duration-press) ease,
+    color var(--duration-press) ease;
+}
+
+/* The counter, when something leaves: the ring fills to the redact disc and the digit ticks, once. The
+   line beside it changes with it. This is the moment the product is about: legible, not loud. */
+.count[data-changed='true'] {
+  animation: count-fill var(--duration-medium) var(--ease-standard) both;
+}
+
+.count[data-changed='true'] > span {
+  animation: count-tick var(--duration-medium) var(--ease-standard) both;
+}
+
+.count[data-changed='true'] + .count-text .count-sub {
+  animation: fade-in var(--duration-medium) var(--ease-fade) both;
+}
+
+@keyframes count-fill {
+  from {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 var(--size-counter-ring) var(--on-ink-ring);
+    transform: scale(0.82);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes count-tick {
+  from {
+    transform: translateY(60%);
+    opacity: 0;
+  }
+}
+
+/* Results: on first arrival the rows come in one after another with their markers; later visits are
+   quiet. A result the paystub changed marks itself once: its marker lands again and the row is lit
+   for a moment, so the person sees what the paystub did. */
+.programs[data-arrive='true'] > li {
+  animation: rise-in var(--duration-reveal) var(--ease-standard) both;
+  animation-delay: calc(min(var(--i, 0), 8) * var(--delay-stagger));
+}
+
+.programs[data-arrive='true'] .marker {
+  animation: marker-in var(--duration-medium) var(--ease-standard) both;
+  animation-delay: calc(min(var(--i, 0), 8) * var(--delay-stagger) + 60ms);
+}
+
+.programs > li[data-changed='true'] {
+  animation: row-lit 1400ms var(--ease-fade) both;
+}
+
+.programs > li[data-changed='true'] .marker {
+  animation: marker-in var(--duration-medium) var(--ease-standard) 150ms both;
+}
+
+@keyframes rise-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}
+
+@keyframes marker-in {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes row-lit {
+  from,
+  40% {
+    background-color: var(--raised);
+  }
+}
+
+/* Review: confirming turns the ring into the check, which lands; "Confirm all" runs down the list. */
+.state-mark.done .icon {
+  animation: mark-in var(--duration-short) var(--ease-standard) both;
+}
+
+.fields-card[data-all='true'] .fields > li:nth-child(2) .state-mark.done .icon {
+  animation-delay: 35ms;
+}
+
+.fields-card[data-all='true'] .fields > li:nth-child(3) .state-mark.done .icon {
+  animation-delay: 70ms;
+}
+
+.fields-card[data-all='true'] .fields > li:nth-child(4) .state-mark.done .icon {
+  animation-delay: 105ms;
+}
+
+.fields-card[data-all='true'] .fields > li:nth-child(5) .state-mark.done .icon {
+  animation-delay: 140ms;
+}
+
+.fields-card[data-all='true'] .fields > li:nth-child(6) .state-mark.done .icon {
+  animation-delay: 175ms;
+}
+
+.fields-card[data-all='true'] .fields > li:nth-child(7) .state-mark.done .icon {
+  animation-delay: 210ms;
+}
+
+.fields-card[data-all='true'] .fields > li:nth-child(8) .state-mark.done .icon {
+  animation-delay: 245ms;
+}
+
+.fields-card[data-all='true'] .fields > li:nth-child(9) .state-mark.done .icon {
+  animation-delay: 280ms;
+}
+
+.fields-card[data-all='true'] .fields > li:nth-child(n + 10) .state-mark.done .icon {
+  animation-delay: 280ms;
+}
+
+/* The record: a row that has just been added is lit for a moment (data-new, set once in Chrome.tsx). */
+.outbound-list > li[data-new='true'] {
+  animation: row-lit 1400ms var(--ease-fade) both;
+}
+
+/* Status lines change by cross-fade, never by a jump (the reading stages, the line under the count). */
+[data-stage] {
+  animation: fade-in var(--duration-short) var(--ease-fade) both;
+}
+
+/* Large text: rows that hold two things side by side let the second go under the first rather than
+   squeeze or run off the screen; the answer tiles stand one above the other when a word needs the width. */
+.tiles {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+}
+
+.field-inline,
+.field-label-row,
+.count-row {
+  flex-wrap: wrap;
+}
+
+.field-inline .select {
+  max-width: 100%;
+}
+
+.count-text {
+  flex: 1 1 6.5rem;
+}
+
+/* The mark and the word of a tile never touch, whatever the text size. */
+.tile {
+  gap: var(--space-xs);
+}
+
+
+/* Sheets and modals: the sheet rises while the page dims; both leave faster than they arrive. The page
+   behind does not scroll while one is open. On touch the sheet follows a drag on its handle. */
+html {
+  scrollbar-gutter: stable;
+}
+
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+dialog.sheet[open]::backdrop {
+  animation: fade-in var(--duration-reveal) var(--ease-fade) both;
+}
+
+dialog.sheet[open][data-closing='true'] {
+  animation: sheet-down var(--duration-exit) var(--ease-fade) both;
+}
+
+dialog.sheet[open][data-closing='true']::backdrop {
+  animation: fade-out var(--duration-exit) var(--ease-fade) both;
+}
+
+@keyframes sheet-down {
+  from {
+    transform: translateY(var(--drag-from, 0px));
+    opacity: 1;
+  }
+  to {
+    transform: translateY(calc(var(--drag-from, 0px) + var(--distance-sheet)));
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.sheet-drag {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  touch-action: none;
+}
+
+/* Disclosures (design/motion.tsx, useDisclosures): what a button with aria-expanded opens, and the
+   content of a native <details>, grow and fade in the same way. Where the browser cannot animate to
+   the natural height, the fade alone remains. */
+:root {
+  interpolate-size: allow-keywords;
+}
+
+.is-opening {
+  animation: fade-in var(--duration-reveal) var(--ease-fade) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes opening {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@supports (interpolate-size: allow-keywords) {
+  .is-opening {
+    overflow: clip;
+    animation: opening var(--duration-reveal) var(--ease-standard) both;
+  }
+}
+
+@supports (interpolate-size: allow-keywords) and (overflow-clip-margin: 6px) {
+  details::details-content {
+    height: 0;
+    opacity: 0;
+    overflow: clip;
+    /* Room for a focus ring on a control at the edge of the content. */
+    overflow-clip-margin: 6px;
+    transition:
+      height var(--duration-reveal) var(--ease-standard),
+      opacity var(--duration-reveal) var(--ease-fade),
+      content-visibility var(--duration-reveal) allow-discrete;
+  }
+
+  details[open]::details-content {
+    height: auto;
+    opacity: 1;
+  }
+}
+
+/* Question to question: the content arrives from the side it is travelling from; the header, the
+   progress bar and the dock stay where they are. The new progress segment fills. */
+.question[data-enter='forward'] > :not(.question-top, .progress-track) {
+  animation: enter-forward var(--duration-reveal) var(--ease-standard) both;
+}
+
+.question[data-enter='back'] > :not(.question-top, .progress-track) {
+  animation: enter-back var(--duration-reveal) var(--ease-standard) both;
+}
+
+@keyframes enter-forward {
+  from {
+    transform: translateX(var(--distance-step));
+    opacity: 0;
+  }
+}
+
+@keyframes enter-back {
+  from {
+    transform: translateX(calc(-1 * var(--distance-step)));
+    opacity: 0;
+  }
+}
+
+.progress-track span.filling {
+  background: linear-gradient(var(--ink), var(--ink)) left / 100% 100% no-repeat var(--line);
+  animation: segment-fill var(--duration-medium) var(--ease-standard) both;
+}
+
+.progress-track span.emptying {
+  background: linear-gradient(var(--ink), var(--ink)) left / 0% 100% no-repeat var(--line);
+  animation: segment-empty var(--duration-reveal) var(--ease-standard) both;
+}
+
+@keyframes segment-fill {
+  from {
+    background-size: 0% 100%;
+  }
+}
+
+@keyframes segment-empty {
+  from {
+    background-size: 100% 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -4231,7 +4835,10 @@ main h2.judge-title {
 /* ---------- Compact height (under 700 px tall) ---------- */
 
 @media (max-height: 699px) {
+  /* A low tile has no room for the mark above the word: they stand side by side. */
   .tile {
+    flex-direction: row-reverse;
+    align-items: center;
     min-height: var(--size-compact-option-tile-height);
   }
 
@@ -4686,6 +5293,13 @@ main h2.judge-title {
     white-space: nowrap;
   }
 
+  /* On the results page itself there is room for the whole sentence; only the narrow list beside a
+     program keeps it to one line. */
+  .results-main .program-summary {
+    overflow: visible;
+    white-space: normal;
+  }
+
   .program-status-line {
     display: none;
   }
@@ -4824,6 +5438,10 @@ main h2.judge-title {
     background: transparent;
     color: var(--note);
     font-size: var(--type-caption-size);
+  }
+
+  .preview-pair[data-wide='true'] .toggle::before {
+    display: none;
   }
 
   .preview-pair[data-wide='true'] .toggle button::before {
@@ -5021,7 +5639,7 @@ main h2.judge-title {
     padding: clamp(28px, 5vw, 64px) clamp(20px, 5vw, 72px);
   }
 
-  [data-testid='record-sheet'] > .sheet-body > .sheet-head > .sheet-label,
+  [data-testid='record-sheet'] > .sheet-body > .sheet-drag > .sheet-head > .sheet-label,
   [data-testid='record-sheet'] .record > p:not([class]),
   [data-testid='record-sheet'] .record-note,
   [data-testid='record-sheet'] .outbound-time,
@@ -5029,7 +5647,7 @@ main h2.judge-title {
     color: var(--note);
   }
 
-  [data-testid='record-sheet'] > .sheet-body > .sheet-head > .icon-button {
+  [data-testid='record-sheet'] > .sheet-body > .sheet-drag > .sheet-head > .icon-button {
     border-color: var(--ink-border-strong);
     background: var(--card);
   }

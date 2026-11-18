@@ -66,7 +66,7 @@ function groundInHead(): Plugin {
   return {
     name: 'ground-in-head',
     transformIndexHtml(html) {
-      const tokens = JSON.parse(readFileSync(new URL('./src/ui/design/tokens.v7.json', import.meta.url), 'utf8')) as {
+      const tokens = JSON.parse(readFileSync(new URL('../shared/design/tokens.json', import.meta.url), 'utf8')) as {
         color: { light: { ground: string }; dark: { ground: string } };
       };
       const css = `html{color-scheme:light dark;background:${tokens.color.light.ground}}@media (prefers-color-scheme: dark){html{background:${tokens.color.dark.ground}}}`;

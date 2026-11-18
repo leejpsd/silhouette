@@ -3,8 +3,8 @@
 // prefers-color-scheme, dark; type, spacing, radii, sizes, the transparent colours, and motion. Only role
 // names are emitted; the older contract names in tokens.json are aliases and are not used by the app. The
 // retired keys of the older look (shadow, rotation, grain) stay in the file for parsers and are not emitted.
-// Design v8: the web reads its own copy of tokens version 7 until it is promoted to shared/design/tokens.json.
-import tokens from './design/tokens.v7.json';
+// The design tokens are the shared contract file (shared/design/tokens.json, version 7).
+import tokens from '../../../shared/design/tokens.json';
 
 const kebab = (s: string): string => s.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
 
@@ -87,6 +87,7 @@ export function tokensCss(): string {
   const duration = Object.entries(t.motion.duration).map(([k, v]) => `--duration-${kebab(k)}:${v}ms;`).join('');
   const easing = Object.entries(t.motion.easing).map(([k, v]) => `--ease-${kebab(k)}:${bezier(v)};`).join('');
   const delay = Object.entries(t.motion.delay).map(([k, v]) => `--delay-${kebab(k)}:${v}ms;`).join('');
+  const distance = `--distance-step:${t.motion.distance.step}px;--distance-sheet:${t.motion.distance.sheet}px;--press-scale:${t.motion.distance.press};`;
   // The checkbox tick, drawn in the dock colour on the selected tile's text colour (an SVG cannot read
   // custom properties, so light and dark each get their own image).
   const tick = (stroke: string) =>
@@ -94,7 +95,7 @@ export function tokensCss(): string {
   // Also drawn in the card colour, for a check in the text colour on a card or a raised row.
   const check = (scheme: 'light' | 'dark') => `--check-image:${tick(t.color[scheme].block)};--check-image-card:${tick(t.color[scheme].card)};`;
   return (
-    `:root{color-scheme:light dark;${fonts}${scale}${fit}${space}${inline}${blockPadding}${layout}${radius}${size}${duration}${easing}${delay}${check('light')}` +
+    `:root{color-scheme:light dark;${fonts}${scale}${fit}${space}${inline}${blockPadding}${layout}${radius}${size}${duration}${easing}${delay}${distance}${check('light')}` +
     `${colorVars(t.color.light)}${alphaVars('light')}}` +
     `@media (prefers-color-scheme: dark){:root{${check('dark')}${colorVars(t.color.dark)}${alphaVars('dark')}}}`
   );

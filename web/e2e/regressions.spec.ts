@@ -48,7 +48,7 @@ test.describe('regressions', () => {
     const total = await preview.locator('.tok').count();
     await expect(preview.locator('.tok-new')).toHaveCount(total);
     // Switching views does not replay the bars.
-    await page.getByRole('button', { name: 'On this phone' }).click();
+    await page.getByRole('button', { name: 'On this device', exact: true }).click();
     await page.getByRole('button', { name: 'What could leave' }).click();
     await expect(preview.locator('.tok-new')).toHaveCount(0);
     // Hiding a word animates only the new bar, and focus moves to the next word.
@@ -92,7 +92,7 @@ test.describe('regressions', () => {
     for (const typed of ['60.000', '1.271']) {
       await field.fill(typed);
       await expect(page.getByTestId('amount-understood')).toHaveText('');
-      await page.getByRole('button', { name: /^(Next|See results)$/ }).click();
+      await page.getByRole('button', { name: /^(Next|See results|None of these)$/ }).click();
       await expect(page.getByRole('alert')).toHaveText('Use a comma for thousands and a dot for cents, like 60,000 or 60,000.50.');
     }
     await chooseLanguage(page, 'es');

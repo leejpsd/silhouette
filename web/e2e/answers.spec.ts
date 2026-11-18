@@ -121,7 +121,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     // Household 3 → 4: the requests carry nothing about the person, so the answer is the same one.
     await page.goto('/#/q/householdSize?then=program/utility-discount');
     await page.locator('#main input[inputmode="numeric"]').fill('4');
-    await page.getByRole('button', { name: /^(Next|See results)$/ }).click();
+    await page.getByRole('button', { name: /^(Next|See results|None of these)$/ }).click();
     await expect(page.getByTestId('verdict-card')).toBeVisible();
     await expect(shortAnswer(page)).toBeVisible();
     expect(cloud.bodies).toHaveLength(2);

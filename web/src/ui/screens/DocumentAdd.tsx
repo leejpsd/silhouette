@@ -218,7 +218,7 @@ export function DocumentAddScreen() {
 
       {/* Paste: the row opens to show the text box and its button. */}
       <section className="source-card source-paste" data-open={pasteOpen || pasted !== ''}>
-        <button type="button" className="source-row-button" aria-expanded={pasteOpen || pasted !== ''} aria-controls={pasteId} onClick={() => setPasteOpen(!pasteOpen)}>
+        <button type="button" className="source-row-button" aria-expanded={pasteOpen || pasted !== ''} aria-controls={`${pasteId}-box`} onClick={() => setPasteOpen(!pasteOpen)}>
           <span className="source-icon" aria-hidden="true">
             <Clipboard />
           </span>
@@ -229,11 +229,11 @@ export function DocumentAddScreen() {
           <ChevronRight />
         </button>
         {(pasteOpen || pasted !== '') && (
-          <div className="paste-box">
+          <div className="paste-box" id={`${pasteId}-box`}>
             <label htmlFor={pasteId} className="visually-hidden">
               {t('doc.paste.label')}
             </label>
-            <textarea id={pasteId} className="input textarea mono" rows={6} value={pasted} autoFocus onChange={(e) => setPasted(e.target.value)} />
+            <textarea id={pasteId} className="input textarea mono" rows={6} value={pasted} data-autofocus autoCapitalize="off" autoCorrect="off" spellCheck={false} autoComplete="off" onChange={(e) => setPasted(e.target.value)} />
             <button type="button" className="outline-button" disabled={pasted.trim() === ''} onClick={() => acceptText(Raw.of(pasted), 'paste')}>
               {t('doc.paste.continue')}
             </button>

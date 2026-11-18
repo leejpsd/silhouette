@@ -112,6 +112,19 @@ export function DocumentPreviewScreen() {
   const tall = useTallPaper(docRef);
   const freshRef = useRef<{ skeleton: string; quiet: boolean; set: ReadonlySet<number> } | null>(null);
   const [quiet, setQuiet] = useState(false);
+  // Switching views: the values turn into chips (or back) with one short wipe, then the flag is dropped
+  // so that hiding a word afterwards does not replay it.
+  const [wipe, setWipe] = useState(false);
+  const wipeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const show = (next: 'phone' | 'leave') => {
+    if (next === mode) return;
+    setQuiet(true);
+    setMode(next);
+    setWipe(true);
+    clearTimeout(wipeTimer.current);
+    wipeTimer.current = setTimeout(() => setWipe(false), 700);
+  };
+  useEffect(() => () => clearTimeout(wipeTimer.current), []);
   const [freshFor, setFreshFor] = useState(doc.skeleton);
   if (freshFor !== doc.skeleton) {
     setFreshFor(doc.skeleton);
@@ -248,10 +261,10 @@ export function DocumentPreviewScreen() {
       </p>
       <div className="preview-pair" data-wide={wide} style={{ '--doc-cols': docCols, '--hide-hint': JSON.stringify(t('preview.hideToo')) } as CSSProperties}>
       <div className="toggle" role="group" aria-label={t('preview.title')}>
-        <button type="button" aria-pressed={mode === 'phone'} onClick={() => { setQuiet(true); setMode('phone'); }}>
+        <button type="button" aria-pressed={mode === 'phone'} onClick={() => show('phone')}>
           {t('preview.onPhone')}
         </button>
-        <button type="button" aria-pressed={mode === 'leave'} className="toggle-leave" onClick={() => { setQuiet(true); setMode('leave'); }}>
+        <button type="button" aria-pressed={mode === 'leave'} className="toggle-leave" onClick={() => show('leave')}>
           {t('preview.couldLeave')}
         </button>
       </div>
@@ -262,6 +275,7 @@ export function DocumentPreviewScreen() {
         key={mode}
         className="doc paper paper-large"
         data-mode={mode}
+        data-wipe={wipe}
         data-tall={tall}
         data-testid="skeleton-preview"
         tabIndex={0}
@@ -325,7 +339,10 @@ export function DocumentPreviewScreen() {
       {sending && <Loading />}
       <div role="status" className="status-line">
         {(sending || readingAhead) && <Spinner />}
-        {sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : readingAhead ? t('preview.readingAhead') : ''}
+        {/* Keyed by the stage: each stage's sentence fades in in place of the last one. */}
+        <span key={sending ? (stage ?? 'sending') : readingAhead ? 'ahead' : 'idle'} data-stage>
+          {sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : readingAhead ? t('preview.readingAhead') : ''}
+        </span>
       </div>
       {doc.error && (
         <>
@@ -428,7 +445,7 @@ function renderSkeleton(
         <span
           key={`p${i}`}
           className={`tok ph${mine ? ' tok-mine' : ''}${isNew ? ' tok-new' : ''}`}
-          style={isNew ? { animationDelay: `${Math.min(n++, 20) * 60}ms` } : undefined}
+          style={{ '--i': order - 1, ...(isNew ? { animationDelay: `${Math.min(n++, 20) * 60}ms` } : {}) } as CSSProperties}
           aria-label={`${t(kind)} ${id}`}
         >
           {id}

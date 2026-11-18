@@ -96,7 +96,7 @@ for (const theme of ['light', 'dark'] as const) {
       await prepared(page);
       await page.goto('/#/q/income?then=results');
       await page.getByRole('radio').nth(7).check();
-      await page.getByRole('button', { name: /^(Next|See results)$/ }).click();
+      await page.getByRole('button', { name: /^(Next|See results|None of these)$/ }).click();
       await page.getByTestId('results-lead').waitFor();
       await shot(page, '11-results-high-income', theme);
     });
@@ -198,7 +198,7 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByRole('button', { name: 'English paystub (text)' }).click();
       await page.getByTestId('skeleton-preview').waitFor();
       await shot(page, '27-preview-leave', theme);
-      await page.getByRole('button', { name: 'On this phone' }).click();
+      await page.getByRole('button', { name: 'On this device', exact: true }).click();
       await shot(page, '28-preview-phone', theme);
       await page.getByRole('button', { name: 'What could leave' }).click();
       await page.getByRole('button', { name: 'Hide “Federal”' }).first().click();

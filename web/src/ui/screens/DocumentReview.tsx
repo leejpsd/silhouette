@@ -1,6 +1,8 @@
 // Extraction review: every field next to its highlighted source, confirm or change each one,
 // type what was not found, then deterministic checks and annualization (core/validate.ts).
 // Confirmed values feed an exact annualIncome into the verdict engine.
+import { bringIntoView } from '../design/motion';
+import { moneyOnly } from '../design/inputs';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Raw } from '../../core/types';
 import { parseNumber, readTypedAmount, type PointerSchema } from '../../core/skeleton';
@@ -179,6 +181,21 @@ export function DocumentReviewScreen() {
   const [rows, setRows] = useState<Row[]>(initial.rows);
   const [deductions, setDeductions] = useState<DeductionRow[]>(initial.deductions);
   const [editing, setEditing] = useState<string | null>(null);
+  // Changing a value: its field comes into view and takes focus, with the old value selected. When the
+  // editing ends, focus goes back to the row, not nowhere.
+  const wasEditing = useRef<string | null>(null);
+  useEffect(() => {
+    const row = (name: string) => document.querySelector<HTMLElement>(`[data-testid="field-${CSS.escape(name)}"]`);
+    if (editing !== null) {
+      const box = row(editing)?.querySelector<HTMLElement>('.field-edit');
+      const field = box?.querySelector<HTMLElement>('input, select');
+      bringIntoView(box, { focus: field });
+      if (field instanceof HTMLInputElement) field.select();
+    } else if (wasEditing.current !== null) {
+      row(wasEditing.current)?.querySelector<HTMLElement>('.field-toggle')?.focus({ preventScroll: true });
+    }
+    wasEditing.current = editing;
+  }, [editing]);
   // Rows opened to show where the value was found and Change.
   const [opened, setOpened] = useState<readonly string[]>([]);
   const [draft, setDraft] = useState('');
@@ -323,7 +340,7 @@ export function DocumentReviewScreen() {
                 aria-invalid={invalid ? true : undefined}
                 value={draft}
                 onChange={(e) => {
-                  setDraft(e.target.value);
+                  setDraft(row.kind === 'number' ? moneyOnly(e.target.value) : e.target.value);
                   setInvalid(null);
                 }}
               />
@@ -397,7 +414,7 @@ export function DocumentReviewScreen() {
                   autoComplete="off"
                   value={d.amount}
                   onChange={(e) => {
-                    const amount = e.target.value;
+                    const amount = moneyOnly(e.target.value);
                     setDeductions((ds) => ds.map((x, j) => (j === i ? { ...x, amount, status: 'pending', typed: true } : x)));
                     setDeductionProblem(null);
                     setResult(null);
@@ -529,6 +546,12 @@ export function DocumentReviewScreen() {
                 setFoldNotice(true);
                 requestAnimationFrame(() => moreButton.current?.focus());
                 return;
+              }
+              // The marks run down the list, one after another (styles.css, .fields-card[data-all]).
+              const card = document.querySelector<HTMLElement>('.doc-review .fields-card');
+              if (card) {
+                card.dataset.all = 'true';
+                setTimeout(() => delete card.dataset.all, 900);
               }
               setRows((rs) => rs.map((r) => (r.status === 'pending' ? { ...r, status: 'confirmed' } : r)));
               setDeductions((ds) => ds.map((d) => (d.status === 'pending' ? { ...d, status: 'confirmed' } : d)));

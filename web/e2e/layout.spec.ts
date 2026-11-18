@@ -134,7 +134,7 @@ test.describe('documents', () => {
     // A chip is as wide as its id (N12), never stretched to the width of the value it hides.
     const chips = await doc.locator('.tok').evaluateAll((els) => els.map((e) => [e.textContent ?? '', e.getBoundingClientRect().width] as const));
     for (const [id, width] of chips) expect(width, id).toBeLessThan(id.length * 9 + 16);
-    await page.getByRole('button', { name: 'On this phone' }).click();
+    await page.getByRole('button', { name: 'On this device', exact: true }).click();
     await expect(doc).toHaveAttribute('data-mode', 'phone');
     expect(await doc.locator('.tok').count()).toBe(chips.length);
   });
@@ -205,7 +205,8 @@ test.describe('first impression and sheets', () => {
     await page.getByTestId('demo-banner').getByRole('button', { name: 'More' }).click();
     await expect(page.getByTestId('demo-sheet').getByTestId('sheet-count').last()).toBeInViewport();
     await page.keyboard.press('Escape');
-    const details = page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' });
+    // Exact: while the sheet is leaving, its own "Hide details" button is still there for a moment.
+    const details = page.getByTestId('leaving-bar').getByRole('button', { name: 'Details', exact: true });
     await details.click();
     const record = page.getByTestId('record-sheet');
     await expect(record).toBeVisible();

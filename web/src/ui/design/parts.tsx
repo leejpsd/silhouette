@@ -4,6 +4,7 @@ import { useEffect, useId, useLayoutEffect, useRef, type ReactNode, type RefObje
 import type { Verdict } from '../../core/rules';
 import { Close } from './icons';
 import { DISPLAY_SCALE_CAP, HEADLINE_FLOOR, WIDE_FROM } from '../tokens';
+import { reducedMotion } from './motion';
 
 /**
  * Results are told apart by how full the circle is: filled = may qualify, half = possible, dashed ring =
@@ -59,9 +60,16 @@ export function Bar({ id, label, mine = false }: { id: string; label: string; mi
 
 /** The count of what has left: an empty ring at 0, a solid redact disc (a pill from 10) once anything left. */
 export function Count({ value }: { value: number }) {
+  // When the number changes while it is shown, the change is played once: the ring fills to the disc and
+  // the digit ticks. On arrival (a count that was already there) nothing moves.
+  const shown = useRef(value);
+  const changed = shown.current !== value;
+  useEffect(() => {
+    shown.current = value;
+  }, [value]);
   if (value === 0) return <span className="count">0</span>;
   return (
-    <span className={`count count-sent${value >= 10 ? ' count-pill' : ''}`}>
+    <span key={value} className={`count count-sent${value >= 10 ? ' count-pill' : ''}`} data-changed={changed ? 'true' : undefined}>
       <span>{value}</span>
     </span>
   );
@@ -102,12 +110,68 @@ export function Sheet({
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) {
-      d.close();
-      returnFocus?.current?.focus();
+    if (open && !d.open) {
+      delete d.dataset.closing;
+      d.style.removeProperty('--drag-from');
+      d.showModal();
+      return;
     }
+    if (open || !d.open) return;
+    // Leaving is faster than arriving: the sheet goes down and the dimming fades, then it closes and
+    // focus returns to the control that opened it.
+    const finish = () => {
+      delete d.dataset.closing;
+      d.style.removeProperty('--drag-from');
+      if (d.open) d.close();
+      returnFocus?.current?.focus({ preventScroll: true });
+    };
+    const ms = reducedMotion() ? 0 : Number.parseFloat(getComputedStyle(d).getPropertyValue('--duration-exit')) || 0;
+    if (ms === 0) return finish();
+    d.dataset.closing = 'true';
+    const timer = setTimeout(finish, ms);
+    return () => {
+      clearTimeout(timer);
+      // Reopened or removed before the exit ended.
+      delete d.dataset.closing;
+    };
   }, [open, returnFocus]);
+
+  // Touch: the sheet follows a drag on its handle or title and can be flicked away; released short of
+  // that, it settles back. (Wide screens show a centred modal, which does not drag.)
+  const drag = useRef<{ id: number; y: number; at: number; dy: number } | null>(null);
+  const onDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = ref.current;
+    if (!d || e.pointerType === 'mouse' || window.innerWidth >= WIDE_FROM || (e.target as Element).closest('button, a, input')) return;
+    drag.current = { id: e.pointerId, y: e.clientY, at: performance.now(), dy: 0 };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    d.style.transition = 'none';
+  };
+  const onDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = ref.current;
+    const g = drag.current;
+    if (!d || !g || g.id !== e.pointerId) return;
+    g.dy = Math.max(0, e.clientY - g.y);
+    d.style.transform = `translateY(${g.dy}px)`;
+  };
+  const onDragEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = ref.current;
+    const g = drag.current;
+    if (!d || !g || g.id !== e.pointerId) return;
+    drag.current = null;
+    const speed = g.dy / Math.max(1, performance.now() - g.at);
+    const away = e.type !== 'pointercancel' && (g.dy > 96 || (g.dy > 24 && speed > 0.5));
+    d.style.removeProperty('transition');
+    if (away) {
+      // The exit starts from where the finger left it.
+      d.style.setProperty('--drag-from', `${g.dy}px`);
+      d.style.removeProperty('transform');
+      onClose();
+    } else {
+      d.style.transition = reducedMotion() ? 'none' : 'transform var(--duration-short) var(--ease-standard)';
+      d.style.removeProperty('transform');
+      setTimeout(() => d.style.removeProperty('transition'), 200);
+    }
+  };
   return (
     <dialog
       ref={ref}
@@ -124,6 +188,7 @@ export function Sheet({
       }}
     >
       <div className="sheet-body">
+        <div className="sheet-drag" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
         <span className="grab" aria-hidden="true" />
         <div className="sheet-head">
           <p className="sheet-label" id={`${id}-label`}>
@@ -132,6 +197,7 @@ export function Sheet({
           <button type="button" className="icon-button" aria-label={closeLabel} onClick={onClose}>
             <Close />
           </button>
+        </div>
         </div>
         <div className="sheet-content">{children}</div>
         {footer && <div className="sheet-foot">{footer}</div>}
@@ -164,6 +230,10 @@ export function useFit(
       const min = start * floor;
       let size = start;
       el.style.fontSize = `${size}px`;
+      // While measuring, a word may not break: a word wider than the line must show as overflow, so the
+      // size steps down for it. Only at the floor may a word break (the stylesheet's rule) rather than
+      // run off the screen.
+      el.style.overflowWrap = 'normal';
       const fits = () => {
         const line = Number.parseFloat(getComputedStyle(el).lineHeight) || size;
         const lines = Math.round(el.scrollHeight / line);
@@ -173,6 +243,7 @@ export function useFit(
         size -= step;
         el.style.fontSize = `${size}px`;
       }
+      el.style.overflowWrap = '';
     };
     // Until the display face has arrived, the step chosen with the fallback face could change a moment
     // later (a visible snap): the text waits, hidden, for the face (at most a second), then fits once.

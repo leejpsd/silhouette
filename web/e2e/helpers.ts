@@ -37,7 +37,7 @@ const QUESTIONS: [RegExp, keyof FlowAnswers][] = [
   [/residency rule/, 'resident'],
 ];
 
-const advance = (page: Page) => page.getByRole('button', { name: /^(Next|See results)$/ }).click();
+const advance = (page: Page) => page.getByRole('button', { name: /^(Next|See results|None of these)$/ }).click();
 
 /** Answers the question currently on screen. */
 export async function answerCurrent(page: Page, a: FlowAnswers): Promise<keyof FlowAnswers> {
@@ -63,6 +63,9 @@ export async function answerCurrent(page: Page, a: FlowAnswers): Promise<keyof F
     }
   } else if (key === 'benefits') {
     for (const label of value as string[]) await page.getByLabel(label, { exact: true }).check();
+    // A press that lands right after the question changed, with nothing done on it, is taken as a double
+    // press on the question before and ignored: a person needs a moment to read "none of these".
+    if ((value as string[]).length === 0) await page.waitForTimeout(350);
   } else {
     if (key === 'resident') await expect(page.getByText('This answer never leaves your device. You can skip it.')).toBeVisible();
     await page.getByLabel(value as string, { exact: true }).check();

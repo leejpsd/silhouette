@@ -74,16 +74,29 @@ Task ids, modes and reasons come from `shared/routing.json`. Every model result 
 
 ## Look and feel
 
-The visual design is "Duplicator" (`shared/design/DESIGN.md`, values in `shared/design/tokens.json`): one ground and one ink colour, the inverted bottom block that carries the screen's main action and the "Leaving your device" count, paper slips for the person's data, and pink only for what can leave. Results are told apart by marker shape, never by colour. Amounts are money in the rule pack's currency, written the way the jurisdiction writes them (`numberFormat`, `$34,000` in every interface language), which is also the form the app accepts when an amount is typed. From 600 px the app is one centred column with a floating block. From 960 px it uses two columns: the screen on the left in one fixed-width column, and the block as a 400 px panel on the right, where the sheets open too and where the start screen's example sits. Every sheet keeps the "Leaving your device" count in view.
+The visual design is "Brand & UI" (`shared/design/DESIGN.md`, values in `shared/design/tokens.json`, which the app reads directly): ink and a grey ramp on a cool grey ground, and one orange, redact, only on what can leave or has left. Display type is Big Shoulders Display in capitals; text is Inter Tight; documents, amounts and token chips are IBM Plex Mono. Results are told apart by how full their marker is, never by colour. Amounts are money in the rule pack's currency, written the way the jurisdiction writes them (`numberFormat`, `$34,000` in every interface language), which is also the form the app accepts when an amount is typed.
+
+Under 808 px the screen's one main action sits in the ink dock at the bottom, above the "Leaving your device" count, and sheets rise from it. From 808 px the app has an ink rail at the left (the steps, and the count at its foot), the actions stand in the content, and sheets become centred modals.
+
+How it behaves under the hand follows section 8 of `shared/design/DESIGN.md`:
+
+- What opens comes into view and takes focus: the exact-amount field, the paste box, a row opened for editing, every disclosure. The scroll follows the opening, clear of the dock and of the on-screen keyboard.
+- After a refused Next, the message is brought into view and its dashed outline is drawn on the shape that waits for the answer. Choosing an answer does not move the page.
+- A whole-number field takes digits only and says at once when the number is outside its range; a money field takes digits, the comma and the dot, typed or pasted.
+- The primary action is quiet until there is an answer, then filled, with its arrow. A double press on Next does not answer the question after.
+- Motion is a small system from the motion tokens (press, short, reveal, exit, medium, stagger, fade), and all of it is off under `prefers-reduced-motion`.
+- On wide screens with a keyboard: Y and N answer, S skips, Enter continues.
 
 | Where | What |
 |---|---|
-| `src/ui/tokens.ts` | Turns the tokens into CSS custom properties (design role names only), the grain tile and the checkbox tick |
-| `src/ui/styles.css` | All styling, from those properties (a unit test checks that every property it uses is defined) |
-| `src/ui/design/` | Shared components: the bottom block and its modes, sheets, paper, placeholder bars, verdict markers, the stamped count, the size-step rule for display type, icons |
-| `public/fonts/` | Darker Grotesque, Hanken Grotesk and DM Mono (SIL OFL 1.1, licences beside them), Latin and Latin Extended subsets, copied from `@fontsource` by `npm run fonts:copy`. Nothing is fetched from a font host |
+| `src/ui/tokens.ts` | Turns the tokens into CSS custom properties (design role names only) and the checkbox tick |
+| `src/ui/styles.css` | All styling, from those properties (a unit test checks that every property it uses is defined). Motion and states are in the section "Under the hand" |
+| `src/ui/design/` | Shared components: the dock and its modes, sheets, paper, token chips, verdict markers, the count, the size-step rule for display type, icons |
+| `src/ui/design/motion.tsx` | Bringing what opens into view, one behaviour for every disclosure, following the on-screen keyboard, the direction of travel between questions |
+| `src/ui/design/inputs.ts` | What a number field and a money field accept |
+| `public/fonts/` | Big Shoulders Display, Inter Tight and IBM Plex Mono (SIL OFL 1.1, licences beside them), Latin and Latin Extended subsets, copied from `@fontsource` by `npm run fonts:copy`. Nothing is fetched from a font host |
 
-`npm run capture` writes screenshots of every screen and state (390 px light and dark; Start, a question and Results at 320 px, and the wide layout at 960, 1280, 1440 and 1920 px, in English and Spanish) to `visual-captures/`, using the same fakes as the end-to-end tests.
+`npm run capture` writes screenshots of every screen and state (390 px light and dark; Start, a question and Results at 320 px, 768 px, and the wide layout from 808 to 1440 px, in English and Spanish) to `visual-captures/`, using the same fakes as the end-to-end tests. `e2e/under-the-hand.spec.ts` checks the behaviour above.
 
 ## Run it
 
