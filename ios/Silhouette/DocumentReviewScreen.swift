@@ -37,7 +37,7 @@ struct DocumentReviewScreen: View {
     }
 
     private func title(_ text: String) -> some View {
-        Text(text).font(.system(size: 28, weight: .bold)).foregroundStyle(theme.ink)
+        Text(text).sfFont(28, weight: .bold).foregroundStyle(theme.ink)
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityAddTraits(.isHeader)
             .accessibilityIdentifier("review.title")
@@ -46,7 +46,7 @@ struct DocumentReviewScreen: View {
     // MARK: Not a paystub
 
     private var notADocument: some View {
-        ScrollView {
+        RevealingScroll {
             VStack(alignment: .leading, spacing: 16) {
                 DraftLine()
                 title(model.t("review.notDocument.title"))
@@ -79,7 +79,7 @@ struct DocumentReviewScreen: View {
         let restRows = doc.fieldsForDisplay.filter { !seen.contains($0.name) }
         let moreShown = moreOpen || flagged.contains("deductions")
         return ScrollViewReader { proxy in
-            ScrollView {
+            RevealingScroll {
                 VStack(alignment: .leading, spacing: 16) {
                     DraftLine()
                     title(model.t("review.title"))
@@ -90,7 +90,7 @@ struct DocumentReviewScreen: View {
                     NoteText(text: model.t(doc.extraction == nil ? "review.manualLead" : "review.lead"), size: 15)
                     if doc.pendingCount > 0 {
                         SecondaryButton(label: model.t("review.confirmAllCount", ["count": String(doc.pendingCount)]), id: "review.confirmAll") {
-                            model.editDocument { $0.confirmAll() }
+                            withMotion(Motion.short) { model.editDocument { $0.confirmAll() } }
                         }
                         NoteText(text: model.t("review.pending", ["count": String(doc.pendingCount)]))
                             .accessibilityIdentifier("review.pending")
@@ -102,12 +102,12 @@ struct DocumentReviewScreen: View {
                             FieldRow(field: field, flagged: flagged.contains(field.name))
                         }
                         RowDivider()
-                        Button { withAnimation { moreOpen.toggle() } } label: {
+                        Button { withMotion(Motion.reveal) { moreOpen.toggle() } } label: {
                             ListRow(title: model.t("review.moreValuesShort"), chevron: false, leading: { EmptyView() }) {
                                 HStack(spacing: 6) {
                                     Text(model.number(Double(restRows.count + doc.deductionsForDisplay.count)))
-                                        .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 15))).foregroundStyle(theme.note)
-                                    Image(systemName: moreShown ? "chevron.down" : "chevron.right").font(.system(size: 14, weight: .semibold))
+                                        .monoFont(15, weight: 500).foregroundStyle(theme.note)
+                                    Image(systemName: moreShown ? "chevron.down" : "chevron.right").sfFont(14, weight: .semibold)
                                         .foregroundStyle(theme.icon)
                                 }
                             }
@@ -116,12 +116,16 @@ struct DocumentReviewScreen: View {
                         .accessibilityLabel(model.t("review.moreValues", ["count": String(restRows.count + doc.deductionsForDisplay.count)]))
                         .accessibilityIdentifier("review.more")
                         if moreShown {
-                            ForEach(restRows) { field in
+                            VStack(spacing: 0) {
+                                ForEach(restRows) { field in
+                                    RowDivider()
+                                    FieldRow(field: field, flagged: false)
+                                }
                                 RowDivider()
-                                FieldRow(field: field, flagged: false)
+                                deductions
                             }
-                            RowDivider()
-                            deductions
+                            .revealsIntoView()
+                            .transition(Motion.revealTransition)
                         }
                     }
                     if let validation { income(validation) }
@@ -167,13 +171,13 @@ struct DocumentReviewScreen: View {
 
     private func income(_ validation: ValidationResult) -> some View {
         Card {
-            Text(model.t("review.annualTitle")).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
+            Text(model.t("review.annualTitle")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
                 .accessibilityAddTraits(.isHeader)
             if let a = validation.annualization {
                 Display(text: model.money(Double(a.annualIncome)), size: 64, maxLines: 1)
                     .padding(.top, 4)
                 Text(basisText(a))
-                    .font(Font(DesignFonts.uiFont(.mono, weight: 400, size: 13)))
+                    .monoFont(13, weight: 400)
                     .foregroundStyle(theme.note)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("review.basis")
@@ -188,7 +192,7 @@ struct DocumentReviewScreen: View {
                 }
                 HStack(spacing: 8) {
                     WhereBadge(kind: .noModel, label: model.t("badge.noModel"))
-                    Text(model.t("review.workedOutHere")).font(.system(size: 13)).foregroundStyle(theme.note)
+                    Text(model.t("review.workedOutHere")).sfFont(13).foregroundStyle(theme.note)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.top, 10)
@@ -215,15 +219,15 @@ struct DocumentReviewScreen: View {
                         HStack(alignment: .firstTextBaseline, spacing: 12) {
                             Group {
                                 if check.status == .ok { StateMark(state: .pass) } else {
-                                    Image(systemName: "exclamationmark").font(.system(size: 12, weight: .heavy)).foregroundStyle(theme.ink)
+                                    Image(systemName: "exclamationmark").sfFont(12, weight: .heavy).foregroundStyle(theme.ink)
                                         .frame(width: 22, height: 22).overlay(Circle().strokeBorder(theme.ink, style: StrokeStyle(lineWidth: 1.5, dash: [3, 2])))
                                 }
                             }
                             .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
-                            Text(model.t("check.\(check.id)")).font(.system(size: 15)).foregroundStyle(theme.ink)
+                            Text(model.t("check.\(check.id)")).sfFont(15).foregroundStyle(theme.ink)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            Text(model.t("check.status.\(check.status.rawValue)")).font(.system(size: 12, weight: .semibold)).foregroundStyle(theme.note)
+                            Text(model.t("check.status.\(check.status.rawValue)")).sfFont(12, weight: .semibold).foregroundStyle(theme.note)
                                 .multilineTextAlignment(.trailing)
                         }
                         .padding(.horizontal, 16)
@@ -263,7 +267,7 @@ struct DocumentReviewScreen: View {
 
     private var deductions: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(model.t("field.paystub.deductions")).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
+            Text(model.t("field.paystub.deductions")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
             if model.document.notRead.contains("deductions") && model.document.deductionsForDisplay.isEmpty {
                 NoteText(text: model.t("review.deductionsNotRead")).accessibilityIdentifier("review.deductionsNotRead")
             }
@@ -304,7 +308,7 @@ private struct SourceLine: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(model.t("review.source")).font(.system(size: 12)).foregroundStyle(theme.note)
+            Text(model.t("review.source")).sfFont(12).foregroundStyle(theme.note)
             ScrollView(.horizontal, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(Array(source.components(separatedBy: "\n").enumerated()), id: \.offset) { _, line in
@@ -355,6 +359,9 @@ private struct FieldRow: View {
     let flagged: Bool
     @State private var open = false
     @State private var editing = false
+    @FocusState private var fieldFocused: Bool
+    /// One haptic per value confirmed by hand ("Confirm all" gives none per row).
+    @State private var confirmTaps = 0
     @State private var text = ""
     @State private var choice = ""
     @State private var invalid = false
@@ -367,29 +374,34 @@ private struct FieldRow: View {
             HStack(spacing: 10) {
                 // Tapping the row opens where the value was found; the label is the row's button for VoiceOver.
                 layout {
-                    Text(label).font(.system(size: 17)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                    Text(label).sfFont(17).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .accessibilityAddTraits(.isButton)
                         .accessibilityHint(model.t("review.source"))
-                        .accessibilityAction { withAnimation { open.toggle() } }
+                        .accessibilityAction { withMotion(Motion.reveal) { open.toggle() } }
                     Text(valueText ?? model.t(model.document.notRead.contains(field.name) ? "review.fieldNotRead" : "review.notFound"))
-                        .font(valueText == nil ? .system(size: 13) : Font(DesignFonts.uiFont(.mono, weight: 500, size: 15)))
+                        .modifier(ScaledSystemFont(size: valueText == nil ? 13 : 15, weight: .regular, mono: valueText != nil))
                         .foregroundStyle(valueText == nil ? theme.note : theme.ink)
                         .multilineTextAlignment(.trailing)
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("field.\(field.name).value")
                 }
                 .contentShape(Rectangle())
-                .onTapGesture { withAnimation { open.toggle() } }
+                .onTapGesture { withMotion(Motion.reveal) { open.toggle() } }
                 confirmMark
+                    .sensoryFeedback(Haptic.confirm, trigger: confirmTaps)
             }
             if flagged { NoteText(text: model.t("review.flagged")) }
             if open || editing {
-                if let source = field.source, !editing { SourceLine(source: source, value: valueText, flagged: flagged) }
-                if editing { editor } else {
-                    LinkText(label: model.t(field.found ? "review.edit" : "review.typeIt"), size: 15, id: "field.\(field.name).edit") { startEditing() }
-                        .accessibilityLabel("\(model.t("review.edit")): \(label)")
+                VStack(alignment: .leading, spacing: 10) {
+                    if let source = field.source, !editing { SourceLine(source: source, value: valueText, flagged: flagged) }
+                    if editing { editor } else {
+                        LinkText(label: model.t(field.found ? "review.edit" : "review.typeIt"), size: 15, id: "field.\(field.name).edit") { startEditing() }
+                            .accessibilityLabel("\(model.t("review.edit")): \(label)")
+                    }
                 }
+                .revealsIntoView()
+                .transition(Motion.revealTransition)
             }
         }
         .padding(.horizontal, 16)
@@ -403,10 +415,14 @@ private struct FieldRow: View {
     @ViewBuilder private var confirmMark: some View {
         if field.confirmed {
             StateMark(state: .pass)
+                .transition(Motion.reduceMotion ? .opacity : .scale(scale: 0.6).combined(with: .opacity))
                 .accessibilityElement()
                 .accessibilityLabel(model.t("review.confirmed"))
         } else if field.found {
-            Button { model.editDocument { $0.confirm(field.name) } } label: {
+            Button {
+                withMotion(Motion.short) { model.editDocument { $0.confirm(field.name) } }
+                confirmTaps += 1
+            } label: {
                 Circle().strokeBorder(theme.ink, lineWidth: 1.5).frame(width: 22, height: 22).frame(width: 44, height: 44)
                     .contentShape(Circle())
             }
@@ -415,6 +431,7 @@ private struct FieldRow: View {
             .padding(.horizontal, -11)
             .accessibilityLabel("\(model.t("review.confirm")): \(label)")
             .accessibilityIdentifier("field.\(field.name).confirm")
+            .transition(.opacity)
         }
     }
 
@@ -436,9 +453,9 @@ private struct FieldRow: View {
                 ForEach(values, id: \.self) { v in Button(model.t("option.\(field.name).\(v)")) { choice = v } }
             } label: {
                 HStack {
-                    Text(choice.isEmpty ? model.t("option.none") : model.t("option.\(field.name).\(choice)")).font(.system(size: 17))
+                    Text(choice.isEmpty ? model.t("option.none") : model.t("option.\(field.name).\(choice)")).sfFont(17)
                     Spacer()
-                    Image(systemName: "chevron.up.chevron.down").font(.system(size: 13, weight: .semibold)).accessibilityHidden(true)
+                    Image(systemName: "chevron.up.chevron.down").sfFont(13, weight: .semibold).accessibilityHidden(true)
                 }
                 .foregroundStyle(theme.ink)
                 .padding(.horizontal, 14)
@@ -449,9 +466,13 @@ private struct FieldRow: View {
             .accessibilityIdentifier("field.\(field.name).input")
         default:
             TextField("", text: $text)
-                .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 17)))
+                .moneyOnly(field.kind == .number ? $text : .constant(""))
+                .monoFont(17, weight: 500)
                 .keyboardType(field.kind == .number ? .decimalPad : .default)
                 .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .textContentType(nil)
+                .focused($fieldFocused)
                 .padding(.horizontal, 14)
                 .frame(minHeight: 48)
                 .background(RoundedRectangle(cornerRadius: 12).fill(theme.raised))
@@ -485,7 +506,8 @@ private struct FieldRow: View {
         case .choice(let c)?: choice = c
         case nil: text = ""; choice = ""
         }
-        editing = true
+        withMotion(Motion.reveal) { editing = true }
+        fieldFocused = true
     }
 
     private func save() {
@@ -524,8 +546,11 @@ private struct DeductionRowView: View {
         VStack(alignment: .leading, spacing: 8) {
             if editing || row.amount == nil && !row.found {
                 TextField("", text: $text)
-                    .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 17)))
+                    .moneyOnly($text)
+                    .monoFont(17, weight: 500)
                     .keyboardType(.decimalPad)
+                    .textContentType(nil)
+                    .autocorrectionDisabled()
                     .padding(.horizontal, 14)
                     .frame(minHeight: 48)
                     .background(RoundedRectangle(cornerRadius: 12).fill(theme.raised))
@@ -535,9 +560,9 @@ private struct DeductionRowView: View {
                     ForEach(Self.kinds, id: \.self) { k in Button(model.t("option.deduction.\(k)")) { kind = k } }
                 } label: {
                     HStack {
-                        Text(kind.isEmpty ? model.t("field.deduction.kind") : model.t("option.deduction.\(kind)")).font(.system(size: 17))
+                        Text(kind.isEmpty ? model.t("field.deduction.kind") : model.t("option.deduction.\(kind)")).sfFont(17)
                         Spacer()
-                        Image(systemName: "chevron.up.chevron.down").font(.system(size: 13, weight: .semibold)).accessibilityHidden(true)
+                        Image(systemName: "chevron.up.chevron.down").sfFont(13, weight: .semibold).accessibilityHidden(true)
                     }
                     .foregroundStyle(theme.ink)
                     .padding(.horizontal, 14)
@@ -553,10 +578,10 @@ private struct DeductionRowView: View {
                 }
             } else {
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Text(row.kind.map { model.t("option.deduction.\($0)") } ?? model.t("field.deduction.amount")).font(.system(size: 15))
+                    Text(row.kind.map { model.t("option.deduction.\($0)") } ?? model.t("field.deduction.amount")).sfFont(15)
                         .foregroundStyle(theme.ink).frame(maxWidth: .infinity, alignment: .leading)
                     Text(row.amount.map(model.documentAmount) ?? model.t("review.notFound"))
-                        .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 15))).foregroundStyle(theme.ink)
+                        .monoFont(15, weight: 500).foregroundStyle(theme.ink)
                     if row.confirmed { StateMark(state: .pass) }
                 }
                 if let source = row.source { SourceLine(source: source, value: row.amount.map(model.documentAmount), flagged: false) }

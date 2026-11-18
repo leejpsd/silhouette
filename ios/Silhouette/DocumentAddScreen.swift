@@ -12,15 +12,17 @@ import UniformTypeIdentifiers
 struct DocumentAddScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicType
     @State private var pasted = ""
     @State private var choosingPDF = false
     @State private var pdfError = false
     @State private var photoInfo = false
     @State private var pasting = false
+    @FocusState private var pasteFocused: Bool
     @State private var moreSamples = false
 
     var body: some View {
-        ScrollView {
+        RevealingScroll {
             VStack(alignment: .leading, spacing: 16) {
                 Hero(title: model.t("doc.title"), size: 54, lead: model.t("start.promiseShort"), titleId: "doc.title") {
                     VStack(alignment: .leading, spacing: 4) {
@@ -38,8 +40,8 @@ struct DocumentAddScreen: View {
                     if model.document.confirmedStubCount > 0 {
                         NoteText(text: model.t("review.stubsCount", ["count": String(model.document.confirmedStubCount)]), size: 15)
                     }
-                    HStack(spacing: 12) {
-                        Text(model.t("doc.language")).font(.system(size: 15)).foregroundStyle(theme.note)
+                    (dynamicType.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8)) : AnyLayout(HStackLayout(spacing: 12))) {
+                        Text(model.t("doc.language")).sfFont(15).foregroundStyle(theme.note)
                             .fixedSize(horizontal: false, vertical: true)
                         Segmented(options: AppLocale.allCases.map { ($0, $0.nativeName, "doc.language.\($0.rawValue)") },
                                   selection: Binding(get: { model.document.language }, set: { model.setDocumentLanguage($0) }))
@@ -47,7 +49,7 @@ struct DocumentAddScreen: View {
                     .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("doc.language")
                     readingStatus
-                    photoCard
+                    sampleCard
                     ListCard {
                         Button { choosingPDF = true } label: {
                             ListRow(title: model.t("doc.pdf"), subtitle: model.t("doc.pdf.short"), leading: { IconTile(systemImage: "doc.richtext") })
@@ -56,20 +58,32 @@ struct DocumentAddScreen: View {
                         .accessibilityIdentifier("doc.pdf")
                         if pdfError { NoticeCard(text: model.t("doc.pdf.error")).padding(.horizontal, 16).padding(.bottom, 12) }
                         RowDivider(inset: 64)
-                        Button { withAnimation { pasting.toggle() } } label: {
+                        Button {
+                            withMotion(Motion.reveal) { pasting.toggle() }
+                            pasteFocused = pasting
+                        } label: {
                             ListRow(title: model.t("doc.paste"), subtitle: model.t("doc.paste.short"), leading: { IconTile(systemImage: "doc.on.clipboard") })
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("doc.paste")
-                        if pasting { pasteBox.padding(.horizontal, 16).padding(.bottom, 12) }
+                        if pasting { pasteBox.padding(.horizontal, 16).padding(.bottom, 12).revealsIntoView().transition(Motion.revealTransition) }
                         RowDivider(inset: 64)
                         Button { model.typeNumbers() } label: {
                             ListRow(title: model.t("doc.manual"), subtitle: model.t("doc.manual.short"), leading: { IconTile(systemImage: "character.cursor.ibeam") })
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("doc.manual")
+                        moreSampleRows
+                        RowDivider(inset: 64)
+                        // Photos are read only by an on-device model that takes images; this iPhone's takes text only.
+                        Button { withMotion(Motion.reveal) { photoInfo.toggle() } } label: {
+                            ListRow(title: model.t("doc.photo"), subtitle: model.t(photoInfo ? "doc.photo.unavailable" : "doc.photo.notHere"),
+                                    chevron: false, dimmed: true, leading: { IconTile(systemImage: "camera").opacity(0.5) })
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("doc.photo")
+                        .overlay { if photoInfo { Color.clear.frame(width: 1, height: 1).accessibilityIdentifier("doc.photo.unavailable") } }
                     }
-                    samples
                 }
                 .gutter()
             }
@@ -83,36 +97,45 @@ struct DocumentAddScreen: View {
         }
     }
 
-    /// The photo card: ink, with the honest note that photos are not read on this iPhone yet.
-    private var photoCard: some View {
-        Button { photoInfo = true } label: {
-            HStack(spacing: 14) {
-                Image(systemName: "camera").font(.system(size: 18, weight: .semibold))
-                    .frame(width: 44, height: 44).background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(0.12)))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(model.t("doc.photo")).font(.system(size: 17, weight: .semibold))
-                    Text(model.t(photoInfo ? "doc.photo.unavailable" : "doc.photo.notHere")).font(.system(size: 13)).foregroundStyle(theme.onHeroMuted)
-                        .fixedSize(horizontal: false, vertical: true)
+    /// The sample paystub in the chosen language (or the first one): the screen's ink card.
+    private var sample: SampleDocument? {
+        model.bundle.samples.first { $0.language == model.document.language } ?? model.bundle.samples.first
+    }
+
+    /// The most prominent card: something that works on every iPhone, the sample paystub.
+    @ViewBuilder private var sampleCard: some View {
+        if let sample {
+            Button { model.useDocumentText(sample.text, source: .sample, sample: sample) } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "doc.text.magnifyingglass").sfFont(18, weight: .semibold)
+                        .frame(width: 44, height: 44).background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(0.12)))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(model.t("sample.try")).sfFont(17, weight: .semibold)
+                        Text(model.t(sample.titleKey)).sfFont(13).foregroundStyle(theme.onHeroMuted).lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "chevron.right").sfFont(14, weight: .semibold).foregroundStyle(theme.onHeroMuted)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "chevron.right").font(.system(size: 14, weight: .semibold)).foregroundStyle(theme.onHeroMuted)
+                .foregroundStyle(.white)
+                .padding(16)
+                .background(RoundedRectangle(cornerRadius: 24).fill(theme.hero))
+                .contentShape(RoundedRectangle(cornerRadius: 24))
             }
-            .foregroundStyle(.white)
-            .padding(16)
-            .background(RoundedRectangle(cornerRadius: 24).fill(theme.hero))
-            .contentShape(RoundedRectangle(cornerRadius: 24))
+            .buttonStyle(PressScale())
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("doc.sample.\(sample.id)")
         }
-        .buttonStyle(PressScale())
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("doc.photo")
-        .overlay { if photoInfo { Color.clear.frame(width: 1, height: 1).accessibilityIdentifier("doc.photo.unavailable") } }
     }
 
     private var pasteBox: some View {
         VStack(alignment: .leading, spacing: 10) {
             TextEditor(text: $pasted)
+                .focused($pasteFocused)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .textContentType(nil)
                 .scrollContentBackground(.hidden)
-                .font(Font(DesignFonts.uiFont(.mono, weight: 400, size: 13)))
+                .monoFont(13, weight: 400)
                 .frame(minHeight: 120)
                 .padding(8)
                 .background(RoundedRectangle(cornerRadius: 12).fill(theme.raised))
@@ -135,7 +158,7 @@ struct DocumentAddScreen: View {
                 .tint(theme.ink)
                 Spacer(minLength: 0)
                 Button(model.t("doc.paste.continue")) { model.useDocumentText(Raw(pasted), source: .paste) }
-                    .font(.system(size: 17, weight: .semibold))
+                    .sfFont(17, weight: .semibold)
                     .foregroundStyle(theme.ink)
                     .disabled(pasted.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .accessibilityIdentifier("doc.paste.continue")
@@ -143,41 +166,43 @@ struct DocumentAddScreen: View {
         }
     }
 
-    /// The built-in samples: the English sample as a text button, the others under "More samples".
-    private var samples: some View {
-        let all = model.bundle.samples
-        return VStack(alignment: .leading, spacing: 4) {
-            if let first = all.first {
-                SecondaryButton(label: model.t("sample.try"), filled: false, id: "doc.sample.\(first.id)") {
-                    model.useDocumentText(first.text, source: .sample, sample: first)
+    /// The other built-in samples, as a row of the list that opens to show them.
+    @ViewBuilder private var moreSampleRows: some View {
+        let others = model.bundle.samples.filter { $0.id != sample?.id }
+        if !others.isEmpty {
+            RowDivider(inset: 64)
+            Button { withMotion(Motion.reveal) { moreSamples.toggle() } } label: {
+                ListRow(title: model.t("doc.moreSamples"), subtitle: model.t("doc.samples.help"), chevron: false,
+                        leading: { IconTile(systemImage: "doc.on.doc") }) {
+                    Image(systemName: moreSamples ? "chevron.down" : "chevron.right").sfFont(14, weight: .semibold).foregroundStyle(theme.icon)
                 }
             }
-            if all.count > 1 {
-                LinkText(label: model.t("doc.moreSamples"), id: "doc.moreSamples") { withAnimation { moreSamples.toggle() } }
-                    .frame(maxWidth: .infinity)
-                if moreSamples {
-                    NoteText(text: model.t("doc.samples.help"))
-                    ListCard {
-                        ForEach(Array(all.dropFirst().enumerated()), id: \.element.id) { i, sample in
-                            if i > 0 { RowDivider() }
-                            Button { model.useDocumentText(sample.text, source: .sample, sample: sample) } label: {
-                                ListRow(title: model.t(sample.titleKey), titleSize: 15)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("doc.sample.\(sample.id)")
-                        }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("doc.moreSamples")
+            if moreSamples {
+              VStack(spacing: 0) {
+                ForEach(others) { other in
+                    RowDivider(inset: 64)
+                    Button { model.useDocumentText(other.text, source: .sample, sample: other) } label: {
+                        ListRow(title: model.t(other.titleKey), titleSize: 15, leading: { Color.clear.frame(width: 36, height: 1) })
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("doc.sample.\(other.id)")
                 }
+              }
+              .revealsIntoView()
+              .transition(Motion.revealTransition)
             }
         }
     }
 
-    /// Where documents are read: on this device when it has a model, otherwise the silhouette in the cloud.
+    /// Where documents are read, in one line: on this device when it has a model, otherwise the
+    /// silhouette in the cloud.
     private var readingStatus: some View {
         HStack(alignment: .center, spacing: 8) {
             WhereBadge(kind: model.deviceModelAvailable ? .device : .cloud, label: model.t(model.deviceModelAvailable ? "badge.onDevice" : "badge.cloud"))
-            Text(model.t(model.deviceModelAvailable ? "model.available" : "model.device.unavailable"))
-                .font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+            Text(model.t(model.deviceModelAvailable ? "doc.where.device" : "doc.where.cloud"))
+                .sfFont(13).foregroundStyle(theme.note).lineLimit(1).minimumScaleFactor(0.8)
         }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("doc.reading")

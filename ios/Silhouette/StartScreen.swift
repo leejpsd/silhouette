@@ -7,15 +7,28 @@ import SwiftUI
 struct StartScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @State private var height: CGFloat = 874
+
+    /// A short screen (iPhone SE): a smaller headline and the lead's first sentence, so the way in stays
+    /// in the first screen.
+    private var short: Bool { height < 720 }
+
+    /// On a short screen a long headline (Spanish) takes a smaller size, so it stays at three lines.
+    private var titleSize: CGFloat {
+        guard short else { return 56 }
+        return model.t("start.title").count > 44 ? 32 : 40
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Hero(title: model.t("start.title"), size: 56, lead: "\(model.t("start.leadShort")) \(model.t("start.promiseShort"))", titleId: "start.title") {
+                Hero(title: model.t("start.title"), size: titleSize,
+                     lead: short ? model.t("start.promiseShort") : "\(model.t("start.leadShort")) \(model.t("start.promiseShort"))", titleId: "start.title") {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 8) {
-                            Wordmark()
-                            Spacer(minLength: 8)
+                            Wordmark().fixedSize()
+                            Spacer(minLength: 4)
                             GlassCapsule(label: model.t("rail.judges"), id: "judges.open") { model.open(.judges) }
                             LanguageButton()
                         }
@@ -31,7 +44,7 @@ struct StartScreen: View {
                     }
                     ExampleCard()
                     VStack(spacing: 4) {
-                        PrimaryButton(label: startLabel, id: "start.begin") { model.begin() }
+                        if !pinPrimary { primary }
                         SecondaryButton(label: model.t("sample.try"), filled: false, id: "start.sample") { model.openDocument() }
                         if model.session.isStarted {
                             LinkText(label: model.t("start.restart"), id: "start.restart") { model.restart() }
@@ -45,7 +58,23 @@ struct StartScreen: View {
             }
             .padding(.bottom, 24)
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if pinPrimary {
+                primary
+                    .gutter()
+                    .padding(.top, 8)
+                    .background(theme.ground)
+            }
+        }
         .heroScreen(theme)
+        .onGeometryChange(for: CGFloat.self) { $0.size.height + $0.safeAreaInsets.top + $0.safeAreaInsets.bottom } action: { height = $0 }
+    }
+
+    /// On a short screen the way in is pinned above the bars, so it is always in the first screen.
+    private var pinPrimary: Bool { short && !typeSize.isAccessibilitySize }
+
+    private var primary: some View {
+        PrimaryButton(label: startLabel, id: "start.begin") { model.begin() }
     }
 
     /// Not started: begin. Started but unfinished: continue the check. Finished: see results.
@@ -67,7 +96,7 @@ private struct ExampleCard: View {
                 Label(model.t("preview.couldLeave"), systemImage: "square.and.arrow.up").frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 14)
             }
-            .font(.system(size: 13, weight: .semibold))
+            .sfFont(13, weight: .semibold)
             .foregroundStyle(theme.ink)
             .labelStyle(SmallIconLabel())
             .frame(minHeight: 32)
@@ -88,8 +117,8 @@ private struct ExampleCard: View {
     private func row(label: String, value: String, tokens: [String]) -> some View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 1) {
-                Text(label).font(.system(size: 12)).foregroundStyle(theme.note)
-                Text(value).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink).lineLimit(1).minimumScaleFactor(0.7)
+                Text(label).sfFont(12).foregroundStyle(theme.note)
+                Text(value).sfFont(15, weight: .semibold).foregroundStyle(theme.ink).lineLimit(1).minimumScaleFactor(0.7)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 4) { ForEach(tokens, id: \.self) { TokenChip(id: $0, size: 13) } }
@@ -106,7 +135,7 @@ private struct ExampleCard: View {
 struct SmallIconLabel: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: 6) {
-            configuration.icon.font(.system(size: 12, weight: .semibold))
+            configuration.icon.sfFont(12, weight: .semibold)
             configuration.title
         }
     }
@@ -123,12 +152,12 @@ struct DraftLine: View {
         if info.isDemo || info.isDraft {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(info.isDraft ? model.t("pack.draft.short", ["date": model.draftDate]) : model.t("demo.short"))
-                    .font(.system(size: 13))
+                    .sfFont(13)
                     .foregroundStyle(onHero ? theme.onHeroMuted : theme.note)
                     .fixedSize(horizontal: false, vertical: true)
                 Button { model.sheet = .demo } label: {
                     Text(model.t("demo.more"))
-                        .font(.system(size: 13, weight: .semibold))
+                        .sfFont(13, weight: .semibold)
                         .underline(true, color: onHero ? .white.opacity(0.35) : theme.underline)
                         .foregroundStyle(onHero ? .white : theme.ink)
                         .padding(.vertical, 12)

@@ -68,7 +68,7 @@ private struct SheetPanel: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            RevealingScroll {
                 VStack(alignment: .leading, spacing: 16) { content }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
@@ -186,11 +186,13 @@ private struct RecordSheet: View {
                 }
             }
         }
-        NoteText(text: model.t("leaving.sdkNote"))
-        NoteText(text: model.t("leaving.network"))
+        MoreAbout {
+            NoteText(text: model.t("leaving.sdkNote"))
+            NoteText(text: model.t("leaving.network"))
+        }
         Button { model.sheet = .delete(back: .record) } label: {
             Label(model.t("delete.all"), systemImage: "trash")
-                .font(.system(size: 17, weight: .semibold))
+                .sfFont(17, weight: .semibold)
                 .foregroundStyle(theme.ink)
                 .frame(maxWidth: .infinity, minHeight: 52)
                 .background(Capsule().fill(theme.sheet))
@@ -207,10 +209,14 @@ private struct RecordSheet: View {
             Display(text: sent, size: 54, maxLines: 2, color: theme.onRedact)
                 .fixedSize()
                 .padding(.horizontal, 6)
+                .padding(.vertical, 6)
                 .background(RoundedRectangle(cornerRadius: 4).fill(theme.redact))
             Display(text: kept, size: 54, maxLines: 2)
                 .fixedSize()
+                .padding(.vertical, 6)
         }
+        // The display face's caps rise above its tight line box: room so the scroll view never clips them.
+        .padding(.top, 6)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(sent) \(kept)")
         .accessibilityAddTraits(.isHeader)
@@ -224,33 +230,43 @@ private struct RecordEntry: View {
     @Environment(\.dynamicTypeSize) private var dynamicType
     let entry: OutboundEntry
     @State private var showPayload = false
+    @State private var open = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             let layout = dynamicType.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6)) : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 12))
-            layout {
-                Text(model.time(entry.at)).font(Font(DesignFonts.uiFont(.mono, weight: 400, size: 13))).foregroundStyle(theme.note)
-                Text(entry.fields.isEmpty ? model.outboundFieldName("model-request") : entry.fields.map(model.outboundFieldName).joined(separator: ", "))
-                    .font(.system(size: 17)).foregroundStyle(theme.ink)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                status
+            // One line per row; where it went and the exact request open on tap.
+            Button { withMotion(Motion.reveal) { open.toggle() } } label: {
+                layout {
+                    Text(model.time(entry.at)).monoFont(13, weight: 400).foregroundStyle(theme.note)
+                    Text(entry.fields.isEmpty ? model.outboundFieldName("model-request") : entry.fields.map(model.outboundFieldName).joined(separator: ", "))
+                        .sfFont(17).foregroundStyle(theme.ink)
+                        .lineLimit(dynamicType.isAccessibilitySize ? nil : 1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    status
+                }
+                .contentShape(Rectangle())
             }
-            if !entry.isAnsweredOnDevice {
+            .buttonStyle(.plain)
+            if open && !entry.isAnsweredOnDevice {
+              VStack(alignment: .leading, spacing: 10) {
                 NoteText(text: model.t("outbound.requestTo", ["destination": entry.destination, "path": ""]))
                 if let m = entry.model { NoteText(text: model.t("outbound.model", ["model": m])) }
                 if let payload = entry.payload {
-                    Button { showPayload.toggle() } label: {
+                    Button { withMotion(Motion.reveal) { showPayload.toggle() } } label: {
                         HStack(spacing: 4) {
-                            Text(model.t("outbound.showPayload")).font(.system(size: 15, weight: .semibold))
-                            Image(systemName: showPayload ? "chevron.up" : "chevron.down").font(.system(size: 12, weight: .semibold))
+                            Text(model.t("outbound.showPayload")).sfFont(15, weight: .semibold)
+                            Image(systemName: showPayload ? "chevron.up" : "chevron.down").sfFont(12, weight: .semibold)
                         }
                         .foregroundStyle(theme.ink)
                         .frame(minHeight: 44)
                     }
                     .buttonStyle(.plain)
-                    if showPayload { MonoBlock(text: payload.text) }
+                    if showPayload { MonoBlock(text: payload.text).revealsIntoView().transition(Motion.revealTransition) }
                 }
+              }
+              .revealsIntoView()
+              .transition(Motion.revealTransition)
             }
         }
         .padding(16)
@@ -278,7 +294,7 @@ struct MonoBlock: View {
 
     var body: some View {
         Text(text)
-            .font(Font(DesignFonts.uiFont(.mono, weight: 400, size: 13)))
+            .monoFont(13, weight: 400)
             .foregroundStyle(theme.ink)
             .textSelection(.enabled)
             .fixedSize(horizontal: false, vertical: true)
@@ -309,7 +325,7 @@ private struct LanguageSheet: View {
                     model.sheet = nil
                 } label: {
                     ListRow(title: locale.nativeName, chevron: false, titleWeight: selected ? .semibold : .regular, leading: { EmptyView() }) {
-                        if selected { Image(systemName: "checkmark").font(.system(size: 17, weight: .semibold)).foregroundStyle(theme.ink) }
+                        if selected { Image(systemName: "checkmark").sfFont(17, weight: .semibold).foregroundStyle(theme.ink) }
                     }
                     .environment(\.locale, Locale(identifier: locale.rawValue))
                 }
@@ -358,7 +374,7 @@ private struct DemoSheet: View {
         }
         Button { model.sheet = .delete(back: .demo) } label: {
             Label(model.t("delete.all"), systemImage: "trash")
-                .font(.system(size: 17, weight: .semibold))
+                .sfFont(17, weight: .semibold)
                 .foregroundStyle(theme.ink)
                 .frame(maxWidth: .infinity, minHeight: 52)
                 .background(Capsule().fill(theme.sheet))

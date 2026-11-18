@@ -17,9 +17,9 @@ test:
 test-ios:
 	cd SilhouetteCore && xcodebuild test -scheme SilhouetteCore-Package -destination $(DESTINATION) -derivedDataPath ../build/PackageDerivedData
 
-## XCUITests for the Quick Check flows
+## XCUITests for the flows and how they behave under the hand
 ui-test:
-	xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/QuickCheckUITests -only-testing:SilhouetteUITests/DocumentFlowUITests -only-testing:SilhouetteUITests/AnswersUITests
+	xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteUITests/QuickCheckUITests -only-testing:SilhouetteUITests/DocumentFlowUITests -only-testing:SilhouetteUITests/AnswersUITests -only-testing:SilhouetteUITests/DeviceCheckUITests -only-testing:SilhouetteUITests/InteractionUITests
 
 ## Screenshot tour (light and dark, English and Spanish, largest accessibility text) into SCREENSHOT_DIR.
 ## SCREENSHOT_CONFIGS limits it, for example SCREENSHOT_CONFIGS=en-light,es-dark

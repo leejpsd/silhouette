@@ -18,11 +18,11 @@ struct WhySection: View {
         VStack(alignment: .leading, spacing: 10) {
             Card {
                 HStack(alignment: .firstTextBaseline) {
-                    Text(model.t("why.title")).font(.system(size: 20, weight: .semibold)).foregroundStyle(theme.ink)
+                    Text(model.t("why.title")).sfFont(20, weight: .semibold).foregroundStyle(theme.ink)
                         .accessibilityAddTraits(.isHeader)
                         .accessibilityIdentifier("why.title")
                     Spacer(minLength: 8)
-                    Text(model.t("badge.rulesOnly")).font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.note)
+                    Text(model.t("badge.rulesOnly")).sfFont(13, weight: .semibold).foregroundStyle(theme.note)
                 }
                 NoteText(text: model.t("why.lead")).padding(.top, 4)
                 VStack(alignment: .leading, spacing: 0) {
@@ -55,11 +55,11 @@ private struct WhyRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(row.label).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                Text(row.label).sfFont(15, weight: .semibold).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if let l = row.limits.first {
                     Text("\(Text(l.yours).foregroundStyle(theme.ink)) / \(Text(l.limit).foregroundStyle(theme.note))")
-                        .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 14)))
+                        .monoFont(14, weight: 500)
                         .multilineTextAlignment(.trailing)
                 } else {
                     StateMark(state: row.state)
@@ -71,13 +71,13 @@ private struct WhyRowView: View {
             }
             ForEach(Array(row.limits.dropFirst().enumerated()), id: \.offset) { _, l in
                 Text(model.t("why.limitYours", ["limit": l.limit, "value": l.yours]))
-                    .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 13))).foregroundStyle(theme.ink)
+                    .monoFont(13, weight: 500).foregroundStyle(theme.ink)
             }
             if row.state != .pass && row.state != .fail || row.limits.isEmpty {
-                Text(row.stateText).font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                Text(row.stateText).sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
             }
             ForEach(row.notes, id: \.self) { note in
-                Text(note).font(.system(size: 12)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                Text(note).sfFont(12).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.vertical, 12)
@@ -98,10 +98,10 @@ struct StateMark: View {
         Group {
             switch state {
             case .pass:
-                Image(systemName: "checkmark").font(.system(size: 10, weight: .heavy)).foregroundStyle(theme.color("onPrimary"))
+                Image(systemName: "checkmark").sfFont(10, weight: .heavy).foregroundStyle(theme.color("onPrimary"))
                     .frame(width: 22, height: 22).background(Circle().fill(theme.ink))
             case .fail:
-                Image(systemName: "xmark").font(.system(size: 10, weight: .heavy)).foregroundStyle(theme.ink)
+                Image(systemName: "xmark").sfFont(10, weight: .heavy).foregroundStyle(theme.ink)
                     .frame(width: 22, height: 22).overlay(Circle().strokeBorder(theme.ink, lineWidth: 1.5))
             case .mixed: VerdictMarker(verdict: .maybe, size: 22)
             default: VerdictMarker(verdict: .depends, size: 22)
@@ -162,7 +162,7 @@ struct ChipsFlow: View {
         FlowLayout(spacing: 8, lineSpacing: 8) {
             ForEach(AppModel.chips.filter { model.chipKey(programId, $0) != except }, id: \.self) { chip in
                 Button { model.startChip(programId, chip) } label: {
-                    Text(model.t("ask.chip.\(chip)")).font(.system(size: 15, weight: .medium)).foregroundStyle(theme.ink)
+                    Text(model.t("ask.chip.\(chip)")).sfFont(15, weight: .medium).foregroundStyle(theme.ink)
                         .padding(.horizontal, 14)
                         .frame(minHeight: 44)
                         .background(Capsule().fill(theme.sheet))
@@ -181,6 +181,8 @@ struct FreeTextSection: View {
     let programId: String
     @State private var text = ""
     @State private var empty = false
+    @State private var refused = 0
+    @AccessibilityFocusState private var hintFocused: Bool
     @State private var keys: [(key: String, question: String)] = []
 
     var body: some View {
@@ -193,20 +195,35 @@ struct FreeTextSection: View {
                 NoteText(text: model.t("ask.free.help"))
                 TextField("", text: $text, axis: .vertical)
                     .lineLimit(2...5)
-                    .font(.system(size: 17))
+                    .sfFont(17)
                     .padding(14)
                     .background(RoundedRectangle(cornerRadius: 12).fill(theme.sheet))
-                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(empty ? theme.ink : theme.cardBorder, lineWidth: empty ? 1.5 : 1))
+                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(empty ? theme.ink : theme.cardBorder,
+                                                                             style: StrokeStyle(lineWidth: empty ? 1.5 : 1, dash: empty ? [5, 4] : [])))
+                    .textContentType(nil)
+                    .onChange(of: text) { if empty { withMotion(Motion.short) { empty = false } } }
                     .accessibilityLabel(model.t("ask.free.label"))
                     .accessibilityIdentifier("ask.free.text")
-                if empty { NoticeCard(text: model.t("ask.free.empty")) }
-                PrimaryButton(label: model.t("ask.free.send"), id: "ask.free.send") {
+                if empty {
+                    NoticeCard(text: model.t("ask.free.empty"))
+                        .accessibilityFocused($hintFocused)
+                        .revealsIntoView()
+                        .transition(Motion.revealTransition)
+                }
+                PrimaryButton(label: model.t("ask.free.send"), id: "ask.free.send",
+                              ready: !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) {
                     let q = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                    guard !q.isEmpty else { empty = true; return }
+                    guard !q.isEmpty else {
+                        withMotion(Motion.reveal) { empty = true }
+                        hintFocused = true
+                        refused += 1
+                        return
+                    }
                     empty = false
                     keys.append((model.askFree(programId, question: q), q))
                     text = ""
                 }
+                Color.clear.frame(height: 0).sensoryFeedback(Haptic.error, trigger: refused)
                 ForEach(keys, id: \.key) { entry in
                     QuestionBubble(text: entry.question)
                     RequestView(key: entry.key)
@@ -235,7 +252,7 @@ struct AnswerScreen: View {
                                 if result.source == .inCloud { Circle().fill(theme.redact).frame(width: 6, height: 6) }
                                 Text(model.t(result.source == .inCloud ? "answer.sentWith" : "answer.keptWith",
                                              ["program": model.programName(context.program), "time": model.time(Date())]))
-                                    .font(.system(size: 12)).foregroundStyle(theme.note)
+                                    .sfFont(12).foregroundStyle(theme.note)
                             }
                         }
                     }
@@ -265,7 +282,7 @@ struct QuestionBubble: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 17, weight: .medium))
+            .sfFont(17, weight: .medium)
             .foregroundStyle(theme.color("onPrimary"))
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
@@ -304,7 +321,7 @@ struct RequestView: View {
                     SecondaryButton(label: model.t("answers.retry"), id: "answer.retry") { retry() }
                 }
                 if let status = error.status {
-                    Text(verbatim: "\(error.kind.rawValue) \(status)").font(Font(DesignFonts.uiFont(.mono, weight: 400, size: 12))).foregroundStyle(theme.note)
+                    Text(verbatim: "\(error.kind.rawValue) \(status)").monoFont(12, weight: 400).foregroundStyle(theme.note)
                 }
             }
             .accessibilityIdentifier("answer.error")
@@ -332,7 +349,7 @@ struct AnswerView: View {
             if result.reason == .onDeviceFailed { NoteText(text: model.t("answers.retried")).padding(.top, 6) }
             if sentBefore { NoteText(text: model.t("send.linePublic")).padding(.top, 6) }
             Text(result.text)
-                .font(.system(size: 17))
+                .sfFont(17)
                 .foregroundStyle(theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -373,7 +390,7 @@ struct ProvenanceBadge: View {
         }
         VStack(alignment: .leading, spacing: 4) {
             WhereBadge(kind: source == .onDevice ? .device : source == .inCloud ? .cloud : .noModel, label: badge)
-            Text(reasonText).font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+            Text(reasonText).sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(source == .onDevice ? model.t("badge.sentence.device", ["reason": reasonText])
@@ -395,10 +412,9 @@ struct SendSheet: View {
     var body: some View {
         if case .confirm(let request, let lines) = model.state(key) {
             let cloudFirst = AnswerSession.destination(of: request) == .cloud
-            NoteText(text: model.t(cloudFirst ? "send.leadCloud" : "send.lead"), size: 15)
             Card {
                 Label {
-                    Text(model.t("send.goesCloud")).font(.system(size: 15, weight: .semibold))
+                    Text(model.t("send.goesCloud")).sfFont(15, weight: .semibold)
                 } icon: {
                     Circle().fill(theme.redact).frame(width: 8, height: 8)
                 }
@@ -413,7 +429,7 @@ struct SendSheet: View {
                 .accessibilityIdentifier("send.lines")
                 DashedRule().stroke(theme.line, style: StrokeStyle(lineWidth: 1, dash: [3, 3])).frame(height: 1).padding(.vertical, 14)
                 Label {
-                    Text(model.t("send.staysHere")).font(.system(size: 15, weight: .semibold))
+                    Text(model.t("send.staysHere")).sfFont(15, weight: .semibold)
                 } icon: {
                     Circle().fill(theme.ink).frame(width: 8, height: 8)
                 }
@@ -422,7 +438,7 @@ struct SendSheet: View {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach([("send.stays.income", 96.0), ("send.stays.household", 64.0), ("send.stays.answers", 120.0)], id: \.0) { item in
                         HStack(spacing: 12) {
-                            Text(model.t(item.0)).font(.system(size: 15)).foregroundStyle(theme.note).frame(width: 110, alignment: .leading)
+                            Text(model.t(item.0)).sfFont(15).foregroundStyle(theme.note).frame(width: 110, alignment: .leading)
                             MaskBar(width: item.1)
                         }
                         .accessibilityElement(children: .ignore)
@@ -430,12 +446,11 @@ struct SendSheet: View {
                     }
                 }
                 .padding(.top, 12)
-                NoteText(text: model.t("send.notSent")).padding(.top, 12)
             }
-            Button { showRequest.toggle() } label: {
+            Button { withMotion(Motion.reveal) { showRequest.toggle() } } label: {
                 HStack(spacing: 4) {
-                    Text(model.t("send.showRequest")).font(.system(size: 15, weight: .semibold))
-                    Image(systemName: showRequest ? "chevron.up" : "chevron.right").font(.system(size: 12, weight: .semibold))
+                    Text(model.t("send.showRequest")).sfFont(15, weight: .semibold)
+                    Image(systemName: showRequest ? "chevron.up" : "chevron.right").sfFont(12, weight: .semibold)
                 }
                 .foregroundStyle(theme.ink)
                 .frame(maxWidth: .infinity, minHeight: 44)
@@ -443,10 +458,19 @@ struct SendSheet: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("send.showRequest")
             if showRequest {
-                NoteText(text: model.t("send.requestAsBuilt"))
-                MonoBlock(text: request.rendering.text, id: "send.request")
+                VStack(alignment: .leading, spacing: 8) {
+                    NoteText(text: model.t("send.requestAsBuilt"))
+                    MonoBlock(text: request.rendering.text, id: "send.request")
+                }
+                .revealsIntoView()
+                .transition(Motion.revealTransition)
             }
-            NoteText(text: model.t("leaving.network"))
+            MoreAbout {
+                ProvenanceBadge(source: cloudFirst ? .inCloud : .onDevice, reason: request.reason, route: request.route)
+                NoteText(text: model.t(cloudFirst ? "send.leadCloud" : "send.lead"))
+                NoteText(text: model.t("send.notSent"))
+                NoteText(text: model.t("leaving.network"))
+            }
         }
     }
 }
@@ -459,12 +483,12 @@ private struct SendLine: View {
     var body: some View {
         if let range = line.range(of: ": ") {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(line[..<range.lowerBound]).font(.system(size: 15)).foregroundStyle(theme.note).frame(width: 90, alignment: .leading)
-                Text(line[range.upperBound...]).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
+                Text(line[..<range.lowerBound]).sfFont(15).foregroundStyle(theme.note).frame(width: 90, alignment: .leading)
+                Text(line[range.upperBound...]).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
             }
         } else {
-            Text(line).font(.system(size: 15)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+            Text(line).sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -478,11 +502,8 @@ struct SendFooter: View {
     let lines: [String]
 
     var body: some View {
-        let cloudFirst = AnswerSession.destination(of: request) == .cloud
         let count = lines.filter { $0.contains(": ") }.count
         SheetFooter {
-            ProvenanceBadge(source: cloudFirst ? .inCloud : .onDevice, reason: request.reason, route: request.route)
-                .frame(maxWidth: .infinity, alignment: .leading)
             PrimaryButton(label: count > 1 ? model.t("send.sendLines", ["count": model.number(Double(count))]) : model.t("send.send"),
                           sends: true, id: "send.send") { model.send(key) }
             SecondaryButton(label: model.t("send.keepShort"), id: "send.skip") { model.keepOnDevice(key) }
@@ -491,6 +512,36 @@ struct SendFooter: View {
 }
 
 /// A horizontal line for a dashed rule.
+/// "More about this": the details a first look does not need, on demand.
+struct MoreAbout<Content: View>: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.theme) private var theme
+    @ViewBuilder let content: Content
+    @State private var open = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button { withMotion(Motion.reveal) { open.toggle() } } label: {
+                HStack(spacing: 4) {
+                    Text(model.t("preview.more")).sfFont(15, weight: .semibold)
+                    Image(systemName: open ? "chevron.up" : "chevron.down").sfFont(12, weight: .semibold)
+                }
+                .foregroundStyle(theme.ink)
+                .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("more.about")
+            if open {
+                VStack(alignment: .leading, spacing: 8) { content }
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("more.about.content")
+                    .revealsIntoView()
+                    .transition(Motion.revealTransition)
+            }
+        }
+    }
+}
+
 struct DashedRule: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()

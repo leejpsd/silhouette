@@ -15,7 +15,7 @@ struct TasksScreen: View {
     var body: some View {
         GroundScroll {
             Text(model.t("tasks.title"))
-                .font(.system(size: 34, weight: .bold))
+                .sfFont(34, weight: .bold)
                 .foregroundStyle(theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
@@ -56,12 +56,12 @@ struct TasksScreen: View {
         return Card(radius: 20) {
             HStack(spacing: 8) {
                 legend(group)
-                Text(title).font(.system(size: 17, weight: .semibold)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                Text(title).sfFont(17, weight: .semibold).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
             }
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
             Text(tasks.map(\.name).joined(separator: " · "))
-                .font(.system(size: 15)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                .sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 8)
             if group == .cloud, tasks.contains(where: \.tool) {
                 NoteText(text: model.t("tasks.flags")).padding(.top, 4)

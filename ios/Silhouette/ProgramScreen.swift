@@ -10,10 +10,11 @@ import SwiftUI
 struct ProgramScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicType
     let programId: String
 
     var body: some View {
-        ScrollView {
+        RevealingScroll {
             VStack(alignment: .leading, spacing: 16) {
                 if let program = model.bundle.packInfo.program(programId), let result = model.result(programId) {
                     hero(program, result)
@@ -51,7 +52,7 @@ struct ProgramScreen: View {
                 Spacer(minLength: 0)
                 if let url = program.applyUrl.flatMap(URL.init(string:)) {
                     Link(destination: url) {
-                        Image(systemName: "arrow.up.right").font(.system(size: 17, weight: .semibold)).frame(width: 44, height: 44)
+                        Image(systemName: "arrow.up.right").sfFont(17, weight: .semibold).frame(width: 44, height: 44)
                     }
                     .buttonStyle(.glass)
                     .buttonBorderShape(.circle)
@@ -61,21 +62,24 @@ struct ProgramScreen: View {
             }
         } content: {
             let key = model.aboutKey(programId, long: false)
-            HStack(spacing: 14) {
+            // At accessibility sizes the button and its note stack, and the label wraps.
+            let ax = dynamicType.isAccessibilitySize
+            (ax ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(spacing: 14))) {
                 Button { model.startAbout(programId, long: false) } label: {
                     Label(model.t("about.explain"), systemImage: "bubble.left")
-                        .font(.system(size: 17, weight: .semibold))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
+                        .sfFont(17, weight: .semibold)
+                        .lineLimit(ax ? nil : 1)
+                        .fixedSize(horizontal: !ax, vertical: ax)
+                        .padding(.vertical, ax ? 8 : 0)
                         .foregroundStyle(Color(red: 0.055, green: 0.055, blue: 0.055))
                         .padding(.horizontal, 18)
                         .frame(minHeight: 48)
-                        .background(Capsule().fill(.white))
+                        .background(RoundedRectangle(cornerRadius: ax ? 20 : 24).fill(.white))
                 }
                 .buttonStyle(PressScale())
                 .accessibilityIdentifier("about.explain")
                 .disabled({ if case .loading = model.state(key) { true } else { false } }())
-                Text(model.t("about.seeFirst")).font(.system(size: 13)).foregroundStyle(theme.onHeroMuted)
+                Text(model.t("about.seeFirst")).sfFont(13).foregroundStyle(theme.onHeroMuted)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.top, 16)
@@ -108,7 +112,7 @@ struct ProgramScreen: View {
                     ForEach(program.caveats, id: \.self) { key in
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Circle().fill(theme.ink).frame(width: 5, height: 5).accessibilityHidden(true)
-                            Text(model.t("caveat.\(key)")).font(.system(size: 15)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                            Text(model.t("caveat.\(key)")).sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                         }
                     }
                     if let period = program.period {
@@ -140,8 +144,8 @@ private struct HowItWorks: View {
                     ForEach(Array(copy.enumerated()), id: \.element.key) { i, item in
                         if i > 0 { RowDivider() }
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(title(item.key)).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
-                            Text(item.text).font(.system(size: 15)).foregroundStyle(theme.ink2).fixedSize(horizontal: false, vertical: true)
+                            Text(title(item.key)).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
+                            Text(item.text).sfFont(15).foregroundStyle(theme.ink2).fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(16)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -202,9 +206,9 @@ private struct OfficialInformation: View {
             // The pack's list is in one language; its program copy says the same in the reader's.
             if !hasDocsCopy && !program.docsRequired.isEmpty {
                 Card {
-                    Text(model.t("official.docs")).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
+                    Text(model.t("official.docs")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
                     ForEach(program.docsRequired, id: \.self) { d in
-                        Text("· \(d)").font(.system(size: 15)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true).padding(.top, 4)
+                        Text("· \(d)").sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true).padding(.top, 4)
                     }
                 }
             }

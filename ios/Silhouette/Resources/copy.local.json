@@ -25,7 +25,16 @@
     "review.moreValuesShort": "More values",
     "review.workedOutHere": "Worked out on this iPhone",
     "review.typeIt": "Type it",
-    "review.flagged": "A check flags this value. Compare it with the line it came from."
+    "review.flagged": "A check flags this value. Compare it with the line it came from.",
+    "doc.where.device": "Read on this iPhone first",
+    "doc.where.cloud": "Only its silhouette is read, in the cloud",
+    "send.keepShort.ios": "Keep on iPhone",
+    "judges.factModel": "On-device model",
+    "judges.factAvailable": "Available",
+    "judges.factNotAvailable": "Not available",
+    "judges.factFallback": "If unavailable",
+    "judges.factReplays": "Replays a recorded run",
+    "judges.more": "What each step does"
   },
   "es": {
     "deviceCheck.saved": "Guardado en este iPhone: Archivos, En mi iPhone, Silhouette, {file}.",
@@ -52,7 +61,16 @@
     "review.moreValuesShort": "Más valores",
     "review.workedOutHere": "Calculado en este iPhone",
     "review.typeIt": "Escríbelo",
-    "review.flagged": "Una comprobación marca este valor. Compáralo con la línea de donde salió."
+    "review.flagged": "Una comprobación marca este valor. Compáralo con la línea de donde salió.",
+    "doc.where.device": "Se lee primero en este iPhone",
+    "doc.where.cloud": "Solo su silueta se lee, en la nube",
+    "send.keepShort.ios": "Mantener en el iPhone",
+    "judges.factModel": "Modelo del dispositivo",
+    "judges.factAvailable": "Disponible",
+    "judges.factNotAvailable": "No disponible",
+    "judges.factFallback": "Si no está",
+    "judges.factReplays": "Muestra una ejecución grabada",
+    "judges.more": "Qué hace cada paso"
   },
   "ko": {}
 }

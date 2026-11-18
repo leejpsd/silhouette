@@ -88,7 +88,9 @@ struct ResultsScreen: View {
                 }
                 .accessibilityIdentifier("results.none")
             }
-            ForEach(likely, id: \.programId) { ProgramCard(result: $0) }
+            ForEach(Array(likely.enumerated()), id: \.element.programId) { i, r in
+                ProgramCard(result: r).zoomSource("program.\(r.programId)").arrivesOnce("card.\(r.programId)", index: i)
+            }
                 .accessibilityElement(children: .contain)
             if !worth.isEmpty {
                 SectionLabel(text: model.t("results.worthChecking")).padding(.top, 8)
@@ -101,7 +103,7 @@ struct ResultsScreen: View {
                 ListCard {
                     ForEach(Array(unlikely.enumerated()), id: \.element.programId) { i, result in
                         if i > 0 { RowDivider(inset: 52) }
-                        UnlikelyRow(result: result)
+                        UnlikelyRow(result: result).zoomSource("program.\(result.programId)")
                     }
                 }
                 .accessibilityElement(children: .contain)
@@ -109,7 +111,7 @@ struct ResultsScreen: View {
             }
             // A paystub can sharpen the possible results.
             Card {
-                Text(model.t("results.sharpen")).font(.system(size: 17, weight: .semibold)).foregroundStyle(theme.ink)
+                Text(model.t("results.sharpen")).sfFont(17, weight: .semibold).foregroundStyle(theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
                 NoteText(text: model.t("results.sharpenHelp")).padding(.top, 4)
                 PrimaryButton(label: model.t("results.addDocument"), id: "results.addDocument") { model.openDocument() }
@@ -180,22 +182,33 @@ private struct ProgramCard: View {
                 let layout = dynamicType.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(alignment: .top, spacing: 12))
                 layout {
                     IconTile(systemImage: programSymbol(result.programId), ink: true, size: 44)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(model.programName(result.programId)).font(.system(size: 20, weight: .semibold)).foregroundStyle(theme.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if let summary {
-                            Text(summary).font(.system(size: 15)).foregroundStyle(theme.note).lineLimit(dynamicType.isAccessibilitySize ? nil : 2)
-                                .fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        // The pill at the right of the name where the name allows, under it otherwise.
+                        ViewThatFits(in: .horizontal) {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(model.programName(result.programId)).sfFont(20, weight: .semibold).foregroundStyle(theme.ink)
+                                    .lineLimit(1).fixedSize()
+                                Spacer(minLength: 0)
+                                pill
+                            }
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(model.programName(result.programId)).sfFont(20, weight: .semibold).foregroundStyle(theme.ink)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                pill
+                            }
                         }
-                        StatusPill(label: model.t("verdict.short.likely"), style: .plain, dot: true).padding(.top, 4)
+                        if let summary {
+                            // One line here; the whole text is on the program's page.
+                            Text(summary).sfFont(15).foregroundStyle(theme.note).lineLimit(dynamicType.isAccessibilitySize ? nil : 1)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 if let c = model.incomeComparison(result.programId) {
                     LimitBar(ratio: c.ratio)
-                    Text(model.t("results.incomeBar", ["yours": c.yours, "limit": c.limit])).font(.system(size: 13)).foregroundStyle(theme.note)
+                    Text(model.t("results.incomeBar", ["yours": c.yours, "limit": c.limit])).sfFont(13).foregroundStyle(theme.note)
                 }
-                ForEach(notes, id: \.self) { Text($0).font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true) }
+                ForEach(notes, id: \.self) { Text($0).sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true) }
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -210,6 +223,10 @@ private struct ProgramCard: View {
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("program.\(result.programId)")
     }
+}
+
+extension ProgramCard {
+    var pill: some View { StatusPill(label: model.t("verdict.short.likely"), style: .plain, dot: true) }
 }
 
 /// The share of a limit used: an ink bar on the track, 8 pt.
@@ -240,7 +257,7 @@ private struct WorthGrid: View {
         VStack(spacing: 10) {
             ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
                 HStack(alignment: .top, spacing: 10) {
-                    ForEach(row, id: \.programId) { WorthTile(result: $0) }
+                    ForEach(row, id: \.programId) { WorthTile(result: $0).zoomSource("program.\($0.programId)") }
                     if row.count < perRow { Color.clear.frame(maxWidth: .infinity) }
                 }
             }
@@ -259,10 +276,10 @@ private struct WorthTile: View {
         Button { model.openProgram(result.programId) } label: {
             VStack(alignment: .leading, spacing: 8) {
                 VerdictMarker(verdict: result.verdict, size: 22)
-                Text(model.programName(result.programId)).font(.system(size: 17, weight: .semibold)).foregroundStyle(theme.ink)
+                Text(model.programName(result.programId)).sfFont(17, weight: .semibold).foregroundStyle(theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
-                Text(model.t("verdict.short.\(result.verdict.rawValue)")).font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.ink)
-                ForEach(notes, id: \.self) { Text($0).font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true) }
+                Text(model.t("verdict.short.\(result.verdict.rawValue)")).sfFont(13, weight: .semibold).foregroundStyle(theme.ink)
+                ForEach(notes, id: \.self) { Text($0).sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true) }
                 Spacer(minLength: 0)
             }
             .padding(16)

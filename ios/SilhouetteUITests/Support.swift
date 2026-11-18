@@ -6,6 +6,11 @@ extension XCUIApplication {
     static func silhouette(reset: Bool = true, model: String = "none", extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = (reset ? ["-UITestResetAll"] : []) + ["-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-UITestModel", model] + extra
+        // UI_TEST_EXTRA_ARGS (xcodebuild: TEST_RUNNER_UI_TEST_EXTRA_ARGS) adds launch arguments to every
+        // launch, to run the same flows in another language, appearance or text size.
+        if let more = ProcessInfo.processInfo.environment["UI_TEST_EXTRA_ARGS"], !more.isEmpty {
+            app.launchArguments += more.split(separator: " ").map(String.init)
+        }
         return app
     }
 

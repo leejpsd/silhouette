@@ -10,6 +10,7 @@
 		0128ED42949030ED5C32610D /* Snapshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE7421773075E38819ADAAC /* Snapshots.swift */; };
 		02FEE4C6D1F24F79730D6A3C /* DeviceCheckScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1715880E42CEF6BC7DFC9ECC /* DeviceCheckScreen.swift */; };
 		03D8C1508618B8DE62024FAE /* Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27FA8A8BDD0EC620067E52C8 /* Support.swift */; };
+		0886CC6B3A52C93F353C2BB0 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D91941AB2B6D14B3985B5DE /* Motion.swift */; };
 		0C0ED96C94B724601F3FE2A3 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 969068EA6419F763CE06F01E /* FirebaseRemoteConfig */; };
 		0DFD62807AA5BD96A05D8D85 /* DocumentFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB575C7D5E4DD15C461AEC2E /* DocumentFlowUITests.swift */; };
 		0F31394E14E8E97EC7B98F75 /* QuickCheckUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E1C4ABE3E6D1B77C73058DF /* QuickCheckUITests.swift */; };
@@ -18,6 +19,7 @@
 		3340AA8D6A75F5AC5C2A9FC5 /* Chrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F707CD077B6CAE91B65A18 /* Chrome.swift */; };
 		337F0A863C771BAAA55702D3 /* DeviceCheckUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B7B47092DA41039ECA40C46 /* DeviceCheckUITests.swift */; };
 		369B4173C6A119C8076F84B0 /* SilhouetteCore in Frameworks */ = {isa = PBXBuildFile; productRef = A65C5E0A6211178F6CEA323D /* SilhouetteCore */; };
+		3A67377D38C6FE974017D9EF /* InteractionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84364056BB74064BF874238C /* InteractionUITests.swift */; };
 		4482B9D19D85FA679DED92B0 /* TasksScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1861B881CCF20F8BE5DD15A /* TasksScreen.swift */; };
 		4A80F35A9BA7D5D12478D290 /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = 74D81CE5FBA89735906EC619 /* FirebaseAILogic */; };
 		558D63DC6566CE9015645F24 /* DocumentReviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AE4E05C911B96589FE1D223 /* DocumentReviewScreen.swift */; };
@@ -72,6 +74,7 @@
 		1B7B47092DA41039ECA40C46 /* DeviceCheckUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCheckUITests.swift; sourceTree = "<group>"; };
 		1C333B8A099D6F56B6C32F02 /* SilhouetteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilhouetteApp.swift; sourceTree = "<group>"; };
 		27FA8A8BDD0EC620067E52C8 /* Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support.swift; sourceTree = "<group>"; };
+		2D91941AB2B6D14B3985B5DE /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		37879975700C134AA7E61020 /* StartScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartScreen.swift; sourceTree = "<group>"; };
 		37DD37DAA9D119328A7D7CFF /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		3A8D2DAC45CB438526EB4FDA /* SilhouetteUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SilhouetteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -83,6 +86,7 @@
 		789AC1A17553EB6C7133E02C /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		7AE4E05C911B96589FE1D223 /* DocumentReviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentReviewScreen.swift; sourceTree = "<group>"; };
 		7B712A144B453B13A389C369 /* BigShouldersDisplay-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BigShouldersDisplay-Variable.ttf"; sourceTree = "<group>"; };
+		84364056BB74064BF874238C /* InteractionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractionUITests.swift; sourceTree = "<group>"; };
 		877AF1326F3BD861251DE365 /* FirebaseServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseServices.swift; sourceTree = "<group>"; };
 		8AE7421773075E38819ADAAC /* Snapshots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshots.swift; sourceTree = "<group>"; };
 		9BE662B2AC082149AFC942D9 /* TestModelPort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestModelPort.swift; sourceTree = "<group>"; };
@@ -144,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				A095EFF4BC193884C33D7057 /* Kit.swift */,
+				2D91941AB2B6D14B3985B5DE /* Motion.swift */,
 				0E7FE6702DD2804F61B62A70 /* Sheets.swift */,
 				E2BC90F62FC81000A13CA37E /* Theme.swift */,
 				5FD779D81845A02EAB71E24A /* Typography.swift */,
@@ -225,6 +230,7 @@
 				E4E76BF70D7CCFEF93A1307D /* AnswersUITests.swift */,
 				1B7B47092DA41039ECA40C46 /* DeviceCheckUITests.swift */,
 				BB575C7D5E4DD15C461AEC2E /* DocumentFlowUITests.swift */,
+				84364056BB74064BF874238C /* InteractionUITests.swift */,
 				3E1C4ABE3E6D1B77C73058DF /* QuickCheckUITests.swift */,
 				08A717B6374E61D95EAF916F /* ScreenshotTour.swift */,
 				27FA8A8BDD0EC620067E52C8 /* Support.swift */,
@@ -397,6 +403,7 @@
 				6AD67571E24ED05247F54373 /* FirebaseServices.swift in Sources */,
 				F6D59635FFD315C63ED1B381 /* JudgesScreen.swift in Sources */,
 				776E9233997726D07EDCB5AB /* Kit.swift in Sources */,
+				0886CC6B3A52C93F353C2BB0 /* Motion.swift in Sources */,
 				F932512C75501D26E8AD4604 /* NetworkMonitor.swift in Sources */,
 				55D5927B8457B2D79B8E32F7 /* ProgramScreen.swift in Sources */,
 				FECC565981A70C7D774237BA /* QuestionScreen.swift in Sources */,
@@ -419,6 +426,7 @@
 				A8BED50D02884C3276B15A53 /* AnswersUITests.swift in Sources */,
 				337F0A863C771BAAA55702D3 /* DeviceCheckUITests.swift in Sources */,
 				0DFD62807AA5BD96A05D8D85 /* DocumentFlowUITests.swift in Sources */,
+				3A67377D38C6FE974017D9EF /* InteractionUITests.swift in Sources */,
 				0F31394E14E8E97EC7B98F75 /* QuickCheckUITests.swift in Sources */,
 				F8D6475EC8BB51A4C397D7EB /* ScreenshotTour.swift in Sources */,
 				03D8C1508618B8DE62024FAE /* Support.swift in Sources */,

@@ -46,7 +46,7 @@ struct DeviceCheckScreen: View {
                 Text(model.t("deviceCheck.recordingMeta", ["date": String((recording.file["date"]?.stringValue ?? "").prefix(10)),
                                                            "browser": recording.file["browser"]?.stringValue ?? "",
                                                            "platform": recording.file["platform"]?.stringValue ?? ""]))
-                    .font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                    .sfFont(15, weight: .semibold).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("deviceCheck.recordingMeta")
             }
             if let shown, !(shown["cases"]?.arrayValue ?? []).isEmpty { headlines(shown) }
@@ -60,7 +60,7 @@ struct DeviceCheckScreen: View {
             }
             if recording == nil && available {
                 Toggle(model.t("deviceCheck.repeat"), isOn: $repeatCases)
-                    .font(.system(size: 15))
+                    .sfFont(15)
                     .tint(theme.ink)
                     .disabled(run?.running == true)
                     .padding(16)
@@ -97,14 +97,14 @@ struct DeviceCheckScreen: View {
                     if let file = run?.file, let url = run?.savedURL ?? Self.write(file) {
                         ShareLink(item: url) {
                             Label(model.t("deviceCheck.download"), systemImage: "square.and.arrow.up")
-                                .font(.system(size: 17, weight: .semibold))
+                                .sfFont(17, weight: .semibold)
                                 .foregroundStyle(theme.ink)
                                 .frame(maxWidth: .infinity, minHeight: 48)
                                 .background(Capsule().fill(theme.sheet))
                         }
                         .accessibilityIdentifier("deviceCheck.share")
                     }
-                    PrimaryButton(label: model.t("deviceCheck.run"), id: "deviceCheck.run") { start() }
+                    PrimaryButton(label: model.t("deviceCheck.run"), id: "deviceCheck.run", busy: run?.running == true) { start() }
                         .disabled(!available || run?.running == true)
                 }
             }
@@ -176,7 +176,7 @@ struct DeviceCheckScreen: View {
     private func headline(_ figure: String, _ text: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text(verbatim: figure).font(Font(DesignFonts.uiFont(.display, weight: 900, size: 34))).foregroundStyle(theme.ink)
-            Text(text).font(.system(size: 15)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+            Text(text).sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
     }
@@ -224,14 +224,14 @@ struct DeviceCheckScreen: View {
                 if i > 0 { RowDivider(inset: 0) }
                 VStack(alignment: .leading, spacing: 4) {
                     let rep = c["repetition"]?.numberValue.map { " · " + model.t("deviceCheck.repetition", ["n": String(Int($0)), "of": String(Int(file["repetitions"]?.numberValue ?? 1))]) } ?? ""
-                    Text((c["id"]?.stringValue ?? "") + rep).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                    Text((c["id"]?.stringValue ?? "") + rep).sfFont(15, weight: .semibold).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     Text("\(model.t("deviceCheck.col.mode")): \(c["mode"]?.stringValue ?? "") · \(model.t("deviceCheck.col.ran")): \(ranLabel(c, version: version))")
-                        .font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                        .sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
                     let time = c["latencyMs"]?.numberValue.map { String(format: "%.1f s", $0 / 1000) } ?? "–"
                     let check = c["outputCheck"]?.stringValue ?? "–"
                     let fields = c["final"]?["fields"].map { "\(Int($0["correct"]?.numberValue ?? 0)) / \(Int($0["total"]?.numberValue ?? 0))" } ?? "–"
                     Text("\(model.t("deviceCheck.col.time")): \(time) · \(model.t("deviceCheck.col.check")): \(check) · \(model.t("deviceCheck.col.fields")): \(fields)")
-                        .font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                        .sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
                     ForEach(Array((c["device"]?["passes"]?.arrayValue ?? []).enumerated()), id: \.offset) { _, p in
                         let seconds = String(format: "%.1f", (p["latencyMs"]?.numberValue ?? 0) / 1000)
                         let problems = (p["problems"]?.arrayValue ?? []).compactMap(\.stringValue)
@@ -239,13 +239,13 @@ struct DeviceCheckScreen: View {
                         Text(model.t("deviceCheck.pass", ["part": p["part"]?.stringValue ?? "", "time": seconds])
                              + (problems.isEmpty ? "" : " " + problems.joined(separator: ", "))
                              + (marked.isEmpty ? "" : " · " + model.t("deviceCheck.marked", ["problems": marked.joined(separator: ", ")])))
-                            .font(Font(DesignFonts.uiFont(.mono, weight: 400, size: 11.5))).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                            .monoFont(11.5, weight: 400).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     }
                     if let notRead = c["final"]?["notRead"]?.arrayValue, notRead.contains(where: { $0.stringValue == "deductions" }) {
-                        Text(model.t("deviceCheck.deductionsNotRead")).font(.system(size: 13)).foregroundStyle(theme.note)
+                        Text(model.t("deviceCheck.deductionsNotRead")).sfFont(13).foregroundStyle(theme.note)
                     }
                     if let note = c["error"]?.stringValue ?? c["note"]?.stringValue {
-                        Text("\(model.t("deviceCheck.col.note")): \(note)").font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                        Text("\(model.t("deviceCheck.col.note")): \(note)").sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .padding(16)

@@ -10,6 +10,7 @@ import UIKit
 struct RootView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Namespace private var zoom
 
     var body: some View {
         @Bindable var model = model
@@ -33,7 +34,12 @@ struct RootView: View {
             }
             .accessibilityIdentifier("tab.paystub")
         }
+        .environment(\.zoomSpace, zoom)
         .tabViewBottomAccessory { PrivacyPill() }
+        // The last line of every page scrolls clear of the pill and the tab bar, which sit over a
+        // hard scroll edge so nothing shows through them.
+        .contentMargins(.bottom, 76, for: .scrollContent)
+        .scrollEdgeEffectStyle(.hard, for: .bottom)
         .tint(theme.ink)
         .modifier(SheetHost())
         // The fast snapshot capture shows end states: no transitions.
@@ -47,7 +53,7 @@ private extension View {
         navigationDestination(for: Route.self) { route in
             switch route {
             case .question(let id, let returnTo): QuestionScreen(stepId: id, returnTo: returnTo).id(route)
-            case .program(let id): ProgramScreen(programId: id)
+            case .program(let id): ProgramScreen(programId: id).zoomDestination("program.\(id)")
             case .documentPreview: DocumentPreviewScreen()
             case .documentReview: DocumentReviewScreen()
             case .judges: JudgesScreen()
@@ -73,21 +79,32 @@ struct PrivacyPill: View {
                 CounterDisc(count: count, size: 28)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(count == 0 ? model.t("pill.none") : model.t("pill.sent", ["count": model.number(Double(count))]))
-                        .font(.system(size: 15, weight: .semibold))
+                        .contentTransition(.opacity)
+                        .sfFont(15, weight: .semibold)
                         .lineLimit(1)
+                        // Large text on a small iPhone: shrink a little before truncating.
+                        .minimumScaleFactor(0.8)
                         .accessibilityIdentifier("leaving.title")
                     if placement != .inline, count > 0, let last = model.outbound.last(where: \.left) {
                         Text("\(model.outboundFieldName(last.fields.first ?? "model-request")) · \(model.time(last.at))")
-                            .font(.system(size: 12)).foregroundStyle(theme.note).lineLimit(1)
+                            .sfFont(12).foregroundStyle(theme.note).lineLimit(1)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.icon)
+                Image(systemName: "chevron.right").sfFont(13, weight: .semibold).foregroundStyle(theme.icon)
             }
             .padding(.horizontal, 12)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Solid, as drawn: white in light, ink in dark, so content never shows through it.
+            .background(theme.pillFill)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        // One distinct feedback when the count goes up: something left the device.
+        .sensoryFeedback(Haptic.sent, trigger: model.sentCount) { old, new in new > old }
+        .animation(Motion.named(Motion.medium), value: model.sentCount)
+        // A bar: it stops growing at the largest standard size; the large content viewer shows it bigger.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(model.countSubline)
         .accessibilityHint(model.t("leaving.details"))

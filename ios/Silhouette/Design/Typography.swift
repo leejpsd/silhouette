@@ -143,6 +143,31 @@ extension View {
     func type(_ role: TypeRole, size: CGFloat? = nil, weight: Double? = nil) -> some View {
         modifier(TypeModifier(role: role, size: size, weight: weight))
     }
+
+    /// SF at a design size, scaled with Dynamic Type the way the type roles are.
+    func sfFont(_ size: CGFloat, weight: Font.Weight = .regular, design: Font.Design = .default) -> some View {
+        modifier(ScaledSystemFont(size: size, weight: weight, design: design))
+    }
+
+    /// IBM Plex Mono at a design size, scaled with Dynamic Type.
+    func monoFont(_ size: CGFloat, weight: Double = 500) -> some View {
+        modifier(ScaledSystemFont(size: size, weight: .regular, mono: true, monoWeight: weight))
+    }
+}
+
+struct ScaledSystemFont: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var dynamicType
+    let size: CGFloat
+    let weight: Font.Weight
+    var design: Font.Design = .default
+    /// IBM Plex Mono (weight 500) instead of SF.
+    var mono = false
+    var monoWeight: Double = 500
+
+    func body(content: Content) -> some View {
+        let points = (size * dynamicTypeScale(dynamicType)).rounded()
+        content.font(mono ? Font(DesignFonts.uiFont(.mono, weight: monoWeight, size: points)) : .system(size: points, weight: weight, design: design))
+    }
 }
 
 // MARK: - Display headline with tight leading and the size-step rule

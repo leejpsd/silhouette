@@ -33,6 +33,10 @@ extension Theme {
             : UIColor(red: 0x0E / 255, green: 0x0E / 255, blue: 0x0E / 255, alpha: 1) })
     }
     var onHero: Color { .white }
+    /// The privacy pill: solid white in light, ink in dark.
+    var pillFill: Color {
+        Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0x0E / 255, green: 0x0E / 255, blue: 0x0E / 255, alpha: 1) : .white })
+    }
     var onHeroMuted: Color { .white.opacity(0.82) }
     /// The 1 px border that gives cards their edge (ink at 8 %).
     var cardBorder: Color { ink.opacity(tokens.number("alpha.inkBorder") ?? 0.08) }
@@ -80,7 +84,7 @@ struct Hero<Top: View, Content: View>: View {
                 .frame(minHeight: 44)
                 .padding(.top, 6)
             if let eyebrow {
-                Text(eyebrow).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.onHeroMuted)
+                Text(eyebrow).sfFont(15, weight: .semibold).foregroundStyle(theme.onHeroMuted)
                     .padding(.top, 20)
             }
             if let badge { badge.padding(.top, eyebrow == nil ? 20 : 8) }
@@ -134,7 +138,7 @@ struct GlassRound: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: systemImage).font(.system(size: 17, weight: .semibold)).frame(width: 44, height: 44)
+            Image(systemName: systemImage).sfFont(17, weight: .semibold).frame(width: 44, height: 44)
         }
         .buttonStyle(.glass)
         .buttonBorderShape(.circle)
@@ -155,8 +159,8 @@ struct GlassCapsule: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                if let systemImage { Image(systemName: systemImage).font(.system(size: 15, weight: .semibold)) }
-                Text(label).font(.system(size: 17, weight: .semibold)).lineLimit(1)
+                if let systemImage { Image(systemName: systemImage).sfFont(15, weight: .semibold) }
+                Text(label).sfFont(17, weight: .semibold).lineLimit(1)
             }
             .padding(.horizontal, 6)
             .frame(minHeight: 44)
@@ -192,24 +196,64 @@ struct PrimaryButton: View {
     let label: String
     var sends = false
     var id: String = ""
+    /// Quiet until what it needs is in (an answer chosen): still pressable, it then explains what is
+    /// missing. Ready, it fills and shows the arrow.
+    var ready = true
+    /// Something it started is running: it shows that, and cannot be pressed again.
+    var busy = false
+    /// An arrow when ready, where the action moves forward (the question flow).
+    var showsArrow = false
     let action: () -> Void
+
+    /// Filled when it can act now; an outline when it waits for something or cannot act.
+    private var filled: Bool { ready && enabled && !busy }
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                if sends { LeaveGlyph().frame(width: 18, height: 18) }
-                Text(label).font(.system(size: 17, weight: .semibold)).multilineTextAlignment(.center)
+                if busy {
+                    ProgressView().tint(filled || sends ? (sends ? theme.onRedact : theme.color("onPrimary")) : theme.ink)
+                        .accessibilityHidden(true)
+                } else if sends {
+                    LeaveGlyph().frame(width: 18, height: 18)
+                }
+                // The view tree stays the same between quiet and ready (only opacity changes), so a
+                // state change never replaces the button under a finger.
+                Text(label).sfFont(17, weight: .semibold).multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
+                    .overlay(alignment: .trailing) {
+                        if showsArrow && !sends {
+                            Image(systemName: "arrow.right").sfFont(15, weight: .semibold)
+                                .offset(x: filled ? 26 : 20)
+                                .opacity(filled ? 1 : 0)
+                                .accessibilityHidden(true)
+                        }
+                    }
             }
             .frame(maxWidth: .infinity, minHeight: 52)
             .padding(.horizontal, 16)
-            .foregroundStyle(sends ? theme.onRedact : theme.color("onPrimary"))
-            .background(Capsule().fill(sends ? theme.redact : theme.color("primary")))
-            .opacity(enabled ? 1 : 0.4)
+            .foregroundStyle(foreground)
+            .background {
+                ZStack {
+                    Capsule().fill(sends ? theme.redact : theme.color("primary"))
+                        .opacity(sends ? (filled ? 1 : 0.45) : (filled ? 1 : 0))
+                    Capsule().strokeBorder(theme.ink.opacity(enabled ? 1 : 0.35), lineWidth: 1.5)
+                        .opacity(sends || filled ? 0 : 1)
+                }
+            }
             .contentShape(Capsule())
+            .animation(Motion.named(Motion.short), value: filled)
+            .animation(Motion.named(Motion.short), value: busy)
         }
         .buttonStyle(PressScale())
+        .allowsHitTesting(!busy)
         .accessibilityIdentifier(id)
+    }
+
+    private var foreground: Color {
+        if sends { return theme.onRedact }
+        if filled { return theme.color("onPrimary") }
+        return theme.ink.opacity(enabled ? 1 : 0.4)
     }
 }
 
@@ -223,7 +267,7 @@ struct SecondaryButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(label).font(.system(size: 17, weight: .semibold)).multilineTextAlignment(.center)
+            Text(label).sfFont(17, weight: .semibold).multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, minHeight: filled ? 52 : 44)
                 .padding(.horizontal, 16)
@@ -233,6 +277,15 @@ struct SecondaryButton: View {
         }
         .buttonStyle(PressScale())
         .accessibilityIdentifier(id)
+    }
+}
+
+/// A list row's press: the row darkens at once (a highlight, never movement).
+struct RowPress: ButtonStyle {
+    @Environment(\.theme) private var theme
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(theme.ink.opacity(configuration.isPressed ? 0.06 : 0))
     }
 }
 
@@ -257,7 +310,7 @@ struct LinkText: View {
 
     var body: some View {
         Button(action: action) {
-            Text(label).font(.system(size: size, weight: .semibold))
+            Text(label).sfFont(size, weight: .semibold)
                 .underline(true, color: onHero ? .white.opacity(0.35) : theme.underline)
                 .foregroundStyle(onHero ? .white : theme.ink)
                 .multilineTextAlignment(.leading)
@@ -296,7 +349,7 @@ struct WhereBadge: View {
             if kind != .noModel {
                 Circle().fill(kind == .cloud ? theme.redact : (onHero ? .white : theme.color("onPrimary"))).frame(width: 6, height: 6)
             }
-            Text(label).font(.system(size: 12, weight: .bold)).lineLimit(2).multilineTextAlignment(.leading)
+            Text(label).sfFont(12, weight: .bold).lineLimit(2).multilineTextAlignment(.leading)
         }
         .padding(.horizontal, 10)
         .frame(minHeight: 26)
@@ -338,9 +391,9 @@ struct HeroPill: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            if let systemImage { Image(systemName: systemImage).font(.system(size: 11, weight: .semibold)).accessibilityHidden(true) }
+            if let systemImage { Image(systemName: systemImage).sfFont(11, weight: .semibold).accessibilityHidden(true) }
             if let verdict { VerdictMarker(verdict: verdict, size: 10, color: filled ? Color(red: 0.055, green: 0.055, blue: 0.055) : .white) }
-            Text(label).font(.system(size: 13, weight: .semibold)).lineLimit(2)
+            Text(label).sfFont(13, weight: .semibold).lineLimit(2)
         }
         .padding(.horizontal, 10)
         .frame(minHeight: 28)
@@ -361,7 +414,7 @@ struct StatusPill: View {
     var body: some View {
         HStack(spacing: 5) {
             if dot { Circle().fill(style == .redact ? theme.onRedact : style == .ink ? theme.color("onPrimary") : theme.ink).frame(width: 6, height: 6) }
-            Text(label).font(.system(size: 12, weight: .semibold)).lineLimit(2).multilineTextAlignment(.leading)
+            Text(label).sfFont(12, weight: .semibold).lineLimit(2).multilineTextAlignment(.leading)
         }
         .padding(.horizontal, 8)
         .frame(minHeight: 24)
@@ -422,14 +475,16 @@ struct TokenChip: View {
     @Environment(\.theme) private var theme
     let id: String
     var size: CGFloat = 12
+    /// Inside a document line: tighter padding so the line keeps its rhythm.
+    var compact = false
 
     var body: some View {
         Text(verbatim: id)
             .font(Font(DesignFonts.uiFont(.mono, weight: 600, size: size)))
             .tracking(0.24)
             .foregroundStyle(theme.onRedact)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
+            .padding(.horizontal, compact ? 3 : 6)
+            .padding(.vertical, compact ? 1 : 2)
             .background(RoundedRectangle(cornerRadius: 6).fill(theme.redact))
             .fixedSize()
     }
@@ -453,13 +508,22 @@ struct CounterDisc: View {
     var size: CGFloat = 28
 
     var body: some View {
+        // When something leaves, the ring fills to the redact disc from its centre and the number
+        // rolls to the new count (both a cross-fade under Reduce Motion).
         Text(verbatim: String(count))
             .font(Font(DesignFonts.uiFont(.display, weight: 900, size: size * 0.58)))
             .foregroundStyle(count == 0 ? theme.ink : theme.onRedact)
+            .contentTransition(Motion.reduceMotion ? .opacity : .numericText(value: Double(count)))
             .frame(width: size, height: size)
             .background {
-                if count == 0 { Circle().strokeBorder(theme.ink, lineWidth: 1.5) } else { Circle().fill(theme.redact) }
+                ZStack {
+                    Circle().strokeBorder(theme.ink, lineWidth: 1.5).opacity(count == 0 ? 1 : 0)
+                    Circle().fill(theme.redact)
+                        .scaleEffect(count == 0 ? (Motion.reduceMotion ? 1 : 0.2) : 1)
+                        .opacity(count == 0 ? 0 : 1)
+                }
             }
+            .animation(Motion.named(Motion.medium), value: count)
             .accessibilityHidden(true)
     }
 }
@@ -487,6 +551,9 @@ struct Card<Content: View>: View {
 struct ListCard<Content: View>: View {
     @Environment(\.theme) private var theme
     var radius: CGFloat = 24
+    /// "Choose an answer": a dashed ink outline on the card's own shape (drawn outside the clip, so
+    /// the rounded corners never cut it).
+    var attention = false
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -494,7 +561,12 @@ struct ListCard<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(RoundedRectangle(cornerRadius: radius).fill(theme.sheet))
             .clipShape(RoundedRectangle(cornerRadius: radius))
-            .overlay(RoundedRectangle(cornerRadius: radius).strokeBorder(theme.cardBorder, lineWidth: 1))
+            .overlay(
+                RoundedRectangle(cornerRadius: radius)
+                    .strokeBorder(attention ? theme.ink : theme.cardBorder,
+                                  style: StrokeStyle(lineWidth: attention ? 1.5 : 1, dash: attention ? [5, 4] : []))
+            )
+            .animation(Motion.named(Motion.short), value: attention)
     }
 }
 
@@ -525,17 +597,17 @@ struct ListRow<Leading: View, Trailing: View>: View {
             leading
             layout {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.system(size: titleSize, weight: titleWeight)).foregroundStyle(dimmed ? theme.note : theme.ink)
+                    Text(title).sfFont(titleSize, weight: titleWeight).foregroundStyle(dimmed ? theme.note : theme.ink)
                         .fixedSize(horizontal: false, vertical: true)
                     if let subtitle {
-                        Text(subtitle).font(.system(size: 13)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                        Text(subtitle).sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 trailing
             }
             if chevron {
-                Image(systemName: "chevron.right").font(.system(size: 14, weight: .semibold)).foregroundStyle(theme.icon).accessibilityHidden(true)
+                Image(systemName: "chevron.right").sfFont(14, weight: .semibold).foregroundStyle(theme.icon).accessibilityHidden(true)
             }
         }
         .padding(.horizontal, 16)
@@ -568,7 +640,7 @@ struct IconTile: View {
     var size: CGFloat = 36
 
     var body: some View {
-        Image(systemName: systemImage).font(.system(size: size * 0.45, weight: .semibold))
+        Image(systemName: systemImage).sfFont(size * 0.45, weight: .semibold)
             .foregroundStyle(ink ? theme.color("onPrimary") : theme.ink)
             .frame(width: size, height: size)
             .background(RoundedRectangle(cornerRadius: size * 0.3).fill(ink ? theme.color("primary") : theme.raised))
@@ -584,7 +656,7 @@ struct SectionLabel: View {
 
     var body: some View {
         Text(text)
-            .font(large ? .system(size: 22, weight: .bold) : .system(size: 13, weight: .semibold))
+            .sfFont(large ? 22 : 13, weight: large ? .bold : .semibold)
             .foregroundStyle(large ? theme.ink : theme.note)
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityAddTraits(.isHeader)
@@ -599,7 +671,7 @@ struct NoteText: View {
     var size: CGFloat = 13
 
     var body: some View {
-        Text(text).font(.system(size: size)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+        Text(text).sfFont(size).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -614,8 +686,8 @@ struct NoticeCard<Actions: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Image(systemName: systemImage).font(.system(size: 15, weight: .semibold)).accessibilityHidden(true)
-                Text(text).font(.system(size: 15)).fixedSize(horizontal: false, vertical: true)
+                Image(systemName: systemImage).sfFont(15, weight: .semibold).accessibilityHidden(true)
+                Text(text).sfFont(15).fixedSize(horizontal: false, vertical: true)
             }
             .foregroundStyle(theme.ink)
             actions
@@ -641,26 +713,41 @@ struct Segmented<Value: Hashable>: View {
     let options: [(value: Value, label: String, id: String)]
     @Binding var selection: Value
     var dotFor: Value? = nil
+    @Environment(\.dynamicTypeSize) private var dynamicType
+    @Namespace private var slide
+
+    private var shape: AnyShape {
+        dynamicType.isAccessibilitySize ? AnyShape(RoundedRectangle(cornerRadius: 18)) : AnyShape(Capsule())
+    }
 
     var body: some View {
-        HStack(spacing: 0) {
+        // At accessibility sizes the options stack, so each label stays whole.
+        (dynamicType.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 0)) : AnyLayout(HStackLayout(spacing: 0))) {
             ForEach(options, id: \.value) { option in
                 let on = option.value == selection
-                Button { selection = option.value } label: {
+                Button { withMotion(Motion.reveal) { selection = option.value } } label: {
                     HStack(spacing: 6) {
                         if dotFor == option.value { Circle().fill(theme.redact).frame(width: 6, height: 6) }
-                        Text(option.label).font(.system(size: 13, weight: on ? .semibold : .medium)).lineLimit(2)
+                        Text(option.label).sfFont(13, weight: on ? .semibold : .medium).lineLimit(2)
                             .multilineTextAlignment(.center)
                     }
                     .foregroundStyle(theme.ink)
                     .frame(maxWidth: .infinity, minHeight: 36)
                     .padding(.horizontal, 6)
                     .background {
+                        // The selected segment slides to the new choice (a fade under Reduce Motion).
                         if on {
-                            Capsule().fill(theme.sheet).overlay(Capsule().strokeBorder(theme.cardBorder, lineWidth: 1))
+                            Group {
+                                if dynamicType.isAccessibilitySize {
+                                    RoundedRectangle(cornerRadius: 16).fill(theme.sheet).overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(theme.cardBorder, lineWidth: 1))
+                                } else {
+                                    Capsule().fill(theme.sheet).overlay(Capsule().strokeBorder(theme.cardBorder, lineWidth: 1))
+                                }
+                            }
+                            .matchedGeometryEffect(id: Motion.reduceMotion ? AnyHashable(option.value) : AnyHashable("selected"), in: slide)
                         }
                     }
-                    .contentShape(Capsule())
+                    .contentShape(shape)
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(on ? [.isSelected] : [])
@@ -668,8 +755,9 @@ struct Segmented<Value: Hashable>: View {
             }
         }
         .padding(3)
-        .background(Capsule().fill(theme.track))
+        .background(shape.fill(theme.track))
         .frame(minHeight: 44)
+        .sensoryFeedback(Haptic.selection, trigger: selection)
     }
 }
 
@@ -683,7 +771,10 @@ struct SpinnerLine: View {
     var body: some View {
         HStack(spacing: 10) {
             ProgressView().controlSize(.small).tint(theme.ink)
-            Text(text).font(.system(size: 15)).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+            // A new stage cross-fades in; the line never jumps.
+            Text(text).sfFont(15).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                .contentTransition(.opacity)
+                .animation(Motion.named(Motion.fade), value: text)
         }
         .accessibilityElement(children: .combine)
     }
@@ -698,7 +789,7 @@ struct GroundScroll<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        ScrollView {
+        RevealingScroll {
             VStack(alignment: .leading, spacing: spacing) { content }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 24)
@@ -716,8 +807,33 @@ extension View {
     /// page is pulled down), the ground below; the navigation bar is hidden (the hero draws its own
     /// glass buttons and the edge swipe still goes back).
     func heroScreen(_ theme: Theme) -> some View {
-        background(theme.ground.ignoresSafeArea())
-        .toolbarVisibility(.hidden, for: .navigationBar)
+        modifier(HeroScreen(theme: theme))
+    }
+}
+
+/// Once the hero has scrolled away, content never runs under the status bar: a ground-coloured band
+/// fades in behind it (none while the ink hero is still there).
+private struct HeroScreen: ViewModifier {
+    let theme: Theme
+    @State private var scrolledPast = false
+
+    func body(content: Content) -> some View {
+        content
+            .onScrollGeometryChange(for: Bool.self) { $0.contentOffset.y + $0.contentInsets.top > 120 } action: { _, past in
+                withMotion(Motion.fade) { scrolledPast = past }
+            }
+            .overlay(alignment: .top) {
+                // A zero-height line at the top of the safe area whose background reaches up under
+                // the status bar, and only there.
+                Color.clear
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 0)
+                    .background { theme.ground.ignoresSafeArea(edges: .top).opacity(scrolledPast ? 1 : 0) }
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+            .background(theme.ground.ignoresSafeArea())
+            .toolbarVisibility(.hidden, for: .navigationBar)
     }
 }
 

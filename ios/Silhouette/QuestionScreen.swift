@@ -21,6 +21,11 @@ struct QuestionScreen: View {
     @State private var error: String?
     @State private var loaded = false
     @FocusState private var exactFocused: Bool
+    @AccessibilityFocusState private var errorFocused: Bool
+    /// The progress bar starts at the previous question's value and moves on when the page appears.
+    @State private var shownProgress: Double?
+    /// Each refused Next, so a second press shows the hint again (scroll, focus, haptic).
+    @State private var attempts = 0
 
     private var step: Step? { model.session.step(stepId) }
     private var index: Int { model.session.index(of: stepId) ?? 0 }
@@ -32,12 +37,12 @@ struct QuestionScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     if let step {
-                        ProgressView(value: Double(index + 1), total: Double(max(total, 1)))
+                        ProgressView(value: shownProgress ?? Double(index), total: Double(max(total, 1)))
                             .tint(theme.ink)
                             .accessibilityHidden(true)
                         DraftLine()
                         Text(model.t("question.\(step.id).label"))
-                            .font(.system(size: 28, weight: .bold))
+                            .sfFont(28, weight: .bold)
                             .foregroundStyle(theme.ink)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
@@ -52,7 +57,9 @@ struct QuestionScreen: View {
                             NoticeCard(text: error, systemImage: "exclamationmark.circle")
                                 .accessibilityElement(children: .combine)
                                 .accessibilityIdentifier("question.error")
+                                .accessibilityFocused($errorFocused)
                                 .id("question.error")
+                                .transition(Motion.revealTransition)
                         }
                     }
                 }
@@ -61,10 +68,17 @@ struct QuestionScreen: View {
                 .padding(.bottom, 24)
             }
             .scrollDismissesKeyboard(.interactively)
-            .onChange(of: error) { _, new in if new != nil { withAnimation { proxy.scrollTo("question.error", anchor: .center) } } }
-            .onChange(of: exactFocused) { _, focused in
-                if focused { Task { try? await Task.sleep(for: .milliseconds(350)); withAnimation { proxy.scrollTo("exactField", anchor: .center) } } }
+            // The hint and the control it is about come into view together; VoiceOver moves to the hint.
+            .onChange(of: attempts) {
+                guard error != nil else { return }
+                withMotion(Motion.reveal) { proxy.scrollTo("question.error", anchor: .bottom) }
+                errorFocused = true
             }
+            // The exact-amount field, once open and focused, sits clear of the keyboard and Next.
+            .onChange(of: exactFocused) { _, focused in
+                if focused { Task { try? await Task.sleep(for: .milliseconds(350)); withMotion(Motion.reveal) { proxy.scrollTo("exactField", anchor: .bottom) } } }
+            }
+            .sensoryFeedback(Haptic.error, trigger: attempts)
         }
         .background(theme.ground.ignoresSafeArea())
         .navigationTitle(model.t("q.progress", ["n": String(index + 1), "total": String(total)]))
@@ -72,7 +86,7 @@ struct QuestionScreen: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(model.t("q.progress", ["n": model.number(Double(index + 1)), "total": model.number(Double(total))]))
-                    .font(.system(size: 17, weight: .semibold))
+                    .sfFont(17, weight: .semibold)
                     .foregroundStyle(theme.ink)
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier("question.progress")
@@ -95,14 +109,19 @@ struct QuestionScreen: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if let step {
-                PrimaryButton(label: isLast ? model.t("q.finish") : model.t("q.next"), id: "q.next") { submit(step) }
+            // While a field is being typed in, Next is the keyboard's own (one Next, not two).
+            if let step, !exactFocused {
+                PrimaryButton(label: isLast ? model.t("q.finish") : model.t("q.next"), id: "q.next",
+                              ready: draftValue(step) != nil, showsArrow: true) { submit(step) }
                     .gutter()
                     .padding(.vertical, 8)
                     .background(theme.ground)
             }
         }
-        .onAppear(perform: loadDraft)
+        .onAppear {
+            loadDraft()
+            withMotion(Motion.medium) { shownProgress = Double(index + 1) }
+        }
     }
 
     // MARK: Inputs
@@ -125,7 +144,7 @@ struct QuestionScreen: View {
         case .boolean:
             rows([("true", model.t("option.\(step.id).true")), ("false", model.t("option.\(step.id).false"))])
         case .multiple(let values):
-            ListCard {
+            ListCard(attention: error != nil) {
                 ForEach(Array(values.enumerated()), id: \.element) { i, value in
                     if i > 0 { RowDivider() }
                     let selected = picked.contains(value)
@@ -143,7 +162,7 @@ struct QuestionScreen: View {
     }
 
     private func rows(_ options: [(value: String, label: String)]) -> some View {
-        ListCard {
+        ListCard(attention: error != nil) {
             ForEach(Array(options.enumerated()), id: \.element.value) { i, option in
                 if i > 0 { RowDivider() }
                 ChoiceRow(label: option.label, selected: choice == option.value, id: "choice.\(option.value)") {
@@ -156,7 +175,7 @@ struct QuestionScreen: View {
 
     private func income(_ bands: [Bands.IncomeBand]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            ListCard {
+            ListCard(attention: error != nil && choice == nil) {
                 ForEach(Array(bands.enumerated()), id: \.element.id) { i, band in
                     if i > 0 { RowDivider() }
                     ChoiceRow(label: model.bundle.copy.bandLabel(band, model.locale, currency: model.bundle.packInfo.currency,
@@ -169,12 +188,12 @@ struct QuestionScreen: View {
                 }
                 RowDivider()
                 ChoiceRow(label: model.t("income.exact.option"), selected: choice == "exact", id: "choice.exact") {
-                    choice = "exact"
+                    withMotion(Motion.reveal) { choice = "exact" }
                     error = nil
                     exactFocused = true
                 }
             }
-            if choice == "exact" { exactField }
+            if choice == "exact" { exactField.transition(Motion.revealTransition) }
         }
     }
 
@@ -195,11 +214,11 @@ struct QuestionScreen: View {
     @ViewBuilder private var exactField: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text(model.t("income.exact.label")).font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.ink)
+                Text(model.t("income.exact.label")).sfFont(13, weight: .semibold).foregroundStyle(theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 8)
                 Label(model.t("q.private"), systemImage: "lock").labelStyle(SmallIconLabel())
-                    .font(.system(size: 12)).foregroundStyle(theme.note)
+                    .sfFont(12).foregroundStyle(theme.note)
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("income.private")
             }
@@ -282,8 +301,8 @@ struct QuestionScreen: View {
             }
         }
         let message = model.t(key, params)
-        error = message
-        AccessibilityNotification.Announcement(message).post()
+        withMotion(Motion.reveal) { error = message }
+        attempts += 1
     }
 }
 
@@ -301,26 +320,34 @@ struct ChoiceRow: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 if multiple {
-                    Image(systemName: selected ? "checkmark.square.fill" : "square").font(.system(size: 20)).foregroundStyle(theme.ink)
+                    Image(systemName: selected ? "checkmark.square.fill" : "square").sfFont(20).foregroundStyle(theme.ink)
                         .accessibilityHidden(true)
                 }
                 Text(label)
-                    .font(mono ? Font(DesignFonts.uiFont(.mono, weight: 500, size: 15)) : .system(size: 17, weight: selected ? .semibold : .regular))
+                    .modifier(ScaledSystemFont(size: mono ? 15 : 17, weight: selected ? .semibold : .regular, mono: mono))
                     .foregroundStyle(theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if !multiple && selected {
-                    Image(systemName: "checkmark").font(.system(size: 17, weight: .semibold)).foregroundStyle(theme.ink).accessibilityHidden(true)
+                    // The check mark grows in from its stroke weight (a fade under Reduce Motion). The
+                    // symbol's draw-on effect keeps the app from settling for UI automation, so it is not used.
+                    checkmark.transition(Motion.reduceMotion ? .opacity : .scale(scale: 0.4).combined(with: .opacity))
                 }
             }
             .padding(.horizontal, 16)
             .frame(minHeight: 52)
-            .background(selected ? theme.raised : .clear)
+            .background(selected && multiple ? theme.raised : .clear)
             .contentShape(Rectangle())
+            .animation(Motion.named(Motion.short), value: selected)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(RowPress())
+        .sensoryFeedback(Haptic.selection, trigger: selected) { _, now in now }
         .accessibilityAddTraits(selected ? [.isSelected] : [])
         .accessibilityIdentifier(id)
+    }
+
+    private var checkmark: some View {
+        Image(systemName: "checkmark").sfFont(17, weight: .semibold).foregroundStyle(theme.ink).accessibilityHidden(true)
     }
 }
 
@@ -337,9 +364,10 @@ struct AmountField: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Text(currency).font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 20))).foregroundStyle(theme.note).accessibilityHidden(true)
+            Text(currency).monoFont(20, weight: 500).foregroundStyle(theme.note).accessibilityHidden(true)
             TextField("", text: $text)
-                .font(Font(DesignFonts.uiFont(.mono, weight: 500, size: 20)))
+                .moneyOnly($text)
+                .monoFont(20, weight: 500)
                 .foregroundStyle(theme.ink)
                 .keyboardType(.decimalPad)
                 .textContentType(nil)
@@ -356,6 +384,32 @@ struct AmountField: View {
     }
 }
 
+extension AmountField {
+    /// Money takes digits, group separators and one decimal point, on typing and on paste ("$28,000"
+    /// pasted becomes "28,000"); anything else never reaches the field.
+
+    static func moneyCharacters(_ typed: String) -> String {
+        var out = ""
+        var point = false
+        for c in typed {
+            if c.isASCII && c.isNumber { out.append(c) }
+            else if c == "," { out.append(c) }
+            else if c == ".", !point { out.append(c); point = true }
+        }
+        return out
+    }
+}
+
+extension View {
+    /// Keeps only what a money amount can use (`AmountField.moneyCharacters`) in `text`.
+    func moneyOnly(_ text: Binding<String>) -> some View {
+        onChange(of: text.wrappedValue) { _, new in
+            let kept = AmountField.moneyCharacters(new)
+            if kept != new { text.wrappedValue = kept }
+        }
+    }
+}
+
 /// "Understood as $28,000.50 a year.": an ink check disc and the amount as read.
 struct Understood: View {
     @Environment(\.theme) private var theme
@@ -363,8 +417,8 @@ struct Understood: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Image(systemName: "checkmark.circle.fill").font(.system(size: 15)).foregroundStyle(theme.ink).accessibilityHidden(true)
-            Text(text).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+            Image(systemName: "checkmark.circle.fill").sfFont(15).foregroundStyle(theme.ink).accessibilityHidden(true)
+            Text(text).sfFont(15, weight: .semibold).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
     }
@@ -393,6 +447,8 @@ private struct Counter: View {
                 if let value {
                     Text(verbatim: model.number(Double(value)))
                         .font(Font(DesignFonts.uiFont(.display, weight: 900, size: 72)))
+                        .contentTransition(Motion.reduceMotion ? .opacity : .numericText(value: Double(value)))
+                        .animation(Motion.named(Motion.short), value: value)
                         .foregroundStyle(theme.ink)
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
@@ -419,6 +475,7 @@ private struct Counter: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity)
+        .sensoryFeedback(Haptic.selection, trigger: value)
         .background(RoundedRectangle(cornerRadius: 24).fill(theme.sheet))
         .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(error ? theme.ink : theme.cardBorder, style: StrokeStyle(lineWidth: error ? 1.5 : 1, dash: error ? [5, 4] : [])))
     }
@@ -429,7 +486,7 @@ private struct Counter: View {
             onChange()
         } label: {
             Image(systemName: symbol)
-                .font(.system(size: 17, weight: .bold))
+                .sfFont(17, weight: .bold)
                 .foregroundStyle(enabled ? theme.ink : theme.faint)
                 .frame(width: 44, height: 44)
                 .background(Circle().fill(theme.raised))
@@ -449,8 +506,8 @@ struct SensitiveNote: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Image(systemName: "lock").font(.system(size: 12, weight: .semibold)).accessibilityHidden(true)
-            Text(Self.firstSentenceBold(text)).font(.system(size: 13)).fixedSize(horizontal: false, vertical: true)
+            Image(systemName: "lock").sfFont(12, weight: .semibold).accessibilityHidden(true)
+            Text(Self.firstSentenceBold(text)).sfFont(13).fixedSize(horizontal: false, vertical: true)
         }
         .foregroundStyle(theme.note)
         .accessibilityElement(children: .combine)
