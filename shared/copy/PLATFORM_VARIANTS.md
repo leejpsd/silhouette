@@ -35,3 +35,11 @@ Most sentences do not need a variant: they only name the thing the person holds.
 - A platform's local copy follows the same wording; the table is only for strings from `shared/copy`.
 
 `fixtures/copy/device-noun.json` lists every string the rule changes, per language and platform (`text` → `shown`). A platform passes when its loader gives `shown` for each case. Reference: `reference/device-noun.mjs`; the fixture is rebuilt with `node reference/device-noun.generate.mjs` whenever the copy changes, and the reference tests fail when it is stale.
+
+## One and many
+
+A sentence with a count reads wrong for exactly one ("You may qualify for 1 programs", "1 enviadas"). Such a key has a second form, `{key}.one`, with the same placeholders.
+
+**Rule.** When a string is formatted with `count` equal to 1 and the language has `{key}.one`, that form is used; otherwise the plain key. The `.one` form is looked up in the same language as the plain key (never the English one for a Spanish sentence). The device-noun rule runs on the result as on any other string.
+
+Keys with a `.one` form in v1.22: `review.pending`, `review.confirmAllCount`, `results.mayQualifyCount`, `send.sendLines`, `leaving.split.general`, `leaving.split.technical`, `leaving.split.document`, `leaving.split.personal`, `leaving.sentCount`, `leaving.keptCount`, `outbound.count`. A sentence with several counts is worded so that it needs no plural (`preview.counts`: "numbers {numbers}, dates {dates}, words {words}"). The reference tests check that every `.one` key has its plain key with the same placeholders in every language.

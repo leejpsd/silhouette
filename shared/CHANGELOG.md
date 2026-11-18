@@ -1,5 +1,17 @@
 # Contract changelog
 
+## v1.22 — 2026-11-18
+
+Counted sentences read right for one.
+
+| Change | Why |
+|---|---|
+| **One and many** (`copy/PLATFORM_VARIANTS.md`, new section): a counted key may have `{key}.one`, used when `count` is 1, looked up in the same language. Eleven keys have it (`results.mayQualifyCount`, `review.pending`, `review.confirmAllCount`, `send.sendLines`, the four `leaving.split.*`, `leaving.sentCount`, `leaving.keptCount`, `outbound.count`) | "You may qualify for 1 programs", "Confirm all 1 values", "1 enviadas" |
+| `preview.counts` is worded without plurals: "Hidden on this device: numbers {numbers}, dates {dates}, words {words}." | Three counts in one sentence cannot each have a singular form |
+| `q.range` ("From {min} to {max}" / "De {min} a {max}") | The range under a counter that is set with a stepper only; "Enter a whole number…" stays for a field that is typed into |
+
+Platforms: apply the `.one` rule in the copy loader; iOS and Android use `q.range` where the number cannot be typed. Reference tests: 30.
+
 ## v1.21 — 2026-11-18
 
 How the interface moves, as tokens every platform shares, and one sentence for the multi-choice question.

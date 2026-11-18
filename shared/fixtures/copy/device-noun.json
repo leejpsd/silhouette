@@ -145,8 +145,8 @@
       "language": "en",
       "platform": "ios",
       "key": "preview.counts",
-      "text": "Hidden on this device: {numbers} numbers, {dates} dates, {words} words.",
-      "shown": "Hidden on this iPhone: {numbers} numbers, {dates} dates, {words} words."
+      "text": "Hidden on this device: numbers {numbers}, dates {dates}, words {words}.",
+      "shown": "Hidden on this iPhone: numbers {numbers}, dates {dates}, words {words}."
     },
     {
       "language": "en",
@@ -810,8 +810,8 @@
       "language": "en",
       "platform": "android",
       "key": "preview.counts",
-      "text": "Hidden on this device: {numbers} numbers, {dates} dates, {words} words.",
-      "shown": "Hidden on this phone: {numbers} numbers, {dates} dates, {words} words."
+      "text": "Hidden on this device: numbers {numbers}, dates {dates}, words {words}.",
+      "shown": "Hidden on this phone: numbers {numbers}, dates {dates}, words {words}."
     },
     {
       "language": "en",
@@ -1475,8 +1475,8 @@
       "language": "es",
       "platform": "ios",
       "key": "preview.counts",
-      "text": "Ocultos en este dispositivo: {numbers} números, {dates} fechas, {words} palabras.",
-      "shown": "Ocultos en este iPhone: {numbers} números, {dates} fechas, {words} palabras."
+      "text": "Ocultos en este dispositivo: números {numbers}, fechas {dates}, palabras {words}.",
+      "shown": "Ocultos en este iPhone: números {numbers}, fechas {dates}, palabras {words}."
     },
     {
       "language": "es",
@@ -2098,8 +2098,8 @@
       "language": "es",
       "platform": "android",
       "key": "preview.counts",
-      "text": "Ocultos en este dispositivo: {numbers} números, {dates} fechas, {words} palabras.",
-      "shown": "Ocultos en este teléfono: {numbers} números, {dates} fechas, {words} palabras."
+      "text": "Ocultos en este dispositivo: números {numbers}, fechas {dates}, palabras {words}.",
+      "shown": "Ocultos en este teléfono: números {numbers}, fechas {dates}, palabras {words}."
     },
     {
       "language": "es",

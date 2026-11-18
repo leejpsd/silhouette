@@ -623,5 +623,17 @@
   "judges.factFallback": "If unavailable",
   "judges.factReplays": "Replays a recorded run",
   "judges.more": "What each step does",
-  "q.noneOfThese": "None of these"
+  "q.noneOfThese": "None of these",
+  "review.pending.one": "{count} value still needs your confirmation.",
+  "review.confirmAllCount.one": "Confirm {count} value",
+  "results.mayQualifyCount.one": "You may qualify for {count} program",
+  "send.sendLines.one": "Send {count} line",
+  "leaving.split.general.one": "{count} check or general question, no personal data",
+  "leaving.split.technical.one": "{count} technical check, no personal data",
+  "leaving.split.document.one": "{count} sent with your document’s silhouette",
+  "leaving.split.personal.one": "{count} sent with a silhouette of your information",
+  "leaving.sentCount.one": "{count} sent,",
+  "leaving.keptCount.one": "{count} kept.",
+  "outbound.count.one": "{count} sent: {list}",
+  "q.range": "From {min} to {max}"
 }

@@ -119,7 +119,7 @@
   "outbound.sentTo": "Enviado a {destination}",
   "outbound.showPayload": "Ver exactamente lo que se envió",
   "preview.cloud": "Este dispositivo no puede leerla en privado, así que la silueta se enviará a Firebase AI Logic en la nube.",
-  "preview.counts": "Ocultos en este dispositivo: {numbers} números, {dates} fechas, {words} palabras.",
+  "preview.counts": "Ocultos en este dispositivo: números {numbers}, fechas {dates}, palabras {words}.",
   "preview.lead": "Los números, las fechas y toda palabra que no sea una etiqueta común de documento se reemplazaron por marcadores. Revísalo: solo se puede enviar lo que ves aquí.",
   "preview.missing": "No hay ningún documento para mostrar. Agrega uno primero.",
   "preview.onDevice": "Tu dispositivo lee esta silueta primero. Si no puede, la silueta se envía a Firebase AI Logic en la nube.",
@@ -623,5 +623,17 @@
   "judges.factFallback": "Si no está",
   "judges.factReplays": "Muestra una ejecución grabada",
   "judges.more": "Qué hace cada paso",
-  "q.noneOfThese": "Ninguna de estas"
+  "q.noneOfThese": "Ninguna de estas",
+  "review.pending.one": "Falta {count} valor por confirmar.",
+  "review.confirmAllCount.one": "Confirmar {count} valor",
+  "results.mayQualifyCount.one": "Es posible que califiques para {count} programa",
+  "send.sendLines.one": "Enviar {count} línea",
+  "leaving.split.general.one": "{count} comprobación o pregunta general, sin datos personales",
+  "leaving.split.technical.one": "{count} comprobación técnica, sin datos personales",
+  "leaving.split.document.one": "{count} enviada con la silueta de tu documento",
+  "leaving.split.personal.one": "{count} enviada con una silueta de tu información",
+  "leaving.sentCount.one": "{count} enviada,",
+  "leaving.keptCount.one": "{count} se quedó.",
+  "outbound.count.one": "{count} enviado: {list}",
+  "q.range": "De {min} a {max}"
 }

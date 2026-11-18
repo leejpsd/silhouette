@@ -51,3 +51,18 @@ test('a platform reads its own variant when there is one', () => {
   assert.equal(lookup(copy, 'a', 'ios'), 'A on iPhone');
   assert.equal(lookup(copy, 'b', 'ios'), 'B');
 });
+
+test('every .one key has its plain key with the same placeholders, in every language', () => {
+  const holes = (text) => [...text.matchAll(/\{\w+\}/g)].map((m) => m[0]).sort().join(' ');
+  for (const language of ['en', 'es', 'ko']) {
+    const copy = read(`../../copy/${language}.json`);
+    for (const [key, text] of Object.entries(copy)) {
+      if (!key.endsWith('.one')) continue;
+      const plain = copy[key.slice(0, -4)];
+      assert.equal(typeof plain, 'string', `${language} ${key}: no plain key`);
+      assert.equal(holes(text), holes(plain), `${language} ${key}`);
+      assert.match(text, /\{count\}/, `${language} ${key}`);
+    }
+  }
+});
+
