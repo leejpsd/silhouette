@@ -85,7 +85,7 @@ export function DiscoverScreen() {
           <ChevronLeft />
           {t('detail.back')}
         </a>
-        <ScreenHeading size={50} maxLines={3}>
+        <ScreenHeading size={50} wideSize={64} maxLines={3}>
           {t('discover.heading')}
         </ScreenHeading>
         <div className="off-placeholder" aria-hidden="true">
@@ -105,7 +105,7 @@ export function DiscoverScreen() {
         <ChevronLeft />
         {t('detail.back')}
       </a>
-      <ScreenHeading headingRef={heading} size={50} maxLines={3}>
+      <ScreenHeading headingRef={heading} size={50} wideSize={64} maxLines={3}>
         {t('discover.heading')}
       </ScreenHeading>
       <p className="small">{t('discover.lead')}</p>
@@ -164,7 +164,7 @@ export function NearbyScreen() {
           <ChevronLeft />
           {t('detail.back')}
         </a>
-        <ScreenHeading size={50} maxLines={3}>
+        <ScreenHeading size={50} wideSize={64} maxLines={3}>
           {t('nearby.title')}
         </ScreenHeading>
         <div className="off-placeholder" aria-hidden="true">
@@ -188,7 +188,7 @@ export function NearbyScreen() {
         <ChevronLeft />
         {t('detail.back')}
       </a>
-      <ScreenHeading headingRef={heading} size={50} maxLines={3}>
+      <ScreenHeading headingRef={heading} size={50} wideSize={64} maxLines={3}>
         {t('nearby.title')}
       </ScreenHeading>
       <p className="small">{t('nearby.lead')}</p>

@@ -55,7 +55,8 @@ export function JudgesScreen() {
         <ChevronLeft />
         {t('nav.home')}
       </a>
-      <ScreenHeading size={56} maxLines={3}>
+      <p className="eyebrow">{t('rail.judges')}</p>
+      <ScreenHeading size={58} wideSize={72} maxLines={3}>
         {t('judges.title')}
       </ScreenHeading>
       <p className="lead">{t('judges.lead')}</p>

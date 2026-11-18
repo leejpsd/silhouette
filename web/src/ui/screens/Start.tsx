@@ -1,4 +1,4 @@
-// Start screen: the promise as a picture (what stays on this phone, what could leave), and the way in.
+// Start screen: the promise as a picture (what stays on this device, what could leave), and the way in.
 import { useApp } from '../context';
 import { dynamicKey, formatMoney } from '../i18n';
 import { BANDS } from '../pack';
@@ -6,9 +6,10 @@ import { bandLabel } from './Question';
 import { firstOpenStep } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
-import { BlockActions, useWide } from '../design/block';
+import type { ReactNode } from 'react';
+import { BlockActions } from '../design/block';
 import { ArrowRight } from '../design/icons';
-import { Bar, Paper, ActionLabel } from '../design/parts';
+import { Bar, ActionLabel } from '../design/parts';
 
 /** The example paystub's yearly income (invented). */
 const EXAMPLE_INCOME = 29183;
@@ -19,50 +20,45 @@ export function StartScreen({ notice }: { notice: string | null }) {
   const open = firstOpenStep(steps, answers);
   const firstStep = steps[0]?.id ?? 'income';
 
-  const wide = useWide();
   // The example's yearly income as it could leave: the pack's own range around it.
   const band = BANDS.annualIncome.find((b) => b.min <= EXAMPLE_INCOME && (b.max === null || EXAMPLE_INCOME <= b.max));
   const exampleBand = band ? bandLabel(t, locale, band) : formatMoney(locale, EXAMPLE_INCOME);
+  // The silhouette as a picture: each field as it stays on this device, and what could leave instead.
   const example = (
-    <>
-      <p className="start-promise" data-testid="start-promise">
-        {t('start.promise')}
-      </p>
-      <figure className="start-example" data-testid="start-example">
-        <figcaption className="example-tag">{t('start.example')}</figcaption>
-        <div className="start-cards" aria-hidden="true">
-        <div className="start-card tilt-left" aria-hidden="true">
-          <span className="card-label">{t('preview.onPhone')}</span>
-          <Paper>
-            <Field label={t('field.paystub.employerName')} value="NORTHWIND STAFFING" />
-            <Field label={t('field.paystub.grossPay')} value="1,271.88" />
-            <Field label={t('review.annualTitle')} value={formatMoney(locale, EXAMPLE_INCOME)} />
-            <Field label={t(dynamicKey('variable.householdSize'))} value="3" />
-          </Paper>
+    <figure className="start-example" data-testid="start-example">
+      <div className="example-table" aria-hidden="true">
+        <div className="example-head">
+          <span className="example-side">
+            <span className="dot dot-ink" />
+            {t('preview.onPhone')}
+          </span>
+          <span className="example-side">
+            <span className="dot dot-leave" />
+            {t('preview.couldLeave')}
+          </span>
         </div>
-        <div className="start-card tilt-right" aria-hidden="true">
-          <span className="card-label leave-label">{t('preview.couldLeave')}</span>
-          <Paper>
-            <div className="paper-field">
-              <span className="paper-label">{t('field.paystub.employerName')}</span>
-              <span className="bars">
-                <Bar id="W1" label={t('placeholder.word')} width={74} />
-                <Bar id="W2" label={t('placeholder.word')} width={66} delay={100} />
-              </span>
-            </div>
-            <div className="paper-field">
-              <span className="paper-label">{t('field.paystub.grossPay')}</span>
-              <span className="bars">
-                <Bar id="N12" label={t('placeholder.number')} width={62} delay={200} />
-              </span>
-            </div>
-            <Field label={t('review.annualTitle')} value={exampleBand} />
-            <Field label={t(dynamicKey('variable.householdSize'))} value="3" />
-          </Paper>
-        </div>
-        </div>
-      </figure>
-    </>
+        <Row label={t('field.paystub.employerName')} value="NORTHWIND STAFFING">
+          <span className="bars">
+            <Bar id="W1" label={t('placeholder.word')} />
+            <Bar id="W2" label={t('placeholder.word')} />
+          </span>
+        </Row>
+        <Row label={t('field.paystub.grossPay')} value="1,271.88">
+          <span className="bars">
+            <Bar id="N12" label={t('placeholder.number')} />
+          </span>
+        </Row>
+        <Row label={t('review.annualTitle')} value={formatMoney(locale, EXAMPLE_INCOME)}>
+          <span className="paper-value">{exampleBand}</span>
+        </Row>
+        <Row label={t(dynamicKey('variable.householdSize'))} value="3">
+          <span className="paper-value">3</span>
+        </Row>
+      </div>
+      <figcaption className="example-note">
+        <span className="example-tag">{t('start.example')}</span>
+      </figcaption>
+    </figure>
   );
 
   const begin = () => {
@@ -77,14 +73,17 @@ export function StartScreen({ notice }: { notice: string | null }) {
       <div role="status" className="notice-slot">
         {notice && <p className="notice">{notice}</p>}
       </div>
-      <div className="stack-8">
-        <ScreenHeading size={60} maxLines={4}>
-          {t('start.title')}
-        </ScreenHeading>
-        <p className="lead">{t('start.lead')}</p>
-      </div>
-      {!wide && example}
-      <BlockActions>
+      <div className="start-main">
+        <div className="stack-8">
+          <ScreenHeading size={54} wideSize={104} maxLines={4}>
+            {t('start.title')}
+          </ScreenHeading>
+          <p className="lead">{t('start.lead')}</p>
+          <p className="start-promise" data-testid="start-promise">
+            {t('start.promise')}
+          </p>
+        </div>
+        <BlockActions>
         <button type="button" className="action" onClick={begin}>
           <ActionLabel>{!started ? t('start.begin') : open < steps.length ? t('start.resume') : t('start.continue')}</ActionLabel>
           <span className="action-arrow">
@@ -109,18 +108,21 @@ export function StartScreen({ notice }: { notice: string | null }) {
           )}
         </div>
         <p className="block-note">{t('promise.line3')}</p>
-        {/* On wide screens the panel beside the headline carries the example. */}
-        {wide && <div className="block-example">{example}</div>}
-      </BlockActions>
+        </BlockActions>
+      </div>
+      {example}
     </div>
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function Row({ label, value, children }: { label: string; value: string; children: ReactNode }) {
   return (
-    <div className="paper-field">
-      <span className="paper-label">{label}</span>
-      <span className="paper-value">{value}</span>
+    <div className="example-row">
+      <span className="example-cell paper-field">
+        <span className="paper-label">{label}</span>
+        <span className="paper-value">{value}</span>
+      </span>
+      <span className="example-cell">{children}</span>
     </div>
   );
 }

@@ -110,7 +110,7 @@ export function DeviceCheckScreen() {
         <ChevronLeft />
         {t('nav.home')}
       </a>
-      <ScreenHeading size={50} maxLines={3}>
+      <ScreenHeading size={50} wideSize={64} maxLines={3}>
         {recording ? t('deviceCheck.titleRecording') : t('deviceCheck.title')}
       </ScreenHeading>
       {recording && (

@@ -8,9 +8,8 @@ import { parseTypedAmount, readTypedAmount } from '../../core/skeleton';
 import { navigate, type Route } from '../router';
 import { ScreenHeading } from '../Heading';
 import type { IncomeBand } from '../../core/generalize';
-import { BlockActions } from '../design/block';
-import { ActionLabel, FitText } from '../design/parts';
-import { LABEL_FLOOR } from '../tokens';
+import { BlockActions, useWide } from '../design/block';
+import { ActionLabel } from '../design/parts';
 import { Alert, ArrowRight, Check, ChevronLeft, Lock } from '../design/icons';
 
 type QuestionRoute = Extract<Route, { name: 'question' }>;
@@ -167,20 +166,43 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
   }, [amountText]);
   const [noteLead, noteRest] = splitFirstSentence(t('sensitive.note'));
 
+  // Wide screens with a keyboard: Y and N answer a yes / no question, S skips, Enter continues (the form).
+  const wide = useWide();
+  const keys = wide && !(window.matchMedia?.('(pointer: coarse)').matches ?? false);
+  // A yes / no question: a bool, or an enum whose two values are yes and no.
+  const yesValue = step.kind === 'bool' ? 'true' : 'yes';
+  const noValue = step.kind === 'bool' ? 'false' : 'no';
+  const yesNo = step.kind === 'bool' || (step.kind === 'enum' && step.values.length === 2 && step.values.includes('yes') && step.values.includes('no'));
+  const keyRef = useRef({ choose, skip });
+  keyRef.current = { choose, skip };
+  useEffect(() => {
+    if (!keys) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.defaultPrevented) return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.isContentEditable || target instanceof HTMLTextAreaElement || (target instanceof HTMLInputElement && !['radio', 'checkbox'].includes(target.type)))) return;
+      if (document.querySelector('dialog[open]')) return;
+      const key = e.key.toLowerCase();
+      if (yesNo && (key === 'y' || key === 'n')) {
+        e.preventDefault();
+        keyRef.current.choose(key === 'y' ? yesValue : noValue);
+      } else if (key === 's') {
+        e.preventDefault();
+        keyRef.current.skip();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [keys, yesNo, yesValue, noValue]);
+
   return (
     <form id={formId} className="screen question" onSubmit={submit} noValidate aria-labelledby={headingId}>
       <div className="question-top">
-        <div className="question-meta">
-          <button type="button" className="text-link back-link" onClick={back}>
-            <ChevronLeft />
-            {t('q.back')}
-          </button>
-          <p className="progress">{t('q.progress', { n: index + 1, total: steps.length })}</p>
-        </div>
-        <p className="giant-number" aria-hidden="true">
-          <span className="giant-n">{index + 1}</span>
-          <span className="giant-total">/{steps.length}</span>
-        </p>
+        <button type="button" className="text-link back-link" onClick={back}>
+          <ChevronLeft />
+          {t('q.back')}
+        </button>
+        <p className="progress">{t('q.progress', { n: index + 1, total: steps.length })}</p>
       </div>
       <div className="progress-track" aria-hidden="true" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
         {steps.map((s, i) => (
@@ -188,7 +210,7 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
         ))}
       </div>
       <div className="stack-10">
-        <ScreenHeading id={headingId} size={56} maxLines={4}>
+        <ScreenHeading id={headingId} size={50} wideSize={84} maxLines={4}>
           {t(dynamicKey(`question.${step.id}.label`))}
         </ScreenHeading>
         {hasHelp && (
@@ -277,8 +299,9 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
           aria-describedby={describedBy}
           data-error={error ? 'true' : undefined}
         >
-          {choices.map((c, i) =>
-            c.value === 'exact' ? null : (
+          {choices.map((c, i) => {
+            if (c.value === 'exact') return null;
+            const choice = (
               <label key={c.value} className={`${asTiles ? 'tile' : step.kind === 'income' ? 'range' : 'option-row'}${draft.choice === c.value ? ' selected' : ''}`}>
                 <input
                   ref={i === 0 ? inputRef : undefined}
@@ -292,13 +315,22 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
                 {asTiles || step.kind === 'income' ? (
                   <span className={asTiles ? 'tile-word' : 'range-label'}>{c.label}</span>
                 ) : (
-                  <FitText className="option-word" size={30} maxLines={2} step={2} floor={LABEL_FLOOR}>
-                    {c.label}
-                  </FitText>
+                  <span className="option-word">{c.label}</span>
                 )}
               </label>
-            ),
-          )}
+            );
+            // The keycap sits on the tile, outside its label, so it is not part of the answer's name.
+            return keys && yesNo && asTiles ? (
+              <div key={c.value} className="tile-cell">
+                {choice}
+                <kbd className="key key-corner" aria-hidden="true">
+                  {c.value === yesValue ? 'Y' : 'N'}
+                </kbd>
+              </div>
+            ) : (
+              choice
+            );
+          })}
           {step.kind === 'income' && (
             <div className={`exact-row${draft.choice === 'exact' ? ' selected' : ''}`}>
               <label className="exact-option">
@@ -345,10 +377,7 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
             const checked = draft.picked.includes(value);
             return (
               <label key={value} className={`option-row${checked ? ' selected' : ''}`}>
-                {/* Real benefit names can be long: the word steps down (to 66 %) before it wraps past two lines. */}
-                <FitText className="option-word" size={30} maxLines={2} step={2} floor={LABEL_FLOOR}>
-                  {t(dynamicKey(`option.${step.id}.${value}`))}
-                </FitText>
+                <span className="option-word">{t(dynamicKey(`option.${step.id}.${value}`))}</span>
                 <input
                   ref={i === 0 ? inputRef : undefined}
                   type="checkbox"
@@ -391,9 +420,19 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
               <ArrowRight />
             </span>
           </button>
-          <button type="button" className="text-link on-block" onClick={skip}>
+          {keys && (
+            <span className="key-hint" aria-hidden="true">
+              <kbd className="key">Enter</kbd> {t('keys.continue')}
+            </span>
+          )}
+          <button type="button" className="text-link on-block" onClick={skip} aria-keyshortcuts={keys ? 'S' : undefined}>
             {t('q.skip')}
           </button>
+          {keys && (
+            <kbd className="key key-skip" aria-hidden="true">
+              S
+            </kbd>
+          )}
         </div>
       </BlockActions>
     </form>

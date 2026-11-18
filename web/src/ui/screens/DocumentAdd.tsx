@@ -104,7 +104,7 @@ export function DocumentAddScreen() {
         {t('detail.back')}
       </a>
       <div className="stack-8">
-        <ScreenHeading size={50} maxLines={3}>
+        <ScreenHeading size={54} wideSize={72} maxLines={3}>
           {t('doc.title')}
         </ScreenHeading>
         <p className="lead">{t('doc.lead')}</p>

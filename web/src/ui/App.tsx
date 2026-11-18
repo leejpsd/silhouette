@@ -5,11 +5,11 @@ import { AppContext, type AppState } from './context';
 import { BANDS, PACK, isDemoPack, isDraftPack } from './pack';
 import { buildSteps, computeVerdicts, sanitizeAnswers, type AnswerValue, type QuickCheckAnswers } from './quickcheck';
 import { navigate, useRoute } from './router';
-import { DemoBanner, Header, LeavingBar } from './Chrome';
-import { BlockProvider, BottomBlock } from './design/block';
+import { DemoBanner, Header, LeavingBar, RailSteps } from './Chrome';
+import { BlockProvider, BottomBlock, useWide } from './design/block';
 import { StartScreen } from './screens/Start';
 import { QuestionScreen } from './screens/Question';
-import { ResultsScreen } from './screens/Results';
+import { ResultsAside, ResultsScreen } from './screens/Results';
 import { ProgramScreen } from './screens/Program';
 import { DocumentContext, emptyDocument, type DocumentContextValue, type DocumentState } from './doc/state';
 import { clearOutbound } from '../data/outbound';
@@ -51,6 +51,7 @@ export function App() {
   const [loaded, setLoaded] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const route = useRoute();
+  const wide = useWide();
 
   useEffect(() => {
     let live = true;
@@ -141,7 +142,15 @@ export function App() {
   if (loaded) {
     if (route.name === 'question') screen = <QuestionScreen key={route.id} route={route} />;
     else if (route.name === 'results') screen = <ResultsScreen />;
-    else if (route.name === 'program') screen = <ProgramScreen key={route.id} id={route.id} />;
+    else if (route.name === 'program')
+      screen = wide ? (
+        <div className="split">
+          <ResultsAside current={route.id} />
+          <ProgramScreen key={route.id} id={route.id} />
+        </div>
+      ) : (
+        <ProgramScreen key={route.id} id={route.id} />
+      );
     else if (route.name === 'doc') screen = <DocumentAddScreen />;
     else if (route.name === 'discover') screen = <DiscoverScreen />;
     else if (route.name === 'nearby') screen = <NearbyScreen />;
@@ -163,15 +172,16 @@ export function App() {
           {t('app.skipToContent')}
         </a>
         <div className="app" data-route={route.name}>
-          <Header onLocale={changeLocale} />
-          {(isDemoPack(PACK) || isDraftPack()) && <DemoBanner onDelete={onDelete} />}
+          <div className="rail-top">
+            <Header onLocale={changeLocale} />
+            {(isDemoPack(PACK) || isDraftPack()) && <DemoBanner onDelete={onDelete} />}
+            <RailSteps route={route} />
+          </div>
           <main id="main" tabIndex={-1} aria-busy={!loaded}>
             <Suspense fallback={null}>{screen}</Suspense>
           </main>
           <BottomBlock label={t('leaving.title')} count={<LeavingBar onDelete={onDelete} />} />
         </div>
-        {/* The grain: one fixed layer over the whole screen. */}
-        <div className="grain" aria-hidden="true" />
       </BlockProvider>
       </DocumentContext.Provider>
     </AppContext.Provider>

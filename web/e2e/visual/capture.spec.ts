@@ -1,6 +1,6 @@
 // Captures every screen and state of the build people get (the California pack) for design review
 // (npm run capture): 390 px in light and dark;
-// Start, a question and Results also at 320 x 568, the tablet layout at 768 px and the wide layout at 960, 1280, 1440 and 1920 px,
+// Start, a question and Results also at 320 x 568, the tablet layout at 768 px and the wide layout at 808, 1024, 1280 and 1440 px,
 // in English and Spanish, light and dark. Files go to
 // visual-captures/ (git-ignored). The model, Remote Config and the device model are the app's own
 // test fakes, so nothing leaves the machine.
@@ -242,7 +242,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
-for (const width of [320, 768, 960, 1280, 1440, 1920] as const) {
+for (const width of [320, 768, 808, 1024, 1280, 1440] as const) {
   for (const theme of width === 320 ? (['light'] as const) : (['light', 'dark'] as const)) {
     for (const lang of ['en', 'es'] as const) {
       test(`${width} px, ${theme}, ${lang}: start, question, results`, async ({ page, context }) => {
@@ -254,6 +254,9 @@ for (const width of [320, 768, 960, 1280, 1440, 1920] as const) {
         await page.goto('/#/q/income');
         await page.getByRole('radio').first().check();
         await shot(page, `41-${width}-${lang}-question`, theme, false);
+        await page.goto('/#/q/hasEarnedIncome');
+        await page.getByRole('radio').first().check();
+        await shot(page, `41-${width}-${lang}-question-tiles`, theme, false);
         await page.goto('/');
         if (lang === 'es') await chooseLanguage(page, 'en');
         await prepared(page);
@@ -267,14 +270,20 @@ for (const width of [320, 768, 960, 1280, 1440, 1920] as const) {
         await page.keyboard.press('Escape');
         await page.getByRole('button', { name: lang === 'es' ? 'Explicar este programa' : 'Explain this program' }).click();
         await shot(page, `45-${width}-${lang}-send-step`, theme, false);
-        await page.getByTestId('bottom-block').getByRole('button', { name: /^(Details|Detalles)$/ }).click();
+        // Wide screens show the step as a modal: send, so the record has something in it.
+        if (width >= 808) {
+          await page.getByTestId('send-decision').getByRole('button', { name: lang === 'es' ? 'Enviar' : 'Send' }).click();
+          await page.getByTestId('answer').first().waitFor();
+          await page.getByTestId('bottom-block').getByRole('button', { name: /^(Details|Detalles)$/ }).click();
+          await page.getByTestId('record-sheet').getByText(/Show exactly what was sent|Ver exactamente lo que se envió/).first().click();
+        } else await page.getByTestId('bottom-block').getByRole('button', { name: /^(Details|Detalles)$/ }).click();
         await shot(page, `46-${width}-${lang}-record`, theme, false);
       });
     }
   }
 }
 
-for (const width of [960, 1440] as const) {
+for (const width of [808, 1280, 1440] as const) {
   for (const theme of ['light', 'dark'] as const) {
     test(`${width} px, ${theme}: documents`, async ({ page, context }) => {
       await page.setViewportSize({ width, height: 900 });
@@ -358,4 +367,68 @@ for (const theme of ['light', 'dark'] as const) {
       await shot(page, `52-${width}-device-check-latest`, theme);
     });
   }
+}
+
+/**
+ * The states the design draws, one viewport each (390 × 844 for the phone screens, 1440 × 900 for the
+ * wide ones), for the side-by-side comparison with the design: files 90-*.
+ */
+async function view(page: Page, name: string, target?: string) {
+  if (target) await page.locator(target).first().evaluate((el) => el.scrollIntoView({ block: 'start' }));
+  else await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: `${OUT}/90-${name}.png`, animations: 'disabled' });
+}
+
+for (const size of [
+  { width: 390, height: 844, prefix: 'W' },
+  { width: 1440, height: 900, prefix: 'P' },
+] as const) {
+  test(`compare, ${size.prefix}: Quick Check, results, program, the step before sending, the record`, async ({ page, context }) => {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await setup(page, context, 'light');
+    const p = size.prefix;
+    await page.goto('/');
+    await view(page, `${p}-start`);
+    await page.goto('/#/q/hasEarnedIncome');
+    await page.getByRole('radio').first().check();
+    await view(page, `${p}-question`);
+    await prepared(page);
+    await view(page, `${p}-results`);
+    await program(page, 'yctc');
+    await view(page, `${p}-program`);
+    await page.getByRole('button', { name: 'Explain this program' }).click();
+    await page.getByTestId('send-panel').waitFor();
+    await view(page, `${p}-before-send`, p === 'W' ? '[data-testid="send-panel"]' : undefined);
+    await page.getByTestId('send-decision').getByRole('button', { name: 'Send' }).click();
+    await page.getByTestId('answer').first().waitFor();
+    await view(page, `${p}-answer`, '[data-testid="explain-section"]');
+    await page.getByTestId('bottom-block').getByRole('button', { name: 'Details' }).click();
+    if (p === 'P') await page.getByTestId('record-sheet').getByText('Show exactly what was sent').first().click();
+    await view(page, `${p}-leaving`);
+    await page.keyboard.press('Escape');
+    await page.goto('/#/judges');
+    await page.getByTestId('judges-device').waitFor();
+    await view(page, `${p}-judges`);
+    await page.goto('/#/device-check');
+    await page.getByTestId('no-model').waitFor();
+    await view(page, `${p}-device-check`);
+  });
+
+  test(`compare, ${size.prefix}: add a paystub, the silhouette, the review`, async ({ page, context }) => {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+    await noOnDeviceModel(context);
+    await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+    const p = size.prefix;
+    await page.goto('/#/doc');
+    await page.getByTestId('model-status').waitFor();
+    await view(page, `${p}-add-paystub`);
+    await page.getByRole('button', { name: 'English paystub (text)' }).click();
+    await page.getByTestId('skeleton-preview').waitFor();
+    await view(page, `${p}-silhouette`);
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await page.getByTestId('inference-badge').waitFor();
+    await view(page, `${p}-review`);
+  });
 }

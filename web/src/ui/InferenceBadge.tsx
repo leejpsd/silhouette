@@ -1,4 +1,5 @@
-// Inference source badge and routing reason chip: shown on every model result. The chip also says
+// Where it ran: the badge (On this device, Cloud, or a sample's answer key) and the routing reason, shown
+// on every model result. The chip also says
 // why a request ran where it ran: the length against the Remote Config limit, a language the
 // on-device model lacks, or no model on this device. Screen readers hear badge and reason as one
 // sentence; the visible text is unchanged.
@@ -6,7 +7,6 @@ import type { ExplainRoute } from '../core/explain';
 import type { InferenceSource, RoutingReason } from '../ai/tasks';
 import { useApp } from './context';
 import { LOCALE_NAMES, dynamicKey, isLocale, type Translate } from './i18n';
-import { Cloud, Doc, Phone } from './design/icons';
 
 /** SAMPLE_KEY: a bundled sample's answer key, no model (routing.json offlineSample). */
 export type ShownSource = InferenceSource | 'SAMPLE_KEY';
@@ -53,16 +53,12 @@ export function InferenceBadge({
     <p className="provenance" data-testid="inference-badge" data-source={source} data-reason={reason} data-detail={ranInCloudBecause ?? route?.basis ?? ''}>
       <span className="visually-hidden">{provenanceSentence(t, p)}</span>
       <span className="provenance-visible" aria-hidden="true">
-        {source === 'ON_DEVICE' ? <Phone /> : source === 'SAMPLE_KEY' ? <Doc /> : <Cloud />}
-        <span>
-          <strong className={`badge ${source === 'ON_DEVICE' ? 'badge-device' : source === 'SAMPLE_KEY' ? 'badge-sample' : 'badge-cloud'}`}>
-            {source === 'ON_DEVICE' ? t('badge.onDevice') : source === 'SAMPLE_KEY' ? t('badge.sampleKey') : t('badge.cloud')}
-          </strong>
-          {' · '}
-          <span className="chip">
-            {t(dynamicKey(`reason.${reason}`))}
-            {detail && <span className="chip-detail"> ({detail})</span>}
-          </span>
+        <strong className={`badge ${source === 'ON_DEVICE' ? 'badge-device' : source === 'SAMPLE_KEY' ? 'badge-sample' : 'badge-cloud'}`}>
+          {source === 'ON_DEVICE' ? t('badge.onDevice') : source === 'SAMPLE_KEY' ? t('badge.sampleKey') : t('badge.cloud')}
+        </strong>
+        <span className="chip">
+          {t(dynamicKey(`reason.${reason}`))}
+          {detail && <span className="chip-detail"> ({detail})</span>}
         </span>
       </span>
     </p>

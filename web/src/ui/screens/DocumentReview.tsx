@@ -105,10 +105,10 @@ function toValues(rows: readonly Row[], deductions: readonly DeductionRow[]): Pa
 }
 
 /** Where a value came from: its document line on a paper slip, the value circled. */
-function Source({ lines, t, tilt = 'small-left' }: { lines: readonly (readonly SourceSegment[])[]; t: Translate; tilt?: 'small-left' | 'small-right' }) {
+function Source({ lines, t }: { lines: readonly (readonly SourceSegment[])[]; t: Translate }) {
   if (lines.length === 0) return null;
   return (
-    <Paper size="small" tilt={tilt} className="source">
+    <Paper size="small" className="source">
       <span className="paper-label source-label">{t('review.source')}</span>
       {lines.map((line, i) => (
         <pre key={i} className="source-line">
@@ -251,7 +251,7 @@ export function DocumentReviewScreen() {
     }
   }, [needsAttention]);
 
-  const fieldItem = (row: Row, index: number) => {
+  const fieldItem = (row: Row) => {
     const isEditing = editing === row.name;
     const inputId = `field-${row.name}`;
     const shownValue = () => {
@@ -328,7 +328,7 @@ export function DocumentReviewScreen() {
         ) : (
           <>
             <div className="field-body">
-              <Source lines={row.source} t={t} tilt={index % 2 === 0 ? 'small-left' : 'small-right'} />
+              <Source lines={row.source} t={t} />
               <p className="field-value" data-testid={`value-${row.name}`}>
                 {shownValue()}
                 {row.status === 'confirmed' && <Check size={20} />}
@@ -464,7 +464,7 @@ export function DocumentReviewScreen() {
   if (nothingFound && !typeAnyway && doc.extraction) {
     return (
       <div className="screen doc-review" data-testid="not-a-document">
-        <ScreenHeading size={50} maxLines={4}>
+        <ScreenHeading size={50} wideSize={64} maxLines={4}>
           {t('review.notDocument.title')}
         </ScreenHeading>
         <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
@@ -493,7 +493,7 @@ export function DocumentReviewScreen() {
         {t('q.back')}
       </a>
       <div className="stack-8">
-        <ScreenHeading size={50} maxLines={3}>
+        <ScreenHeading size={50} wideSize={64} maxLines={3}>
           {t('review.title')}
         </ScreenHeading>
         {doc.extraction && (
@@ -704,7 +704,7 @@ function ChangePreview({ amount }: { amount: number }) {
         </span>
       </p>
       {program && <p className="change-name">{programName(locale, program)}</p>}
-      {change.amount !== undefined && change.amount > 0 && <p className="amount pop">{formatMoney(locale, change.amount)}</p>}
+      {change.amount !== undefined && change.amount > 0 && <p className="amount">{formatMoney(locale, change.amount)}</p>}
     </div>
   );
 }

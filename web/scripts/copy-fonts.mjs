@@ -2,15 +2,17 @@
 // Latin and Latin Extended subsets of the weights the design uses, with each family's licence.
 // The app never requests a font from another host.
 //   node scripts/copy-fonts.mjs
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 
 const FAMILIES = {
-  'darker-grotesque': [800, 900],
-  'hanken-grotesk': [400, 600, 700],
-  'dm-mono': [400, 500],
+  'big-shoulders-display': [900],
+  'inter-tight': [400, 500, 600, 700],
+  'ibm-plex-mono': [400, 500, 600],
 };
 const out = new URL('../public/fonts/', import.meta.url);
 mkdirSync(out, { recursive: true });
+// Only the families above: anything else in the folder (an earlier design's fonts) is removed.
+for (const file of readdirSync(out)) if (!Object.keys(FAMILIES).some((f) => file.includes(f))) rmSync(new URL(file, out));
 for (const [family, weights] of Object.entries(FAMILIES)) {
   const pkg = new URL(`../node_modules/@fontsource/${family}/`, import.meta.url);
   for (const weight of weights) {

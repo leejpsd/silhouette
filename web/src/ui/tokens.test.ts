@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 // 3:1), by design role, and the rule that pink is a fill that needs an inner border where it is weak.
 import { describe, expect, it } from 'vitest';
 
-import tokens from '../../../shared/design/tokens.json';
+// Design v8: the web reads its own copy of tokens version 7 until it is promoted to shared/design/tokens.json.
+import tokens from './design/tokens.v7.json';
 import { COLOR_ROLES, tokensCss } from './tokens';
 
 function luminance(hex: string): number {
@@ -79,7 +80,7 @@ describe('design tokens (roles)', () => {
     const defined = new Set([...css.matchAll(/(--[a-z0-9-]+):/g)].map((m) => m[1]));
     // Custom properties the stylesheet defines itself, or that are set at run time.
     for (const m of styles.matchAll(/(--[a-z0-9-]+):/g)) defined.add(m[1]);
-    for (const own of ['--block-covers', '--chars', '--design']) defined.add(own);
+    for (const own of ['--block-covers', '--rail-foot', '--chars']) defined.add(own);
     const used = new Set([...styles.matchAll(/var\((--[a-z0-9-]+)/g)].map((m) => m[1]));
     for (const name of used) expect(defined.has(name), name).toBe(true);
   });

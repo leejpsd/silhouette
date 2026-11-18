@@ -347,8 +347,8 @@ test.describe('the person\'s result, and the program explained in general', () =
       const screen = page.getByTestId(path.includes('discover') ? 'discover-screen' : 'nearby-screen');
       await expect(screen).toHaveAttribute('data-enabled', 'false');
       await expect(screen.getByRole('button')).toHaveCount(0);
-      // The block carries the way back as the page's main action.
-      await expect(page.getByTestId('bottom-block').getByRole('link', { name: 'Back to results' })).toBeVisible();
+      // The way back is the page's main action (in the dock, or in the content on wide screens).
+      await expect(page.locator('[data-testid="bottom-block"], [data-testid="screen-actions"]').getByRole('link', { name: 'Back to results' })).toBeVisible();
       const back = screen.getByTestId('back-nav');
       await expect(back.getByRole('link')).toHaveCount(6);
       await expect(back.getByRole('link', { name: 'Test Food Help' })).toBeVisible();

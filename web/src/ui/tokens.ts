@@ -1,8 +1,10 @@
-// Turns shared/design/tokens.json into CSS custom properties: the design roles (ground, ink, block,
-// paper, leave, …) for light and, via prefers-color-scheme, dark; type, spacing, radii, sizes,
-// shadows, rotations, motion and the grain. Only role names are emitted; the older contract names in
-// tokens.json are aliases and are not used by the app.
-import tokens from '../../../shared/design/tokens.json';
+// Turns the design tokens (version 7) into CSS custom properties: the design roles (ground, ink, block,
+// paper, leave, …) and the named palette (night, redact, the greys) for light and, via
+// prefers-color-scheme, dark; type, spacing, radii, sizes, the transparent colours, and motion. Only role
+// names are emitted; the older contract names in tokens.json are aliases and are not used by the app. The
+// retired keys of the older look (shadow, rotation, grain) stay in the file for parsers and are not emitted.
+// Design v8: the web reads its own copy of tokens version 7 until it is promoted to shared/design/tokens.json.
+import tokens from './design/tokens.v7.json';
 
 const kebab = (s: string): string => s.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
 
@@ -24,15 +26,22 @@ const family = (list: readonly string[]): string =>
   [list[0] as string, `${list[0] as string} Fallback`, ...list.slice(1)].map((f) => (/\s/.test(f) ? `"${f}"` : f)).join(',');
 const bezier = (b: readonly number[]): string => `cubic-bezier(${b.join(',')})`;
 
-/** The grain as one SVG tile (fractal noise from the grain tokens), for a single fixed layer. */
-export function grainTile(): string {
-  const g = tokens.grain;
-  const svg =
-    `<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'>` +
-    `<filter id='n'><feTurbulence type='${g.type}' baseFrequency='${g.baseFrequency}' numOctaves='${g.numOctaves}' stitchTiles='stitch'/>` +
-    `<feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 ${g.alpha} 0'/></filter>` +
-    `<rect width='100%' height='100%' filter='url(%23n)'/></svg>`;
-  return `url("data:image/svg+xml,${svg.replace(/</g, '%3C').replace(/>/g, '%3E')}")`;
+/**
+ * The transparent colours of the System board, from `alpha`: the dock's text colour at 85 / 22 / 8 / 4 %
+ * (white on the ink dock; ink on the light dock of the dark scheme), the 1 px border in the text colour,
+ * and the scrims.
+ */
+function alphaVars(scheme: 'light' | 'dark'): string {
+  const a = tokens.alpha;
+  const on = a.onInk;
+  const rgb = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)).join(',');
+  const onDock = rgb(tokens.color[scheme].onBlock);
+  const text = rgb(tokens.color[scheme].ink);
+  return (
+    `--on-ink-ring:rgba(${onDock},${on.ring});--on-ink-border:rgba(${onDock},${on.border});--on-ink-divider:rgba(${onDock},${on.divider});--on-ink-fill:rgba(${onDock},${on.fill});` +
+    `--on-ink-underline:rgba(${onDock},${a.onInkUnderline});--ink-border:rgba(${text},${a.inkBorder});--ink-border-strong:rgba(${text},${a.inkBorderStrong});` +
+    `--scrim-sheet:rgba(14,14,14,${a.scrimSheet});--scrim-modal:rgba(14,14,14,${a.scrimModal});--cloud-border-on-ink:rgba(${onDock},${a.cloudBorderOnInk});`
+  );
 }
 
 export function tokensCss(): string {
@@ -75,25 +84,19 @@ export function tokensCss(): string {
   const wide = t.layout.wide;
   // The phone headline measure is unitless: wide screens keep it in em at each headline's design size.
   const layout = `--wide-content-max:${wide.contentMax}px;--wide-column-max:${wide.startHeadlineMaxWidth}px;--wide-block-width:${wide.blockWidth}px;--wide-gap:${wide.gap}px;--phone-measure:${t.layout.phone.headlineMeasure};`;
-  const shadow = Object.entries(t.shadow)
-    .filter(([k]) => k !== 'note')
-    .map(([k, v]) => `--shadow-${kebab(k)}:${v};`)
-    .join('');
-  const rotation = Object.entries(t.rotation)
-    .map(([k, v]) => (Array.isArray(v) ? `--rotate-${kebab(k)}-a:${v[0]}deg;--rotate-${kebab(k)}-b:${v[1]}deg;` : `--rotate-${kebab(k)}:${v}deg;`))
-    .join('');
   const duration = Object.entries(t.motion.duration).map(([k, v]) => `--duration-${kebab(k)}:${v}ms;`).join('');
   const easing = Object.entries(t.motion.easing).map(([k, v]) => `--ease-${kebab(k)}:${bezier(v)};`).join('');
   const delay = Object.entries(t.motion.delay).map(([k, v]) => `--delay-${kebab(k)}:${v}ms;`).join('');
-  const grain = `--grain-image:${grainTile()};--grain-opacity:${t.grain.opacity};`;
-  // The checkbox tick, drawn in the block colour on the selected row's text colour (an SVG cannot read
+  // The checkbox tick, drawn in the dock colour on the selected tile's text colour (an SVG cannot read
   // custom properties, so light and dark each get their own image).
-  const check = (scheme: 'light' | 'dark') =>
-    `--check-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 12.5l3.5 3.5 7.5-8' fill='none' stroke='${encodeURIComponent(t.color[scheme].block)}' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");`;
+  const tick = (stroke: string) =>
+    `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 12.5l3.5 3.5 7.5-8' fill='none' stroke='${encodeURIComponent(stroke)}' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
+  // Also drawn in the card colour, for a check in the text colour on a card or a raised row.
+  const check = (scheme: 'light' | 'dark') => `--check-image:${tick(t.color[scheme].block)};--check-image-card:${tick(t.color[scheme].card)};`;
   return (
-    `:root{color-scheme:light dark;${fonts}${scale}${fit}${space}${inline}${blockPadding}${layout}${radius}${size}${shadow}${rotation}${duration}${easing}${delay}${grain}${check('light')}` +
-    `--grain-blend:${t.grain.blend.light};${colorVars(t.color.light)}}` +
-    `@media (prefers-color-scheme: dark){:root{--grain-blend:${t.grain.blend.dark};${check('dark')}${colorVars(t.color.dark)}}}`
+    `:root{color-scheme:light dark;${fonts}${scale}${fit}${space}${inline}${blockPadding}${layout}${radius}${size}${duration}${easing}${delay}${check('light')}` +
+    `${colorVars(t.color.light)}${alphaVars('light')}}` +
+    `@media (prefers-color-scheme: dark){:root{${check('dark')}${colorVars(t.color.dark)}${alphaVars('dark')}}}`
   );
 }
 

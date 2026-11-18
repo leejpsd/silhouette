@@ -8,40 +8,65 @@ import { fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel } f
 const box = async (page: Page, testId: string) => (await page.getByTestId(testId).boundingBox())!;
 
 test.describe('layout', () => {
-  for (const width of [960, 1280, 1920]) {
-    test(`from 960 px the block is a 400 px panel beside one content column (${width} px)`, async ({ page }) => {
+  for (const width of [808, 1280, 1440]) {
+    test(`from 808 px the ink rail (248 px) runs down the left and the content stands beside it (${width} px)`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
       const columns: number[] = [];
       const measure = async () => {
-        const block = await box(page, 'bottom-block');
-        expect(block.width).toBe(400);
-        expect(block.x + block.width).toBeLessThan(width);
-        const main = await page.locator('main .screen').first().boundingBox();
-        expect(main!.x + main!.width, 'the content stays left of the block').toBeLessThanOrEqual(block.x);
-        columns.push(Math.round(main!.x), Math.round(main!.width));
+        const foot = await box(page, 'bottom-block');
+        expect(Math.round(foot.x)).toBe(0);
+        expect(Math.round(foot.width)).toBe(248);
+        expect(Math.round(foot.y + foot.height)).toBe(900);
+        const top = (await page.locator('.rail-top').boundingBox())!;
+        expect(Math.round(top.x)).toBe(0);
+        expect(Math.round(top.width)).toBe(248);
+        expect(Math.round(top.y)).toBe(0);
+        const main = (await page.locator('main').boundingBox())!;
+        expect(main.x, 'the content starts beside the rail').toBeGreaterThanOrEqual(248);
+        const screen = (await page.locator('main > *').first().boundingBox())!;
+        expect(screen.width).toBeLessThanOrEqual(1100);
+        columns.push(Math.round(screen.x));
       };
       await measure();
+      await expect(page.getByRole('navigation', { name: 'Steps' }).getByRole('link', { name: 'Quick Check' })).toHaveAttribute('aria-current', 'step');
       await page.getByRole('button', { name: 'Start Quick Check' }).click();
       await measure();
       await page.goto('/');
       await completeQuickCheck(page);
       await measure();
-      // The same column on every screen: nothing moves sideways.
-      expect(new Set(columns.filter((_, i) => i % 2 === 0)).size).toBe(1);
-      expect(new Set(columns.filter((_, i) => i % 2 === 1)).size).toBe(1);
-      expect(columns[1]).toBeLessThanOrEqual(640);
+      await expect(page.getByRole('navigation', { name: 'Steps' }).getByRole('link', { name: 'Results' })).toHaveAttribute('aria-current', 'step');
+      // The same left edge on every screen: nothing moves sideways.
+      expect(new Set(columns).size).toBe(1);
     });
   }
 
-  test('wide screens: sheets open in the block column', async ({ page }) => {
+  test('wide screens: sheets open as a centred modal, at most 520 px wide', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
-    const block = await box(page, 'bottom-block');
     await page.getByTestId('language-button').click();
     const sheet = await box(page, 'language-sheet');
-    expect(Math.round(sheet.x)).toBe(Math.round(block.x));
-    expect(Math.round(sheet.width)).toBe(400);
+    expect(sheet.width).toBeLessThanOrEqual(520);
+    expect(Math.abs(sheet.x + sheet.width / 2 - 720)).toBeLessThanOrEqual(1);
+    expect(Math.abs(sheet.y + sheet.height / 2 - 450)).toBeLessThanOrEqual(1);
+  });
+
+  test('wide screens with a keyboard: Y and N answer a yes / no question, S skips, Enter continues', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'phone', 'the hints are for a fine pointer and a keyboard');
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/#/q/hasEarnedIncome');
+    const heading = page.getByRole('heading', { level: 1 });
+    await expect(heading).toHaveText(/earn money from a job/);
+    await page.keyboard.press('y');
+    await expect(page.getByRole('radio', { name: 'Yes' })).toBeChecked();
+    await page.keyboard.press('n');
+    await expect(page.getByRole('radio', { name: 'No' })).toBeChecked();
+    await page.getByRole('radio', { name: 'No' }).press('Enter');
+    await expect(heading).not.toHaveText(/earn money from a job/);
+    const next = (await heading.textContent()) ?? '';
+    await page.keyboard.press('s');
+    await expect(heading).not.toHaveText(next);
+    await expect(page.getByTestId('screen-actions').locator('kbd')).toHaveText(['Enter', 'S']);
   });
 
   for (const size of [

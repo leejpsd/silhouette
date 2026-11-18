@@ -1,7 +1,9 @@
-// The inverted bottom block: the screen's one main action (provided by the screen through
-// <BlockActions>) above the "Leaving your device" count row, on every screen.
+// The privacy dock: on narrow screens, the screen's one main action (provided by the screen through
+// <BlockActions>) above the "Leaving your device" count row, at the bottom of every screen. From
+// layout.wide.from the dock is the foot of the rail (the count row and Details) and the screen's
+// actions stand in the content, where the screen puts them.
 // Modes: compact (count row only), standard (action row + count row), decision (routing line,
-// keep / send, count row). When the block would cover more than 40 % of the screen it scrolls with
+// keep / send, count row). When the dock would cover more than 40 % of the screen it scrolls with
 // the content and only the count row stays pinned.
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -51,14 +53,25 @@ function useBlock(): BlockContextValue {
 export function BlockActions({ mode = 'standard', children }: { mode?: Exclude<BlockMode, 'compact'>; children: ReactNode }) {
   const { slot, register, top } = useBlock();
   const [id] = useState(() => ++nextId);
+  const wide = useWide();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => register(id, mode), [mode]);
+  // Wide screens: the actions stay where the screen declares them, in the content.
+  if (wide) {
+    return (
+      <div className={`screen-actions block-${mode}`} data-testid="screen-actions">
+        {children}
+      </div>
+    );
+  }
   return slot && top === id ? createPortal(<div className={`block-actions-inner block-${mode}`}>{children}</div>, slot) : null;
 }
 
 /** The block itself; `count` is the count row (the "Leaving your device" bar). */
 export function BottomBlock({ count, label }: { count: ReactNode; label: string }) {
-  const { setSlot, mode } = useBlock();
+  const { setSlot, mode: registered } = useBlock();
+  const wide = useWide();
+  const mode = wide ? 'compact' : registered;
   const ref = useRef<HTMLDivElement>(null);
   const [tall, setTall] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -79,6 +92,8 @@ export function BottomBlock({ count, label }: { count: ReactNode; label: string 
       // focus moving to it) keeps it above the block.
       const covers = wide ? 0 : tall ? count + 24 : el.offsetHeight;
       document.documentElement.style.setProperty('--block-covers', `${covers}px`);
+      // The rail's upper part ends where its foot (the count row) begins.
+      document.documentElement.style.setProperty('--rail-foot', `${wide ? el.offsetHeight : 0}px`);
     };
     const observer = new ResizeObserver(measure);
     observer.observe(el);
@@ -124,7 +139,7 @@ export function BottomBlock({ count, label }: { count: ReactNode; label: string 
   );
 }
 
-/** Whether the wide two-column layout is in use (layout.wide.from). */
+/** Whether the wide layout (the rail and the content area) is in use (layout.wide.from). */
 export function useWide(): boolean {
   const query = `(min-width: ${WIDE_FROM}px)`;
   const [wide, setWide] = useState(() => window.matchMedia?.(query).matches ?? false);

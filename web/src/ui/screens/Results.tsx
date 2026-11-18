@@ -1,5 +1,5 @@
-// Results: programs grouped by verdict, each marked by shape and linking to its detail. The
-// "possible" group sits in the inverted card with what would make it clearer.
+// Results: programs grouped by verdict in list cards, each marked by how full its circle is and linking
+// to its detail. On wide screens the list also stands beside the program page.
 import { useMemo, useSyncExternalStore } from 'react';
 import { leftDevice, outboundState, subscribeOutbound } from '../../data/outbound';
 import { criterionReasons, type ProgramVerdict } from '../../core/rules';
@@ -14,23 +14,15 @@ import { ScreenHeading } from '../Heading';
 import { MoreHelpLinks } from '../answers/MoreHelpLinks';
 import { BlockActions } from '../design/block';
 import { ArrowRight, ChevronRight, Minus } from '../design/icons';
-import { LABEL_FLOOR } from '../tokens';
-import { FitText, Marker, ActionLabel } from '../design/parts';
+import { Marker, ActionLabel } from '../design/parts';
 import { useOnline } from '../design/online';
 
 export function ResultsScreen() {
-  const { t, locale, steps, answers, results } = useApp();
-  const groups = groupByVerdict(results);
+  const { t, locale, steps, answers } = useApp();
   // Once anything has left the device, the lead must not say that nothing was sent.
   const sentSomething = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length > 0, () => false);
   const online = useOnline();
   const answered = Object.keys(answers).length > 0;
-  const nothingFits = answered && results.length > 0 && results.every((r) => r.verdict === 'unlikely');
-  const nameOf = (id: string) => {
-    const program = PACK.programs.find((p) => p.id === id);
-    return program ? programName(locale, program) : id;
-  };
-  const engine = useMemo(() => Raw.of(toEngineAnswers(steps, answers)), [steps, answers]);
 
   // The screen's main action, in the block: a paystub turns a possible result into a clearer one.
   const addPaystub = (
@@ -52,7 +44,7 @@ export function ResultsScreen() {
   if (!answered) {
     return (
       <div className="screen results">
-        <ScreenHeading size={62} maxLines={2}>
+        <ScreenHeading size={54} wideSize={64} maxLines={2}>
           {t('results.title')}
         </ScreenHeading>
         <p className="marker-line">
@@ -82,76 +74,100 @@ export function ResultsScreen() {
 
   return (
     <div className="screen results">
-      <div className="stack-8 inset">
-        <ScreenHeading size={62} maxLines={2} leading="tight">
-          {t('results.title')}
-        </ScreenHeading>
-        <p className="small muted" data-testid="results-lead">
-          {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
-        </p>
+      <div className="results-main">
+        <div className="stack-8">
+          <ScreenHeading size={54} wideSize={64} maxLines={2} leading="tight">
+            {t('results.title')}
+          </ScreenHeading>
+          <div className="badge-line">
+            <strong className="badge badge-none">{t('badge.noModel')}</strong>
+            <p className="small muted" data-testid="results-lead">
+              {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
+            </p>
+          </div>
+        </div>
+        {!online && (
+          <p className="dashed-note" role="status">
+            {t('state.offline')}
+          </p>
+        )}
+        <ResultGroups headings />
+        {addPaystub}
+        <div className="results-actions">{editAnswers}</div>
       </div>
-      {!online && (
-        <p className="dashed-note" role="status">
-          {t('state.offline')}
-        </p>
-      )}
-      {nothingFits && (
-        <section className="inverted-card" aria-label={t('results.none')}>
-          <p className="card-headline">{t('results.none')}</p>
-          <p className="small">{t('results.noneHelp')}</p>
-          <div className="card-actions">{editAnswers}</div>
-        </section>
-      )}
-      {groups.map((group) =>
-        group.verdict === 'maybe' && !nothingFits ? (
-          <section key={group.verdict} className="inverted-card group verdict-maybe" aria-labelledby="group-maybe">
-            <h2 id="group-maybe" className="marker-line">
-              <Marker verdict="maybe" />
-              <span>{t('verdict.maybe')}</span>
-            </h2>
-            <ul className="programs">
-              {group.programs.map((r, i) =>
-                i === 0 ? (
-                  <Featured key={r.programId} result={r} name={nameOf(r.programId)} reasons={criterionReasons(PACK, BANDS, engine, r.programId)} />
-                ) : (
-                  <ProgramRow key={r.programId} result={r} name={nameOf(r.programId)} />
-                ),
-              )}
-            </ul>
-            <div className="card-actions">
-              <p className="small">{t('results.maybeHint')}</p>
-            </div>
-          </section>
-        ) : (
-          <section key={group.verdict} className={`group verdict-${group.verdict}`} aria-labelledby={`group-${group.verdict}`}>
-            <h2 id={`group-${group.verdict}`} className={`marker-line${group.verdict === 'depends' || group.verdict === 'unlikely' ? ' muted' : ''}`}>
-              <Marker verdict={group.verdict} />
-              <span>{t(dynamicKey(`verdict.${group.verdict}`))}</span>
-            </h2>
-            <ul className="programs">
-              {group.programs.map((r) => (
-                <ProgramRow key={r.programId} result={r} name={nameOf(r.programId)} />
-              ))}
-            </ul>
-          </section>
-        ),
-      )}
-      {addPaystub}
-      <div className="results-actions">{editAnswers}</div>
       <MoreHelpLinks />
     </div>
   );
 }
 
-function ProgramRow({ result: r, name }: { result: ProgramVerdict; name: string }) {
+/**
+ * The programs grouped by verdict, each group a list card under its verdict word. `current`: the program
+ * shown beside the list (wide screens).
+ */
+export function ResultGroups({ current, headings = false }: { current?: string; headings?: boolean }) {
+  const { t, locale, steps, answers, results } = useApp();
+  const groups = groupByVerdict(results);
+  const answered = Object.keys(answers).length > 0;
+  const nothingFits = answered && results.length > 0 && results.every((r) => r.verdict === 'unlikely');
+  const nameOf = (id: string) => {
+    const program = PACK.programs.find((p) => p.id === id);
+    return program ? programName(locale, program) : id;
+  };
+  const engine = useMemo(() => Raw.of(toEngineAnswers(steps, answers)), [steps, answers]);
+  const H = headings ? 'h2' : 'p';
+  return (
+    <>
+      {nothingFits && (
+        <section className="notice-card" aria-label={t('results.none')}>
+          <p className="card-headline">{t('results.none')}</p>
+          <p className="small">{t('results.noneHelp')}</p>
+          <div className="card-actions">
+            <button type="button" className="text-link" onClick={() => navigate({ name: 'question', id: steps[0]?.id ?? 'income', then: null })}>
+              {t('results.edit')}
+            </button>
+          </div>
+        </section>
+      )}
+      {groups.map((group) => (
+        <section key={group.verdict} className={`group verdict-${group.verdict}`} aria-labelledby={`group-${group.verdict}${current ? '-aside' : ''}`}>
+          <H id={`group-${group.verdict}${current ? '-aside' : ''}`} className="group-label">
+            {t(dynamicKey(`verdict.${group.verdict}`))}
+          </H>
+          <ul className="programs">
+            {group.programs.map((r, i) =>
+              group.verdict === 'maybe' && i === 0 && !nothingFits && !current ? (
+                <Featured key={r.programId} result={r} name={nameOf(r.programId)} reasons={criterionReasons(PACK, BANDS, engine, r.programId)} />
+              ) : (
+                <ProgramRow key={r.programId} result={r} name={nameOf(r.programId)} current={current === r.programId} />
+              ),
+            )}
+          </ul>
+          {group.verdict === 'maybe' && !nothingFits && !current && <p className="group-note">{t('results.maybeHint')}</p>}
+        </section>
+      ))}
+    </>
+  );
+}
+
+/** The results list beside a program on wide screens. */
+export function ResultsAside({ current }: { current: string }) {
+  const { t } = useApp();
+  return (
+    <aside className="results-aside" aria-label={t('results.title')}>
+      <p className="aside-title">{t('results.title')}</p>
+      <ResultGroups current={current} />
+    </aside>
+  );
+}
+
+function ProgramRow({ result: r, name, current = false }: { result: ProgramVerdict; name: string; current?: boolean }) {
   const { t, locale } = useApp();
   return (
     <li data-testid={`program-${r.programId}`} data-verdict={r.verdict}>
-      <a href={routeHref({ name: 'program', id: r.programId })} className="program-link">
+      <a href={routeHref({ name: 'program', id: r.programId })} className="program-link" aria-current={current ? 'page' : undefined}>
+        <Marker verdict={r.verdict} />
         <span className="program-text">
-          <FitText className="program-name" size={32} maxLines={2} step={2} floor={LABEL_FLOOR}>
-            {name}
-          </FitText>
+          <span className="program-name">{name}</span>
           {r.dependsOn.length > 0 && (
             <span className="program-note">{t('results.dependsOn', { list: r.dependsOn.map((v) => t(dynamicKey(`variable.${v}`))).join(', ') })}</span>
           )}
@@ -173,10 +189,10 @@ function Featured({ result: r, name, reasons }: { result: ProgramVerdict; name: 
   const mixed = r.criteria.some((c) => c.state === 'mixed');
   return (
     <li className="featured" data-testid={`program-${r.programId}`} data-verdict={r.verdict}>
-      <a href={routeHref({ name: 'program', id: r.programId })} className="featured-link">
-        <FitText className="featured-name" size={32} maxLines={2} step={2} floor={LABEL_FLOOR}>
-          {name}
-        </FitText>
+      <a href={routeHref({ name: 'program', id: r.programId })} className="program-link featured-link">
+        <Marker verdict={r.verdict} />
+        <span className="featured-name">{name}</span>
+        <ChevronRight />
       </a>
       {comparison && (
         <dl className="limit-rows">

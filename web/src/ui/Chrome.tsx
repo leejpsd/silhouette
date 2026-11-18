@@ -1,14 +1,18 @@
-// Persistent chrome: the header with the wordmark and the language control, the one-line demo
-// notice, the "Leaving your device" count row with its record, and "Delete everything".
+// Persistent chrome: the header with the wordmark and the language control, the one-line draft-rules
+// notice, the rail's steps (wide screens), the "Leaving your device" count row with its record, and
+// "Delete everything".
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
 import { NO_APP_CHECK_TOKEN, REFUSED_BY_BROWSER } from '../data/net-monitor';
 import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, packDate, type CopyKey, type Locale } from './i18n';
 import { useApp } from './context';
 import { PACK, SOURCES_READ_ON, isDemoPack, isDraftPack } from './pack';
-import { routeHref } from './router';
+import { routeHref, type Route } from './router';
+import { firstOpenStep } from './quickcheck';
+import { useDocument } from './doc/state';
 import { Count, Paper, Sheet, ActionLabel } from './design/parts';
 import { Caret, Check, CrossCircle, Phone, Trash } from './design/icons';
+import { useWide } from './design/block';
 
 const SHORT_NAMES: Record<Locale, string> = { en: 'EN', es: 'ES', ko: '한국어' };
 
@@ -134,6 +138,70 @@ export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
   );
 }
 
+/**
+ * The rail's steps (wide screens): Quick Check, Results, Add a paystub, each with its state (the current
+ * one is marked; a finished one carries a check and "Done" or its count), and the link for judges.
+ */
+export function RailSteps({ route }: { route: Route }) {
+  const { t, steps, answers, results } = useApp();
+  const { doc } = useDocument();
+  const wide = useWide();
+  if (!wide) return null;
+  const open = firstOpenStep(steps, answers);
+  const checked = open >= steps.length;
+  const index = route.name === 'question' ? steps.findIndex((s) => s.id === route.id) : -1;
+  const items: { key: string; label: string; href: string; current: boolean; done: boolean; note: string }[] = [
+    {
+      key: 'check',
+      label: t('rail.quickCheck'),
+      href: routeHref(steps[checked ? 0 : open] ? { name: 'question', id: (steps[checked ? 0 : open] as { id: string }).id, then: null } : { name: 'start' }),
+      current: route.name === 'start' || route.name === 'question',
+      done: checked,
+      note: index >= 0 ? `${index + 1}/${steps.length}` : checked ? t('rail.done') : '',
+    },
+    {
+      key: 'results',
+      label: t('rail.results'),
+      href: routeHref({ name: 'results' }),
+      current: route.name === 'results' || route.name === 'program' || route.name === 'discover' || route.name === 'nearby',
+      done: checked && route.name !== 'results' && route.name !== 'program',
+      note: Object.keys(answers).length > 0 ? String(results.filter((r) => r.verdict !== 'unlikely').length) : '',
+    },
+    {
+      key: 'paystub',
+      label: t('results.addDocument'),
+      href: routeHref({ name: 'doc' }),
+      current: route.name === 'doc' || route.name === 'doc-preview' || route.name === 'doc-review',
+      done: doc.confirmedStubs.length > 0,
+      note: doc.confirmedStubs.length > 0 ? t('rail.done') : '',
+    },
+  ];
+  return (
+    <div className="rail-nav">
+      <p className="rail-links">
+        <a className="text-link inline" href={routeHref({ name: 'judges' })}>
+          {t('rail.judges')}
+        </a>
+      </p>
+      <nav aria-label={t('rail.steps')}>
+        <ol className="rail-steps">
+          {items.map((item) => (
+            <li key={item.key}>
+              <a className="rail-step" href={item.href} aria-current={item.current ? 'step' : undefined} data-done={item.done}>
+                <span className="rail-dot" aria-hidden="true">
+                  {item.done && !item.current ? <Check size={12} /> : null}
+                </span>
+                <span className="rail-label">{item.label}</span>
+                {item.note && <span className="rail-note">{item.note}</span>}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </div>
+  );
+}
+
 const time = (locale: Locale, at: number) => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit', hourCycle: 'h23' }).format(at);
 
 /** What the record counts: requests that left and completed, those that did not complete, answers kept. */
@@ -228,6 +296,9 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   const details = useRef<HTMLButtonElement>(null);
   const headline = useId();
   const fieldName = useFieldName();
+  // Wide screens: the record fills the content area, with the open request beside the list.
+  const wide = useWide();
+  const [shown, setShown] = useState<string | null>(null);
   useEffect(() => {
     const show = () => setOpen(true);
     window.addEventListener(OPEN_RECORD_EVENT, show);
@@ -263,7 +334,7 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
         <div className="record">
           {entries.length > 0 ? (
             <h2 className="record-headline" id={headline} data-testid="record-headline">
-              {/* Pink marks what left, so it starts at one. */}
+              {/* Redact marks what left, so it starts at one. */}
               <span className={sent > 0 ? 'leave-mark' : 'zero-mark'}>{t('leaving.sentCount', { count: sent })}</span> <span className="kept-mark">{t('leaving.keptCount', { count: kept })}</span>
             </h2>
           ) : (
@@ -285,9 +356,22 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
           {entries.length > 0 && (
             <ol className="outbound-list" data-testid="outbound-list">
               {entries.map((e) => (
-                <OutboundItem key={e.id} entry={e} title={e.fields.map(fieldName).join(', ')} status={statusLine(e)} at={time(locale, e.at)} />
+                <OutboundItem
+                  key={e.id}
+                  entry={e}
+                  title={e.fields.map(fieldName).join(', ')}
+                  status={statusLine(e)}
+                  at={time(locale, e.at)}
+                  {...(wide ? { open: shown === e.id, onToggle: () => setShown(shown === e.id ? null : e.id) } : {})}
+                />
               ))}
             </ol>
+          )}
+          {wide && entries.some((e) => e.body !== undefined) && (
+            <p className="record-pick">
+              <strong>{t('record.exactlySent')}</strong>
+              <span>{t('record.pick')}</span>
+            </p>
           )}
           {entries.some((e) => e.channel === 'recaptcha') && (
             <p className="record-note" data-testid="recaptcha-note">
@@ -315,9 +399,11 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   );
 }
 
-function OutboundItem({ entry: e, title, status, at }: { entry: OutboundEntry; title: string; status: string; at: string }) {
+function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: OutboundEntry; title: string; status: string; at: string; open?: boolean; onToggle?: () => void }) {
   const { t } = useApp();
-  const [show, setShow] = useState(false);
+  const [own, setOwn] = useState(false);
+  const show = open ?? own;
+  const setShow = (next: boolean) => (onToggle ? onToggle() : setOwn(next));
   const body = useId();
   return (
     <li data-channel={e.channel} data-status={e.status}>
@@ -333,7 +419,13 @@ function OutboundItem({ entry: e, title, status, at }: { entry: OutboundEntry; t
               {t('outbound.showPayload')}
             </button>
             {show && (
-              <Paper tilt="small-left" className="payload-slip" id={body}>
+              <Paper className="payload-slip" id={body}>
+                <p className="payload-head" aria-hidden="true">
+                  <strong>{t('record.exactlySent')}</strong>
+                  <span>
+                    {at} · {title}
+                  </span>
+                </p>
                 <pre className="payload" data-testid="outbound-payload" tabIndex={0} aria-label={t('outbound.showPayload')}>
                   {e.body}
                 </pre>

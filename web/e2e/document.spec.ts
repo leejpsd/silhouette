@@ -12,7 +12,8 @@ test.describe('Document silhouette and pointer extraction', () => {
     await completeQuickCheck(page, { numChildren: '1', income: { band: '$30,000 to $44,999' } });
     await expect(verdictOf(page, 'work-credit')).toHaveAttribute('data-verdict', 'maybe');
 
-    await page.getByRole('link', { name: 'Add a paystub' }).click();
+    // On wide screens the rail also links to this step; the screen's own action is the last link.
+    await page.getByRole('link', { name: 'Add a paystub' }).last().click();
     await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'unavailable');
     await expect(page.getByTestId('photo-option')).toContainText("this device can't do that yet");
     await page.getByRole('button', { name: 'English paystub (PDF)' }).click();

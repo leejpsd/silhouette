@@ -8,7 +8,7 @@ import sharedEn from '../../../shared/copy/en.json';
 import sharedEs from '../../../shared/copy/es.json';
 import sharedKo from '../../../shared/copy/ko.json';
 import { CURRENCY, NUMBER_FORMAT, PACK_COPY } from './pack';
-import { LOCAL_COPY } from './copy-local';
+import { LOCAL_COPY, type LocalKey } from './copy-local';
 
 export const LOCALES = ['en', 'es', 'ko'] as const;
 export type Locale = (typeof LOCALES)[number];
@@ -19,7 +19,7 @@ export const LOCALE_NAMES: Record<Locale, string> = { en: 'English', es: 'Españ
 /** Keys of shared/copy, with the platform variants (`{key}.web`) also under their plain name. */
 type SharedKey = keyof typeof sharedEn;
 type PlainOfWeb<K> = K extends `${infer Base}.web` ? Base : never;
-export type CopyKey = SharedKey | PlainOfWeb<SharedKey>;
+export type CopyKey = SharedKey | PlainOfWeb<SharedKey> | LocalKey;
 
 type Table = Readonly<Record<string, string>>;
 const SHARED: Record<Locale, Table> = { en: sharedEn, es: sharedEs, ko: sharedKo };

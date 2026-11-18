@@ -122,9 +122,12 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
   };
   return (
     <section className="why" aria-labelledby={`${id}-title`} data-testid="why-section">
-      <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className="section-heading">
-        {t('why.title')}
-      </h2>
+      <div className="section-head">
+        <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className="section-heading">
+          {t('why.title')}
+        </h2>
+        <strong className="badge badge-none">{t('badge.noModel')}</strong>
+      </div>
       <p className="small muted">{t('why.lead')}</p>
       <ul className="criteria">
         {rows.map((row) => (

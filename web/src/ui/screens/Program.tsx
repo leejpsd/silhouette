@@ -44,13 +44,13 @@ export function ProgramScreen({ id }: { id: string }) {
         <Marker verdict={result.verdict} />
         <span>{t(dynamicKey(`verdict.${result.verdict}`))}</span>
       </p>
-      <ScreenHeading size={60} maxLines={2}>
+      <ScreenHeading size={50} wideSize={64} maxLines={2}>
         {programName(locale, program)}
       </ScreenHeading>
 
       {result.estimatedAmount !== undefined && result.estimatedAmount > 0 && (
         <div className="amount-block">
-          <FitText className="amount pop" size={110} maxLines={1} step={2} floor={LABEL_FLOOR} aria-hidden="true">
+          <FitText className="amount" size={44} maxLines={1} step={2} floor={LABEL_FLOOR} aria-hidden="true">
             {formatMoney(locale, result.estimatedAmount)}
           </FitText>
           <p className="small">{t('detail.amount', { amount: formatMoney(locale, result.estimatedAmount) })}</p>

@@ -1,56 +1,75 @@
-// Components of the design that every screen shares: verdict markers by shape, paper slips, placeholder
-// bars, the stamped count, sheets, and the size-step rule for display text.
+// Components of the design that every screen shares: verdict markers by fill, document cards, token
+// chips, the counter, sheets, and the size-step rule for display text.
 import { useEffect, useId, useLayoutEffect, useRef, type ReactNode, type RefObject } from 'react';
 import type { Verdict } from '../../core/rules';
 import { Close } from './icons';
-import { DISPLAY_SCALE_CAP, HEADLINE_FLOOR, LABEL_FLOOR, WIDE_FROM } from '../tokens';
+import { DISPLAY_SCALE_CAP, HEADLINE_FLOOR, WIDE_FROM } from '../tokens';
 
-/** Results are told apart by shape: solid = may qualify, dotted = possible, dashed = depends, hollow = probably not. */
+/**
+ * Results are told apart by how full the circle is: filled = may qualify, half = possible, dashed ring =
+ * depends on an answer, thin ring = probably not. The verdict word always stands next to it.
+ */
 export function Marker({ verdict }: { verdict: Verdict | 'unanswered' }) {
-  return <span className={`marker marker-${verdict}`} aria-hidden="true" />;
+  return (
+    <svg className={`marker marker-${verdict}`} width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      {verdict === 'likely' ? (
+        <circle cx="10" cy="10" r="8" fill="currentColor" />
+      ) : verdict === 'maybe' ? (
+        <>
+          <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M10 2.75a7.25 7.25 0 000 14.5z" fill="currentColor" />
+        </>
+      ) : verdict === 'depends' ? (
+        <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2.6 2.4" />
+      ) : verdict === 'unlikely' ? (
+        <circle className="marker-thin" cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" strokeWidth="1.25" />
+      ) : (
+        <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="0.1 3.2" strokeLinecap="round" />
+      )}
+    </svg>
+  );
 }
 
-/** A paper slip: the person's data or what would be sent. Always green ink on paper, slightly turned. */
-export function Paper({ children, tilt = 'none', size = 'normal', className, ...rest }: {
+/** A small spinning ring: work in progress on this device (reading, writing an answer). */
+export function Spinner() {
+  return <span className="spinner" aria-hidden="true" />;
+}
+
+/** A document or request on a white card (the person's data, or what would be sent). */
+export function Paper({ children, size = 'normal', className, ...rest }: {
   children: ReactNode;
-  tilt?: 'left' | 'right' | 'small-left' | 'small-right' | 'none';
   size?: 'normal' | 'large' | 'small';
   className?: string;
 } & Omit<React.HTMLAttributes<HTMLDivElement>, 'className'>) {
   return (
-    <div className={`paper paper-${size} tilt-${tilt}${className ? ` ${className}` : ''}`} {...rest}>
+    <div className={`paper paper-${size}${className ? ` ${className}` : ''}`} {...rest}>
       {children}
     </div>
   );
 }
 
-/** A placeholder bar over a hidden value, with its id. `mine`: a word the person hid. */
-export function Bar({ id, label, mine = false, width, delay = 0 }: { id: string; label: string; mine?: boolean; width?: number; delay?: number }) {
+/** A token chip over a hidden value, with its id. `mine`: a word the person hid. */
+export function Bar({ id, label, mine = false }: { id: string; label: string; mine?: boolean }) {
   return (
-    <span
-      className={`bar${mine ? ' bar-mine' : ''}`}
-      style={{ ...(width ? { inlineSize: `${width}px` } : {}), animationDelay: `${delay}ms` }}
-      role="img"
-      aria-label={label}
-    >
+    <span className={`bar${mine ? ' bar-mine' : ''}`} role="img" aria-label={label}>
       <span aria-hidden="true">{id}</span>
     </span>
   );
 }
 
-/** The count of what has left: plain at 0, a pink stamp (a pill from 10) that stamps in when it goes up. */
+/** The count of what has left: an empty ring at 0, a solid redact disc (a pill from 10) once anything left. */
 export function Count({ value }: { value: number }) {
   if (value === 0) return <span className="count">0</span>;
   return (
-    <span key={value} className={`stamp${value >= 10 ? ' stamp-pill' : ''}`}>
+    <span className={`count count-sent${value >= 10 ? ' count-pill' : ''}`}>
       <span>{value}</span>
     </span>
   );
 }
 
 /**
- * A sheet: the block grown over the lower screen, with a dimmed glimpse of the page above. Modal
- * (`<dialog>`): focus moves in and returns to `returnFocus` when it closes.
+ * A sheet: on narrow screens the dock grown into a bottom sheet over the dimmed page; on wide screens a
+ * centred modal. Modal (`<dialog>`): focus moves in and returns to `returnFocus` when it closes.
  */
 export function Sheet({
   open,
@@ -105,6 +124,7 @@ export function Sheet({
       }}
     >
       <div className="sheet-body">
+        <span className="grab" aria-hidden="true" />
         <div className="sheet-head">
           <p className="sheet-label" id={`${id}-label`}>
             {label}
@@ -129,7 +149,7 @@ export function Sheet({
 export function useFit(
   ref: RefObject<HTMLElement | null>,
   design: number,
-  { maxLines = 4, step = 4, floor = HEADLINE_FLOOR, wide = false }: { maxLines?: number; step?: number; floor?: number; wide?: boolean } = {},
+  { maxLines = 4, step = 4, floor = HEADLINE_FLOOR, wideDesign }: { maxLines?: number; step?: number; floor?: number; wideDesign?: number | undefined } = {},
   deps: readonly unknown[] = [],
 ) {
   useLayoutEffect(() => {
@@ -137,11 +157,10 @@ export function useFit(
     if (!el) return;
     const fit = () => {
       // Display type scales with the text size up to the cap (root font size relative to 16 px).
-      // Headlines on wide screens start at the cap and keep their phone measure (see .display), so
-      // they break into the same lines as on a phone.
+      // Headlines on wide screens start at their PC size (typography displayPc / titlePc).
       const root = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
-      const isWide = wide && window.innerWidth >= WIDE_FROM;
-      const start = design * (isWide ? DISPLAY_SCALE_CAP : Math.min(Math.max(root, 1), DISPLAY_SCALE_CAP));
+      const scaled = Math.min(Math.max(root, 1), DISPLAY_SCALE_CAP);
+      const start = wideDesign !== undefined && window.innerWidth >= WIDE_FROM ? wideDesign * scaled : design * scaled;
       const min = start * floor;
       let size = start;
       el.style.fontSize = `${size}px`;
@@ -178,7 +197,7 @@ export function useFit(
       observer.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [design, maxLines, step, floor, wide, ...deps]);
+  }, [design, maxLines, step, floor, wideDesign, ...deps]);
 }
 
 /** Display text that steps down to fit (for program names, amounts and similar). */
@@ -200,11 +219,7 @@ export function FitText({ as: Tag = 'span', size, maxLines = 2, step = 4, floor 
   );
 }
 
-/** The label of a main action: steps down 2 px at a time (to 66 %), then wraps to two lines. */
-export function ActionLabel({ children, size = 30 }: { children: ReactNode; size?: number }) {
-  return (
-    <FitText className="action-label" size={size} maxLines={2} step={2} floor={LABEL_FLOOR}>
-      {children}
-    </FitText>
-  );
+/** The label of a main action (text 17 / 700; it wraps rather than shrinking). */
+export function ActionLabel({ children }: { children: ReactNode }) {
+  return <span className="action-label">{children}</span>;
 }

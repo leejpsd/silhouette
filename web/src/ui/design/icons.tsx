@@ -1,5 +1,5 @@
-// Line icons of the design (stroke in the current text colour). Always decorative: the text next to
-// them carries the meaning.
+// Line icons of the design, drawn in house on a 16 px grid with round 1.5–1.6 strokes in the current
+// text colour. Always decorative: the text next to them carries the meaning.
 import type { ReactNode } from 'react';
 
 function Svg({ size = 20, view = 20, children, stroke = 2, className }: { size?: number; view?: number; children: ReactNode; stroke?: number; className?: string }) {
@@ -23,28 +23,35 @@ function Svg({ size = 20, view = 20, children, stroke = 2, className }: { size?:
 }
 
 export const ArrowRight = () => (
-  <Svg view={22} stroke={2.6}>
-    <path d="M3 11h16M12 4l7 7-7 7" />
+  <Svg size={16} view={16} stroke={1.6}>
+    <path d="M3.5 8h8.5M8.5 4.5L12 8l-3.5 3.5" />
   </Svg>
 );
-export const ArrowUp = () => (
-  <Svg stroke={2.4}>
-    <path d="M10 15V7M5 8l5-5 5 5M4 18h12" />
+/** The leave glyph (a box with an arrow out): reserved for actions that send something off this device. */
+export const LeaveGlyph = () => (
+  <Svg size={16} view={16} stroke={1.6}>
+    <path d="M9.5 2.5h4v4M13.5 2.5L8 8M12 9.5v3a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3" />
+  </Svg>
+);
+/** An external link (an official source): the arrow out of the corner. */
+export const External = () => (
+  <Svg size={16} view={16} stroke={1.6}>
+    <path d="M5 11l6-6M6 5h5v5" />
   </Svg>
 );
 export const ChevronLeft = () => (
-  <Svg size={16} view={16} stroke={2.2}>
-    <path d="M10 3L5 8l5 5" />
+  <Svg size={16} view={16} stroke={1.6}>
+    <path d="M10 3.5L5.5 8l4.5 4.5" />
   </Svg>
 );
 export const ChevronRight = () => (
-  <Svg size={18} view={18} stroke={2.2}>
-    <path d="M7 4l5 5-5 5" />
+  <Svg size={16} view={16} stroke={1.6} className="chevron">
+    <path d="M6 3.5L10.5 8 6 12.5" />
   </Svg>
 );
 export const Close = () => (
-  <Svg size={18} view={18} stroke={2.2}>
-    <path d="M3 3l12 12M15 3L3 15" />
+  <Svg size={16} view={16} stroke={1.6}>
+    <path d="M4 4l8 8M12 4l-8 8" />
   </Svg>
 );
 export const Cloud = ({ size = 18 }: { size?: number }) => (

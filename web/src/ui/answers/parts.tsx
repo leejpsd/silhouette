@@ -2,7 +2,7 @@
 // an answer with its provenance, read aloud, Google Search Suggestions, source lists, the rule
 // pack's official information, and the hook that ties a request to consent and the session cache.
 
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { pcm16ToFloat, pcmRate, type Source } from '../../core/explain';
 import { classifyError, TaskError } from '../../ai/errors';
 import { planReadAloud, readAloud, requestBody, type ModelAnswer, type PlannedCall, type TaskResult } from '../../ai/tasks';
@@ -10,9 +10,9 @@ import type { Program } from '../../core/rules';
 import { useApp } from '../context';
 import { InferenceBadge } from '../InferenceBadge';
 import { dynamicKey, type CopyKey } from '../i18n';
-import { Alert, ArrowUp, Caret, Cloud, Phone, Retry } from '../design/icons';
+import { Alert, Caret, LeaveGlyph, Retry } from '../design/icons';
 import { Paper, ActionLabel } from '../design/parts';
-import { BlockActions } from '../design/block';
+import { BlockActions, useWide } from '../design/block';
 import { useConfig } from './config';
 import { programCopy } from './facts';
 import { SOURCES_READ_ON } from '../pack';
@@ -159,9 +159,21 @@ export function SendPanel({
   const heading = useRef<HTMLHeadingElement>(null);
   const id = useId();
   const [showBody, setShowBody] = useState(false);
-  useEffect(() => heading.current?.focus(), []);
+  // Wide screens: the step is a modal over the page (Esc keeps the request on this device).
+  const wide = useWide();
+  const dialog = useRef<HTMLDialogElement>(null);
+  useLayoutEffect(() => {
+    const d = dialog.current;
+    if (wide && d && !d.open) d.showModal();
+  }, [wide]);
+  useEffect(() => heading.current?.focus(), [wide]);
+  // The modal closes before the page acts on the decision, so focus can move back into the page.
+  const decide = (then: () => void) => () => {
+    if (dialog.current?.open) dialog.current.close();
+    then();
+  };
   const cloud = destinationOf(plan) === 'cloud';
-  return (
+  const panel = (
     <div className="send-panel" role="group" aria-labelledby={`${id}-title`} data-testid="send-panel" data-task={plan.taskId} data-destination={destinationOf(plan)}>
       <h3 id={`${id}-title`} ref={heading} tabIndex={-1} className="sheet-label">
         {t('send.title')}
@@ -169,7 +181,7 @@ export function SendPanel({
       <p className="small">{cloud ? t('send.leadCloud') : t('send.lead')}</p>
       <div className="send-slip">
         <span className="leave-tab">{t('preview.couldLeave')}</span>
-        <Paper tilt="small-left">
+        <Paper>
           <ul className="send-lines" data-testid="send-lines">
             {lines.map((line) => {
               const [label, value] = splitLine(line);
@@ -194,7 +206,7 @@ export function SendPanel({
         {t('send.showJson')}
       </button>
       {showBody && (
-        <Paper tilt="none" className="payload-slip" id={`${id}-body`}>
+        <Paper className="payload-slip" id={`${id}-body`}>
           <pre className="payload" data-testid="send-payload" tabIndex={0} aria-label={t('send.showJson')}>
             {requestBody(plan)}
           </pre>
@@ -202,22 +214,41 @@ export function SendPanel({
       )}
       <BlockActions mode="decision">
         <p className="routing-line">
-          {cloud ? <Cloud size={22} /> : <Phone size={22} />}
-          <span>
-            <strong>{cloud ? t('badge.cloud') : t('badge.onDevice')}.</strong> {t(dynamicKey(`reason.${plan.reason}`))}
-          </span>
+          <strong className={`badge ${cloud ? 'badge-cloud' : 'badge-device'}`}>{cloud ? t('badge.cloud') : t('badge.onDevice')}</strong>
+          <span>{t(dynamicKey(`reason.${plan.reason}`))}</span>
         </p>
         <div className="decision" data-testid="send-decision">
-          <button type="button" className="outline-button tall" onClick={onSkip}>
+          <button type="button" className="outline-button tall" onClick={decide(onSkip)}>
             {t('send.skip')}
           </button>
-          <button type="button" className="send-button" onClick={onSend}>
-            <ArrowUp />
+          <button type="button" className="send-button" onClick={decide(onSend)}>
             <ActionLabel>{t('send.send')}</ActionLabel>
+            <span className="action-arrow">
+              <LeaveGlyph />
+            </span>
           </button>
         </div>
+        {wide && (
+          <p className="key-hint" aria-hidden="true">
+            <kbd className="key">Esc</kbd> {t('keys.keep')}
+          </p>
+        )}
       </BlockActions>
     </div>
+  );
+  if (!wide) return panel;
+  return (
+    <dialog
+      ref={dialog}
+      className="sheet send-modal"
+      aria-labelledby={`${id}-title`}
+      onCancel={(e) => {
+        e.preventDefault();
+        decide(onSkip)();
+      }}
+    >
+      {panel}
+    </dialog>
   );
 }
 

@@ -21,10 +21,10 @@ import { useDocument } from '../doc/state';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { phoneLines } from '../doc/phone-view';
-import { BlockActions } from '../design/block';
-import { ArrowUp, ChevronLeft, Cloud, Doc, Phone } from '../design/icons';
+import { BlockActions, useWide } from '../design/block';
+import { ChevronLeft, LeaveGlyph } from '../design/icons';
 import { useOnline } from '../design/online';
-import { ActionLabel } from '../design/parts';
+import { ActionLabel, Spinner } from '../design/parts';
 import { Loading } from '../answers/parts';
 
 const PLACEHOLDER = /(⟦[DNW][0-9]+⟧)/;
@@ -63,6 +63,7 @@ function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>, language: s
 export function DocumentPreviewScreen() {
   const { t } = useApp();
   const { doc, update } = useDocument();
+  const wide = useWide();
   const [sending, setSending] = useState(false);
   // Where a reading is: on this device (main values, then deductions), checking, or sending after the device.
   const [stage, setStage] = useState<PointerStage | null>(null);
@@ -226,11 +227,12 @@ export function DocumentPreviewScreen() {
 
   return (
     <div className="screen doc-preview">
-      <ScreenHeading size={58} maxLines={4}>
+      <ScreenHeading size={46} wideSize={72} maxLines={4}>
         {t('preview.title')}
       </ScreenHeading>
       <p className="small muted">{t('preview.lead')}</p>
       {doc.photoSource && <InferenceBadge source={doc.photoSource.inferenceSource} reason={doc.photoSource.reason} />}
+      <div className="preview-pair" data-wide={wide}>
       <div className="toggle" role="group" aria-label={t('preview.title')}>
         <button type="button" aria-pressed={mode === 'phone'} onClick={() => { setQuiet(true); setMode('phone'); }}>
           {t('preview.onPhone')}
@@ -255,6 +257,15 @@ export function DocumentPreviewScreen() {
           ? renderSkeleton(skeleton, original, doc.hiddenWords, fresh, (word) => t('preview.hideWord', { word }), hide, sending, t)
           : renderPhone(lines, (word) => t('preview.hideWord', { word }), hide, sending)}
       </pre>
+      {/* Wide screens: the other view beside it, for reading only (the chosen one is the one you work in). */}
+      {wide && (
+        <pre key={`${mode}-companion`} className="doc paper paper-large companion" data-mode={mode === 'leave' ? 'phone' : 'leave'} aria-hidden="true" inert>
+          {mode === 'leave'
+            ? renderPhone(lines, (word) => t('preview.hideWord', { word }), hide, true)
+            : renderSkeleton(skeleton, original, doc.hiddenWords, NONE, (word) => t('preview.hideWord', { word }), hide, true, t)}
+        </pre>
+      )}
+      </div>
       <p className="small muted">{t('preview.counts', { numbers: counts.N, dates: counts.D, words: counts.W })}</p>
       <div className="hide-row">
         <p className="small">
@@ -287,6 +298,7 @@ export function DocumentPreviewScreen() {
       <p className="small muted">{t('leaving.network')}</p>
       {sending && <Loading />}
       <div role="status" className="status-line">
+        {(sending || readingAhead) && <Spinner />}
         {sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : readingAhead ? t('preview.readingAhead') : ''}
       </div>
       {doc.error && (
@@ -317,11 +329,10 @@ export function DocumentPreviewScreen() {
       </a>
       <BlockActions mode="decision">
         <p className="routing-line">
-          {offlineSample ? <Doc /> : onDeviceFirst ? <Phone size={22} /> : <Cloud size={22} />}
-          <span>
-            <strong>{offlineSample ? t('badge.sampleKey') : onDeviceFirst ? t('badge.onDevice') : t('badge.cloud')}.</strong>{' '}
-            {offlineSample ? t('preview.sample') : onDeviceFirst ? t('preview.onDevice') : t('preview.cloud')}
-          </span>
+          <strong className={`badge ${offlineSample ? 'badge-sample' : onDeviceFirst ? 'badge-device' : 'badge-cloud'}`}>
+            {offlineSample ? t('badge.sampleKey') : onDeviceFirst ? t('badge.onDevice') : t('badge.cloud')}
+          </strong>
+          <span>{offlineSample ? t('preview.sample') : onDeviceFirst ? t('preview.onDevice') : t('preview.cloud')}</span>
         </p>
         <div className="decision">
           <button
@@ -343,8 +354,10 @@ export function DocumentPreviewScreen() {
             </button>
           ) : (
             <button type="button" className="send-button" disabled={sending} onClick={() => void send()}>
-              <ArrowUp />
               <ActionLabel>{t('leaving.send')}</ActionLabel>
+              <span className="action-arrow">
+                <LeaveGlyph />
+              </span>
             </button>
           )}
         </div>
