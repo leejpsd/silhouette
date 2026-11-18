@@ -7,10 +7,19 @@ Exact values never leave the device. A cloud model only ever receives a *silhoue
 Web, Android and iOS, built on one shared contract. Firebase AI Logic runs each model task either on the device's own model (Chrome's built-in model on the web, Apple's on-device model on iOS, Gemini Nano on Android) or on Gemini in the cloud. A deterministic rule engine on the device decides eligibility; models only point, explain and search.
 
 <p>
-  <img src="docs/images/start.png" width="210" alt="Start screen: Find public benefits you may qualify for. An example shows a paystub on this phone next to what could leave: placeholders W1, W2 and N12.">
+  <img src="docs/images/start.png" width="210" alt="Start screen: Find public benefits you may qualify for. An example shows a paystub on this device next to what could leave: placeholders W1, W2 and N12.">
   <img src="docs/images/results.png" width="210" alt="Results from the rules on this device: three programs you may qualify for, two possible, one depending on a skipped answer, one probably not. Leaving your device: 0.">
-  <img src="docs/images/silhouette-first-screen.png" width="210" alt="This is what could leave your device: the paystub with every name, number and date replaced by pink placeholder boxes.">
+  <img src="docs/images/silhouette-first-screen.png" width="210" alt="This is what could leave your device: the paystub with every name, number and date replaced by an orange token chip.">
 </p>
+
+<p>
+  <img src="docs/images/ios-start.png" width="210" alt="The iOS app's start screen: the same headline and example in a native SwiftUI layout, with the privacy pill 'Nothing has left this iPhone' above the tab bar.">
+  <img src="docs/images/ios-results.png" width="210" alt="iOS results: You may qualify for 3 programs, checked on this iPhone, no AI used, then one card per program.">
+  <img src="docs/images/ios-silhouette.png" width="210" alt="iOS: What could leave. The sample paystub as token chips, with Send the silhouette and Keep everything on this iPhone.">
+  <img src="docs/images/ios-review.png" width="210" alt="iOS review: the values read from the paystub, each to confirm, and the yearly income worked out on this iPhone.">
+</p>
+
+The same flow as a native SwiftUI app (simulator captures; the recorded runs on a real iPhone 17 Pro are under [Evidence](#evidence)).
 
 ### Try it
 
@@ -75,11 +84,11 @@ Every limit and amount was read from the agencies' own publications on 2026-11-1
 
 <p><img src="docs/images/add-paystub.png" width="250" alt="Add a paystub: photo (on this device only), text PDF, paste the text, type the numbers, or sample documents."></p>
 
-**4. The silhouette preview: what could leave.** Before anything can be sent, the person sees the document as it reads on the phone and, one tap away, exactly what could leave. Any word still visible can be hidden too.
+**4. The silhouette preview: what could leave.** Before anything can be sent, the person sees the document as it reads on the device and, one tap away, exactly what could leave. Any word still visible can be hidden too.
 
 <p>
-  <img src="docs/images/silhouette-on-this-phone.png" width="250" alt="On this phone: the full synthetic paystub with names, amounts and dates.">
-  <img src="docs/images/silhouette-what-could-leave.png" width="250" alt="What could leave: the same paystub with every value replaced by a placeholder id.">
+  <img src="docs/images/silhouette-on-this-phone.png" width="250" alt="On this device: the full synthetic paystub with names, amounts and dates.">
+  <img src="docs/images/silhouette-what-could-leave.png" width="250" alt="What could leave: the same paystub with every value replaced by a token chip that carries its id.">
 </p>
 
 **5. Review, confirm, sharper results.** Each value found is shown next to the line it came from, to confirm or change. A badge says where it was read ("Cloud · document silhouette only" here, in a browser without an on-device model). Deterministic checks and annualization turn the confirmed paystub into a yearly income, and the results update.
@@ -90,7 +99,7 @@ Every limit and amount was read from the agencies' own publications on 2026-11-1
 
 <p>
   <img src="docs/images/send-step.png" width="250" alt="Leaving your device: what could leave is the program name and public information only; Show the exact request opens the JSON body.">
-  <img src="docs/images/record.png" width="250" alt="Leaving your device record: 4 sent, 0 kept. None of them contain your answers or values.">
+  <img src="docs/images/record.png" width="250" alt="The record of what left: one request opened to show exactly what was sent, byte for byte, with where it went.">
 </p>
 
 ## Hybrid inference: which task runs where
@@ -110,6 +119,8 @@ Every model task, its mode, its input type and the reason shown to the person co
 | `discover.leads` | ONLY_IN_CLOUD + Google Search | Generalized | needs current info |
 | `nearby.help` | ONLY_IN_CLOUD + Google Maps | Generalized | needs places |
 | `readAloud` | ONLY_IN_CLOUD, speech | Generalized, Public | read aloud |
+
+The last four rows (search grounding, places and read aloud) are built on the web only and switched off by default through Remote Config: the hosted app does not use them.
 
 Five more steps use no model at all: `validate`, `annualize`, `generalize`, `verdict` and `application.prefill` (mode `NONE`).
 
@@ -227,15 +238,15 @@ Both are tested ([`web/src/ai/only-on-device.test.ts`](web/src/ai/only-on-device
 
 ## Platform status
 
-As of 2026-11-17.
+As of 2026-11-19.
 
 | Platform | Contract | Done and verified | Not yet |
 |---|---|---|---|
-| Web | v1.18 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Live grounding and read aloud |
-| iOS | v1.18 | Core engine, California pack, document flow, on-device reading in parts with the shared fixtures, explanations, the on-device check and the two-minute path. Five recorded runs on a real iPhone 17 Pro, including the cloud retry | The paystub Apple's model refuses, live grounding and read aloud |
-| Android | v1.10 | Core engine, document flow, Firebase AI Logic and explanations. Verified with a fake model | Final design, California pack, a recorded on-device run |
+| Web | v1.23 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
+| iOS | v1.23 | Native SwiftUI app: California pack, document flow, on-device reading in parts with the shared fixtures, explanations, the on-device check and the two-minute path. Five recorded runs on a real iPhone 17 Pro, including the cloud retry | A build to install without Xcode; the one paystub Apple's model refuses is read in the cloud |
+| Android | v1.18 | Native Compose app: California pack, document flow, on-device reading in parts with the shared fixtures, Firebase AI Logic (`firebase-ai` and `firebase-ai-ondevice`), the on-device check and the two-minute path. Verified with a scripted model | The current visual design, and a recorded run on a phone with Gemini Nano |
 
-The Android app at v1.10 runs against the synthetic `zz-test` rule pack and says so on every screen. Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/`](android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
+Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/`](android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
 
 ## Run it locally
 
@@ -279,7 +290,7 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 | [`firebase/`](firebase/README.md), [`firebase.json`](firebase.json) | Remote Config template, Firestore rules, hosting headers |
 | [`docs/`](docs/ARCHITECTURE.md) | Architecture and these images |
 
-**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.18. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
+**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.23. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -289,7 +300,7 @@ More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - One jurisdiction. Paystubs are the document type in the app flow.
 - Photos are read only by an on-device model; there is no separate text recognition library.
 - The on-device checks have known gaps, listed in [`shared/validation/DEVICE_READING.md`](shared/validation/DEVICE_READING.md) section 9.
-- Next: bring Android to v1.18 with the California pack and record its on-device runs, confirm the pack's numbers, and publish the video.
+- Next: the current design on Android and its recorded on-device run, a person's confirmation of the pack's numbers, and the video.
 
 ## License
 

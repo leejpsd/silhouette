@@ -4833,6 +4833,52 @@ main h2.judge-title {
   display: contents;
 }
 
+/* The record on a narrow sheet: what was sent has the row's full width; the time and the status stand
+   under it, left and right; what opens (where it went, exactly what was sent) uses the full width too.
+   Nothing is squeezed into a 44 px column or broken one word to a line. */
+@media (max-width: 807px) {
+  .outbound-list li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'what what'
+      'time status'
+      'main main';
+    gap: 4px var(--space-xs);
+  }
+
+  .outbound-what {
+    grid-area: what;
+  }
+
+  .outbound-time {
+    grid-area: time;
+    white-space: nowrap;
+  }
+
+  .outbound-status {
+    grid-area: status;
+    white-space: nowrap;
+  }
+
+  .outbound-main {
+    grid-area: main;
+    grid-column: 1 / -1;
+  }
+
+  .payload-head {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .payload-head > p {
+    flex: 1 1 100%;
+  }
+
+  .payload-head span {
+    overflow-wrap: anywhere;
+  }
+}
+
 /* Sheets and modals: the sheet rises while the page dims; both leave faster than they arrive. The page
    behind does not scroll while one is open. On touch the sheet follows a drag on its handle. */
 html {
