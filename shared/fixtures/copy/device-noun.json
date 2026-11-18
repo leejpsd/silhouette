@@ -214,6 +214,13 @@
     {
       "language": "en",
       "platform": "ios",
+      "key": "delete.erased",
+      "text": "Erased: your answers, documents in progress, settings, the record of what was sent, and everything else the app had saved on this device.",
+      "shown": "Erased: your answers, documents in progress, settings, the record of what was sent, and everything else the app had saved on this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
       "key": "answers.lead",
       "text": "Explanations are written by a model from your silhouette and this program's rules. The result above comes from the rules on this device and does not change.",
       "shown": "Explanations are written by a model from your silhouette and this program's rules. The result above comes from the rules on this iPhone and does not change."
@@ -668,6 +675,20 @@
     },
     {
       "language": "en",
+      "platform": "ios",
+      "key": "send.firstAlso",
+      "text": "With the first request the app also fetches its settings and tells the service which installation is asking. Both are listed under “Leaving your device”; neither carries anything of yours.",
+      "shown": "With the first request the app also fetches its settings and tells the service which installation is asking. Both are listed under “Leaving your iPhone”; neither carries anything of yours."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "send.sessionNote",
+      "text": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your device”.",
+      "shown": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your iPhone”."
+    },
+    {
+      "language": "en",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "On this device",
@@ -875,6 +896,13 @@
       "key": "leaving.cleared",
       "text": "The record of what left this device was deleted on {date}. Nothing has left this device since then.",
       "shown": "The record of what left this phone was deleted on {date}. Nothing has left this phone since then."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "delete.erased",
+      "text": "Erased: your answers, documents in progress, settings, the record of what was sent, and everything else the app had saved on this device.",
+      "shown": "Erased: your answers, documents in progress, settings, the record of what was sent, and everything else the app had saved on this phone."
     },
     {
       "language": "en",
@@ -1332,6 +1360,20 @@
       "shown": "Read on this phone first"
     },
     {
+      "language": "en",
+      "platform": "android",
+      "key": "send.firstAlso",
+      "text": "With the first request the app also fetches its settings and tells the service which installation is asking. Both are listed under “Leaving your device”; neither carries anything of yours.",
+      "shown": "With the first request the app also fetches its settings and tells the service which installation is asking. Both are listed under “Leaving your phone”; neither carries anything of yours."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "send.sessionNote",
+      "text": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your device”.",
+      "shown": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your phone”."
+    },
+    {
       "language": "es",
       "platform": "ios",
       "key": "badge.onDevice",
@@ -1509,6 +1551,13 @@
     {
       "language": "es",
       "platform": "ios",
+      "key": "reason.long-or-unsupported-locale",
+      "text": "texto largo o idioma no disponible en este dispositivo",
+      "shown": "texto largo o idioma no disponible en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
       "key": "results.lead",
       "text": "Salen de las reglas en este dispositivo. Nada de lo que escribiste se ha enviado.",
       "shown": "Salen de las reglas en este iPhone. Nada de lo que escribiste se ha enviado."
@@ -1533,6 +1582,13 @@
       "key": "leaving.cleared",
       "text": "El registro de lo que salió de este dispositivo se borró el {date}. Desde entonces no ha salido nada.",
       "shown": "El registro de lo que salió de este iPhone se borró el {date}. Desde entonces no ha salido nada."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "delete.erased",
+      "text": "Borrado: tus respuestas, documentos en curso, ajustes, el registro de lo enviado y todo lo demás que la app había guardado en este dispositivo.",
+      "shown": "Borrado: tus respuestas, documentos en curso, ajustes, el registro de lo enviado y todo lo demás que la app había guardado en este iPhone."
     },
     {
       "language": "es",
@@ -1603,6 +1659,13 @@
       "key": "nearby.lead",
       "text": "Encuentra oficinas y lugares de ayuda gratuita cerca del centro de tu condado. Nunca se usa la ubicación de tu dispositivo.",
       "shown": "Encuentra oficinas y lugares de ayuda gratuita cerca del centro de tu condado. Nunca se usa la ubicación de tu iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "answers.criterion.notSent",
+      "text": "no se sabe: esta respuesta se queda en este dispositivo o se omitió",
+      "shown": "no se sabe: esta respuesta se queda en este iPhone o se omitió"
     },
     {
       "language": "es",
@@ -1810,6 +1873,13 @@
     {
       "language": "es",
       "platform": "ios",
+      "key": "deviceCheck.repeat",
+      "text": "Ejecutar cada caso de extracción 3 veces, para ver cuán estable es la lectura de este dispositivo",
+      "shown": "Ejecutar cada caso de extracción 3 veces, para ver cuán estable es la lectura de este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
       "key": "deviceCheck.summary",
       "text": "Dónde se respondió finalmente cada caso: {onDevice} de {total} en este dispositivo; {afterDevice} en la nube tras un intento fallido en el dispositivo; {inCloud} en la nube; {notRun} no se ejecutaron.",
       "shown": "Dónde se respondió finalmente cada caso: {onDevice} de {total} en este iPhone; {afterDevice} en la nube tras un intento fallido en el dispositivo; {inCloud} en la nube; {notRun} no se ejecutaron."
@@ -1853,8 +1923,8 @@
       "language": "es",
       "platform": "ios",
       "key": "judges.withModel.ios",
-      "text": "Este iPhone tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este dispositivo, y no sale nada si esa lectura pasa sus comprobaciones. Si el dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado.",
-      "shown": "Este iPhone tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este iPhone, y no sale nada si esa lectura pasa sus comprobaciones. Si el dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado."
+      "text": "Este iPhone tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este dispositivo, y no sale nada si esa lectura pasa sus comprobaciones. Si este dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado.",
+      "shown": "Este iPhone tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este iPhone, y no sale nada si esa lectura pasa sus comprobaciones. Si este iPhone no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado."
     },
     {
       "language": "es",
@@ -1953,6 +2023,20 @@
       "key": "doc.where.device",
       "text": "Se lee primero en este dispositivo",
       "shown": "Se lee primero en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "send.firstAlso",
+      "text": "Con la primera solicitud la app también pide su configuración y le dice al servicio qué instalación pregunta. Las dos aparecen en «Lo que sale de tu dispositivo»; ninguna lleva nada tuyo.",
+      "shown": "Con la primera solicitud la app también pide su configuración y le dice al servicio qué instalación pregunta. Las dos aparecen en «Lo que sale de tu iPhone»; ninguna lleva nada tuyo."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "send.sessionNote",
+      "text": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu dispositivo».",
+      "shown": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu iPhone»."
     },
     {
       "language": "es",
@@ -2132,6 +2216,13 @@
     {
       "language": "es",
       "platform": "android",
+      "key": "reason.long-or-unsupported-locale",
+      "text": "texto largo o idioma no disponible en este dispositivo",
+      "shown": "texto largo o idioma no disponible en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
       "key": "results.lead",
       "text": "Salen de las reglas en este dispositivo. Nada de lo que escribiste se ha enviado.",
       "shown": "Salen de las reglas en este teléfono. Nada de lo que escribiste se ha enviado."
@@ -2156,6 +2247,13 @@
       "key": "leaving.cleared",
       "text": "El registro de lo que salió de este dispositivo se borró el {date}. Desde entonces no ha salido nada.",
       "shown": "El registro de lo que salió de este teléfono se borró el {date}. Desde entonces no ha salido nada."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "delete.erased",
+      "text": "Borrado: tus respuestas, documentos en curso, ajustes, el registro de lo enviado y todo lo demás que la app había guardado en este dispositivo.",
+      "shown": "Borrado: tus respuestas, documentos en curso, ajustes, el registro de lo enviado y todo lo demás que la app había guardado en este teléfono."
     },
     {
       "language": "es",
@@ -2226,6 +2324,13 @@
       "key": "nearby.lead",
       "text": "Encuentra oficinas y lugares de ayuda gratuita cerca del centro de tu condado. Nunca se usa la ubicación de tu dispositivo.",
       "shown": "Encuentra oficinas y lugares de ayuda gratuita cerca del centro de tu condado. Nunca se usa la ubicación de tu teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "answers.criterion.notSent",
+      "text": "no se sabe: esta respuesta se queda en este dispositivo o se omitió",
+      "shown": "no se sabe: esta respuesta se queda en este teléfono o se omitió"
     },
     {
       "language": "es",
@@ -2433,6 +2538,13 @@
     {
       "language": "es",
       "platform": "android",
+      "key": "deviceCheck.repeat",
+      "text": "Ejecutar cada caso de extracción 3 veces, para ver cuán estable es la lectura de este dispositivo",
+      "shown": "Ejecutar cada caso de extracción 3 veces, para ver cuán estable es la lectura de este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
       "key": "deviceCheck.summary",
       "text": "Dónde se respondió finalmente cada caso: {onDevice} de {total} en este dispositivo; {afterDevice} en la nube tras un intento fallido en el dispositivo; {inCloud} en la nube; {notRun} no se ejecutaron.",
       "shown": "Dónde se respondió finalmente cada caso: {onDevice} de {total} en este teléfono; {afterDevice} en la nube tras un intento fallido en el dispositivo; {inCloud} en la nube; {notRun} no se ejecutaron."
@@ -2476,8 +2588,8 @@
       "language": "es",
       "platform": "android",
       "key": "judges.withModel.android",
-      "text": "Este teléfono tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este dispositivo, y no sale nada si esa lectura pasa sus comprobaciones. Si el dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado.",
-      "shown": "Este teléfono tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este teléfono, y no sale nada si esa lectura pasa sus comprobaciones. Si el dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado."
+      "text": "Este teléfono tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este dispositivo, y no sale nada si esa lectura pasa sus comprobaciones. Si este dispositivo no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado.",
+      "shown": "Este teléfono tiene el modelo del dispositivo: en el paso 2 la silueta se lee primero en este teléfono, y no sale nada si esa lectura pasa sus comprobaciones. Si este teléfono no puede leerla de forma fiable, la silueta (nunca los valores) se envía a la nube. Una página de programa puede explicar aquí tu propio resultado."
     },
     {
       "language": "es",
@@ -2576,6 +2688,20 @@
       "key": "doc.where.device",
       "text": "Se lee primero en este dispositivo",
       "shown": "Se lee primero en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "send.firstAlso",
+      "text": "Con la primera solicitud la app también pide su configuración y le dice al servicio qué instalación pregunta. Las dos aparecen en «Lo que sale de tu dispositivo»; ninguna lleva nada tuyo.",
+      "shown": "Con la primera solicitud la app también pide su configuración y le dice al servicio qué instalación pregunta. Las dos aparecen en «Lo que sale de tu teléfono»; ninguna lleva nada tuyo."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "send.sessionNote",
+      "text": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu dispositivo».",
+      "shown": "Decir que sí vale para estas mismas líneas en las demás preguntas preparadas de esta sesión. Cada solicitud aparece en «Lo que sale de tu teléfono»."
     }
   ]
 }

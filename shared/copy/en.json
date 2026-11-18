@@ -220,7 +220,7 @@
   "preview.hideWord": "Hide “{word}”",
   "preview.hidden": "Hidden by you",
   "preview.unhide": "Show “{word}” again",
-  "delete.erased": "Erased: answers, documents in progress, settings, the record of what was sent, and {count} local databases (this app's and the Firebase SDK's).",
+  "delete.erased": "Erased: your answers, documents in progress, settings, the record of what was sent, and everything else the app had saved on this device.",
   "review.notDocument.title": "This does not look like a paystub",
   "review.notDocument.body": "No paystub values were found in this document. You can type the numbers yourself, or choose another document.",
   "review.notDocument.typeIn": "Type the numbers yourself",
@@ -635,5 +635,13 @@
   "leaving.sentCount.one": "{count} sent,",
   "leaving.keptCount.one": "{count} kept.",
   "outbound.count.one": "{count} sent: {list}",
-  "q.range": "From {min} to {max}"
+  "q.range": "From {min} to {max}",
+  "state.offlineSend": "You are offline. This can be sent when you are back online.",
+  "q.error.money": "Enter an amount from {min} to {max}.",
+  "review.notTyped": "Not typed yet",
+  "review.manualNothing": "Type at least your gross pay to work out a yearly income.",
+  "why.atLeast": "at least {limit}",
+  "error.server": "The cloud service had a problem of its own. Try again in a moment.",
+  "send.firstAlso": "With the first request the app also fetches its settings and tells the service which installation is asking. Both are listed under “Leaving your device”; neither carries anything of yours.",
+  "send.sessionNote": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your device”."
 }

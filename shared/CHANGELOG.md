@@ -1,5 +1,22 @@
 # Contract changelog
 
+## v1.23 — 2026-11-19
+
+What two independent hands-on passes (Web and iOS) found in the words and the tokens.
+
+| Change | Why |
+|---|---|
+| **Spanish in one register.** The rule pack's Spanish (`rulepacks/us-ca/copy/es.json`: questions, help, options, criteria, caveats; 48 strings) now addresses the person as "tú", like the app copy | One screen said "Cuente… contándose usted" above "Escribe un número…" |
+| Four Spanish app strings say "este dispositivo" where they mean this device (`answers.criterion.notSent`, `deviceCheck.repeat`, `reason.long-or-unsupported-locale`, `judges.withModel.*`), so the device-noun rule names the iPhone or the phone there too | "el dispositivo" is left alone by the rule, because Spanish also uses it for "on-device" |
+| `layout.wide.twoColumnsFrom` 1100 (`design/tokens.json`): from 808 px the rail, from 1100 px two columns (the list beside a program, the two documents, Start's example); between them one column | At 808 to 950 px the second column was 27 to 65 px wide |
+| `color.*.underline` is `#7C828B` in light and dark (was `#C5C9D0` / `#5C6068`) | The underline of a text link was 1.4:1 on the ground: links did not read as links |
+| New keys (en, es; ko holds the English text): `state.offlineSend`, `q.error.money`, `review.notTyped`, `review.manualNothing`, `why.atLeast`, `error.server`, `send.firstAlso`, `send.sessionNote` | Offline is said before Send is pressed; a money field's message does not say "whole number"; typed entry does not say "Not found"; a floor ("at least 1") is not shown as "2 / 1" under a full bar; a 5xx answer does not tell the person to check their connection; the step before sending says what a yes covers |
+| `delete.erased` says what was erased in plain words (no count of databases, no "Firebase SDK") | Jargon in the one sentence that confirms a deletion |
+
+Behaviour both platforms now share (`design/DESIGN.md` section 8 unchanged): a pinned action never covers content, what opened or a result; Back keeps a chosen answer; a refused amount is never read back as understood; the step before sending shows where the request will really run (never "On this device" when the device has no model).
+
+Platforms: iOS reads the changed keys and tokens at its next build; Android with its design pass. Reference tests: 30.
+
 ## v1.22 — 2026-11-18
 
 Counted sentences read right for one.

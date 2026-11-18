@@ -635,5 +635,13 @@
   "leaving.sentCount.one": "{count} sent,",
   "leaving.keptCount.one": "{count} kept.",
   "outbound.count.one": "{count} sent: {list}",
-  "q.range": "From {min} to {max}"
+  "q.range": "From {min} to {max}",
+  "state.offlineSend": "You are offline. This can be sent when you are back online.",
+  "q.error.money": "Enter an amount from {min} to {max}.",
+  "review.notTyped": "Not typed yet",
+  "review.manualNothing": "Type at least your gross pay to work out a yearly income.",
+  "why.atLeast": "at least {limit}",
+  "error.server": "The cloud service had a problem of its own. Try again in a moment.",
+  "send.firstAlso": "With the first request the app also fetches its settings and tells the service which installation is asking. Both are listed under “Leaving your device”; neither carries anything of yours.",
+  "send.sessionNote": "Saying yes covers these same lines for the other prepared questions in this session. Every request is listed under “Leaving your device”."
 }
