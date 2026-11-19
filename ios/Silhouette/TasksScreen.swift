@@ -27,6 +27,12 @@ struct TasksScreen: View {
                 if !tasks.isEmpty { card(group, tasks: tasks).gutter() }
             }
             NoteText(text: model.t("tasks.foot")).gutter()
+            // Why this app routes itself, and not through the SDK's hybrid mode (contract v1.43).
+            Card(radius: 20) {
+                Text(model.t("tasks.appRoutes")).sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityIdentifier("tasks.appRoutes")
+            .gutter()
             measured.gutter()
             enforce.gutter()
             config.gutter()

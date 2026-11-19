@@ -84,6 +84,10 @@ final class JudgedPathUITests: XCTestCase {
         app.tapButton("results.docEffect.how")
         XCTAssertTrue(app.element("results.incomeBasis").waitForExistence(timeout: 5))
         XCTAssertTrue(app.element("results.incomeBasis").label.contains("year-to-date"))
+        // One date format: the paystub's dates as the review writes them (10/20/2026), never 2026-10-20.
+        XCTAssertNotNil(app.element("results.incomeBasis").label.range(of: #"\d{2}/\d{2}/\d{4}"#, options: .regularExpression),
+                        app.element("results.incomeBasis").label)
+        XCTAssertNil(app.element("results.incomeBasis").label.range(of: #"\d{4}-\d{2}-\d{2}"#, options: .regularExpression))
         // The next step is what left.
         XCTAssertTrue(app.buttons["results.openRecord"].exists || app.buttons["judges.next"].exists)
     }
@@ -113,6 +117,25 @@ final class JudgedPathUITests: XCTestCase {
 final class JudgesRunAllUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
+    }
+
+    /// A long program name takes at most three lines of a smaller headline; "Where each task runs" says why the
+    /// app routes device or cloud itself.
+    func testProgramTitleIsTightAndTasksSayWhyTheAppRoutes() {
+        let app = XCUIApplication.silhouette(model: "none")
+        app.launch()
+        app.runPreparedHousehold()
+        app.tapButton("program.caleitc")
+        let title = app.element("program.title")
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        XCTAssertLessThan(title.frame.height, 140, "three lines at most")
+        app.tapButton("program.back")
+        app.tapButton("results.info")
+        app.tapButton("demo.tasks")
+        let routes = app.element("tasks.appRoutes")
+        app.scrollIntoView(routes)
+        XCTAssertTrue(routes.waitForExistence(timeout: 5))
+        XCTAssertTrue(routes.label.contains("hybrid mode for Apple platforms needs iOS 27"), routes.label)
     }
 
     /// One press on the judges' page: without a model on this iPhone, the recorded cloud reading of the sample

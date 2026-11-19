@@ -28,8 +28,8 @@ struct ProgramScreen: View {
                         // The most it pays a household like this one, said to be a ceiling (contract v1.43).
                         if result.estimatedAmount == nil, let ceiling = result.upToAmount, ceiling > 0 {
                             Card {
-                                Display(text: model.t("results.upTo", ["amount": model.money(ceiling)]), size: 44, maxLines: 2)
-                                NoteText(text: model.t("results.upToNote"), size: 15).padding(.top, 4)
+                                Display(text: model.t("results.upTo", ["amount": model.money(ceiling)]), size: 34, maxLines: 2)
+                                NoteText(text: model.t("results.upToNote")).padding(.top, 2)
                                     .accessibilityIdentifier("program.upToNote")
                             }
                             .accessibilityElement(children: .combine)
@@ -65,7 +65,9 @@ struct ProgramScreen: View {
         let pill = HeroPill(label: model.t("verdict.\(result.verdict.rawValue)"), filled: true, verdict: result.verdict)
             .accessibilityIdentifier("detail.verdict")
             .accessibilityValue(result.verdict.rawValue)
-        return Hero(title: model.programName(programId), size: 54, lead: summary, badge: AnyView(pill)) {
+        // A program's name is long ("California Earned Income Tax Credit (CalEITC)"): a smaller headline in at
+        // most three lines, so the reasons start on the first screen.
+        return Hero(title: model.programName(programId), size: 38, lead: summary, titleId: "program.title", badge: AnyView(pill), titleLines: 3) {
             HStack(spacing: 8) {
                 GlassRound(systemImage: "chevron.left", label: model.t("detail.back"), id: "program.back") { model.back() }
                 Spacer(minLength: 0)

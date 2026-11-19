@@ -273,6 +273,19 @@ final class AppModel {
     /// A date the pack writes as `YYYY-MM-DD`, in the UI language ("November 12, 2026").
     func packDate(_ iso: String) -> String { packDate(iso, style: .long) }
 
+    /// A paystub date written as the rest of the app writes the document's dates, in the pack's own format
+    /// ("10/15/2026" for California), the same as the values on the review.
+    func documentDate(_ iso: String) -> String {
+        let parts = iso.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3, let date = Calendar(identifier: .gregorian).date(from: DateComponents(
+            timeZone: TimeZone(identifier: "UTC"), year: parts[0], month: parts[1], day: parts[2])) else { return iso }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: bundle.packInfo.numberFormat ?? "en-US")
+        f.timeZone = TimeZone(identifier: "UTC")
+        f.setLocalizedDateFormatFromTemplate("MMddyyyy")
+        return f.string(from: date)
+    }
+
     /// The same, as a short date ("Oct 15, 2026").
     func mediumDate(_ iso: String) -> String { packDate(iso, style: .medium) }
 
