@@ -151,16 +151,23 @@ const typedProblem = (text: string, field?: string): 'q.error.amountDecimals' | 
 };
 
 /** The confirmed values, as validation takes them: PaystubValues for a paystub, W2Values for a W-2. */
-function toValues(rows: readonly Row[], deductions: readonly DeductionRow[]): PaystubValues & W2Values {
+/**
+ * The values the checks and the yearly income are worked out from: the confirmed ones, and, when `found` says
+ * so, values the reading found that do not decide the result (folded away, not confirmed): they feed only
+ * the checks of the reading (net pay against the deductions, hours times rate). A check that flags one brings
+ * it up with the deciding values, to be confirmed.
+ */
+function toValues(rows: readonly Row[], deductions: readonly DeductionRow[], found: (name: string) => boolean = () => false): PaystubValues & W2Values {
   const out: Record<string, unknown> = {};
+  const used = (status: Row['status'], name: string) => status === 'confirmed' || (status === 'pending' && found(name));
   for (const row of rows) {
-    if (row.status !== 'confirmed' || row.text === '') continue;
+    if (!used(row.status, row.name) || row.text === '') continue;
     if (row.kind === 'number') out[row.name] = toNumber(row.text, row.typed);
     else out[row.name] = row.text;
     // A tax year is a whole number; anything else is left out (its check is then skipped).
     if (row.name === 'taxYear' && !Number.isInteger(out[row.name])) delete out[row.name];
   }
-  const confirmed = deductions.filter((d) => d.status === 'confirmed' && toNumber(d.amount, d.typed) !== undefined);
+  const confirmed = deductions.filter((d) => used(d.status, 'deductions') && toNumber(d.amount, d.typed) !== undefined);
   if (confirmed.length > 0) {
     out['deductions'] = confirmed.map((d) => ({ amount: toNumber(d.amount, d.typed) as number, ...(d.kind ? { kind: d.kind } : {}) }));
   }
@@ -326,9 +333,12 @@ export function DocumentReviewScreen() {
   const nothingTyped = manual && rows.every((r) => r.text === '') && deductions.length === 0;
   const [manualHint, setManualHint] = useState(false);
   const annualHeading = useRef<HTMLHeadingElement>(null);
+  // The values that decide the result (worked out below, before the check can run).
+  const leadNamesRef = useRef<ReadonlySet<string>>(new Set());
   const checkButton = useRef<HTMLButtonElement>(null);
   const check = () => {
-    const current = toValues(rows, deductions);
+    // Values found that do not decide the result feed the checks, folded or not (toValues).
+    const current = toValues(rows, deductions, (name) => !leadNamesRef.current.has(name));
     setResult(docType === 'w2' ? validateW2s(Raw.of([...doc.confirmedW2s, current])) : validatePaystubs(Raw.of([...doc.confirmedStubs, current]), PACK.jurisdiction));
     // The button is replaced by the result: focus goes to the yearly income it worked out, and the
     // figure with its arithmetic comes into view (not only the heading at the bottom edge).
@@ -351,12 +361,14 @@ export function DocumentReviewScreen() {
   const dateField = periodEndText !== '' && parseDate(periodEndText, PACK.jurisdiction) !== null ? 'periodEnd' : 'payDate';
   const leadOrder = [...LEAD_FIELDS[docType].map((n) => (n === 'payDate' ? dateField : n)), ...rows.map((r) => r.name).filter((n) => flagged.has(n))];
   const leadNames = new Set<string>(leadOrder);
+  leadNamesRef.current = leadNames;
   const leadRows = [...new Set(leadOrder)].flatMap((n) => rows.filter((r) => r.name === n));
   const restRows = rows.filter((r) => !leadNames.has(r.name));
   // Fields a reading did not find (typing the numbers looked for nothing, so nothing is "not found").
   const restMissing = manual ? 0 : restRows.filter((r) => r.status === 'empty').length;
-  // Every value is in view from the start, so one press can confirm them all (nothing is confirmed unseen).
-  const [moreOpen, setMoreOpen] = useState(true);
+  // Only the values that decide the result need the person; the others are folded away as not used for it,
+  // and open when one needs attention. Nothing is confirmed unseen.
+  const [moreOpen, setMoreOpen] = useState(false);
   const moreButton = useRef<HTMLButtonElement>(null);
   const moreId = useId();
   const pendingId = useId();
@@ -657,26 +669,16 @@ export function DocumentReviewScreen() {
         </p>
       )}
 
-      {/* The values that decide the result are confirmed with one press: they are all in view. The folded
-          values are not needed for the result; once opened they can be confirmed together too. */}
-      {!manual && pending > 0 && (
+      {/* The values that decide the result are confirmed with one press: they are all in view. The other
+          values are folded away as not used for the result; once opened they can be confirmed together too. */}
+      {!manual && (moreOpen ? pending > 0 : leadPending > 0) && (
         <div className="confirm-all">
           <button
             type="button"
             className="outline-button"
             aria-describedby={pendingId}
             onClick={() => {
-              // Nothing is confirmed unseen: the first press shows the values that were folded away.
-              // Nothing is confirmed unseen: the first press opens the folded values and moves focus there,
-              // and the status says how many still need a look.
-              // Nothing is confirmed unseen: while some values are still folded away, the button says "See
-              // all" and opens them; then it says "Confirm all" and confirms.
-              // Folded away by the person: the press first shows them again, and confirms nothing unseen.
-              if (!moreOpen) {
-                setMoreOpen(true);
-                requestAnimationFrame(() => moreButton.current?.focus());
-                return;
-              }
+              // Nothing is confirmed unseen: only the values in view are confirmed.
               setConfirmFirst(false);
               // The marks run down the list, one after another (styles.css, .fields-card[data-all]).
               const card = document.querySelector<HTMLElement>('.doc-review .fields-card');
@@ -684,18 +686,20 @@ export function DocumentReviewScreen() {
                 card.dataset.all = 'true';
                 setTimeout(() => delete card.dataset.all, 900);
               }
-              setRows((rs) => rs.map((r) => (r.status === 'pending' ? { ...r, status: 'confirmed' } : r)));
-              setDeductions((ds) => ds.map((d) => (d.status === 'pending' ? { ...d, status: 'confirmed' } : d)));
+              // Folded: the values in view, which decide the result. Open: every value, all in view.
+              const confirmable = new Set(moreOpen ? rows.map((r) => r.name) : leadRows.map((r) => r.name));
+              setRows((rs) => rs.map((r) => (r.status === 'pending' && confirmable.has(r.name) ? { ...r, status: 'confirmed' } : r)));
+              if (moreOpen) setDeductions((ds) => ds.map((d) => (d.status === 'pending' ? { ...d, status: 'confirmed' } : d)));
               setResult(null);
               setFoldNotice(false);
               // The button goes away: focus moves to the main action, which is now ready.
               requestAnimationFrame(() => checkButton.current?.focus());
             }}
           >
-            {moreOpen ? t('review.confirmAllCount', { count: pending }) : t('review.seeAllCount', { count: pending })}
+            {moreOpen ? t('review.confirmAllCount', { count: pending }) : t('review.confirmLeadCount', { count: leadPending })}
           </button>
           <p className={foldNotice ? 'small strong' : 'small'} id={pendingId} role="status" data-testid="review-pending">
-            {t('review.pending', { count: pending })}
+            {moreOpen ? t('review.pending', { count: pending }) : t('review.pendingLead', { count: leadPending })}
           </p>
         </div>
       )}

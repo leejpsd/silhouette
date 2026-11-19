@@ -374,14 +374,15 @@ test('the folded values are counted as the button above counts them, with fields
   await page.goto('/#/doc');
   await page.getByRole('button', { name: 'English paystub (text)' }).click();
   await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
-  // Every value is in view and confirmed with one press; "More values" counts as the button does, with the
-  // fields not found named apart.
-  const confirmAll = page.getByRole('button', { name: /^Confirm all \d+ values$/ });
-  const total = Number((await confirmAll.innerText()).match(/\d+/)?.[0]);
-  const shown = await page.getByTestId('lead-fields').locator(':scope > li').count();
-  const more = await page.getByTestId('more-values').innerText();
-  const m = more.match(/\((\d+) found · (\d+) not found\)/);
+  // The other values are counted on their fold, with the fields not found named apart; opened, the button
+  // counts every value found.
+  const more = page.getByTestId('more-values');
+  const m = (await more.innerText()).match(/\((\d+) found · (\d+) not found\)/);
   expect(m).not.toBeNull();
   expect(Number(m?.[2])).toBe(2);
+  const shown = await page.getByTestId('lead-fields').locator(':scope > li').count();
+  await more.click();
+  const confirmAll = page.getByRole('button', { name: /^Confirm all \d+ values$/ });
+  const total = Number((await confirmAll.innerText()).match(/\d+/)?.[0]);
   expect(shown + Number(m?.[1])).toBe(total);
 });

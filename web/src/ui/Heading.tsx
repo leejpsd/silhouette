@@ -6,6 +6,9 @@ import { useFit } from './design/parts';
 
 let firstScreen = true;
 
+/** Every screen title at this share of its design size (narrow and wide). */
+const HEADING_SCALE = 0.82;
+
 export function ScreenHeading({
   children,
   id,
@@ -30,7 +33,8 @@ export function ScreenHeading({
 }) {
   const own = useRef<HTMLHeadingElement>(null);
   const ref = headingRef ?? own;
-  useFit(ref, size, { maxLines, wideDesign: wideSize }, [children]);
+  // One step quieter than the design sizes everywhere: a benefits tool's titles need not fill half a screen.
+  useFit(ref, Math.round(size * HEADING_SCALE), { maxLines, wideDesign: Math.round(wideSize * HEADING_SCALE) }, [children]);
   useEffect(() => {
     // Only the screen's own title takes focus on arrival.
     if (level !== 1) return;

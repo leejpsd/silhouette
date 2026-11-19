@@ -135,9 +135,12 @@ export async function openDeleteEverything(page: Page, from: 'record' | 'demo' =
   return dialog;
 }
 
-/** Confirms every value with one press: they are all in view from the start. */
+/**
+ * Confirms with one press the values in view: those that decide the result (the other values are folded away
+ * as not used for it), or every value once they are opened.
+ */
 export async function confirmAllValues(page: Page): Promise<void> {
-  const confirmAll = page.getByRole('button', { name: /^Confirm (all \d+ values|\d+ value)$/ });
+  const confirmAll = page.getByRole('button', { name: /^Confirm (all \d+ values|\d+ value|the \d+ values that decide the result|the value that decides the result)$/ });
   await expect(confirmAll).toBeVisible();
   await confirmAll.click();
   await expect(confirmAll).toHaveCount(0);

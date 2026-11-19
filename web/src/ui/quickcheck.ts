@@ -137,7 +137,9 @@ export const VERDICT_ORDER: readonly Verdict[] = ['likely', 'maybe', 'depends', 
 
 /** Programs grouped by verdict in display order; empty groups are omitted. */
 export function groupByVerdict(results: readonly ProgramVerdict[]): { verdict: Verdict; programs: ProgramVerdict[] }[] {
-  return VERDICT_ORDER.map((verdict) => ({ verdict, programs: results.filter((r) => r.verdict === verdict) })).filter(
+  // Within a verdict, programs with an estimated amount first, the largest first; the rest in pack order.
+  const amount = (r: ProgramVerdict) => (r.estimatedAmount !== undefined && r.estimatedAmount > 0 ? r.estimatedAmount : 0);
+  return VERDICT_ORDER.map((verdict) => ({ verdict, programs: results.filter((r) => r.verdict === verdict).sort((a, b) => amount(b) - amount(a)) })).filter(
     (g) => g.programs.length > 0,
   );
 }

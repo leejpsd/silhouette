@@ -6646,3 +6646,46 @@ dialog.sheet[open][data-closing='true']::backdrop {
 .program-was {
   color: var(--note);
 }
+
+/* Phone, with an action in the dock: the dock keeps to about a seventh of the screen. Less space around the
+   action, and the count row on one line: the counter, what has left (its title stays for screen readers),
+   and Details. */
+.block:not([data-mode='compact']):has(.block-actions-inner) {
+  gap: 8px;
+  padding-top: 10px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
+.block:not([data-mode='compact']):has(.block-actions-inner) .action {
+  min-height: 50px;
+}
+
+.block:not([data-mode='compact']):has(.block-actions-inner) .count-row {
+  padding-top: 8px;
+}
+
+.block:not([data-mode='compact']):has(.block-actions-inner) .count {
+  width: 30px;
+  height: 30px;
+  font-size: 17px;
+}
+
+.block:not([data-mode='compact']):has(.block-actions-inner) .count-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.block:not([data-mode='compact']):has(.block-actions-inner) .count-sub {
+  color: var(--on-block);
+  font-size: var(--type-small-size);
+}
+
+/* The estimate is the point of a result: in ink, not in note grey like the other lines under the status. */
+.program-amount.program-money {
+  color: var(--ink);
+  font-weight: 700;
+}

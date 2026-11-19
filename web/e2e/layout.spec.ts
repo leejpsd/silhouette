@@ -95,7 +95,7 @@ test.describe('layout', () => {
 });
 
 test.describe('documents', () => {
-  test('review: what decides the result first, the rest folded until seen; nothing is confirmed unseen', async ({ page, context }) => {
+  test('review: what decides the result first, confirmed with one press; the other values folded as not used for it, still checked; nothing is confirmed unseen', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
     await page.goto('/#/doc');
@@ -105,17 +105,27 @@ test.describe('documents', () => {
     // The date shown first is the one the yearly income uses: the period end (the sample has one).
     for (const name of ['grossPay', 'ytdGross', 'periodEnd', 'payFrequency']) await expect(lead.getByTestId(`field-${name}`)).toBeVisible();
     await expect(lead.getByTestId('field-payDate')).toHaveCount(0);
-    // Every value is in view from the start.
+    // The other values are folded away as not used for the result.
     const more = page.getByTestId('more-values');
-    await expect(more).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.getByTestId('field-hoursWorked')).toBeVisible();
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+    await expect(more).toContainText('Other values, not used for the result');
+    await expect(page.getByTestId('field-hoursWorked')).toBeHidden();
     // Pressing "Check these values" first is answered beside the button.
     await page.getByRole('button', { name: 'Check these values' }).click();
     await expect(page.getByTestId('confirm-first')).toContainText('Confirm the values above first');
-    // One press confirms them all.
+    // One press confirms the four that decide the result, and nothing folded away.
+    await page.getByRole('button', { name: 'Confirm the 4 values that decide the result' }).click();
+    for (const name of ['grossPay', 'ytdGross', 'periodEnd', 'payFrequency']) await expect(lead.getByTestId(`field-${name}`)).toHaveAttribute('data-status', 'confirmed');
+    await expect(page.getByTestId('field-hoursWorked')).toHaveAttribute('data-status', 'pending');
+    await expect(page.getByTestId('confirm-first')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Check these values' }).click();
+    // The folded values still feed the reading's checks: net pay against the deductions, hours times rate.
+    await expect(page.getByTestId('validation').locator('[data-check="net-sum"]')).toHaveAttribute('data-status', 'ok');
+    await expect(page.getByTestId('validation').locator('[data-check="rate-hours"]')).toHaveAttribute('data-status', 'ok');
+    // Opened, every value can be confirmed together.
+    await more.click();
     await page.getByRole('button', { name: /^Confirm all \d+ values$/ }).click();
     await expect(page.getByTestId('field-hoursWorked')).toHaveAttribute('data-status', 'confirmed');
-    await expect(page.getByTestId('confirm-first')).toHaveCount(0);
     await page.getByRole('button', { name: 'Check these values' }).click();
     // The yearly income, with its arithmetic, comes right after the leading values, as money.
     await expect(page.getByTestId('annual-income')).toHaveText(/^\$[\d,]+$/);

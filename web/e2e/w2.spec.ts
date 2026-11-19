@@ -55,6 +55,7 @@ test.describe('Form W-2', () => {
     // What decides the result first: box 1 and the tax year; the rest below them, in view.
     await expect(page.getByTestId('lead-fields').locator('.field-label')).toHaveText(['Wages, tips, other compensation (box 1)', 'Tax year']);
     await expect(page.getByTestId('value-taxYear')).toHaveText('2025');
+    await page.getByTestId('more-values').click();
     await expect(page.getByTestId('field-medicareWages')).toBeVisible();
 
     // The request carried the silhouette and the document type, never a value of the W-2.
