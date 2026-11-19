@@ -144,6 +144,8 @@ function Measured() {
         {t('tasks.measured.title')}
       </h2>
       <p className="small muted">{t('tasks.measured.lead')}</p>
+      {/* Documents it had never seen first: the figures the prompts and checks were not tuned on. */}
+      <HeldOut />
       <div className="measured-grid">
         {devices.map((d) => (
           <div key={d.path} className="measured-block" data-testid="measured-device">
@@ -192,7 +194,6 @@ function Measured() {
           />
         </div>
       </div>
-      <HeldOut />
       {exact > 0 && (
         <ul className="device-headline">
           <Figure value={exactOnDevice} total={exact} met={exactOnDevice === exact} testId="measured-exact">

@@ -57,7 +57,7 @@ These figures are **recomputed from the recorded answers, not new runs**. Each r
 | Chrome 157, 18:07 | `history/device-check-2026-11-16T1807-chrome157-macos.json` | 3 of 5 | 2 | 0 |
 | Chrome 157, 18:24 | `history/device-check-2026-11-16T1824-chrome157-macos.json` | 1 of 5 | 5 | 0 |
 | Chrome 157, 18:36 | `history/device-check-2026-11-16T1836-chrome157-macos.json` | 2 of 15 | 15 | 0 |
-| Chrome 157, 2026-11-17 00:38 | `device-check-2026-11-17T0038-chrome157-macos.json` | 0 of 15 | 15 | 0 |
+| Chrome 157, 2026-11-17 00:38 | `history/device-check-2026-11-17T0038-chrome157-macos.json` | 0 of 15 | 15 | 0 |
 | iPhone 17 Pro, iOS 26.5.2, 05:05 | `device-check-2026-11-17T0505-silhouette0-ios2652.json` (kept with the iOS app) | 3 of 5 | 4 | 0 |
 | iPhone 17 Pro, iOS 26.5.2, 05:08 | `device-check-2026-11-17T0508-silhouette0-ios2652.json` (kept with the iOS app) | 2 of 5 | 4 | 0 |
 | iPhone 17 Pro, iOS 26.5.2, 05:11 | `device-check-2026-11-17T0511-silhouette0-ios2652.json` (kept with the iOS app) | 6 of 15 | 9 | 0 |

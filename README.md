@@ -159,17 +159,7 @@ The placeholder map stays on the device as `Raw`. The Rehydrator looks up `N12` 
 
 Each figure below is copied from a file in this repository, with its date.
 
-**Cloud extraction, 2026-11-12** ([`web/eval/results/summary.md`](web/eval/results/summary.md)). Synthetic paystubs with known answers, real calls to `gemini-3.5-flash-lite` through the app's own code path, two runs (`v15p4`, `v15p4r`):
-
-- all fields right on 30 of 30 English paystubs in ten layouts, in both runs; gross pay, net pay, year to date and pay frequency at 100 % recall and 0 % wrong;
-- all fields right on 8 of 8 paystubs of an eleventh layout with names that contain label words and dates written with month names;
-- the first variant of the prompt, for comparison, had all fields right on 0 of 30.
-
-The prompt measured is v4. The cloud prompt in use (v5) is v4's text word for word ([`shared/CHANGELOG.md`](shared/CHANGELOG.md), v1.17).
-
-**Leak check, same runs** ([`web/eval/results/v15p4.json`](web/eval/results/v15p4.json), field `leakCheck`). No name, date or amount printed in a document appeared in any of the 39 request bodies sent for 38 documents. In the browser tests, a canary test fails if any string listed in [`shared/fixtures/canary/`](shared/fixtures/canary/) appears in any outgoing URL, header or body.
-
-**Documents it had never seen, 2026-11-19** ([`web/eval/heldout/`](web/eval/heldout/), [`web/eval/heldout-2/`](web/eval/heldout-2/), results in [`web/eval/results/heldout/`](web/eval/results/heldout/)). The figures above were measured on documents the prompts were tuned on. These sets were written independently of the prompts, word lists, rules and tuning documents, and committed before the app read them: the commit that adds each set's `FROZEN.md` (with every file's SHA-256) comes before the commit with its results. The same app code read them in the cloud and in Chrome 157 with its on-device model (device first, the checks, one cloud retry of the same silhouette).
+**Documents it had never seen, 2026-11-19** ([`web/eval/heldout/`](web/eval/heldout/), [`web/eval/heldout-2/`](web/eval/heldout-2/), results in [`web/eval/results/heldout/`](web/eval/results/heldout/)). The figures below this one were measured on documents the prompts and checks were tuned on. These sets were written independently of the prompts, word lists, rules and tuning documents, and committed before the app read them: the commit that adds each set's `FROZEN.md` (with every file's SHA-256) comes before the commit with its results. The same app code read them in the cloud and in Chrome 157 with its on-device model (device first, the checks, one cloud retry of the same silhouette).
 
 | Never-seen documents | In the cloud | On the device first |
 |---|---|---|
@@ -182,7 +172,17 @@ The prompt measured is v4. The cloud prompt in use (v5) is v4's text word for wo
 
 Form W-2 was the weak part: box 1 was read from a box number, a street number or a neighbouring box. The checks were changed after each W-2 set ([`shared/CHANGELOG.md`](shared/CHANGELOG.md) v1.37, v1.38): a box answered from a number without cents, or boxes 1 and 2 that do not fit together, are now left out for the person to type. The 18 stored cloud answers, checked again with those rules and no new model call ([`web/eval/heldout-recheck.mjs`](web/eval/heldout-recheck.mjs)): box 1 right on 10, left out on 8, wrong on 0. That last line comes after seeing the sets, so neither W-2 set counts as held out any more ([`FROZEN.md`](web/eval/heldout/FROZEN.md) says so); the 24 paystubs still do. Names and deductions were weaker than the yearly-income inputs (names with "&" were cut short); neither feeds a result. `#/tasks` shows these figures and recounts them in the browser from the files.
 
-**On-device runs in Chrome 157, 2026-11-16 to 2026-11-17** ([`web/eval/results/on-device/README.md`](web/eval/results/on-device/README.md)). Seven recorded runs of the app's on-device check on macOS, each a JSON file in that folder. A "reading" is one paystub read once; a case that ended up in the cloud counts as a cloud run.
+**Cloud extraction, 2026-11-12** ([`web/eval/results/summary.md`](web/eval/results/summary.md)). Synthetic paystubs with known answers, real calls to `gemini-3.5-flash-lite` through the app's own code path, two runs (`v15p4`, `v15p4r`):
+
+- all fields right on 30 of 30 English paystubs in ten layouts, in both runs; gross pay, net pay, year to date and pay frequency at 100 % recall and 0 % wrong;
+- all fields right on 8 of 8 paystubs of an eleventh layout with names that contain label words and dates written with month names;
+- the first variant of the prompt, for comparison, had all fields right on 0 of 30.
+
+The prompt measured is v4. The cloud prompt in use (v5) is v4's text word for word ([`shared/CHANGELOG.md`](shared/CHANGELOG.md), v1.17).
+
+**Leak check, same runs** ([`web/eval/results/v15p4.json`](web/eval/results/v15p4.json), field `leakCheck`). No name, date or amount printed in a document appeared in any of the 39 request bodies sent for 38 documents. In the browser tests, a canary test fails if any string listed in [`shared/fixtures/canary/`](shared/fixtures/canary/) appears in any outgoing URL, header or body.
+
+**On-device runs in Chrome 157, 2026-11-16 to 2026-11-17** ([`web/eval/results/on-device/README.md`](web/eval/results/on-device/README.md)). Seven recorded runs of the app's on-device check on macOS, each a JSON file in that folder or its `history/`. They use the same five check paystubs the checks were changed against between runs; the never-seen sets above are the held-out measure. A "reading" is one paystub read once; a case that ended up in the cloud counts as a cloud run.
 
 | Run | What changed before it | Answered on the device | Readings with a wrong value reaching the person |
 |---|---|---|---|
@@ -212,7 +212,7 @@ In the latest run every yearly-income input was right in 15 of 15 readings. Appl
 
 **Rule pack.** The engine reproduces all 189 results of 27 households worked out by hand ([`shared/rulepacks/us-ca/README.md`](shared/rulepacks/us-ca/README.md)).
 
-**Tests, as of 2026-11-19.** Web: 1,142 unit tests, including every shared conformance fixture, and 286 browser tests (Playwright). Shared reference implementation: 30 tests. iOS (as of 2026-11-17): 120 package tests, including the shared fixtures, and 13 UI tests.
+**Tests, as of 2026-11-19.** Web: 1,142 unit tests, including every shared conformance fixture, and 286 browser test runs (Playwright, each test on a desktop and a phone viewport). Continuous integration runs the 30 shared contract tests on every push. Shared reference implementation: 30 tests. iOS (as of 2026-11-17): 120 package tests, including the shared fixtures, and 13 UI tests.
 
 **Not verified yet.**
 
