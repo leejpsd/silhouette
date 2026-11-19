@@ -28,6 +28,12 @@ struct DeviceCheckScreen: View {
             .sorted { ($0.file["date"]?.stringValue ?? "") > ($1.file["date"]?.stringValue ?? "") }
     }
 
+    /// The baseline: the earliest bundled run (eval/on-device/README.md keeps it with the latest).
+    static func isBaseline(_ name: String) -> Bool {
+        let bundled = bundledRecordings
+        return bundled.count > 1 && bundled.last?.name == name
+    }
+
     /// The file being shown: a recording, the finished run, or the run so far.
     private var shownFile: JSON? {
         recording?.file ?? run?.file ?? run.map { r in
@@ -93,8 +99,12 @@ struct DeviceCheckScreen: View {
                     .sfFont(15, weight: .semibold).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("deviceCheck.recordingMeta")
             }
-            if recording != nil {
+            if let recording {
                 NoticeCard(text: model.t("deviceCheck.recordingNote"), systemImage: "record.circle").accessibilityIdentifier("deviceCheck.recordingNote")
+                // The first run is kept as the baseline: said where its figures are shown.
+                if Self.isBaseline(recording.name) {
+                    NoteText(text: model.t("deviceCheck.baselineNote"), size: 15).accessibilityIdentifier("deviceCheck.baselineNote")
+                }
             }
             NoteText(text: model.t("deviceCheck.lead"), size: 15)
             NoteText(text: model.t("deviceCheck.cloudNote"))
@@ -150,6 +160,11 @@ struct DeviceCheckScreen: View {
                     repeatCases = repetitions > 1
                     start()
                 }
+            }
+            // Where the check cannot run, the screen opens on the latest recording (labelled as one), not on
+            // a button that cannot be pressed.
+            if !available, run == nil, recording == nil, let latest = Self.bundledRecordings.first {
+                recording = (latest.file, latest.name)
             }
         }
         .fileImporter(isPresented: $opening, allowedContentTypes: [.json]) { result in
@@ -293,13 +308,21 @@ struct DeviceCheckScreen: View {
             ListCard {
                 ForEach(Array(bundled.enumerated()), id: \.element.name) { i, r in
                     if i > 0 { RowDivider(inset: 64) }
+                    // The latest first; the first run is the baseline; any other is an earlier run.
+                    let key = i == 0 ? "deviceCheck.recordingLatest" : Self.isBaseline(r.name) ? "deviceCheck.recordingBaseline" : "deviceCheck.recordingEarlier"
+                    let shown = recording?.name == r.name
                     Button { recording = (r.file, r.name) } label: {
-                        // The latest first; the one before it is named as the earlier run.
-                        ListRow(title: model.t(i == 0 ? "deviceCheck.recordingLatest" : "deviceCheck.recordingEarlier", ["date": Self.recordedDate(r.file, model)]),
+                        ListRow(title: model.t(key, ["date": Self.recordedDate(r.file, model)]),
                                 subtitle: [Self.deviceName(r.file), r.file["platform"]?.stringValue, Self.recordedTime(r.file["date"]?.stringValue)]
                                     .compactMap { $0 }.joined(separator: " · "),
-                                titleSize: 15, titleWeight: .semibold) { IconTile(systemImage: "record.circle") }
+                                chevron: !shown, titleSize: 15, titleWeight: .semibold) {
+                            IconTile(systemImage: "record.circle")
+                        } trailing: {
+                            // The recording on the screen now.
+                            if shown { Image(systemName: "checkmark").sfFont(15, weight: .semibold).foregroundStyle(theme.ink).accessibilityHidden(true) }
+                        }
                     }
+                    .accessibilityAddTraits(shown ? .isSelected : [])
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("deviceCheck.recording")
                 }

@@ -28,6 +28,8 @@
     "review.flagged": "A check flags this value. Compare it with the line it came from.",
     "deviceCheck.recordingLatest": "Latest recording, {date}",
     "deviceCheck.recordingEarlier": "Earlier recording, {date}",
+    "deviceCheck.recordingBaseline": "Baseline recording, {date}",
+    "deviceCheck.baselineNote": "The first run, kept as the baseline. It was made with an earlier version of the app; the latest recording, listed first, shows the app as it is now.",
     "judges.recordedFigures": "Recorded on an {device}, {date}",
     "answer.notePersonal": "Written on this iPhone from your answers. Nothing was sent."
   },
@@ -59,6 +61,8 @@
     "review.flagged": "Una comprobación marca este valor. Compáralo con la línea de donde salió.",
     "deviceCheck.recordingLatest": "Grabación más reciente, {date}",
     "deviceCheck.recordingEarlier": "Grabación anterior, {date}",
+    "deviceCheck.recordingBaseline": "Grabación de referencia, {date}",
+    "deviceCheck.baselineNote": "La primera ejecución, conservada como referencia. Se hizo con una versión anterior de la app; la grabación más reciente, la primera de la lista, muestra la app tal como es ahora.",
     "judges.recordedFigures": "Grabado en un {device}, {date}",
     "answer.notePersonal": "Escrito en este iPhone a partir de tus respuestas. No se envió nada."
   },
