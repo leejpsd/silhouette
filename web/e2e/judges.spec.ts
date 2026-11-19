@@ -39,6 +39,10 @@ test.describe('for judges: try it in two minutes', () => {
     await expect(page.getByTestId('income-basis')).toContainText('so this is a projection');
     // What the paystub changed, first: the yearly income, the question it answered, the results it changed
     // (each row says what it was), and who decided.
+    // The results are said to be the invented sample household's, not the visitor's; the reasons say so too.
+    await expect(page.getByTestId('sample-household')).toContainText('Sample household, not you');
+    // Wide screens show the first program beside the list: its reasons say whose answers they use.
+    if (test.info().project.name !== 'phone') await expect(page.getByTestId('why-lead').first()).toContainText("using the sample household's answers");
     const effect = page.getByTestId('doc-effect');
     await expect(effect).toContainText('What your paystub changed');
     await expect(effect.getByTestId('doc-filled')).toContainText('Yearly income');

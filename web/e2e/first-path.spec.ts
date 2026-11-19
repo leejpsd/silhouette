@@ -56,6 +56,8 @@ test.describe('where a paystub is read, said truly', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await completeQuickCheck(page);
+    // One's own answers: no sample-household note.
+    await expect(page.getByTestId('sample-household')).toHaveCount(0);
   }
 
   test('without an on-device model, no line says the paystub is read on this device', async ({ page, context }) => {

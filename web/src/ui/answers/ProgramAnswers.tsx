@@ -7,6 +7,8 @@
 // - current information found by search (behind a flag).
 // Nothing here is requested until the person taps.
 
+import { isIncomeAnswer } from '../quickcheck';
+import { isSampleHousehold } from '../judges/household';
 import { bringIntoView } from '../design/motion';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Raw, asPublic } from '../../core/types';
@@ -103,7 +105,12 @@ const StateIcon = ({ state }: { state: CriterionState }) => {
 
 /** "Why this result": always there, from the rules on this device. */
 function WhySection({ program, verdict, device }: { program: Program; verdict: Verdict; device: DeviceStatus | 'checking' }) {
-  const { t, locale } = useApp();
+  const { t, locale, steps, answers } = useApp();
+  // The badge says what the reasons come from, as the results' badge does: the rules, and a document when
+  // the yearly income was read from one.
+  const income = answers['income'];
+  const docFrom = isIncomeAnswer(income) && income.kind === 'exact' ? income.from : undefined;
+  const incomeFrom = docFrom ? (docFrom.basis?.method === 'w2' ? 'w2' : 'paystub') : undefined;
   const id = useId();
   const reasons = useReasons(program.id);
   const rows = whyRows(t, locale, program, reasons);
@@ -139,7 +146,9 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
         <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className="section-heading">
           {t('why.title')}
         </h2>
-        <strong className="badge badge-none">{t('badge.rulesOnly')}</strong>
+        <strong className={`badge ${incomeFrom ? 'badge-paystub' : 'badge-none'}`} data-testid="why-badge">
+          {t(incomeFrom === 'w2' ? 'badge.rulesAndW2' : incomeFrom === 'paystub' ? 'badge.rulesAndPaystub' : 'badge.rulesOnly')}
+        </strong>
       </div>
       <ul className="criteria">
         {rows.map((row) => (
@@ -196,7 +205,7 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
           </li>
         ))}
       </ul>
-      <p className="card-note">{t('why.lead')}</p>
+      <p className="card-note" data-testid="why-lead">{t(isSampleHousehold(steps, answers) ? 'why.leadSample' : 'why.lead')}</p>
       {device === 'available' ? (
         <>
           {(personal.status === 'idle' || personal.status === 'error') && (

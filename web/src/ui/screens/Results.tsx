@@ -2,6 +2,7 @@
 // linking to its detail. On wide screens the results are two panes: the list (with the paystub card)
 // beside a program page, the first program's when none is chosen yet.
 import { JudgeNext, onJudgesPath, openSamplePaystub } from '../judges/next';
+import { isSampleHousehold } from '../judges/household';
 import { useDocument } from '../doc/state';
 import { usePaystubReadOnDevice } from '../doc/reads-on-device';
 import { useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
@@ -65,7 +66,8 @@ function useIncomeFrom(): 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY' |
  * paystub, how it was read (on this device, in the cloud from the silhouette, or a recorded reading).
  */
 function ResultsSource() {
-  const { t, answers } = useApp();
+  const { t, answers, steps } = useApp();
+  const sample = isSampleHousehold(steps, answers);
   const income = answers['income'];
   const exact = isIncomeAnswer(income) && income.kind === 'exact' ? (income as Extract<IncomeAnswer, { kind: 'exact' }>) : null;
   const basis = exact?.from?.basis;
@@ -79,8 +81,40 @@ function ResultsSource() {
       <p className="small muted" data-testid="results-lead">
         {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
       </p>
+      {sample && <SampleHousehold />}
       {from && exact && <DocumentEffect amount={exact.amount} from={from} />}
     </div>
+  );
+}
+
+/**
+ * The results are for the prepared, invented household (judges' path, "Try with a sample paystub"): said
+ * first, with a way to see and change its answers and a way to start with one's own.
+ */
+function SampleHousehold() {
+  const { t, steps, resetAnswers } = useApp();
+  return (
+    <section className="sample-household" data-testid="sample-household" aria-labelledby="sample-household-title">
+      <h2 className="doc-effect-title" id="sample-household-title">
+        {t('results.sample.title')}
+      </h2>
+      <p className="small">{t('results.sample.lead')}</p>
+      <div className="sample-household-actions">
+        <button type="button" className="text-link" onClick={() => navigate({ name: 'question', id: steps[0]?.id ?? 'income', then: { name: 'results' } })}>
+          {t('results.sample.see')}
+        </button>
+        <button
+          type="button"
+          className="text-link"
+          onClick={() => {
+            resetAnswers();
+            navigate({ name: 'question', id: steps[0]?.id ?? 'income', then: null });
+          }}
+        >
+          {t('results.sample.own')}
+        </button>
+      </div>
+    </section>
   );
 }
 

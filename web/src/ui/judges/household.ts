@@ -29,3 +29,13 @@ export function preparedHousehold(steps: readonly Step[]): QuickCheckAnswers {
   }
   return out;
 }
+
+/**
+ * Whether the answers are the prepared household's (filled by the judges' path or "Try with a sample
+ * paystub"), not the person's own. The yearly income and money from work are left out of the comparison:
+ * a document read on the way may have answered them.
+ */
+export function isSampleHousehold(steps: readonly Step[], answers: QuickCheckAnswers): boolean {
+  const prepared = Object.entries(preparedHousehold(steps)).filter(([id]) => id !== 'income' && id !== 'hasEarnedIncome');
+  return prepared.length > 0 && prepared.every(([id, value]) => JSON.stringify(answers[id]) === JSON.stringify(value));
+}
