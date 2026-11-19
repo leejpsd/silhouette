@@ -1,5 +1,22 @@
 # Contract changelog
 
+## v1.36 — 2026-11-19
+
+The checks and the evidence a reviewer can verify.
+
+| Change | Why |
+|---|---|
+| `validation/DEVICE_READING.md` section 4.1: `{field}:not-money` for `grossPay`, `netPay` and `ytdGross`, and section 6: `deductions:not-money`, when the answered N placeholder has no cents while the silhouette prints amounts with cents. Cases `gross-and-ytd-on-zip`, `net-on-zip`, `deduction-on-zip`, `gross-on-zip-then-right`, `gross-on-zip-twice` | A device answer that pointed gross pay and year to date at the ZIP code of the address passed every check on a paystub whose pay date allowed it. On the 38 English evaluation paystubs the check rejects no right answer; of the 34 wrong year-to-date placeholders the other checks let through, it catches 14 (ids, ZIP codes, years), the employee number of en-l04-1 among them. Won amounts have no cents, so a Korean silhouette never has the problem |
+| `tasks.recount.*`: "Recount from the file" recounts the cloud evaluation in the browser from the evaluation file itself (every document, its answers and every request body saved), and downloads it | The page showed the file's own totals; a reviewer could not check them without the repository |
+| `review.confirmFirst`: said when "Check these values" is pressed before the values are confirmed | Every value is in view from the start, with one "Confirm all" |
+| One model status everywhere: `preview.useRecorded.notDownloaded`, `preview.seeRecorded.notDownloaded`, `preview.cloud.notDownloaded`, `why.notDownloaded`, `ask.free.notDownloaded`, `reason.detail.notDownloaded` (the reason chip when a cloud request went because the model can be downloaded but is not yet) | In a browser that can download the model, one screen said "not downloaded yet" and another "this device doesn't have one" |
+| `preview.error.useRecorded`: after a failed Send, the way on that sends nothing | The error named its cause but offered only sending again or typing |
+| `record.recorded.{title,status,note}`: the record lists a recorded on-device reading as kept, with the device and date it was recorded on | On the recorded path the record was empty, as if nothing had happened |
+| `tasks.enforce.appCheck`: App Check on every cloud request, limited-use tokens requested only when one is about to go | Reviewers could not see App Check anywhere |
+| `judges.step1.button`: "Read the sample paystub" | Step 1 reads the paystub; "Open" undersold it |
+
+Platforms: the same checks in their device reading (fixture `device-reading.json`); the recount where the platform shows the cloud evaluation; the model status words where the platform's model can be downloaded; the recorded reading in the record. Reference tests: 30.
+
 ## v1.35 — 2026-11-19
 
 "Where each task runs" shows how the routing is enforced and the Remote Config values in use.

@@ -146,6 +146,15 @@ export function largerYtdProblems(schema, pointers, skeleton, map, jurisdiction)
   return [];
 }
 
+/** Amount fields whose placeholder must be money with cents when the silhouette prints cents (section 4.1). */
+export const MONEY_FIELDS = ['grossPay', 'netPay', 'ytdGross'];
+
+/** The silhouette prints amounts with cents: some N placeholder's text is money with cents. */
+const printsCents = (map) => Object.entries(map).some(([id, text]) => id.startsWith('N') && MONEY_WITH_CENTS.test(text));
+
+/** A reference to an N placeholder whose text has no cents, in a silhouette that prints cents: a ZIP code, an id, a year. */
+const notMoney = (ref, map) => typeof ref === 'string' && ref.startsWith('N') && map[ref] !== undefined && !MONEY_WITH_CENTS.test(map[ref]) && printsCents(map);
+
 /** Problems of the core (deductions ignored); empty: the core may be used (DEVICE_READING.md section 4.1). */
 export function coreProblems(schema, pointers, skeleton, map, jurisdiction) {
   if (!isObject(pointers)) return ['not-an-object'];
@@ -157,6 +166,7 @@ export function coreProblems(schema, pointers, skeleton, map, jurisdiction) {
     if (kind === 'enum') {
       if (!(spec.enum ?? []).includes(value)) problems.push(`${name}:not-an-option`);
     } else if (!fits(kind, value, map)) problems.push(`${name}:bad-reference`);
+    else if (MONEY_FIELDS.includes(name) && notMoney(value, map)) problems.push(`${name}:not-money`);
   }
   const core = Object.fromEntries(Object.entries(pointers).filter(([k]) => k !== 'deductions'));
   const v = values(schema, core, map);
@@ -178,6 +188,7 @@ export function deductionsProblems(schema, pointers, map, jurisdiction) {
   const problems = [];
   for (const item of list) {
     if (!isObject(item) || !fits('number', item.amount, map)) problems.push('deductions:bad-reference');
+    else if (notMoney(item.amount, map)) problems.push('deductions:not-money');
     else if (item.kind !== undefined && item.kind !== null && !kinds.includes(item.kind)) problems.push('deductions:not-an-option');
   }
   const v = values(schema, pointers, map);

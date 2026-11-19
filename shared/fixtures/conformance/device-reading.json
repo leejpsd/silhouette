@@ -2405,6 +2405,159 @@
       }
     },
     {
+      "id": "gross-and-ytd-on-zip",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N3",
+        "netPay": "N22",
+        "ytdGross": "N3",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N14",
+            "kind": "federal_tax"
+          },
+          {
+            "amount": "N16",
+            "kind": "social_security"
+          },
+          {
+            "amount": "N18",
+            "kind": "medicare"
+          },
+          {
+            "amount": "N20",
+            "kind": "state_tax"
+          }
+        ]
+      },
+      "expected": {
+        "core": [
+          "grossPay:not-money",
+          "ytdGross:not-money",
+          "check:ytd-periods"
+        ],
+        "deductions": [
+          "check:net-sum"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
+      }
+    },
+    {
+      "id": "net-on-zip",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N3",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly"
+      },
+      "expected": {
+        "core": [
+          "netPay:not-money",
+          "netPay:above-gross"
+        ],
+        "deductions": [
+          "deductions:missing"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [
+            "netPay:unconfirmed"
+          ],
+          "fields": [
+            "netPay"
+          ]
+        }
+      }
+    },
+    {
+      "id": "deduction-on-zip",
+      "document": "sample",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W4",
+          "W5"
+        ],
+        "periodStart": "D1",
+        "periodEnd": "D2",
+        "payDate": "D3",
+        "grossPay": "N12",
+        "netPay": "N22",
+        "ytdGross": "N13",
+        "hoursWorked": "N5",
+        "hourlyRate": "N4",
+        "payFrequency": "semimonthly",
+        "deductions": [
+          {
+            "amount": "N3",
+            "kind": "other"
+          }
+        ]
+      },
+      "expected": {
+        "core": [],
+        "deductions": [
+          "deductions:not-money",
+          "check:net-sum"
+        ],
+        "notRead": {
+          "problems": [],
+          "fields": []
+        },
+        "ytdMissingWithCandidate": false,
+        "unconfirmed": {
+          "problems": [],
+          "fields": []
+        }
+      }
+    },
+    {
       "id": "deductions-empty",
       "document": "sample",
       "pointers": {
@@ -4284,6 +4437,133 @@
       }
     },
     {
+      "id": "gross-on-zip-then-right",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N3\",\"netPay\":\"N22\",\"ytdGross\":\"N3\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "gross": "{\"grossPay\":\"N12\",\"ytdGross\":\"N13\"}",
+        "deductions": "{\"deductions\":[{\"amount\":\"N14\",\"kind\":\"federal_tax\"},{\"amount\":\"N16\",\"kind\":\"social_security\"},{\"amount\":\"N18\",\"kind\":\"medicare\"},{\"amount\":\"N20\",\"kind\":\"state_tax\"}]}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross",
+          "deductions"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "grossPay:not-money",
+              "ytdGross:not-money",
+              "check:ytd-periods"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "deductions",
+            "parsed": true,
+            "problems": [],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "on-device",
+        "value": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W4",
+            "W5"
+          ],
+          "periodStart": "D1",
+          "periodEnd": "D2",
+          "payDate": "D3",
+          "grossPay": "N12",
+          "netPay": "N22",
+          "ytdGross": "N13",
+          "hoursWorked": "N5",
+          "hourlyRate": "N4",
+          "payFrequency": "semimonthly",
+          "deductions": [
+            {
+              "amount": "N14",
+              "kind": "federal_tax"
+            },
+            {
+              "amount": "N16",
+              "kind": "social_security"
+            },
+            {
+              "amount": "N18",
+              "kind": "medicare"
+            },
+            {
+              "amount": "N20",
+              "kind": "state_tax"
+            }
+          ]
+        },
+        "notRead": []
+      }
+    },
+    {
+      "id": "gross-on-zip-twice",
+      "document": "sample",
+      "answers": {
+        "core": "{\"employerName\":[\"W1\",\"W2\",\"W3\"],\"employeeName\":[\"W4\",\"W5\"],\"periodStart\":\"D1\",\"periodEnd\":\"D2\",\"payDate\":\"D3\",\"grossPay\":\"N3\",\"netPay\":\"N22\",\"ytdGross\":\"N3\",\"hoursWorked\":\"N5\",\"hourlyRate\":\"N4\",\"payFrequency\":\"semimonthly\"}",
+        "gross": "{\"grossPay\":\"N3\",\"ytdGross\":\"N3\"}"
+      },
+      "expected": {
+        "asked": [
+          "core",
+          "gross"
+        ],
+        "passes": [
+          {
+            "part": "core",
+            "parsed": true,
+            "problems": [
+              "grossPay:not-money",
+              "ytdGross:not-money",
+              "check:ytd-periods"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          },
+          {
+            "part": "gross",
+            "parsed": true,
+            "problems": [
+              "grossPay:not-money",
+              "ytdGross:not-money",
+              "check:ytd-periods"
+            ],
+            "extraKeys": [],
+            "missingKeys": []
+          }
+        ],
+        "outcome": "failed",
+        "problems": [
+          "grossPay:not-money",
+          "ytdGross:not-money",
+          "check:ytd-periods"
+        ]
+      }
+    },
+    {
       "id": "gross-date-placeholder-then-right",
       "document": "sample",
       "answers": {
@@ -5334,6 +5614,7 @@
             "part": "core",
             "parsed": true,
             "problems": [
+              "grossPay:not-money",
               "check:ytd-gross",
               "check:ytd-periods"
             ],

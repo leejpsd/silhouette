@@ -767,6 +767,41 @@
     {
       "language": "en",
       "platform": "ios",
+      "key": "preview.cloud.notDownloaded",
+      "text": "Chrome’s on-device model is not downloaded yet, so the silhouette will be sent to Firebase AI Logic in the cloud. With the model downloaded, it is read on this device first.",
+      "shown": "Chrome’s on-device model is not downloaded yet, so the silhouette will be sent to Firebase AI Logic in the cloud. With the model downloaded, it is read on this iPhone first."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "why.notDownloaded",
+      "text": "Explaining your own result in words needs a model on this device, because it uses your exact answers. Chrome’s on-device model is not downloaded yet; you can download it below. The reasons above are complete without it.",
+      "shown": "Explaining your own result in words needs a model on this iPhone, because it uses your exact answers. Chrome’s on-device model is not downloaded yet; you can download it below. The reasons above are complete without it."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "ask.free.notDownloaded",
+      "text": "Typing your own question needs a model on this device, because what you type might be personal. Chrome’s on-device model is not downloaded yet, so for now only the prepared questions are offered.",
+      "shown": "Typing your own question needs a model on this iPhone, because what you type might be personal. Chrome’s on-device model is not downloaded yet, so for now only the prepared questions are offered."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "record.recorded.note",
+      "text": "The on-device model’s answer, recorded on {machine} ({date}). This device put the values back; nothing was sent.",
+      "shown": "The on-device model’s answer, recorded on {machine} ({date}). This iPhone put the values back; nothing was sent."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.enforce.appCheck",
+      "text": "Every cloud request carries an App Check token (reCAPTCHA Enterprise on the web). The tokens are limited-use and requested only when a cloud request is about to go; each token request is listed in “Leaving your device”.",
+      "shown": "Every cloud request carries an App Check token (reCAPTCHA Enterprise on the web). The tokens are limited-use and requested only when a cloud request is about to go; each token request is listed in “Leaving your iPhone”."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
       "key": "review.pointer.put",
       "text": "This device put back",
       "shown": "This iPhone put back"
@@ -1614,6 +1649,41 @@
     {
       "language": "en",
       "platform": "android",
+      "key": "preview.cloud.notDownloaded",
+      "text": "Chrome’s on-device model is not downloaded yet, so the silhouette will be sent to Firebase AI Logic in the cloud. With the model downloaded, it is read on this device first.",
+      "shown": "Chrome’s on-device model is not downloaded yet, so the silhouette will be sent to Firebase AI Logic in the cloud. With the model downloaded, it is read on this phone first."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "why.notDownloaded",
+      "text": "Explaining your own result in words needs a model on this device, because it uses your exact answers. Chrome’s on-device model is not downloaded yet; you can download it below. The reasons above are complete without it.",
+      "shown": "Explaining your own result in words needs a model on this phone, because it uses your exact answers. Chrome’s on-device model is not downloaded yet; you can download it below. The reasons above are complete without it."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "ask.free.notDownloaded",
+      "text": "Typing your own question needs a model on this device, because what you type might be personal. Chrome’s on-device model is not downloaded yet, so for now only the prepared questions are offered.",
+      "shown": "Typing your own question needs a model on this phone, because what you type might be personal. Chrome’s on-device model is not downloaded yet, so for now only the prepared questions are offered."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "record.recorded.note",
+      "text": "The on-device model’s answer, recorded on {machine} ({date}). This device put the values back; nothing was sent.",
+      "shown": "The on-device model’s answer, recorded on {machine} ({date}). This phone put the values back; nothing was sent."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.enforce.appCheck",
+      "text": "Every cloud request carries an App Check token (reCAPTCHA Enterprise on the web). The tokens are limited-use and requested only when a cloud request is about to go; each token request is listed in “Leaving your device”.",
+      "shown": "Every cloud request carries an App Check token (reCAPTCHA Enterprise on the web). The tokens are limited-use and requested only when a cloud request is about to go; each token request is listed in “Leaving your phone”."
+    },
+    {
+      "language": "en",
+      "platform": "android",
       "key": "review.pointer.put",
       "text": "This device put back",
       "shown": "This phone put back"
@@ -2391,6 +2461,41 @@
     {
       "language": "es",
       "platform": "ios",
+      "key": "preview.cloud.notDownloaded",
+      "text": "El modelo del dispositivo de Chrome aún no está descargado, así que la silueta se enviará a Firebase AI Logic en la nube. Con el modelo descargado, se lee primero en este dispositivo.",
+      "shown": "El modelo del dispositivo de Chrome aún no está descargado, así que la silueta se enviará a Firebase AI Logic en la nube. Con el modelo descargado, se lee primero en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "why.notDownloaded",
+      "text": "Explicar tu resultado con palabras requiere un modelo en este dispositivo, porque usa tus respuestas exactas. El modelo del dispositivo de Chrome aún no está descargado; puedes descargarlo aquí abajo. Las razones de arriba están completas sin él.",
+      "shown": "Explicar tu resultado con palabras requiere un modelo en este iPhone, porque usa tus respuestas exactas. El modelo del dispositivo de Chrome aún no está descargado; puedes descargarlo aquí abajo. Las razones de arriba están completas sin él."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "ask.free.notDownloaded",
+      "text": "Para escribir tu propia pregunta hace falta un modelo en este dispositivo, porque lo que escribas podría ser personal. El modelo del dispositivo de Chrome aún no está descargado, así que por ahora solo se ofrecen las preguntas preparadas.",
+      "shown": "Para escribir tu propia pregunta hace falta un modelo en este iPhone, porque lo que escribas podría ser personal. El modelo del dispositivo de Chrome aún no está descargado, así que por ahora solo se ofrecen las preguntas preparadas."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "record.recorded.note",
+      "text": "La respuesta del modelo del dispositivo, grabada en {machine} ({date}). Este dispositivo devolvió los valores; no se envió nada.",
+      "shown": "La respuesta del modelo del dispositivo, grabada en {machine} ({date}). Este iPhone devolvió los valores; no se envió nada."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "tasks.enforce.appCheck",
+      "text": "Cada solicitud a la nube lleva un token de App Check (reCAPTCHA Enterprise en la web). Los tokens son de uso limitado y se piden solo cuando una solicitud a la nube está a punto de salir; cada solicitud de token aparece en “Lo que sale de tu dispositivo”.",
+      "shown": "Cada solicitud a la nube lleva un token de App Check (reCAPTCHA Enterprise en la web). Los tokens son de uso limitado y se piden solo cuando una solicitud a la nube está a punto de salir; cada solicitud de token aparece en “Lo que sale de tu iPhone”."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
       "key": "review.pointer.put",
       "text": "Este dispositivo devolvió",
       "shown": "Este iPhone devolvió"
@@ -3164,6 +3269,41 @@
       "key": "start.pointer",
       "text": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este dispositivo vuelve a poner el valor.",
       "shown": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este teléfono vuelve a poner el valor."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.cloud.notDownloaded",
+      "text": "El modelo del dispositivo de Chrome aún no está descargado, así que la silueta se enviará a Firebase AI Logic en la nube. Con el modelo descargado, se lee primero en este dispositivo.",
+      "shown": "El modelo del dispositivo de Chrome aún no está descargado, así que la silueta se enviará a Firebase AI Logic en la nube. Con el modelo descargado, se lee primero en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "why.notDownloaded",
+      "text": "Explicar tu resultado con palabras requiere un modelo en este dispositivo, porque usa tus respuestas exactas. El modelo del dispositivo de Chrome aún no está descargado; puedes descargarlo aquí abajo. Las razones de arriba están completas sin él.",
+      "shown": "Explicar tu resultado con palabras requiere un modelo en este teléfono, porque usa tus respuestas exactas. El modelo del dispositivo de Chrome aún no está descargado; puedes descargarlo aquí abajo. Las razones de arriba están completas sin él."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "ask.free.notDownloaded",
+      "text": "Para escribir tu propia pregunta hace falta un modelo en este dispositivo, porque lo que escribas podría ser personal. El modelo del dispositivo de Chrome aún no está descargado, así que por ahora solo se ofrecen las preguntas preparadas.",
+      "shown": "Para escribir tu propia pregunta hace falta un modelo en este teléfono, porque lo que escribas podría ser personal. El modelo del dispositivo de Chrome aún no está descargado, así que por ahora solo se ofrecen las preguntas preparadas."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "record.recorded.note",
+      "text": "La respuesta del modelo del dispositivo, grabada en {machine} ({date}). Este dispositivo devolvió los valores; no se envió nada.",
+      "shown": "La respuesta del modelo del dispositivo, grabada en {machine} ({date}). Este teléfono devolvió los valores; no se envió nada."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "tasks.enforce.appCheck",
+      "text": "Cada solicitud a la nube lleva un token de App Check (reCAPTCHA Enterprise en la web). Los tokens son de uso limitado y se piden solo cuando una solicitud a la nube está a punto de salir; cada solicitud de token aparece en “Lo que sale de tu dispositivo”.",
+      "shown": "Cada solicitud a la nube lleva un token de App Check (reCAPTCHA Enterprise en la web). Los tokens son de uso limitado y se piden solo cuando una solicitud a la nube está a punto de salir; cada solicitud de token aparece en “Lo que sale de tu teléfono”."
     },
     {
       "language": "es",

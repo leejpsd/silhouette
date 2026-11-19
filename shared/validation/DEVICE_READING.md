@@ -70,6 +70,7 @@ An answer that is not a JSON object has the single problem `not-an-object` (in a
 |---|---|
 | `{field}:not-an-option` | an enum field whose value is not one of its options |
 | `{field}:bad-reference` | a reference to an id that is not in the silhouette, or of the wrong kind: a name must be a non-empty list of W ids; a date one D id, or a list of exactly three N ids; a number one N id |
+| `{field}:not-money` | `grossPay`, `netPay` or `ytdGross` refers to an N id whose text is not money with cents (section 4.3), while some N placeholder of the silhouette is: a ZIP code, an id or a year answered as an amount. A silhouette with no amount in cents (won) never has this problem |
 
 Then, on the values rehydrated from the core (deductions ignored):
 
@@ -142,6 +143,7 @@ The deductions are checked on the core's answer (without fields not read) plus t
 | `deductions:missing` | no deductions list |
 | `deductions:not-a-list` | not a list |
 | `deductions:bad-reference` | an item that is not an object, or whose `amount` is not an N id of the silhouette |
+| `deductions:not-money` | an `amount` whose text is not money with cents, while some N placeholder of the silhouette is (as `{field}:not-money`, section 4.1) |
 | `deductions:not-an-option` | an item's `kind` is present and not one of the schema's kinds |
 | `deductions:cannot-check` | gross pay or net pay has no value |
 | `check:net-sum` | `net-sum` of `validation/SPEC.md` section 5 is `warn` |
