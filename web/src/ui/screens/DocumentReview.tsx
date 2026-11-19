@@ -31,6 +31,7 @@ import { emptyDocument, useDocument, type FlowDocType } from '../doc/state';
 import { BlockActions } from '../design/block';
 import { Alert, ArrowRight, Check, ChevronLeft, ChevronRight } from '../design/icons';
 import { Marker, Paper, ActionLabel } from '../design/parts';
+import type { Skeleton } from '../../core/types';
 import { computeVerdicts, type DocumentChange, type IncomeBasis, type QuickCheckAnswers } from '../quickcheck';
 import { BANDS } from '../pack';
 
@@ -74,7 +75,45 @@ function displayText(field: ReviewField): string {
  * ("grossPay": "N12") and this device put the value back (1,271.88). It arrives in that order: the
  * answer, then the value (styles.css, "The pointer"); with reduced motion both are simply there.
  */
-function PointerReveal({ review, source, machine, docType }: { review: readonly ReviewField[]; source: string; machine?: string | undefined; docType: FlowDocType }) {
+/**
+ * One line of the document twice: as the model saw it (the silhouette, placeholders as chips) and as this
+ * device shows it (the values, the one put back marked). The model's line is part of what may leave.
+ */
+function TwoViews({ skeleton, field, refId }: { skeleton: Skeleton | null; field: ReviewField; refId: string }) {
+  const { t } = useApp();
+  const modelLine = skeleton?.split('\n').find((l) => l.includes(`⟦${refId}⟧`));
+  const deviceLine = field.source[0];
+  if (!modelLine || !deviceLine) return null;
+  // Long runs of spaces (columns) shortened alike in both lines, so they stay comparable and fit.
+  const squeeze = (text: string) => text.replace(/ {4,}/g, '   ');
+  const parts = squeeze(modelLine.trim()).split(/⟦([NDW][0-9]+)⟧/);
+  const deviceParts = deviceLine.map((seg, i, all) => {
+    const text = squeeze(i === 0 ? seg.text.trimStart() : i === all.length - 1 ? seg.text.trimEnd() : seg.text);
+    return seg.highlight ? <mark key={i}>{text}</mark> : <span key={i}>{text}</span>;
+  });
+  return (
+    <div className="pointer-lines" data-testid="pointer-lines">
+      <span className="pointer-label">{t('review.pointer.modelLine')}</span>
+      <pre className="pointer-line pointer-line-model" data-testid="pointer-line-model">
+        {parts.map((part, i) =>
+          i % 2 === 1 ? (
+            <span key={i} className={`line-tok${part === refId ? ' line-tok-ref' : ''}`}>
+              {part}
+            </span>
+          ) : (
+            <span key={i}>{part}</span>
+          ),
+        )}
+      </pre>
+      <span className="pointer-label">{t('review.pointer.deviceLine')}</span>
+      <pre className="pointer-line" data-testid="pointer-line-device">
+        {deviceParts}
+      </pre>
+    </div>
+  );
+}
+
+function PointerReveal({ review, source, machine, docType, skeleton }: { review: readonly ReviewField[]; source: string; machine?: string | undefined; docType: FlowDocType; skeleton: Skeleton | null }) {
   const { t } = useApp();
   if (source !== 'ON_DEVICE' && source !== 'IN_CLOUD' && source !== 'RECORDED') return null;
   const scalar = (f: ReviewField) => f.refs.length === 1 && f.value !== null && /^N[0-9]+$/.test(f.refs[0] as string);
@@ -103,6 +142,7 @@ function PointerReveal({ review, source, machine, docType }: { review: readonly 
           </span>
         </div>
       </div>
+      <TwoViews skeleton={skeleton} field={field} refId={ref} />
       <figcaption className="small">
         {source === 'RECORDED'
           ? t('review.pointer.recorded', { machine: machine ?? '', ref, value })
@@ -660,7 +700,7 @@ export function DocumentReviewScreen() {
           <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
         )}
       </div>
-      {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} machine={doc.extraction.recording?.machine} docType={docType} />}
+      {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} machine={doc.extraction.recording?.machine} docType={docType} skeleton={doc.skeleton} />}
       <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
       {manual && manualHint && nothingTyped && (
         <p className="error" role="alert">

@@ -6713,3 +6713,48 @@ dialog.sheet[open][data-closing='true']::backdrop {
   flex-wrap: wrap;
   gap: 4px 16px;
 }
+
+/* The pointer card: the same line as the model saw it and as this device shows it. */
+.pointer-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.pointer-line {
+  margin: 0 0 4px;
+  padding: 6px 8px;
+  overflow-x: auto;
+  border-radius: 8px;
+  background: var(--ground);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.pointer-line mark {
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--card);
+  font-weight: 700;
+}
+
+.line-tok {
+  display: inline-block;
+  padding: 0 4px;
+  border: 1px solid var(--redact);
+  border-radius: 4px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.line-tok-ref {
+  border-color: var(--redact);
+  background: var(--redact);
+  color: var(--on-redact);
+  font-weight: 700;
+}

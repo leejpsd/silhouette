@@ -69,6 +69,12 @@ test.describe('for judges: try it in two minutes', () => {
     await page.getByTestId('use-recorded').click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'RECORDED');
     await expect(page.getByTestId('pointer-answer')).toHaveText(/"grossPay": "N\d+"/);
+    // The same line twice: as the model saw it (placeholders only) and on this device (the value marked).
+    const modelLine = page.getByTestId('pointer-line-model');
+    await expect(modelLine).toContainText('Gross Pay');
+    await expect(modelLine.locator('.line-tok-ref')).toHaveText(/^N\d+$/);
+    await expect(modelLine).not.toContainText('1,271.88');
+    await expect(page.getByTestId('pointer-line-device').locator('mark')).toHaveText('1,271.88');
     await expect(page.getByTestId('pointer-value')).toHaveText('1,271.88');
     await expect(page.getByTestId('pointer-reveal')).toContainText('(a recorded reading)');
     await confirmAllValues(page);
