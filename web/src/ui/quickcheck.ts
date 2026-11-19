@@ -22,8 +22,24 @@ export type IncomeAnswer =
   | {
       readonly kind: 'exact';
       readonly amount: number;
-      readonly from?: { readonly paystub: 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY'; readonly basis?: IncomeBasis | undefined } | undefined;
+      readonly from?:
+        | {
+            readonly paystub: 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY';
+            readonly basis?: IncomeBasis | undefined;
+            /** The rule variables the document answered (yearly income, money from work). */
+            readonly filled?: readonly string[] | undefined;
+            /** The results the document changed, as they were when it was used. */
+            readonly changed?: readonly DocumentChange[] | undefined;
+          }
+        | undefined;
     };
+/** A result a document changed: the verdict before and after it, and the estimate after it. */
+export interface DocumentChange {
+  readonly programId: string;
+  readonly before: Verdict;
+  readonly after: Verdict;
+  readonly amount?: number | undefined;
+}
 export type AnswerValue = number | string | boolean | readonly string[] | IncomeAnswer;
 
 export function isIncomeAnswer(value: unknown): value is IncomeAnswer {

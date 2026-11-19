@@ -31,7 +31,7 @@ import { emptyDocument, useDocument, type FlowDocType } from '../doc/state';
 import { BlockActions } from '../design/block';
 import { Alert, ArrowRight, Check, ChevronLeft, ChevronRight } from '../design/icons';
 import { Marker, Paper, ActionLabel } from '../design/parts';
-import { computeVerdicts, type IncomeBasis } from '../quickcheck';
+import { computeVerdicts, type DocumentChange, type IncomeBasis, type QuickCheckAnswers } from '../quickcheck';
 import { BANDS } from '../pack';
 
 type Kind = ReviewField['kind'];
@@ -270,7 +270,7 @@ export function referenceDateSource(annual: Annualization | W2Annualization, stu
 }
 
 export function DocumentReviewScreen() {
-  const { t, locale, setAnswer } = useApp();
+  const { t, locale, setAnswer, answers } = useApp();
   const { doc, update, reset } = useDocument();
   const docType = doc.docType;
   const initial = useMemo(() => initialRows(doc.extraction?.review ?? null, docType), [doc.extraction, docType]);
@@ -337,6 +337,8 @@ export function DocumentReviewScreen() {
 
   const currentIndex = docType === 'w2' ? doc.confirmedW2s.length : doc.confirmedStubs.length;
   const annual = result?.annualization ?? null;
+  // What this yearly income would change, kept with the answer so the results can show it.
+  const documentChanges = useChanges(annual?.annualIncome ?? 0);
 
   // What decides the result first; everything else behind "More values", opened when it needs attention.
   // Deductions this device did not read (and none added): net pay against them cannot be checked.
@@ -785,7 +787,16 @@ export function DocumentReviewScreen() {
               className="action"
               onClick={() => {
                 // Read from a paystub or a W-2 (not typed): the results say how it was read, and the basis.
-                setAnswer('income', doc.extraction ? { kind: 'exact', amount: annual.annualIncome, from: { paystub: doc.extraction.inferenceSource, basis: incomeBasis(annual) } } : { kind: 'exact', amount: annual.annualIncome });
+                // Read from a paystub or a W-2 (not typed): the results say how it was read, the basis, what the
+                // document answered and what it changed. Wages are money from work: that answer becomes "yes".
+                const { filled } = documentAnswers(answers, annual.annualIncome);
+                if (filled.includes('hasEarnedIncome')) setAnswer('hasEarnedIncome', 'yes');
+                setAnswer(
+                  'income',
+                  doc.extraction
+                    ? { kind: 'exact', amount: annual.annualIncome, from: { paystub: doc.extraction.inferenceSource, basis: incomeBasis(annual), filled, changed: documentChanges } }
+                    : { kind: 'exact', amount: annual.annualIncome },
+                );
                 reset(false);
                 navigate({ name: 'results' });
               }}
@@ -854,11 +865,23 @@ export function DocumentReviewScreen() {
   );
 }
 
-/** Results that would change if this yearly income were used. */
-function useChanges(amount: number) {
+/**
+ * What using this document's yearly income would answer: the yearly income, and money from work (wages on a
+ * paystub or a W-2 are earned income) when that was not already "yes".
+ */
+function documentAnswers(answers: QuickCheckAnswers, amount: number): { answers: QuickCheckAnswers; filled: string[] } {
+  const earned = answers['hasEarnedIncome'] !== 'yes';
+  return {
+    answers: { ...answers, income: { kind: 'exact', amount }, ...(earned ? { hasEarnedIncome: 'yes' } : {}) },
+    filled: ['annualIncome', ...(earned ? ['hasEarnedIncome'] : [])],
+  };
+}
+
+/** Results that would change if this yearly income (and money from work) were used. */
+function useChanges(amount: number): DocumentChange[] {
   const { steps, answers, results } = useApp();
   return useMemo(() => {
-    const after = computeVerdicts(PACK, BANDS, steps, { ...answers, income: { kind: 'exact', amount } });
+    const after = computeVerdicts(PACK, BANDS, steps, documentAnswers(answers, amount).answers);
     return after.flatMap((a) => {
       const before = results.find((r) => r.programId === a.programId);
       return before && before.verdict !== a.verdict ? [{ programId: a.programId, before: before.verdict, after: a.verdict, amount: a.estimatedAmount }] : [];

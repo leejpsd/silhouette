@@ -81,7 +81,9 @@ test.describe('Form W-2', () => {
     await expect(page.getByTestId('income-basis')).toContainText('$27,640 a year: the wages on your 2025 W-2 (box 1), as your employer reported them.');
     await expect(page.getByTestId('income-basis-note')).toContainText('These are 2025’s wages.');
     await expect(page.getByTestId('income-basis-note')).not.toContainText('projection');
+    await page.getByTestId('income-basis').locator('summary').click();
     await expect(page.getByTestId('income-basis').getByRole('button', { name: 'Change the yearly income' })).toBeVisible();
+    await expect(page.getByTestId('doc-effect')).toContainText('What your W-2 changed');
   });
 
   test('a cloud answer that points box 1 at the ZIP code and the tax year at the form title: both left out, said why, typed by the person', async ({ page, context }) => {

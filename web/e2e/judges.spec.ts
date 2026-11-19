@@ -37,6 +37,15 @@ test.describe('for judges: try it in two minutes', () => {
     await expect(page.getByTestId('income-basis')).toHaveAttribute('data-method', 'ytd');
     await expect(page.getByTestId('income-basis')).toContainText('worked out from the year-to-date gross pay: $23,103.25 through');
     await expect(page.getByTestId('income-basis')).toContainText('so this is a projection');
+    // What the paystub changed, first: the yearly income, the question it answered, the results it changed
+    // (each row says what it was), and who decided.
+    const effect = page.getByTestId('doc-effect');
+    await expect(effect).toContainText('What your paystub changed');
+    await expect(effect.getByTestId('doc-filled')).toContainText('Yearly income');
+    await expect(effect.getByTestId('who-decided')).toContainText('The rules on this device decided each result');
+    const changed = Number(await effect.getByTestId('doc-changes').getAttribute('data-count'));
+    expect(changed).toBeGreaterThan(0);
+    await expect(page.locator('[data-document-changed="true"]')).toHaveCount(changed);
     await expect(page.getByTestId('judge-next-3').first()).toBeVisible();
     await expect(page.getByTestId('judge-next-1')).toHaveCount(0);
 
@@ -65,6 +74,7 @@ test.describe('for judges: try it in two minutes', () => {
     await expect(page.locator('.check[data-check="net-sum"]')).toHaveCount(0);
     await page.getByRole('button', { name: /^Use \$[\d,]+ as my yearly income$/ }).click();
     await expect(page.getByTestId('income-from')).toContainText('from a recorded on-device reading');
+    await page.getByTestId('income-basis').locator('summary').click();
     await page.getByTestId('income-basis').getByRole('button', { name: 'Change the yearly income' }).click();
     await expect(page).toHaveURL(/#\/q\/income/);
     // Nothing left: no request to the model, nothing in the record.

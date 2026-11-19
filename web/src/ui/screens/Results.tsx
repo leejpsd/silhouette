@@ -65,7 +65,7 @@ function useIncomeFrom(): 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY' |
  * paystub, how it was read (on this device, in the cloud from the silhouette, or a recorded reading).
  */
 function ResultsSource() {
-  const { t, locale, steps, answers } = useApp();
+  const { t, answers } = useApp();
   const income = answers['income'];
   const exact = isIncomeAnswer(income) && income.kind === 'exact' ? (income as Extract<IncomeAnswer, { kind: 'exact' }>) : null;
   const basis = exact?.from?.basis;
@@ -79,15 +79,50 @@ function ResultsSource() {
       <p className="small muted" data-testid="results-lead">
         {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
       </p>
-      {from && (
-        <p className="small strong income-from" data-testid="income-from">
-          {t(w2 ? 'results.incomeFromW2.lead' : 'results.incomeFrom.lead', { how: t(dynamicKey(`results.incomeFrom.${from}`)) })}
+      {from && exact && <DocumentEffect amount={exact.amount} from={from} />}
+    </div>
+  );
+}
+
+/**
+ * What the paystub or W-2 changed, first on the results: how it was read, the yearly income, the questions it
+ * answered and the results it changed; how the income was worked out behind a disclosure; and who decided.
+ */
+function DocumentEffect({ amount, from }: { amount: number; from: NonNullable<ReturnType<typeof useIncomeFrom>> }) {
+  const { t, locale, steps, answers } = useApp();
+  const income = answers['income'] as Extract<IncomeAnswer, { kind: 'exact' }>;
+  const basis = income.from?.basis;
+  const w2 = basis?.method === 'w2' ? basis : null;
+  const filled = income.from?.filled ?? ['annualIncome'];
+  const changed = income.from?.changed;
+  return (
+    <section className="doc-effect" data-testid="doc-effect" aria-labelledby="doc-effect-title">
+      <h2 className="doc-effect-title" id="doc-effect-title">
+        {t(w2 ? 'results.docEffect.titleW2' : 'results.docEffect.titlePaystub')}
+      </h2>
+      <p className="small income-from" data-testid="income-from">
+        {t(w2 ? 'results.incomeFromW2.lead' : 'results.incomeFrom.lead', { how: t(dynamicKey(`results.incomeFrom.${from}`)) })}
+      </p>
+      <p className="doc-effect-amount" data-testid="doc-effect-amount">
+        {formatMoney(locale, amount)} <span className="small">{t('results.docEffect.year')}</span>
+      </p>
+      <p className="small" data-testid="doc-filled">
+        {t('results.docEffect.filled', { count: filled.length, list: filled.map((v) => t(dynamicKey(`variable.${v}`))).join(', ') })}
+      </p>
+      {changed && changed.length > 0 && (
+        <p className="small strong" data-testid="doc-changes" data-count={changed.length}>
+          {t('results.docEffect.changed', { count: changed.length })}
         </p>
       )}
-      {/* How the yearly income was worked out, and that a tax credit counts the whole year. */}
-      {exact && basis && (
-        <div className="income-basis" data-testid="income-basis" data-method={basis.method}>
-          <p className="small">{incomeBasisLine(t, locale, exact.amount, basis)}</p>
+      {changed && changed.length === 0 && (
+        <p className="small muted" data-testid="doc-no-change">
+          {t('results.docEffect.none')}
+        </p>
+      )}
+      {basis && (
+        <details className="income-basis" data-testid="income-basis" data-method={basis.method}>
+          <summary className="small strong">{t('results.docEffect.how')}</summary>
+          <p className="small">{incomeBasisLine(t, locale, amount, basis)}</p>
           <p className="small muted" data-testid="income-basis-note">
             {w2 ? (w2.taxYear === null ? t('results.incomeBasis.w2NoteNoYear') : t('results.incomeBasis.w2Note', { year: String(w2.taxYear) })) : t('results.incomeBasis.note')}{' '}
             <button
@@ -98,9 +133,12 @@ function ResultsSource() {
               {t('results.incomeBasis.change')}
             </button>
           </p>
-        </div>
+        </details>
       )}
-    </div>
+      <p className="small muted who-decided" data-testid="who-decided">
+        {t(w2 ? 'results.whoDecided.w2' : 'results.whoDecided.paystub')}
+      </p>
+    </section>
   );
 }
 
@@ -313,7 +351,10 @@ function SharpenHelp() {
 }
 
 function ProgramRow({ result: r, name, summary, current = false, order = 0 }: { result: ProgramVerdict; name: string; summary: string | undefined; current?: boolean; order?: number }) {
-  const { t, locale } = useApp();
+  const { t, locale, answers } = useApp();
+  // A result the paystub or W-2 changed (kept with the income answer): the row says what it was before.
+  const income = answers['income'];
+  const docChange = isIncomeAnswer(income) && income.kind === 'exact' ? income.from?.changed?.find((c) => c.programId === r.programId && c.after === r.verdict) : undefined;
   // Shown with another verdict before (the paystub changed it): the row says so once, by its marker.
   const [changed] = useState(() => lastShown.has(r.programId) && lastShown.get(r.programId) !== r.verdict);
   useEffect(() => {
@@ -325,9 +366,11 @@ function ProgramRow({ result: r, name, summary, current = false, order = 0 }: { 
       ? t('results.dependsOn', { list: r.dependsOn.map((v) => t(dynamicKey(`variable.${v}`))).join(', ') })
       : t(dynamicKey(`verdict.${r.verdict}`));
   // The rules' estimate, when there is one, joins the status on the same line.
-  const status = r.estimatedAmount !== undefined && r.estimatedAmount > 0 ? `${verdict} · ${t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}` : verdict;
+  const withAmount = r.estimatedAmount !== undefined && r.estimatedAmount > 0 ? `${verdict} · ${t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}` : verdict;
+  const was = docChange ? t('results.docEffect.was', { before: t(dynamicKey(`verdict.short.${docChange.before}`)) }) : null;
+  const status = was ? `${withAmount} · ${was}` : withAmount;
   return (
-    <li data-testid={`program-${r.programId}`} data-verdict={r.verdict} data-changed={changed ? 'true' : undefined} style={{ '--i': order } as CSSProperties}>
+    <li data-testid={`program-${r.programId}`} data-verdict={r.verdict} data-changed={changed ? 'true' : undefined} data-document-changed={docChange ? 'true' : undefined} style={{ '--i': order } as CSSProperties}>
       <a href={routeHref({ name: 'program', id: r.programId })} className="program-link" aria-current={current ? 'page' : undefined}>
         <Marker verdict={r.verdict} />
         <span className="program-text">
@@ -345,6 +388,11 @@ function ProgramRow({ result: r, name, summary, current = false, order = 0 }: { 
           {r.estimatedAmount !== undefined && r.estimatedAmount > 0 && <span className="program-amount">{t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}</span>}
           {/* Not a decision: wide rows show only the short word, so the way on is said under it. */}
           {r.verdict === 'unlikely' && <span className="program-amount" data-testid="still-apply">{t('results.stillApply')}</span>}
+          {was && (
+            <span className="program-amount program-was" data-testid="was">
+              {was}
+            </span>
+          )}
         </span>
         <ChevronRight />
       </a>
