@@ -1,5 +1,17 @@
 # Contract changelog
 
+## v1.26 — 2026-11-19
+
+Words for a result that is not a "may qualify", and for the recorded runs.
+
+| Change | Why |
+|---|---|
+| `detail.unlikelyNote` ("This is a first check from the answers you gave, not a decision. The agency decides, and you can still apply.") on the page of a program whose result is "Probably not" | A person who does qualify must not stop at a first check |
+| `results.dependsOn` reads "Needs an answer: {list}" ("Falta una respuesta: {list}") | The same result was worded differently on a narrow and on a wide screen; one wording, and it says what to do |
+| `judges.recorded.title`, `judges.recorded.row`, `judges.recorded.note` | The judges' page shows the latest run recorded on an iPhone and in Chrome, each one press from the whole recording |
+
+Platforms: iOS and Android take `detail.unlikelyNote` and the new `results.dependsOn` wording on the same screens. Reference tests: 30.
+
 ## v1.25 — 2026-11-19
 
 The app's own sample paystub no longer raises a warning.

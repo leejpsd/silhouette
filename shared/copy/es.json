@@ -151,7 +151,7 @@
   "reason.speech": "leer en voz alta",
   "reason.typed-text-may-be-personal": "el texto escrito puede ser personal",
   "results.addDocument": "Agregar un talón de pago",
-  "results.dependsOn": "Depende de: {list}",
+  "results.dependsOn": "Falta una respuesta: {list}",
   "results.edit": "Cambiar mis respuestas",
   "results.empty": "Responde al menos una pregunta para ver resultados.",
   "results.estimate": "Unos {amount} al año",
@@ -651,5 +651,9 @@
   "review.seeAllCount": "Ver los {count} valores",
   "preview.seeRecorded.web": "Este navegador no tiene modelo en el dispositivo. Mira la misma lectura hecha en un dispositivo (una grabación)",
   "start.pointer": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este dispositivo vuelve a poner el valor.",
-  "deviceCheck.headline.onRecordingDevice": "casos respondidos en el dispositivo que hizo esta grabación"
+  "deviceCheck.headline.onRecordingDevice": "casos respondidos en el dispositivo que hizo esta grabación",
+  "judges.recorded.title": "Grabado en dispositivos reales",
+  "judges.recorded.row": "{onDevice} de {total} casos respondidos en el dispositivo · {wrong} de {readings} lecturas de talón con un valor incorrecto",
+  "judges.recorded.note": "Son grabaciones, hechas en las máquinas indicadas, mostradas tal como se guardaron. Abre una para ver cada caso.",
+  "detail.unlikelyNote": "Es una primera revisión con las respuestas que diste, no una decisión. La agencia decide, y aun así puedes solicitarlo."
 }

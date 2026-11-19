@@ -151,7 +151,7 @@
   "reason.speech": "read aloud",
   "reason.typed-text-may-be-personal": "typed text may be personal",
   "results.addDocument": "Add a paystub",
-  "results.dependsOn": "Depends on: {list}",
+  "results.dependsOn": "Needs an answer: {list}",
   "results.edit": "Change my answers",
   "results.empty": "Answer at least one question to see results.",
   "results.estimate": "About {amount} a year",
@@ -651,5 +651,9 @@
   "review.seeAllCount": "See all {count} values",
   "preview.seeRecorded.web": "No on-device model in this browser. See the same reading done on a device (a recording)",
   "start.pointer": "The model answers “gross pay is N12”. It never sees 1,271.88: this device puts the value back.",
-  "deviceCheck.headline.onRecordingDevice": "cases answered on the device that made this recording"
+  "deviceCheck.headline.onRecordingDevice": "cases answered on the device that made this recording",
+  "judges.recorded.title": "Recorded on real devices",
+  "judges.recorded.row": "{onDevice} of {total} cases answered on the device · {wrong} of {readings} paystub readings with a wrong value",
+  "judges.recorded.note": "These are recordings, made on the machines named, shown exactly as saved. Open one to see every case.",
+  "detail.unlikelyNote": "This is a first check from the answers you gave, not a decision. The agency decides, and you can still apply."
 }
