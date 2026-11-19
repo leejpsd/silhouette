@@ -38,6 +38,7 @@ Labels live in `rulepacks/{jurisdiction}/copy/{locale}.json` with these keys. Ev
 | `programs[].criteria[]` | `{ id, requires[], logic, uncertainIf? }`. `logic` is an expression (section 3) that returns true or false. `requires` lists every variable the criterion reads; it is documentation checked by the linter, and the engine does not use it |
 | `programs[].period`, `programs[].caveats[]` | Optional. The period the figures apply to, and copy keys for warnings shown on the card |
 | `programs[].amount` | Optional expression that returns an estimated amount |
+| `programs[].amountUpTo` | Optional expression that returns the most the program pays a household like this one, from the agency's published maximums (for a program whose exact amount exists only as a table). Shown as "up to", never as an estimate |
 | `programs[].docsRequired`, `applyUrl`, `sources` | Shown in the app |
 
 ### 2.1 Program copy and the information given to a model
@@ -141,6 +142,8 @@ Program verdict:
 The result lists `dependsOn` sorted, without duplicates.
 
 `amount` is evaluated only when the verdict is `likely` and `annualIncome` is exact. A numeric result is rounded down to an integer; an unknown result means no estimate is shown.
+
+`amountUpTo` is evaluated when the verdict is `likely` or `maybe` and the result has no `estimatedAmount`, with the income band or the exact income alike. A numeric result is rounded down and given as `upToAmount`; an unknown result means none is shown. It is a ceiling, not an estimate: every screen that shows it says it is the most the program pays and that the exact amount is lower near the income limit.
 
 ## 6. Generalization
 

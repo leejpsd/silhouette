@@ -162,6 +162,7 @@
     {
       "id": "food-help",
       "name": "Test Food Help",
+      "amountUpTo": 1200,
       "criteria": [
         {
           "id": "income-limit",

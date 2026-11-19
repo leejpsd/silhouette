@@ -813,5 +813,15 @@
   "results.incomeBasis.w2NoYear": "{amount} a year: the wages on your W-2 (box 1), as your employer reported them.",
   "results.incomeBasis.w2ManyNoYear": "{amount} a year: the wages on your {count} W-2s (box 1), added together.",
   "results.incomeBasis.w2NoteNoYear": "These are the wages of the year on the form. A credit for a later year counts that year’s income: if it changed, change the yearly income.",
-  "review.confirmFirst": "Confirm the values above first: they decide the result."
+  "review.confirmFirst": "Confirm the values above first: they decide the result.",
+  "results.upTo": "Up to {amount}",
+  "results.upToNote": "The most this credit pays a household like this one. Near the income limit it is much less; the agency's table gives the exact amount.",
+  "judges.runAll.button": "Run all three steps",
+  "judges.runAll.body": "One press: the sample paystub's silhouette is read, the values come back to this device, and the results open.",
+  "send.destination.cloud": "Goes to Firebase AI Logic in the cloud: only the lines below",
+  "send.destination.device": "Stays on this device: its own model answers",
+  "preview.stage.toDevice": "The silhouette goes to the model on this device…",
+  "preview.stage.toCloud": "The silhouette goes to Firebase AI Logic in the cloud…",
+  "preview.stage.pointersBack": "The model answered with placeholders. Putting the values back on this device…",
+  "tasks.appRoutes.ios": "Why the app chooses device or cloud itself: Firebase AI Logic's hybrid mode for Apple platforms needs iOS 27. On iOS 26 the app asks Apple's on-device model first and, only when it cannot answer, sends the silhouette to the cloud through the same SDK."
 }

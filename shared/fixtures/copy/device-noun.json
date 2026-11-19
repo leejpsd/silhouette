@@ -948,6 +948,34 @@
     },
     {
       "language": "en",
+      "platform": "ios",
+      "key": "judges.runAll.body",
+      "text": "One press: the sample paystub's silhouette is read, the values come back to this device, and the results open.",
+      "shown": "One press: the sample paystub's silhouette is read, the values come back to this iPhone, and the results open."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "send.destination.device",
+      "text": "Stays on this device: its own model answers",
+      "shown": "Stays on this iPhone: its own model answers"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.stage.toDevice",
+      "text": "The silhouette goes to the model on this device…",
+      "shown": "The silhouette goes to the model on this iPhone…"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.stage.pointersBack",
+      "text": "The model answered with placeholders. Putting the values back on this device…",
+      "shown": "The model answered with placeholders. Putting the values back on this iPhone…"
+    },
+    {
+      "language": "en",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "On this device",
@@ -1892,6 +1920,34 @@
       "shown": "Even the model on this phone answers only {ref}. This phone puts {value} back from your W-2."
     },
     {
+      "language": "en",
+      "platform": "android",
+      "key": "judges.runAll.body",
+      "text": "One press: the sample paystub's silhouette is read, the values come back to this device, and the results open.",
+      "shown": "One press: the sample paystub's silhouette is read, the values come back to this phone, and the results open."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "send.destination.device",
+      "text": "Stays on this device: its own model answers",
+      "shown": "Stays on this phone: its own model answers"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.stage.toDevice",
+      "text": "The silhouette goes to the model on this device…",
+      "shown": "The silhouette goes to the model on this phone…"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.stage.pointersBack",
+      "text": "The model answered with placeholders. Putting the values back on this device…",
+      "shown": "The model answered with placeholders. Putting the values back on this phone…"
+    },
+    {
       "language": "es",
       "platform": "ios",
       "key": "badge.onDevice",
@@ -2747,6 +2803,34 @@
     },
     {
       "language": "es",
+      "platform": "ios",
+      "key": "judges.runAll.body",
+      "text": "Un solo toque: se lee la silueta del talón de pago de ejemplo, los valores vuelven a este dispositivo y se abren los resultados.",
+      "shown": "Un solo toque: se lee la silueta del talón de pago de ejemplo, los valores vuelven a este iPhone y se abren los resultados."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "send.destination.device",
+      "text": "Se queda en este dispositivo: responde su propio modelo",
+      "shown": "Se queda en este iPhone: responde su propio modelo"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.stage.toDevice",
+      "text": "La silueta va al modelo de este dispositivo…",
+      "shown": "La silueta va al modelo de este iPhone…"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.stage.pointersBack",
+      "text": "El modelo respondió con marcadores. Devolviendo los valores en este dispositivo…",
+      "shown": "El modelo respondió con marcadores. Devolviendo los valores en este iPhone…"
+    },
+    {
+      "language": "es",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "En este dispositivo",
@@ -3598,6 +3682,34 @@
       "key": "review.pointer.deviceW2",
       "text": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu W-2.",
       "shown": "Incluso el modelo de este teléfono responde solo {ref}. Este teléfono devuelve {value} desde tu W-2."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "judges.runAll.body",
+      "text": "Un solo toque: se lee la silueta del talón de pago de ejemplo, los valores vuelven a este dispositivo y se abren los resultados.",
+      "shown": "Un solo toque: se lee la silueta del talón de pago de ejemplo, los valores vuelven a este teléfono y se abren los resultados."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "send.destination.device",
+      "text": "Se queda en este dispositivo: responde su propio modelo",
+      "shown": "Se queda en este teléfono: responde su propio modelo"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.stage.toDevice",
+      "text": "La silueta va al modelo de este dispositivo…",
+      "shown": "La silueta va al modelo de este teléfono…"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.stage.pointersBack",
+      "text": "El modelo respondió con marcadores. Devolviendo los valores en este dispositivo…",
+      "shown": "El modelo respondió con marcadores. Devolviendo los valores en este teléfono…"
     }
   ]
 }

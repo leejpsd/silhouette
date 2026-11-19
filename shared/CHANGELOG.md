@@ -1,5 +1,19 @@
 # Contract changelog
 
+## v1.43 — 2026-11-20
+
+Which way the silhouette goes, shown as it happens; a ceiling for the credit whose amount exists only as a table; the judged path in one press.
+
+| Change | Why |
+|---|---|
+| `programs[].amountUpTo` (`rulepacks/SPEC.md` sections 3 and 5): the most a program pays a household like this one, from the agency's published maximums, given as `upToAmount` when the verdict is `likely` or `maybe` and there is no `estimatedAmount`. CalEITC: the FTB maximum credit for the number of qualifying children (one child: 2,016). Copy `results.upTo`, `results.upToNote`: shown as "Up to", always with the note that it is a ceiling | Reviewers: CalEITC was the one tax credit with no figure. The exact amount exists only as the FTB's 2,632-row table (`OPEN_QUESTIONS.md` Q9), so the app gives the published maximum and says so |
+| `preview.stage.toDevice`, `preview.stage.toCloud`, `preview.stage.pointersBack`: the reading is shown as it happens, the silhouette going to the model on this device or to the cloud, and the placeholders coming back and turning into values on this device | Reviewers: the moment the product exists for appeared with no transition |
+| `send.destination.device`, `send.destination.cloud`: where a request goes, beside the button that sends it | Reviewers: the destination was above the fold, the button below it |
+| `judges.runAll.button`, `judges.runAll.body`: the judges' path in one press, from the sample paystub to the results | Reviewers: six presses to the payoff |
+| `tasks.appRoutes.ios`: why the iOS app chooses device or cloud itself | Reviewers asked why the SDK's hybrid mode is not used on iOS |
+
+Platforms: the conformance fixtures `verdict.json` and `judges-household.json` now carry `upToAmount`. Reference tests: 30.
+
 ## v1.42 — 2026-11-19
 
 The cloud half of the reading can be seen without sending anything.

@@ -747,6 +747,7 @@
           }
         }
       ],
+      "amountUpTo": { "var": { "cat": ["constants.caleitc.maxCredit.", { "min": [{ "var": "numQualifyingChildren" }, 3] }] } },
       "docsRequired": [
         "SSN or ITIN for you, your spouse/RDP, and each qualifying child",
         "Forms W-2 (California wages) and records of self-employment income",

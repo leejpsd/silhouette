@@ -813,5 +813,15 @@
   "results.incomeBasis.w2NoYear": "{amount} al año: los salarios de tu W-2 (casilla 1), como los reportó tu empleador.",
   "results.incomeBasis.w2ManyNoYear": "{amount} al año: los salarios de tus {count} formularios W-2 (casilla 1), sumados.",
   "results.incomeBasis.w2NoteNoYear": "Son los salarios del año del formulario. Un crédito de un año posterior cuenta el ingreso de ese año: si cambió, cambia el ingreso anual.",
-  "review.confirmFirst": "Primero confirma los valores de arriba: deciden el resultado."
+  "review.confirmFirst": "Primero confirma los valores de arriba: deciden el resultado.",
+  "results.upTo": "Hasta {amount}",
+  "results.upToNote": "Lo máximo que este crédito paga a un hogar como este. Cerca del límite de ingresos es mucho menos; la tabla de la agencia da la cantidad exacta.",
+  "judges.runAll.button": "Hacer los tres pasos",
+  "judges.runAll.body": "Un solo toque: se lee la silueta del talón de pago de ejemplo, los valores vuelven a este dispositivo y se abren los resultados.",
+  "send.destination.cloud": "Va a Firebase AI Logic en la nube: solo las líneas de abajo",
+  "send.destination.device": "Se queda en este dispositivo: responde su propio modelo",
+  "preview.stage.toDevice": "La silueta va al modelo de este dispositivo…",
+  "preview.stage.toCloud": "La silueta va a Firebase AI Logic en la nube…",
+  "preview.stage.pointersBack": "El modelo respondió con marcadores. Devolviendo los valores en este dispositivo…",
+  "tasks.appRoutes.ios": "Por qué la app elige dispositivo o nube: el modo híbrido de Firebase AI Logic para plataformas de Apple requiere iOS 27. En iOS 26 la app pregunta primero al modelo de Apple en el dispositivo y, solo si no puede responder, envía la silueta a la nube con el mismo SDK."
 }

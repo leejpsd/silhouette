@@ -143,15 +143,16 @@ export function lintPack(pack, bands) {
         }
       }
     }
-    if (program.amount !== undefined) {
-      const where = `${program.id}/amount`;
+    for (const key of ['amount', 'amountUpTo']) {
+      if (program[key] === undefined) continue;
+      const where = `${program.id}/${key}`;
       const reads = new Set();
-      walk(program.amount, where, errors, reads);
+      walk(program[key], where, errors, reads);
       for (const name of reads) {
         if (!['constants', 'householdSizeCapped'].includes(name) && !allRequires.has(name)) errors.push(`${where}: reads "${name}", which no criterion requires`);
       }
       try {
-        const amount = evaluate(program.amount, { ...sample, annualIncome: points[0] });
+        const amount = evaluate(program[key], { ...sample, annualIncome: points[0] });
         if (typeof amount !== 'number' || !Number.isFinite(amount)) errors.push(`${where}: does not return a number`);
       } catch (e) {
         if (!(e instanceof RuleError)) throw e;

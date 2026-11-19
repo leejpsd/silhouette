@@ -457,6 +457,13 @@ export function verdicts(pack, bands, answers) {
         result.estimatedAmount = Math.floor(amount);
       }
     }
+    if ((verdict === 'likely' || verdict === 'maybe') && result.estimatedAmount === undefined && program.amountUpTo !== undefined) {
+      const upTo = evaluate(program.amountUpTo, base, { unavailable });
+      if (upTo !== UNKNOWN) {
+        if (!isNumber(upTo)) throw new RuleError('amountUpTo must return a number');
+        result.upToAmount = Math.floor(upTo);
+      }
+    }
     return result;
   });
 }

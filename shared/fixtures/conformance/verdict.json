@@ -43,7 +43,8 @@
               "state": "pass"
             }
           ],
-          "dependsOn": []
+          "dependsOn": [],
+          "upToAmount": 1200
         },
         {
           "programId": "utility-discount",
@@ -208,7 +209,8 @@
               "state": "pass"
             }
           ],
-          "dependsOn": []
+          "dependsOn": [],
+          "upToAmount": 1200
         },
         {
           "programId": "utility-discount",
@@ -371,7 +373,8 @@
               "state": "pass"
             }
           ],
-          "dependsOn": []
+          "dependsOn": [],
+          "upToAmount": 1200
         },
         {
           "programId": "utility-discount",
@@ -453,7 +456,8 @@
               "state": "pass"
             }
           ],
-          "dependsOn": []
+          "dependsOn": [],
+          "upToAmount": 1200
         },
         {
           "programId": "utility-discount",
@@ -1839,7 +1843,8 @@
               "state": "pass"
             }
           ],
-          "dependsOn": []
+          "dependsOn": [],
+          "upToAmount": 1200
         },
         {
           "programId": "utility-discount",
