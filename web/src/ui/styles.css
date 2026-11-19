@@ -6758,3 +6758,29 @@ dialog.sheet[open][data-closing='true']::backdrop {
   color: var(--on-redact);
   font-weight: 700;
 }
+
+/* The on-device check's recordings: which is the latest and which the baseline, and which is on the page now. */
+.recording-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recording-chip[aria-pressed='true'] {
+  border-color: var(--ink);
+}
+
+.recording-role {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: rgb(from var(--ink) r g b / 8%);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.recording-chip[data-role='latest'] .recording-role {
+  background: var(--ink);
+  color: var(--ground);
+}

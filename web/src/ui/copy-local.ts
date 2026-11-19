@@ -84,6 +84,9 @@ const EN = {
   'record.answerNote': 'The model answered with placeholders only. This device put the real values back.',
   'record.pick': 'Choose a request in the list to see exactly what it carried.',
   // Form W-2 (contract v1.34): the lines that said "paystub" on a W-2's way.
+  'deviceCheck.recordingLatest': 'Latest',
+  'deviceCheck.recordingBaseline': 'Baseline',
+  'deviceCheck.baselineNote': 'The first run on this machine, kept as the baseline. It was made with an earlier version of the app; the latest recording, listed first, shows the app as it is now.',
 } as const;
 
 export type LocalKey = keyof typeof EN;
@@ -171,6 +174,9 @@ export const LOCAL_COPY: Readonly<Record<'en' | 'es' | 'ko', Readonly<Partial<Re
     'record.answerReceived': 'Respuesta recibida',
     'record.answerNote': 'El modelo respondió solo con marcadores. Este dispositivo volvió a poner los valores reales.',
     'record.pick': 'Elige una solicitud de la lista para ver exactamente lo que llevaba.',
+    'deviceCheck.recordingLatest': 'Más reciente',
+    'deviceCheck.recordingBaseline': 'Referencia',
+    'deviceCheck.baselineNote': 'La primera ejecución en esta máquina, conservada como referencia. Se hizo con una versión anterior de la app; la grabación más reciente, la primera de la lista, muestra la app tal como es ahora.',
   },
   // Korean holds the English text (shared/copy convention).
   ko: EN,

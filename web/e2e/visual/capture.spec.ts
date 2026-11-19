@@ -332,7 +332,7 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByTestId('judges-device').waitFor();
       await shot(page, `50-${width}-judges`, theme, false);
       await page.goto('/#/device-check');
-      await page.getByTestId('no-model').waitFor();
+      await page.getByTestId('device-headline').waitFor();
       await page.locator('input[type="file"]').setInputFiles({
         name: 'recording.json',
         mimeType: 'application/json',
@@ -409,7 +409,7 @@ for (const size of [
     await page.getByTestId('judges-device').waitFor();
     await view(page, `${p}-judges`);
     await page.goto('/#/device-check');
-    await page.getByTestId('no-model').waitFor();
+    await page.getByTestId('device-headline').waitFor();
     await view(page, `${p}-device-check`);
     await page.goto('/#/tasks');
     await page.getByTestId('tasks').waitFor();

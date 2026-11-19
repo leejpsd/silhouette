@@ -57,6 +57,18 @@ export function recordingMachine(path: string): string {
 export const recordingPaths = (): string[] =>
   Object.keys(RECORDINGS).sort((a, b) => (b.split('/').pop() ?? '').localeCompare(a.split('/').pop() ?? ''));
 
+/**
+ * Each machine's first run is kept as its baseline (eval/results/on-device/README.md, ios/eval/on-device/README.md);
+ * its newest run is its latest. A machine with one run has only a latest.
+ */
+export function recordingRole(path: string): 'latest' | 'baseline' | null {
+  const machine = recordingMachine(path);
+  const same = recordingPaths().filter((p) => recordingMachine(p) === machine);
+  if (same[0] === path) return 'latest';
+  if (same.length > 1 && same.at(-1) === path) return 'baseline';
+  return null;
+}
+
 /** A recording to open when the page is reached from a link to it (the judges' page). */
 const OPEN_KEY = 'silhouette.open-recording';
 export function openRecordingNext(path: string): void {
@@ -67,7 +79,7 @@ export function openRecordingNext(path: string): void {
   }
 }
 
-type View = { kind: 'live'; file: RunFile; running: number | null } | { kind: 'recording'; file: RunFile; name: string } | null;
+type View = { kind: 'live'; file: RunFile; running: number | null } | { kind: 'recording'; file: RunFile; name: string; path: string | null } | null;
 
 export function DeviceCheckScreen() {
   const { t, locale } = useApp();
@@ -120,10 +132,13 @@ export function DeviceCheckScreen() {
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
 
-  const showRecording = async (path: string) => {
+  const showRecording = async (path: string, onlyIfEmpty = false) => {
     const loader = RECORDINGS[path];
     const value = loader ? await loader() : null;
-    if (isRunFile(value)) setView({ kind: 'recording', file: value, name: path.split('/').pop() ?? path });
+    if (!isRunFile(value)) return;
+    setView((v) => (onlyIfEmpty && v !== null ? v : { kind: 'recording', file: value, name: path.split('/').pop() ?? path, path }));
+    // Chosen from the list under the figures: the page goes back up to them.
+    if (!onlyIfEmpty) window.scrollTo({ top: 0, behavior: 'instant' });
   };
   // Reached from a link to one recording: it opens at once.
   useEffect(() => {
@@ -144,13 +159,24 @@ export function DeviceCheckScreen() {
       const value: unknown = JSON.parse(await file.text());
       if (!isRunFile(value)) throw new Error('not a run file');
       setBadFile(false);
-      setView({ kind: 'recording', file: value, name: file.name });
+      setView({ kind: 'recording', file: value, name: file.name, path: null });
+      window.scrollTo({ top: 0, behavior: 'instant' });
     } catch {
       setBadFile(true);
     }
   };
 
+  // Where the check cannot run here, the page opens on the latest recording (labelled as one), not on a
+  // note that it cannot run; a recording asked for by a link, or a file opened, is shown instead.
+  useEffect(() => {
+    if (hasModel !== false || view !== null) return;
+    const latest = recordingPaths()[0];
+    if (latest) void showRecording(latest, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasModel]);
+
   const recording = view?.kind === 'recording' ? view.file : null;
+  const recordingPath = view?.kind === 'recording' ? view.path : null;
   const day = (iso: string) => iso.slice(0, 10);
   return (
     <div className="screen device-check" data-testid="device-check" data-view={view?.kind ?? 'none'}>
@@ -172,9 +198,16 @@ export function DeviceCheckScreen() {
           {t('deviceCheck.recordingNote')}
         </p>
       )}
+      {/* The first run is kept as the baseline: said where its figures are shown. */}
+      {recordingPath && recordingRole(recordingPath) === 'baseline' && (
+        <p className="small strong" data-testid="baseline-note">
+          {t('deviceCheck.baselineNote')}
+        </p>
+      )}
       <p className="lead">{t('deviceCheck.lead')}</p>
       <p className="small">{t('deviceCheck.cloudNote')}</p>
-      {hasModel === false && view?.kind !== 'live' && (
+      {/* Over a recording the page does not say this browser cannot run the check: the recording was made where it could. */}
+      {hasModel === false && view === null && (
         <p className="dashed-note" data-testid="no-model">
           {t('deviceCheck.noModel')}
         </p>
@@ -198,13 +231,26 @@ export function DeviceCheckScreen() {
           <p className="small muted">{t('deviceCheck.noRecording')}</p>
         ) : (
           <ul className="chip-list">
-            {recordingPaths().map((path) => (
-              <li key={path}>
-                <button type="button" className="chip-button" data-recording={(path.split('/').pop() ?? path).replace(/\.json$/, '')} onClick={() => void showRecording(path)}>
-                  {recordingLabel(path, locale)}
-                </button>
-              </li>
-            ))}
+            {recordingPaths().map((path) => {
+              const role = recordingRole(path);
+              const shown = recordingPath === path;
+              return (
+                <li key={path}>
+                  <button
+                    type="button"
+                    className="chip-button recording-chip"
+                    data-recording={(path.split('/').pop() ?? path).replace(/\.json$/, '')}
+                    data-role={role ?? 'earlier'}
+                    aria-pressed={shown}
+                    onClick={() => void showRecording(path)}
+                  >
+                    {shown && <Check size={14} />}
+                    {role && <span className="recording-role">{t(role === 'latest' ? 'deviceCheck.recordingLatest' : 'deviceCheck.recordingBaseline')}</span>}
+                    {recordingLabel(path, locale)}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
         <label className="outline-button file-button">

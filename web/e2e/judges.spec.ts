@@ -107,7 +107,9 @@ test.describe('for judges: try it in two minutes', () => {
     await noOnDeviceModel(context);
     await page.goto('/#/device-check');
     await chooseLanguage(page, 'es');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Comprobación en el dispositivo');
+    // Without a model the page opens on the latest recording.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Comprobación en el dispositivo grabada');
+    await expect(page.locator('.recordings .recording-chip').first()).toContainText('Más reciente');
     await page.locator(`[data-recording="${latestRecording().label}"]`).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Comprobación en el dispositivo grabada');
     await expect(page.getByTestId('headline-on-device')).toContainText('casos respondidos en el dispositivo que hizo esta grabación');
@@ -124,10 +126,31 @@ test.describe('for judges: try it in two minutes', () => {
 });
 
 test.describe('the on-device check', () => {
-  test('without a model it does not run, and a recording is labelled as one with its date and machine', async ({ page, context }) => {
+  test('without a model it opens on the latest recording, with no "no model" note or run button over it; the baseline is listed as the baseline', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await page.goto('/#/device-check');
-    await expect(page.getByTestId('no-model')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on\u2011device check');
+    await expect(page.getByTestId('no-model')).toHaveCount(0);
+    await expect(page.getByTestId('run-device-check')).toHaveCount(0);
+    await expect(page.getByTestId('headline-on-device')).toContainText('cases answered on the device that made this recording');
+    await expect(page.getByTestId('headline-on-device')).not.toContainText('this device');
+    // The newest recording is the one on the page, marked in the list; each machine's first run is labelled as its baseline.
+    const chips = page.locator('.recordings .recording-chip');
+    await expect(chips.first()).toHaveAttribute('aria-pressed', 'true');
+    await expect(chips.first()).toHaveAttribute('data-role', 'latest');
+    await expect(chips.first()).toContainText('Latest');
+    const baseline = page.locator(`[data-recording="${baselineRecording().label}"]`);
+    await expect(baseline).toHaveAttribute('data-role', 'baseline');
+    await expect(baseline).toContainText('Baseline');
+    await expect(page.getByTestId('baseline-note')).toHaveCount(0);
+    await baseline.click();
+    await expect(baseline).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('baseline-note')).toContainText('kept as the baseline');
+  });
+
+  test('without a model a recording opened from a file is labelled as one with its date and machine', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.goto('/#/device-check');
     await expect(page.getByTestId('run-device-check')).toHaveCount(0);
     const recording = {
       kind: 'silhouette-device-check',
@@ -280,8 +303,8 @@ test.describe('why hybrid, measured', () => {
     await expect(devices).toHaveCount(2);
     // The iPhone: the readings its own checks rejected went to the cloud once, and no wrong value reached the person.
     const iphone = devices.filter({ hasText: 'iPhone 17 Pro' });
-    await expect(iphone.getByTestId('measured-on-device')).toContainText('12 / 15');
-    await expect(iphone.getByTestId('measured-fallback')).toContainText('3 / 15');
+    await expect(iphone.getByTestId('measured-on-device')).toContainText('15 / 15');
+    await expect(iphone.getByTestId('measured-fallback')).toContainText('0 / 15');
     await expect(iphone.getByTestId('measured-wrong')).toHaveAttribute('data-met', 'true');
     await expect(measured.getByTestId('measured-cloud-right')).toContainText('30 / 30');
     await expect(measured.getByTestId('measured-leaks')).toContainText('0 / 39');
