@@ -767,6 +767,27 @@
     {
       "language": "en",
       "platform": "ios",
+      "key": "tasks.heldout.paystubDevice",
+      "text": "the same paystubs read on the device first (Chrome 157), with the cloud retry",
+      "shown": "the same paystubs read on the iPhone first (Chrome 157), with the cloud retry"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.heldout.caught",
+      "text": "The device's first answer had a wrong yearly-income value on {caught} of {total}; the checks rejected every one, and {retried} were read again in the cloud from the same silhouette.",
+      "shown": "The iPhone's first answer had a wrong yearly-income value on {caught} of {total}; the checks rejected every one, and {retried} were read again in the cloud from the same silhouette."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.heldout.recountPaystubs",
+      "text": "paystubs with a wrong yearly-income value shown: {cloud} in the cloud, {device} on the device, of {total}",
+      "shown": "paystubs with a wrong yearly-income value shown: {cloud} in the cloud, {device} on the iPhone, of {total}"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
       "key": "preview.cloud.notDownloaded",
       "text": "Chrome’s on-device model is not downloaded yet, so the silhouette will be sent to Firebase AI Logic in the cloud. With the model downloaded, it is read on this device first.",
       "shown": "Chrome’s on-device model is not downloaded yet, so the silhouette will be sent to Firebase AI Logic in the cloud. With the model downloaded, it is read on this iPhone first."
@@ -1645,6 +1666,27 @@
       "key": "tasks.measured.why",
       "text": "So a reading starts on the device, where nothing leaves. The cloud receives only the silhouette, and only when the device’s answer fails the checks.",
       "shown": "So a reading starts on the phone, where nothing leaves. The cloud receives only the silhouette, and only when the phone’s answer fails the checks."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.heldout.paystubDevice",
+      "text": "the same paystubs read on the device first (Chrome 157), with the cloud retry",
+      "shown": "the same paystubs read on the phone first (Chrome 157), with the cloud retry"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.heldout.caught",
+      "text": "The device's first answer had a wrong yearly-income value on {caught} of {total}; the checks rejected every one, and {retried} were read again in the cloud from the same silhouette.",
+      "shown": "The phone's first answer had a wrong yearly-income value on {caught} of {total}; the checks rejected every one, and {retried} were read again in the cloud from the same silhouette."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.heldout.recountPaystubs",
+      "text": "paystubs with a wrong yearly-income value shown: {cloud} in the cloud, {device} on the device, of {total}",
+      "shown": "paystubs with a wrong yearly-income value shown: {cloud} in the cloud, {device} on the phone, of {total}"
     },
     {
       "language": "en",

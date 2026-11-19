@@ -8,6 +8,7 @@ Form W-2: boxes 1 and 2 that do not fit together are both left out, and one box 
 |---|---|
 | `validation/DEVICE_READING.md` section 9: `wages:below-withheld` when box 2 is not below box 1 (both money); **both boxes are left out**, since code cannot tell which is wrong. Copy `review.leftOut.notConsistent` | On the second held-out W-2 set (`web/eval/heldout-2/`, frozen before measuring), 2 of 12 cloud answers still showed a wrong box 1: boxes 1 and 2 swapped, and every box moved by one on a form that prints values before labels. Both have tax withheld above wages |
 | A reference that does not fit (`{field}:bad-reference`) is reported and **the other boxes are still checked** without it; before, it stopped the checks | One of those answers pointed the employee name at a number, which stopped every other check |
+| Copy `tasks.heldout.*`: the never-seen sets on "Where each task runs", with a recount from their files | Reviewers asked for figures from documents the prompts were not tuned on |
 
 **The second W-2 set no longer counts as held out** after this change: it was made after seeing it. The same stored answers, checked again with these rules (`web/eval/heldout-recheck.mjs`, no model call): box 1 right 6 of 12, left out 6, wrong 0; on the first set's six W-2s, right 4, left out 2, wrong 0. These are figures after seeing the sets, not held-out figures.
 
