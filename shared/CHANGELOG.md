@@ -1,5 +1,15 @@
 # Contract changelog
 
+## v1.33 — 2026-11-19
+
+The results say how the yearly income was worked out.
+
+| Change | Why |
+|---|---|
+| `results.incomeBasis.ytd`, `results.incomeBasis.average`, `results.incomeBasis.note`, `results.incomeBasis.change`: when the yearly income came from a paystub, the results show the basis kept with it (`validation/SPEC.md` section 7: year-to-date gross through the reference date over the months elapsed, or the gross per period × periods), say that a tax credit counts the whole year's earned income, and offer to change it | The basis was shown only on the review, before the income was used; on the results a reader saw "read from the paystub" and assumed one paycheck × a year |
+
+Platforms: keep the annualization's basis with the income when it is used, and show it with the results. Reference tests: 30.
+
 ## v1.32 — 2026-11-19
 
 The model's reading leads the judges' path, and it can be seen without sending anything.

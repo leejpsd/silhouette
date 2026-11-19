@@ -691,5 +691,9 @@
   "results.incomeFrom.RECORDED": "a partir de una lectura grabada en un dispositivo",
   "results.incomeFrom.SAMPLE_KEY": "de la clave de respuestas del ejemplo, sin IA",
   "badge.rulesAndPaystub": "Reglas + talón",
-  "results.sharpenHelpCloud": "Se lee como silueta en la nube. Tus valores se quedan en este dispositivo."
+  "results.sharpenHelpCloud": "Se lee como silueta en la nube. Tus valores se quedan en este dispositivo.",
+  "results.incomeBasis.ytd": "{amount} al año, calculado con el sueldo bruto del año hasta la fecha: {ytd} hasta el {date}, en {months} meses.",
+  "results.incomeBasis.average": "{amount} al año, calculado con el sueldo bruto: {average} por período de pago × {periods} períodos.",
+  "results.incomeBasis.note": "Un crédito tributario cuenta el ingreso por trabajo de todo el año, así que esto es una proyección: cambia si tu sueldo cambia o hay otro trabajo.",
+  "results.incomeBasis.change": "Cambiar el ingreso anual"
 }
