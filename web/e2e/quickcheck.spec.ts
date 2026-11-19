@@ -207,15 +207,14 @@ test.describe('Quick Check to first result', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Test Food Help' })).toBeFocused();
   });
 
-  test('language switch shows es and ko copy and persists', async ({ page }) => {
+  test('language switch shows es copy and persists; English and Spanish only', async ({ page }) => {
     await page.goto('/');
     await chooseLanguage(page, 'es');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Encuentra ayudas públicas para las que podrías calificar');
     await expect(page.locator('html')).toHaveAttribute('lang', 'es');
-    await chooseLanguage(page, 'ko');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('받을 수 있을지도 모르는 공공 지원을 찾아보세요');
-    await expect(page.locator('#leaving-title')).toHaveText('기기 밖으로 나가는 정보');
     await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+    await page.getByTestId('language-button').click();
+    await expect(page.getByRole('radio')).toHaveCount(2);
   });
 });

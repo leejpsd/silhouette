@@ -2,7 +2,7 @@ import { forgetResultsShown } from './screens/Results';
 import { forgetTravel, useDisclosures, useKeyboardFollow } from './design/motion';
 import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { deleteEverything, loadRecord, saveRecord, PREF_PREFIX } from '../data/store';
-import { isLocale, translator, type Locale } from './i18n';
+import { isUiLocale, translator, type Locale } from './i18n';
 import { AppContext, type AppState } from './context';
 import { BANDS, PACK, isCheckedPack, isDemoPack, isDraftPack } from './pack';
 import { buildSteps, computeVerdicts, sanitizeAnswers, type AnswerValue, type QuickCheckAnswers } from './quickcheck';
@@ -40,12 +40,12 @@ const LOCALE_PREF = `${PREF_PREFIX}locale`;
 function initialLocale(): Locale {
   try {
     const saved = localStorage.getItem(LOCALE_PREF);
-    if (isLocale(saved)) return saved;
+    if (isUiLocale(saved)) return saved;
   } catch {
     // Storage unavailable (private mode); fall through.
   }
   const fromBrowser = navigator.language.slice(0, 2);
-  return isLocale(fromBrowser) ? fromBrowser : 'en';
+  return isUiLocale(fromBrowser) ? fromBrowser : 'en';
 }
 
 export function App() {

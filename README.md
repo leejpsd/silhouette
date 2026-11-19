@@ -212,7 +212,7 @@ In the latest run every yearly-income input was right in 15 of 15 readings. Appl
 
 **Rule pack.** The engine reproduces all 189 results of 27 households worked out by hand ([`shared/rulepacks/us-ca/README.md`](shared/rulepacks/us-ca/README.md)).
 
-**Tests, as of 2026-11-19.** Web: 1,142 unit tests, including every shared conformance fixture, and 286 browser test runs (Playwright, each test on a desktop and a phone viewport). Continuous integration runs the 30 shared contract tests on every push. Shared reference implementation: 30 tests. iOS (as of 2026-11-17): 120 package tests, including the shared fixtures, and 13 UI tests.
+**Tests, as of 2026-11-19.** Web: 1,142 unit tests, including every shared conformance fixture, and 286 browser test runs (Playwright, each test on a desktop and a phone viewport). Continuous integration runs only the 30 shared contract tests, on pushes that change `shared/`; the web tests are run locally. Shared reference implementation: 30 tests. iOS (as of 2026-11-17): 120 package tests, including the shared fixtures, and 13 UI tests.
 
 **Not verified yet.**
 

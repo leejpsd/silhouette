@@ -290,30 +290,6 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(status.getByRole('alert')).toHaveCount(0);
   });
 
-  test('Korean payslip goes to the cloud as a silhouette; the user picks the pay frequency to annualize', async ({ page, context }) => {
-    await noOnDeviceModel(context);
-    const cloud = await fakeCloudModel(page, { pointers: fixturePointers('payslip-ko-01-correct') });
-    await page.goto('/#/doc');
-    await page.getByTestId('more-samples').locator('summary').click();
-    await page.getByRole('button', { name: 'Korean payslip (PDF)' }).click();
-    await expect(page.getByTestId('skeleton-preview')).toContainText('지급합계');
-    await expect(page.getByTestId('skeleton-preview')).not.toContainText('김지원');
-    await expect(page.getByTestId('model-status')).toContainText("does not support this document's language");
-    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
-    await expect(page.getByTestId('value-grossPay')).toHaveText('2,485,000');
-    expect(cloud.bodies[0]).not.toContain('2,485,000');
-    await confirmAllValues(page);
-    await page.getByRole('button', { name: 'Check these values' }).click();
-    await expect(page.getByText('Choose how often you are paid to work out a yearly income.')).toBeVisible();
-    await page.getByTestId('field-payFrequency').locator('.field-toggle').click();
-
-    await page.getByRole('button', { name: 'Change: How often you are paid' }).click();
-    await page.getByTestId('field-payFrequency').getByRole('combobox').selectOption('monthly');
-    await page.getByRole('button', { name: 'Save' }).click();
-    await page.getByRole('button', { name: 'Check these values' }).click();
-    await expect(page.getByTestId('annual-income')).toHaveAttribute('data-amount', '29820000');
-  });
-
   test('an App Check rejection is shown honestly and the user can type the numbers instead', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await fakeCloudModel(page, {

@@ -11,6 +11,12 @@ import { CURRENCY, NUMBER_FORMAT, PACK_COPY } from './pack';
 import { LOCAL_COPY, type LocalKey } from './copy-local';
 
 export const LOCALES = ['en', 'es', 'ko'] as const;
+/**
+ * The languages a person can choose (app language and document language). Korean copy stays in the shared
+ * contract for the other platforms, but the web offers no Korean: its rule pack is not started.
+ */
+export const UI_LOCALES = ['en', 'es'] as const satisfies readonly (typeof LOCALES)[number][];
+export const isUiLocale = (value: unknown): value is (typeof UI_LOCALES)[number] => typeof value === 'string' && (UI_LOCALES as readonly string[]).includes(value);
 export type Locale = (typeof LOCALES)[number];
 
 /** Language names in their own language (not translated). */

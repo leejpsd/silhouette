@@ -4,7 +4,7 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
 import { NO_APP_CHECK_TOKEN, REFUSED_BY_BROWSER } from '../data/net-monitor';
-import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, packDate, type CopyKey, type Locale } from './i18n';
+import { UI_LOCALES, LOCALE_NAMES, dynamicKey, lookup, packDate, type CopyKey, type Locale } from './i18n';
 import { useApp } from './context';
 import { PACK, SOURCES_READ_ON, isCheckedPack, isDemoPack, isDraftPack } from './pack';
 import { routeHref, type Route } from './router';
@@ -48,7 +48,7 @@ export function Header({ onLocale }: { onLocale: (locale: Locale) => void }) {
           {t('nav.language')}
         </h2>
         <div role="radiogroup" aria-labelledby={headline} className="option-rows">
-          {LOCALES.map((l) => (
+          {UI_LOCALES.map((l) => (
             <button
               key={l}
               type="button"

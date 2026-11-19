@@ -12,7 +12,7 @@ import { readPhoto } from '../../ai/on-device';
 import { classifyError, type TaskError } from '../../ai/errors';
 import { extractPdfText } from '../../data/pdf-text';
 import { useApp } from '../context';
-import { LOCALES, LOCALE_NAMES, isLocale, type Locale } from '../i18n';
+import { UI_LOCALES, LOCALE_NAMES, isUiLocale, type Locale } from '../i18n';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { BlockActions } from '../design/block';
@@ -36,8 +36,6 @@ const SAMPLE_BUTTONS: readonly SampleButton[] = [
   { key: 'en-text', lang: 'en', as: 'text', label: 'doc.sample.enText' },
   { key: 'en-pdf', lang: 'en', as: 'pdf', label: 'doc.sample.enPdf' },
   { key: 'w2-text', lang: 'w2', as: 'text', label: 'doc.sample.w2Text' },
-  { key: 'ko-text', lang: 'ko', as: 'text', label: 'doc.sample.koText' },
-  { key: 'ko-pdf', lang: 'ko', as: 'pdf', label: 'doc.sample.koPdf' },
 ];
 
 const SAMPLES = {
@@ -152,9 +150,9 @@ export function DocumentAddScreen() {
           id={languageId}
           className="input select"
           value={doc.language}
-          onChange={(e) => isLocale(e.target.value) && update({ language: e.target.value })}
+          onChange={(e) => isUiLocale(e.target.value) && update({ language: e.target.value })}
         >
-          {LOCALES.map((l) => (
+          {UI_LOCALES.map((l) => (
             <option key={l} value={l} lang={l}>
               {LOCALE_NAMES[l]}
             </option>
