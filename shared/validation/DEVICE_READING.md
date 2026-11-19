@@ -164,7 +164,26 @@ While the device works, the status line says which step it is on: `preview.stage
 
 A platform may record each pass for diagnosis: its part, the model's text, whether it parsed, the parsed value, the problems, `marked`, `extraKeys`, `missingKeys`, and its time. Records hold placeholder ids and field names only.
 
-## 9. Known limits
+## 9. Form W-2
+
+A W-2 (`schemas/pointer.w2.json`) has no list field: it is read in one request with the strict constraint of all its fields (section 2), on the device or in the cloud. Reference: `reference/device-reading.mjs` `w2Problems`, `w2LeftOut`. Fixture: `device-reading.json` `w2`.
+
+**Checks**, on every W-2 answer, from the device or the cloud:
+
+| Problem | When |
+|---|---|
+| `{field}:bad-reference` | as section 4.1 |
+| `{field}:not-money` | `wages`, `federalIncomeTaxWithheld`, `socialSecurityWages`, `medicareWages` or `stateWages` refers to an N id whose text is not money with cents, while some N placeholder of the silhouette is (as section 4.1): a box number, a street number or a ZIP code answered as an amount |
+| `wages:missing` | box 1 has no value |
+| `taxYear:not-a-year` | the tax year is not an integer from 2000 to 2100 (`validation/SPEC.md` section 9, check `w2-year`): the 2 of "W-2", a box number |
+
+A reference that does not fit stops the checks there.
+
+**On the device**, an answer with any problem is a failed on-device attempt (section 7), repeated in the cloud as `routing.json` `onDeviceFailure` says.
+
+**Every answer used**, from the device or the cloud, leaves out the fields with `not-money` or `not-a-year` problems, marked not read (`w2LeftOut`). A cloud answer is never repeated, and code never picks another placeholder: a box left out is typed in by the person, and a form whose wages are left out has no wages until then (`validation/SPEC.md` section 9, `no-wages`). Missing is not wrong (section 1).
+
+## 10. Known limits
 
 - Hours and rate both taken from another earnings line (for example Overtime) multiply to that line's amount and are confirmed: they are shown, as answered. No recorded reading did this.
 

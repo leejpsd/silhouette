@@ -382,3 +382,36 @@ export function readOnDevice(schema, skeleton, map, jurisdiction, answers, langu
   const value = Object.fromEntries(Object.entries(read).filter(([k]) => !unconfirmed.fields.includes(k)));
   return { asked: passes.map((p) => p.part), passes, outcome: 'on-device', value, notRead };
 }
+
+// ---------- 9. Form W-2 ----------
+
+/** W-2 boxes that hold money (boxes 1, 2, 3, 5 and 16). */
+export const W2_MONEY_FIELDS = ['wages', 'federalIncomeTaxWithheld', 'socialSecurityWages', 'medicareWages', 'stateWages'];
+
+/**
+ * Problems of a W-2 answer, from the device or the cloud (DEVICE_READING.md section 9): references that do not
+ * fit, money boxes answered from a number without cents (a box number, a street number, a ZIP code), no
+ * wages, and a tax year that is not a year (the 2 of "W-2", a box number).
+ */
+export function w2Problems(schema, pointers, map) {
+  if (!isObject(pointers)) return ['not-an-object'];
+  const problems = [];
+  for (const [name, spec] of Object.entries(schema.properties)) {
+    const value = pointers[name];
+    if (value === undefined || value === null) continue;
+    if (!fits(spec['x-kind'], value, map)) problems.push(`${name}:bad-reference`);
+    else if (W2_MONEY_FIELDS.includes(name) && notMoney(value, map)) problems.push(`${name}:not-money`);
+  }
+  if (problems.some((p) => p.endsWith(':bad-reference'))) return problems;
+  const v = values(schema, pointers, map);
+  if (typeof v.wages !== 'number') problems.push('wages:missing');
+  // The year rule of validation/SPEC.md section 9 (check w2-year): an integer from 2000 to 2100.
+  if (typeof v.taxYear === 'number' && !(Number.isInteger(v.taxYear) && v.taxYear >= 2000 && v.taxYear <= 2100)) problems.push('taxYear:not-a-year');
+  return problems;
+}
+
+/** The fields of a W-2 answer left out as not read: a money box that is not money, a tax year that is not a year. */
+export function w2LeftOut(schema, pointers, map) {
+  const problems = w2Problems(schema, pointers, map).filter((p) => p.endsWith(':not-money') || p === 'taxYear:not-a-year');
+  return { problems, fields: problems.map((p) => p.split(':')[0]) };
+}

@@ -409,6 +409,8 @@
   "preview.sendSilhouette": "Send the silhouette",
   "review.deductionsNotRead": "Deductions were not read on this device. They are not needed for the yearly income or the results; you can add them if you like.",
   "review.fieldNotRead": "Not read on this device. This value is not needed for the yearly income or the results.",
+  "review.leftOut.notMoney": "비워 둠: 여기서 찾은 것이 금액이 아닙니다(칸 번호, 번지, 우편번호). 서류를 보고 입력하세요.",
+  "review.leftOut.notAYear": "비워 둠: 여기서 찾은 것이 연도가 아닙니다. 서류를 보고 과세 연도를 입력하세요.",
   "answers.facts.uses": "This program uses:",
   "demo.deviceCheck": "Check the on-device model",
   "demo.judges": "For judges: try it in two minutes",

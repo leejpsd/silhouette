@@ -48,6 +48,43 @@
         "N22": "1,100.92"
       }
     },
+    "w2-sample": {
+      "skeleton": "Form W-⟦N1⟧ Wage and Tax Statement                              ⟦N2⟧\nCopy B - To Be Filed With Federal Tax Return\n\nEmployee social security number           ⟦D1⟧\nEmployer identification number (EIN)       ⟦N3⟧-⟦N4⟧\nEmployer name, address, and ZIP code       ⟦W1⟧ ⟦W2⟧ ⟦W3⟧\n                                           ⟦N5⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧, ⟦W7⟧ ⟦N6⟧\nEmployee name                              ⟦W8⟧ ⟦W9⟧\nEmployee address and ZIP code              ⟦N7⟧ ⟦W10⟧ ⟦W11⟧, ⟦W12⟧ ⟦W13⟧, ⟦W14⟧ ⟦N8⟧\n\nWages, tips, other compensation            ⟦N9⟧\nFederal income tax withheld                ⟦N10⟧\nSocial security wages                      ⟦N11⟧\nSocial security tax withheld               ⟦N12⟧\nMedicare wages and tips                    ⟦N13⟧\nMedicare tax withheld                      ⟦N14⟧\nState                                      ⟦W15⟧\nState wages, tips, etc.                    ⟦N15⟧\nState income tax                           ⟦N16⟧\n",
+      "map": {
+        "N1": "2",
+        "N2": "2025",
+        "D1": "000-12-3456",
+        "N3": "00",
+        "N4": "1234567",
+        "W1": "NORTHWIND",
+        "W2": "STAFFING",
+        "W3": "LLC",
+        "N5": "88",
+        "W4": "Harbor",
+        "W5": "Blvd",
+        "W6": "Oakland",
+        "W7": "CA",
+        "N6": "94607",
+        "W8": "Maria",
+        "W9": "Lopez",
+        "N7": "1420",
+        "W10": "Juniper",
+        "W11": "Ave",
+        "W12": "Los",
+        "W13": "Angeles",
+        "W14": "CA",
+        "N8": "90011",
+        "N9": "27,640.18",
+        "N10": "1,402.00",
+        "N11": "28,880.18",
+        "N12": "1,790.57",
+        "N13": "28,880.18",
+        "N14": "418.76",
+        "W15": "CA",
+        "N15": "27,640.18",
+        "N16": "212.30"
+      }
+    },
     "en-l01-1": {
       "skeleton": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                        Earnings Statement\nEmployee: ⟦W4⟧ ⟦W5⟧            Employee ID: ⟦N1⟧\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧, ⟦W9⟧ ⟦N3⟧\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\nPay Frequency: Bi-Weekly\n\nEarnings          Rate      Hours     Current        YTD\nRegular           ⟦N4⟧     ⟦N5⟧     ⟦N6⟧       ⟦N7⟧\nOvertime          ⟦N8⟧     ⟦N9⟧      ⟦N10⟧         ⟦N11⟧\nGross Pay                             ⟦N12⟧       ⟦N13⟧\n\nDeductions                            Current        YTD\nFederal Income Tax                    ⟦N14⟧         ⟦N15⟧\nSocial Security                       ⟦N16⟧         ⟦N17⟧\nMedicare                              ⟦N18⟧          ⟦N19⟧\nState Income Tax                      ⟦N20⟧         ⟦N21⟧\nNet Pay                               ⟦N22⟧\n",
       "map": {
@@ -6265,6 +6302,274 @@
       }
     }
   ],
+  "w2": {
+    "schema": "schemas/pointer.w2.json",
+    "cases": [
+      {
+        "id": "w2-key",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N2",
+          "wages": "N9",
+          "federalIncomeTaxWithheld": "N10",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N15"
+        },
+        "expected": {
+          "problems": [],
+          "leftOut": {
+            "problems": [],
+            "fields": []
+          }
+        }
+      },
+      {
+        "id": "w2-wages-on-street-number",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N2",
+          "wages": "N7",
+          "federalIncomeTaxWithheld": "N10",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N15"
+        },
+        "expected": {
+          "problems": [
+            "wages:not-money"
+          ],
+          "leftOut": {
+            "problems": [
+              "wages:not-money"
+            ],
+            "fields": [
+              "wages"
+            ]
+          }
+        }
+      },
+      {
+        "id": "w2-wages-and-state-on-zip",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N2",
+          "wages": "N8",
+          "federalIncomeTaxWithheld": "N10",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N8"
+        },
+        "expected": {
+          "problems": [
+            "wages:not-money",
+            "stateWages:not-money"
+          ],
+          "leftOut": {
+            "problems": [
+              "wages:not-money",
+              "stateWages:not-money"
+            ],
+            "fields": [
+              "wages",
+              "stateWages"
+            ]
+          }
+        }
+      },
+      {
+        "id": "w2-year-from-form-title",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N1",
+          "wages": "N9",
+          "federalIncomeTaxWithheld": "N10",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N15"
+        },
+        "expected": {
+          "problems": [
+            "taxYear:not-a-year"
+          ],
+          "leftOut": {
+            "problems": [
+              "taxYear:not-a-year"
+            ],
+            "fields": [
+              "taxYear"
+            ]
+          }
+        }
+      },
+      {
+        "id": "w2-year-and-wages-wrong",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N1",
+          "wages": "N7",
+          "federalIncomeTaxWithheld": "N10",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N15"
+        },
+        "expected": {
+          "problems": [
+            "wages:not-money",
+            "taxYear:not-a-year"
+          ],
+          "leftOut": {
+            "problems": [
+              "wages:not-money",
+              "taxYear:not-a-year"
+            ],
+            "fields": [
+              "wages",
+              "taxYear"
+            ]
+          }
+        }
+      },
+      {
+        "id": "w2-no-wages",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N2",
+          "federalIncomeTaxWithheld": "N10",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N15"
+        },
+        "expected": {
+          "problems": [
+            "wages:missing"
+          ],
+          "leftOut": {
+            "problems": [],
+            "fields": []
+          }
+        }
+      },
+      {
+        "id": "w2-wages-on-a-date",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N2",
+          "wages": "D1",
+          "federalIncomeTaxWithheld": "N10",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N15"
+        },
+        "expected": {
+          "problems": [
+            "wages:bad-reference"
+          ],
+          "leftOut": {
+            "problems": [],
+            "fields": []
+          }
+        }
+      },
+      {
+        "id": "w2-withheld-on-zip",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N2",
+          "wages": "N9",
+          "federalIncomeTaxWithheld": "N6",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N15"
+        },
+        "expected": {
+          "problems": [
+            "federalIncomeTaxWithheld:not-money"
+          ],
+          "leftOut": {
+            "problems": [
+              "federalIncomeTaxWithheld:not-money"
+            ],
+            "fields": [
+              "federalIncomeTaxWithheld"
+            ]
+          }
+        }
+      }
+    ]
+  },
   "gold": {
     "$comment": "Every right reading of the 38 English evaluation paystubs: each combination of the alternatives over base (see device-reading.cases.mjs rightReadings), and each line run of gold name placeholders. Expected: no core problem, nothing left out, and (with the gold deductions) nothing unconfirmed for every reading; ytdMissingWhenLeftOut gives, per grossPay alternative, whether leaving year to date out asks the gross part again.",
     "cases": [

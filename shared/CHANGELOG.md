@@ -1,5 +1,18 @@
 # Contract changelog
 
+## v1.37 — 2026-11-19
+
+Form W-2: a box answered from a number that is not an amount is left out, from the device or the cloud.
+
+| Change | Why |
+|---|---|
+| `validation/DEVICE_READING.md` section 9 (Form W-2): `{field}:not-money` for boxes 1, 2, 3, 5 and 16 (the rule of section 4.1), `wages:missing`, `taxYear:not-a-year` (an integer from 2000 to 2100). On the device a W-2 answer with a problem is a failed attempt. **Every answer used, from the device or the cloud, leaves out the boxes with `not-money` or `not-a-year`**, which the person types. Reference `w2Problems`, `w2LeftOut`; fixture `device-reading.json` `w2` (8 cases on the W-2 sample). Known limits renumbered to section 10 | On the held-out set (`web/eval/heldout/`, frozen before measuring), box 1 was answered from a box number ("12") or a street number ("1530", "4120") on 3 of 6 W-2s, and the tax year from "1", "15" or "4706"; a cloud answer was not checked, so those values reached the review screen. Every wrong box 1 was a number without cents |
+| Copy: `review.leftOut.notMoney`, `review.leftOut.notAYear` | The review says why a box is empty and that the person types it from the form |
+
+**The W-2 part of the held-out set no longer counts as held out**: this change was made after seeing it. A second W-2 set, written independently and frozen before measuring, measures the change (`web/eval/heldout-2/`). The paystub part is unchanged and still held out.
+
+Platforms: the same checks and boxes left out on every W-2 answer. Reference tests: 30.
+
 ## v1.36 — 2026-11-19
 
 The checks and the evidence a reviewer can verify.

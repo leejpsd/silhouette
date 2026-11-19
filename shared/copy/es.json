@@ -409,6 +409,8 @@
   "preview.sendSilhouette": "Enviar la silueta",
   "review.deductionsNotRead": "Las deducciones no se leyeron en este dispositivo. No hacen falta para el ingreso anual ni para los resultados; puedes añadirlas si quieres.",
   "review.fieldNotRead": "No se leyó en este dispositivo. Este valor no hace falta para el ingreso anual ni para los resultados.",
+  "review.leftOut.notMoney": "Se dejó fuera: lo que se encontró aquí no es una cantidad (un número de casilla, de calle o un código postal). Escríbelo de tu formulario.",
+  "review.leftOut.notAYear": "Se dejó fuera: lo que se encontró aquí no es un año. Escribe el año fiscal de tu formulario.",
   "answers.facts.uses": "Este programa usa:",
   "demo.deviceCheck": "Comprobar el modelo del dispositivo",
   "demo.judges": "Para el jurado: pruébalo en dos minutos",

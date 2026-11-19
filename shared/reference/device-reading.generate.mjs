@@ -18,6 +18,7 @@ const passRecord = (p) => ({
 
 export function buildDeviceReading() {
   const schema = readJson('../schemas/pointer.paystub.json');
+  const w2Schema = readJson('../schemas/pointer.w2.json');
   const doc = (id) => k.documents[id];
   return {
     spec: 'validation/DEVICE_READING.md v2',
@@ -53,6 +54,14 @@ export function buildDeviceReading() {
         },
       };
     }),
+    w2: {
+      schema: 'schemas/pointer.w2.json',
+      cases: k.w2Cases.map((c) => {
+        const { map } = doc(c.document);
+        const pointers = Object.fromEntries(Object.entries(c.pointers).filter(([, v]) => v !== undefined && v !== null));
+        return { ...c, pointers, expected: { problems: d.w2Problems(w2Schema, pointers, map), leftOut: d.w2LeftOut(w2Schema, pointers, map) } };
+      }),
+    },
     gold: {
       $comment:
         'Every right reading of the 38 English evaluation paystubs: each combination of the alternatives over base (see device-reading.cases.mjs rightReadings), and each line run of gold name placeholders. Expected: no core problem, nothing left out, and (with the gold deductions) nothing unconfirmed for every reading; ytdMissingWhenLeftOut gives, per grossPay alternative, whether leaving year to date out asks the gross part again.',

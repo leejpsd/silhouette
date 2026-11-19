@@ -9,6 +9,7 @@ const real = readJson('./device-reading.real.json').answers;
 /** Silhouettes the cases refer to: the bundled sample and the 38 English evaluation paystubs. */
 export const documents = Object.fromEntries([
   ['sample', skeletonize(read('../samples/paystub-en-01.txt'), allowlist('en'), introducers('en'))],
+  ['w2-sample', skeletonize(read('../samples/w2-en-01.txt'), allowlist('en'), introducers('en'))],
   ...evaluation.map((d) => [d.id, skeletonize(d.text, allowlist('en'), introducers('en'))]),
 ]);
 
@@ -137,3 +138,20 @@ export function rightReadings(g) {
         }
   return out;
 }
+
+// ---------- Form W-2 (section 9) ----------
+
+const W2_KEY = readJson('../samples/answers.json').samples['w2-en-01.txt'].pointers;
+
+/** Checks on one W-2 answer, from the device or the cloud: problems, and the fields left out as not read. */
+export const w2Cases = [
+  { id: 'w2-key', document: 'w2-sample', pointers: W2_KEY },
+  // N1 is the 2 of "Form W-2"; N7 the street number of the employee's address; N8 the ZIP code (no cents).
+  { id: 'w2-wages-on-street-number', document: 'w2-sample', pointers: { ...W2_KEY, wages: 'N7' } },
+  { id: 'w2-wages-and-state-on-zip', document: 'w2-sample', pointers: { ...W2_KEY, wages: 'N8', stateWages: 'N8' } },
+  { id: 'w2-year-from-form-title', document: 'w2-sample', pointers: { ...W2_KEY, taxYear: 'N1' } },
+  { id: 'w2-year-and-wages-wrong', document: 'w2-sample', pointers: { ...W2_KEY, taxYear: 'N1', wages: 'N7' } },
+  { id: 'w2-no-wages', document: 'w2-sample', pointers: { ...W2_KEY, wages: null } },
+  { id: 'w2-wages-on-a-date', document: 'w2-sample', pointers: { ...W2_KEY, wages: 'D1' } },
+  { id: 'w2-withheld-on-zip', document: 'w2-sample', pointers: { ...W2_KEY, federalIncomeTaxWithheld: 'N6' } },
+];
