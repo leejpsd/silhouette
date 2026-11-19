@@ -28,15 +28,34 @@ struct DeviceReadingTests {
 
     static var caseCount: Int {
         ["constraints", "checks", "readings"].reduce(0) { $0 + section($1).count } + (fixture["gold"]?["cases"]?.arrayValue?.count ?? 0)
+            + w2Cases.count
     }
 
-    @Test("the fixture has 4 constraints, 39 checks, 34 readings and 38 gold cases (115)")
+    static var w2Cases: [FixtureCase] {
+        (fixture["w2"]?["cases"]?.arrayValue ?? []).map { FixtureCase(file: "device-reading.json", json: $0) }
+    }
+
+    @Test("the fixture has 4 constraints, 42 checks, 36 readings, 38 gold cases and 10 W-2 cases (130)")
     func counts() {
         #expect(Self.section("constraints").count == 4)
-        #expect(Self.section("checks").count == 39)
-        #expect(Self.section("readings").count == 34)
+        #expect(Self.section("checks").count == 42)
+        #expect(Self.section("readings").count == 36)
         #expect(Self.fixture["gold"]?["cases"]?.arrayValue?.count == 38)
-        #expect(Self.caseCount == 115)
+        #expect(Self.w2Cases.count == 10)
+        #expect(Self.caseCount == 130)
+    }
+
+    @Test("w2: the checks and the boxes left out of every W-2 answer (section 9)", arguments: w2Cases)
+    func w2(_ k: FixtureCase) throws {
+        let schema = try Shared.json(try #require(Self.fixture["w2"]?["schema"]?.stringValue))
+        let doc = Self.document(try #require(k["document"]?.stringValue))
+        let p = try #require(k["pointers"])
+        let e = try #require(k["expected"])
+        #expect(DeviceReading.w2Problems(schema: schema, pointers: p, map: doc.map) == Self.strings(e["problems"]), "\(k.id) problems")
+        let left = DeviceReading.w2LeftOut(schema: schema, pointers: p, map: doc.map)
+        #expect(left.problems == Self.strings(e["leftOut"]?["problems"]), "\(k.id) left-out problems")
+        let fields = (e["leftOut"]?["fields"]?.arrayValue ?? []).map { "\($0["field"]?.stringValue ?? ""):\($0["problem"]?.stringValue ?? "")" }
+        #expect(left.fields.map { "\($0.field):\($0.problem)" } == fields, "\(k.id) left-out fields")
     }
 
     @Test("constraints", arguments: section("constraints"))

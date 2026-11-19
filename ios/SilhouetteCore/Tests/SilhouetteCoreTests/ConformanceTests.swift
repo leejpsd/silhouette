@@ -195,6 +195,17 @@ struct ConformanceTests {
         expectIdentical(result.json, k["expected"], k.id)
     }
 
+    @Test("validate.json w2Cases", arguments: (try Shared.conformance("validate.json")["w2Cases"]?.arrayValue ?? [])
+        .map { FixtureCase(file: "validate.json", json: $0) })
+    func validateW2(_ k: FixtureCase) throws {
+        let forms = try #require(k["forms"]?.arrayValue)
+        if let error = k["expectedError"]?.stringValue {
+            expectFixtureError(error, k.id) { _ = try Validator.validateW2s(Raw(forms)) }
+            return
+        }
+        expectIdentical(try Validator.validateW2s(Raw(forms)).json, k["expected"], k.id)
+    }
+
     // MARK: model-schema.json
 
     @Test("model-schema.json", arguments: try Shared.cases("model-schema.json"))

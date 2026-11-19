@@ -40,6 +40,21 @@ public enum DeviceReading {
 
     private static func amount(_ map: PlaceholderMap, _ id: String) -> Double? { Rehydrator.parseNumber(map[id] ?? "") }
 
+    /// Amount fields whose placeholder must be money with cents when the silhouette prints cents (section 4.1).
+    public static let moneyFields = ["grossPay", "netPay", "ytdGross"]
+
+    /// The silhouette prints amounts with cents: some N placeholder's text is money with cents.
+    private static func printsCents(_ map: PlaceholderMap) -> Bool {
+        map.entries.contains { $0.id.hasPrefix("N") && isMoneyWithCents($0.value) }
+    }
+
+    /// A reference to an N placeholder whose text has no cents, in a silhouette that prints cents: a ZIP
+    /// code, an id, a year (section 4.1).
+    private static func notMoney(_ ref: JSON, _ map: PlaceholderMap) -> Bool {
+        guard let s = ref.stringValue, s.hasPrefix("N"), let text = map[s] else { return false }
+        return !isMoneyWithCents(text) && printsCents(map)
+    }
+
     private static func properties(_ schema: JSON) -> [(name: String, spec: JSON)] {
         (schema["properties"]?.objectValue?.entries ?? []).map { ($0.key, $0.value) }
     }
@@ -211,6 +226,8 @@ public enum DeviceReading {
                 if !ok { problems.append("\(name):not-an-option") }
             } else if !fits(k, value, map) {
                 problems.append("\(name):bad-reference")
+            } else if moneyFields.contains(name), notMoney(value, map) {
+                problems.append("\(name):not-money")
             }
         }
         let core = JSON.object(JSONObject(object.entries.filter { $0.key != "deductions" }.map { ($0.key, $0.value) }))
@@ -233,7 +250,9 @@ public enum DeviceReading {
         var problems: [String] = []
         for item in items {
             if case .object(let o) = item, let amount = o["amount"], fits("number", amount, map) {
-                if let k = o["kind"], !k.isNull, !(k.stringValue.map { s in kinds.contains { $0.exactlyEquals(s) } } ?? false) {
+                if notMoney(amount, map) {
+                    problems.append("deductions:not-money")
+                } else if let k = o["kind"], !k.isNull, !(k.stringValue.map { s in kinds.contains { $0.exactlyEquals(s) } } ?? false) {
                     problems.append("deductions:not-an-option")
                 }
             } else {
@@ -546,4 +565,49 @@ public enum DeviceReading {
     }
 
     public struct MissingAnswer: Error, Sendable { public let part: Part }
+    // MARK: - 9. Form W-2
+
+    /// W-2 boxes that hold money (boxes 1, 2, 3, 5 and 16).
+    public static let w2MoneyFields = ["wages", "federalIncomeTaxWithheld", "socialSecurityWages", "medicareWages", "stateWages"]
+
+    /// Problems of a W-2 answer, from the device or the cloud (section 9): references that do not fit,
+    /// money boxes answered from a number without cents, no wages, box 2 not below box 1, and a tax year
+    /// that is not a year. A reference that does not fit is reported and the other boxes are still checked.
+    public static func w2Problems(schema: JSON, pointers: JSON, map: PlaceholderMap) -> [String] {
+        guard case .object(let object) = pointers else { return ["not-an-object"] }
+        var problems: [String] = []
+        var fitting = JSONObject()
+        for (name, spec) in properties(schema) {
+            guard let value = object[name], !value.isNull else { continue }
+            guard fits(kind(spec), value, map) else {
+                problems.append("\(name):bad-reference")
+                continue
+            }
+            fitting[name] = value
+            if w2MoneyFields.contains(name), notMoney(value, map) { problems.append("\(name):not-money") }
+        }
+        let v = values(schema, .object(fitting), map)
+        if v["wages"]?.numberValue == nil { problems.append("wages:missing") }
+        func money(_ f: String) -> Double? { problems.contains("\(f):not-money") ? nil : v[f]?.numberValue }
+        if let wages = money("wages"), let withheld = money("federalIncomeTaxWithheld"), withheld >= wages {
+            problems.append("wages:below-withheld")
+        }
+        if let year = v["taxYear"]?.numberValue, !(year.rounded() == year && year >= 2000 && year <= 2100) {
+            problems.append("taxYear:not-a-year")
+        }
+        return problems
+    }
+
+    /// The fields of a W-2 answer left out as not read: a money box that is not money, a tax year that is
+    /// not a year, and boxes 1 and 2 both when box 2 is not below box 1 (`not-consistent`).
+    public static func w2LeftOut(schema: JSON, pointers: JSON, map: PlaceholderMap) -> (problems: [String], fields: [(field: String, problem: String)]) {
+        let problems = w2Problems(schema: schema, pointers: pointers, map: map)
+            .filter { $0.hasSuffix(":not-money") || $0 == "taxYear:not-a-year" || $0 == "wages:below-withheld" }
+        let fields: [(field: String, problem: String)] = problems.flatMap { p -> [(field: String, problem: String)] in
+            if p == "wages:below-withheld" { return [("wages", "not-consistent"), ("federalIncomeTaxWithheld", "not-consistent")] }
+            let parts = p.split(separator: ":", maxSplits: 1).map(String.init)
+            return [(parts[0], parts[1])]
+        }
+        return (problems, fields)
+    }
 }

@@ -383,3 +383,75 @@ public enum Validator {
                             stubsUsed: used.map(\.index))))
     }
 }
+
+// MARK: - 9. Form W-2
+
+/// The result of validating Form W-2 values (shared/validation/SPEC.md section 9).
+public struct W2ValidationResult: Sendable {
+    public struct Annualization: Sendable {
+        /// Whole currency units: box 1 of the forms used, summed.
+        public let annualIncome: Int
+        public let wagesCents: Int
+        /// The latest tax year among the forms with wages, or nil when none has a year.
+        public let taxYear: Int?
+        public let formsUsed: [Int]
+        public var method: String { "w2" }
+    }
+
+    public let checks: [[ValidationResult.Check]]
+    /// `no-wages` or nil
+    public let failure: String?
+    public let annualization: Annualization?
+
+    public var json: JSON {
+        let checksJSON = JSON.array(checks.map { form in
+            .array(form.map { .object(JSONObject([("id", .string($0.id)), ("status", .string($0.status.rawValue))])) })
+        })
+        var annual: JSON = .null
+        if let a = annualization {
+            annual = .object(JSONObject([
+                ("annualIncome", .number(Double(a.annualIncome))), ("method", .string(a.method)),
+                ("basis", .object(JSONObject([
+                    ("wagesCents", .number(Double(a.wagesCents))), ("taxYear", a.taxYear.map { .number(Double($0)) } ?? .null),
+                    ("formsUsed", .array(a.formsUsed.map { .number(Double($0)) })),
+                ]))),
+            ]))
+        }
+        return .object(JSONObject([("checks", checksJSON), ("failure", failure.map(JSON.string) ?? .null), ("annualization", annual)]))
+    }
+}
+
+extension Validator {
+    public static let w2MoneyFields = ["wages", "federalIncomeTaxWithheld", "socialSecurityWages", "medicareWages", "stateWages"]
+
+    /// Section 9: box 1 (wages) is the year's earned income from that employer; nothing is projected. The
+    /// forms of the latest tax year are summed (one per employer); a form without a year counts with them.
+    public static func validateW2s(_ rawValues: Raw<[JSON]>) throws(ValidationInputError) -> W2ValidationResult {
+        struct Form { var index: Int; var money: [String: Int128] = [:]; var taxYear: Int? }
+        var forms: [Form] = []
+        for (index, v) in rawValues.value.enumerated() {
+            guard case .object(let o) = v else { throw ValidationInputError("each form must be an object") }
+            var form = Form(index: index)
+            for key in w2MoneyFields {
+                if let c = try cents(o[key].flatMap { $0.isNull ? nil : $0 }) { form.money[key] = c }
+            }
+            if let year = o["taxYear"], !year.isNull {
+                guard case .number(let y) = year, y.isFinite, y.rounded() == y else { throw ValidationInputError("taxYear must be an integer") }
+                form.taxYear = Int(y)
+            }
+            forms.append(form)
+        }
+        let checks: [[ValidationResult.Check]] = forms.map { f in
+            let medicare: ValidationResult.Status = if let w = f.money["wages"], let m = f.money["medicareWages"] { m >= w ? .ok : .warn } else { .skipped }
+            let year: ValidationResult.Status = if let y = f.taxYear { y >= 2000 && y <= 2100 ? .ok : .warn } else { .skipped }
+            return [.init(id: "w2-medicare-wages", status: medicare), .init(id: "w2-year", status: year)]
+        }
+        let withWages = forms.filter { ($0.money["wages"] ?? 0) > 0 }
+        if withWages.isEmpty { return W2ValidationResult(checks: checks, failure: "no-wages", annualization: nil) }
+        let taxYear = withWages.compactMap(\.taxYear).max()
+        let used = withWages.filter { $0.taxYear == nil || $0.taxYear == taxYear }
+        let wagesCents = used.reduce(Int128(0)) { $0 + $1.money["wages"]! }
+        return W2ValidationResult(checks: checks, failure: nil, annualization: .init(
+            annualIncome: Int(roundRatio(wagesCents, 100)), wagesCents: Int(wagesCents), taxYear: taxYear, formsUsed: used.map(\.index)))
+    }
+}
