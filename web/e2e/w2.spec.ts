@@ -52,10 +52,10 @@ test.describe('Form W-2', () => {
     await expect(pointer.getByTestId('pointer-answer')).toHaveText('"wages": "N9"');
     await expect(pointer.getByTestId('pointer-value')).toHaveText('27,640.18');
     await expect(pointer).toContainText('from your W-2');
-    // What decides the result first: box 1 and the tax year; the rest folded.
+    // What decides the result first: box 1 and the tax year; the rest below them, in view.
     await expect(page.getByTestId('lead-fields').locator('.field-label')).toHaveText(['Wages, tips, other compensation (box 1)', 'Tax year']);
     await expect(page.getByTestId('value-taxYear')).toHaveText('2025');
-    await expect(page.getByTestId('field-medicareWages')).toBeHidden();
+    await expect(page.getByTestId('field-medicareWages')).toBeVisible();
 
     // The request carried the silhouette and the document type, never a value of the W-2.
     expect(cloud.bodies).toHaveLength(1);

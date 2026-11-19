@@ -153,7 +153,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
     await expect(page.getByTestId('value-grossPay')).toHaveText('1,271.88');
-    await page.getByTestId('more-values').click();
+    // Every value is in view from the start (no need to open "More values").
     await expect(page.getByTestId('deductions-not-read')).toContainText('Deductions were not read on this device.');
     await expect(page.getByTestId('not-read-employeeName')).toContainText('Not read on this device.');
     await expect(page.getByTestId('not-read-employerName')).toContainText('Not read on this device.');
@@ -249,7 +249,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
     await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'ON_DEVICE');
-    await page.getByTestId('more-values').click();
+    // Every value is in view from the start (no need to open "More values").
     await expect(page.getByTestId('not-read-hoursWorked')).toContainText('Not read on this device.');
     await expect(page.getByTestId('not-read-hourlyRate')).toContainText('Not read on this device.');
     await expect(page.getByTestId('value-netPay')).toHaveText('1,100.92');
@@ -374,14 +374,14 @@ test('the folded values are counted as the button above counts them, with fields
   await page.goto('/#/doc');
   await page.getByRole('button', { name: 'English paystub (text)' }).click();
   await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
-  const seeAll = page.getByRole('button', { name: /^See all \d+ values$/ });
-  const total = Number((await seeAll.innerText()).match(/\d+/)?.[0]);
+  // Every value is in view and confirmed with one press; "More values" counts as the button does, with the
+  // fields not found named apart.
+  const confirmAll = page.getByRole('button', { name: /^Confirm all \d+ values$/ });
+  const total = Number((await confirmAll.innerText()).match(/\d+/)?.[0]);
   const shown = await page.getByTestId('lead-fields').locator(':scope > li').count();
-  expect(shown).toBeGreaterThan(0);
   const more = await page.getByTestId('more-values').innerText();
   const m = more.match(/\((\d+) found · (\d+) not found\)/);
   expect(m).not.toBeNull();
   expect(Number(m?.[2])).toBe(2);
-  // What is shown plus what is folded, found, makes the number on the button.
   expect(shown + Number(m?.[1])).toBe(total);
 });

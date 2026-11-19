@@ -4,7 +4,7 @@
 // on-device model lacks, or no model on this device. Screen readers hear badge and reason as one
 // sentence; the visible text is unchanged.
 import type { ExplainRoute } from '../core/explain';
-import type { InferenceSource, RoutingReason } from '../ai/tasks';
+import type { CloudBecause, InferenceSource, RoutingReason } from '../ai/tasks';
 import { useApp } from './context';
 import { LOCALE_NAMES, dynamicKey, isLocale, type Translate } from './i18n';
 
@@ -18,12 +18,13 @@ export interface Provenance {
   readonly inferenceSource: ShownSource;
   readonly reason: RoutingReason;
   readonly route?: ExplainRoute | undefined;
-  readonly ranInCloudBecause?: 'no-device-model' | undefined;
+  readonly ranInCloudBecause?: CloudBecause | undefined;
 }
 
 /** The detail after the reason: what actually decided where the request ran. */
 export function provenanceDetail(t: Translate, p: Provenance): string | null {
   if (p.ranInCloudBecause === 'no-device-model') return t('reason.detail.noDeviceModel');
+  if (p.ranInCloudBecause === 'model-not-downloaded') return t('reason.detail.notDownloaded');
   if (!p.route || p.reason === 'on-device-failed') return null;
   return p.route.basis === 'locale'
     ? t('reason.detail.locale', { language: isLocale(p.route.locale) ? LOCALE_NAMES[p.route.locale] : p.route.locale })
@@ -48,7 +49,7 @@ export function InferenceBadge({
   source: ShownSource;
   reason: RoutingReason;
   route?: ExplainRoute | undefined;
-  ranInCloudBecause?: 'no-device-model' | undefined;
+  ranInCloudBecause?: CloudBecause | undefined;
 }) {
   const { t } = useApp();
   const p: Provenance = { inferenceSource: source, reason, route, ranInCloudBecause };

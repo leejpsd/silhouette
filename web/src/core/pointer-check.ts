@@ -44,6 +44,22 @@ function fits(kind: string | undefined, ref: unknown, map: PlaceholderMap): bool
   return true;
 }
 
+/** Money with cents: the text ends with "." or "," and exactly two digits. */
+const MONEY_WITH_CENTS = /[.,][0-9]{2}$/;
+/** Paystub amounts whose placeholder must be money with cents when the silhouette prints cents. */
+export const MONEY_FIELDS: ReadonlySet<string> = new Set(['grossPay', 'netPay', 'ytdGross']);
+
+/**
+ * A number placeholder whose text has no cents, in a silhouette that prints amounts with cents: a ZIP
+ * code, an id or a year answered as an amount (validation/DEVICE_READING.md section 4.1). A silhouette
+ * with no amount in cents (won) never has this problem.
+ */
+function notMoney(ref: unknown, map: PlaceholderMap): boolean {
+  if (typeof ref !== 'string' || !ref.startsWith('N') || !Object.hasOwn(map, ref)) return false;
+  if (MONEY_WITH_CENTS.test(map[ref] ?? '')) return false;
+  return Object.entries(map).some(([id, text]) => id.startsWith('N') && MONEY_WITH_CENTS.test(text));
+}
+
 /** Field problems of every non-list field present in the answer. */
 function coreFieldProblems(schema: PointerSchema, p: Record<string, unknown>, map: PlaceholderMap): string[] {
   const out: string[] = [];
@@ -55,6 +71,7 @@ function coreFieldProblems(schema: PointerSchema, p: Record<string, unknown>, ma
     if (kind === 'enum') {
       if (!(spec.enum ?? []).includes(value as string)) out.push(`${name}:not-an-option`);
     } else if (!fits(kind, value, map)) out.push(`${name}:bad-reference`);
+    else if (MONEY_FIELDS.has(name) && notMoney(value, map)) out.push(`${name}:not-money`);
   }
   return out;
 }
@@ -353,6 +370,7 @@ export function deductionsProblems(schema: PointerSchema, pointers: unknown, raw
   const problems: string[] = [];
   for (const item of list) {
     if (!isObject(item) || !fits('number', item['amount'], map)) problems.push('deductions:bad-reference');
+    else if (notMoney(item['amount'], map)) problems.push('deductions:not-money');
     else if (item['kind'] !== undefined && item['kind'] !== null && !kinds.includes(item['kind'] as string)) problems.push('deductions:not-an-option');
   }
   const v = values(schema, pointers, rawMap);

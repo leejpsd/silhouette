@@ -6,6 +6,9 @@ import { downloadDeviceModel, pointerDeviceStatus, type DeviceStatus } from '../
 import { useApp } from '../context';
 import { Alert, Cloud, Phone } from '../design/icons';
 
+/** Sent when a download through this card has finished, so other parts of the page ask the browser again. */
+export const DEVICE_MODEL_EVENT = 'silhouette:device-model';
+
 export function ModelStatus({ language, onStatus }: { language: string; onStatus?: (status: DeviceStatus) => void }) {
   const { t } = useApp();
   const [status, setStatus] = useState<DeviceStatus | null>(null);
@@ -33,6 +36,7 @@ export function ModelStatus({ language, onStatus }: { language: string; onStatus
       const next = await pointerDeviceStatus('paystub', language);
       setStatus(next);
       onStatus?.(next);
+      window.dispatchEvent(new Event(DEVICE_MODEL_EVENT));
     } catch {
       setFailed(true);
       setStatus(await pointerDeviceStatus('paystub', language));

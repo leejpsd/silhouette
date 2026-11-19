@@ -17,7 +17,7 @@ test.describe('for judges: try it in two minutes', () => {
     await expect(page.getByTestId('judges-device')).toContainText('sending the silhouette (never the values)');
 
     // 1. The sample paystub of an invented household: its silhouette, then Send (the cloud, silhouette only).
-    await page.getByRole('button', { name: 'Open the sample paystub' }).click();
+    await page.getByRole('button', { name: 'Read the sample paystub' }).click();
     await expect(page.getByTestId('skeleton-preview')).toHaveAttribute('data-mode', 'leave');
     await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
     await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
@@ -52,7 +52,7 @@ test.describe('for judges: try it in two minutes', () => {
     await noOnDeviceModel(context);
     const cloud = await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
     await page.goto('/#/judges');
-    await page.getByRole('button', { name: 'Open the sample paystub' }).click();
+    await page.getByRole('button', { name: 'Read the sample paystub' }).click();
     await page.getByTestId('use-recorded').click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'RECORDED');
     await expect(page.getByTestId('pointer-answer')).toHaveText(/"grossPay": "N\d+"/);
@@ -60,6 +60,9 @@ test.describe('for judges: try it in two minutes', () => {
     await expect(page.getByTestId('pointer-reveal')).toContainText('(a recorded reading)');
     await confirmAllValues(page);
     await page.getByRole('button', { name: 'Check these values' }).click();
+    // The recorded answer has no deductions (the device reads them in a second part): it says so, and
+    // "gross minus deductions = net" is not shown as a problem.
+    await expect(page.locator('.check[data-check="net-sum"]')).toHaveCount(0);
     await page.getByRole('button', { name: /^Use \$[\d,]+ as my yearly income$/ }).click();
     await expect(page.getByTestId('income-from')).toContainText('from a recorded on-device reading');
     await page.getByTestId('income-basis').getByRole('button', { name: 'Change the yearly income' }).click();
@@ -74,7 +77,7 @@ test.describe('for judges: try it in two minutes', () => {
     await page.goto('/#/judges');
     await chooseLanguage(page, 'es');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pruébalo en dos minutos');
-    await expect(page.getByRole('button', { name: 'Abrir el talón de pago de ejemplo' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Lee el talón de pago de ejemplo' })).toBeVisible();
     await expect(page.getByTestId('judges-device')).toContainText('Este navegador no tiene el modelo del dispositivo');
     const text = await page.locator('main').innerText();
     for (const english of ['Try it', 'Open the sample', 'Fill in and see', 'Compare what left', 'This browser', 'Three steps']) expect(text).not.toContain(english);

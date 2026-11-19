@@ -37,7 +37,7 @@ test('the two-minute path with a ready device model leaves nothing at all', asyn
   await page.goto('/#/judges');
   await expect(page.getByTestId('judges-device')).toHaveAttribute('data-device', 'available');
   // 1. The sample: read ahead on the device while the preview is open, then Send.
-  await page.getByRole('button', { name: 'Open the sample paystub' }).click();
+  await page.getByRole('button', { name: 'Read the sample paystub' }).click();
   // The read-ahead asks the device before Send.
   await expect.poll(() => page.evaluate(() => (window as unknown as { __fakePrompts: string[] }).__fakePrompts.length), { timeout: 10_000 }).toBeGreaterThan(0);
   await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();

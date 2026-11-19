@@ -24,6 +24,7 @@ import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { recordedReading, type RecordedReading } from '../doc/recorded-reading';
 import { phoneLines } from '../doc/phone-view';
 import { rememberReading } from '../doc/last-reading';
+import { recordRecordedReading } from '../../data/outbound';
 import { BlockActions, useTwoColumns } from '../design/block';
 import { ArrowRight, ChevronLeft, ChevronRight, LeaveGlyph } from '../design/icons';
 import { useOnline } from '../design/online';
@@ -142,8 +143,13 @@ export function DocumentPreviewScreen() {
   }, [sending]);
   const failed = doc.error !== null && doc.error !== undefined;
   useEffect(() => {
-    if (failed) requestAnimationFrame(() => bringIntoView(errorTop.current?.parentElement?.querySelector('.button-row') ?? errorTop.current));
-  }, [failed]);
+    if (!failed) return;
+    requestAnimationFrame(() => {
+      // Wide screens: the decision row stands at the foot of the content and would cover the ways on.
+      const actions = wide ? document.querySelector('.doc-preview .screen-actions') : null;
+      bringIntoView(errorTop.current?.parentElement?.querySelector('.button-row') ?? errorTop.current, { margin: 16 + (actions?.getBoundingClientRect().height ?? 0) });
+    });
+  }, [failed, wide]);
   const [quiet, setQuiet] = useState(false);
   // Switching views: the values turn into chips (or back) with one short wipe, then the flag is dropped
   // so that hiding a word afterwards does not replay it.
@@ -246,7 +252,11 @@ export function DocumentPreviewScreen() {
     if (!recorded) return;
     const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], recorded.pointers, map, introducersFor(doc.language));
     const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
-    update({ error: null, extraction: { review, inferenceSource: 'RECORDED', reason: 'recorded-on-device', recording: { machine: recorded.machine, date: recorded.date, path: recorded.path } } });
+    // The device reads the deductions in a second part; a recorded answer without them says so, like a live one.
+    const deductionsNotRead = !Object.hasOwn(recorded.pointers, 'deductions');
+    update({ error: null, extraction: { review, inferenceSource: 'RECORDED', reason: 'recorded-on-device', deductionsNotRead, recording: { machine: recorded.machine, date: recorded.date, path: recorded.path } } });
+    // The record says what happened: a recorded reading, values put back here, nothing sent.
+    recordRecordedReading({ machine: recorded.machine, date: recorded.date });
     navigate({ name: 'doc-review' });
   };
 
@@ -273,6 +283,15 @@ export function DocumentPreviewScreen() {
   };
 
   const offlineSample = doc.sourceKind === 'sample' && doc.hiddenWords.length === 0 && !online && deviceStatus !== 'available';
+  // Chrome can download the model here but has not yet: said so (never "no model"), with the download
+  // beside the other ways on. Once downloaded, the reading starts on this device.
+  const notDownloaded = (deviceStatus === 'downloadable' || deviceStatus === 'downloading') && ON_DEVICE_LANGUAGES.has(doc.language);
+  const downloadHere = notDownloaded && !offlineSample;
+  // One status card on the screen: beside the ways on while the model can be downloaded, otherwise under "More about this".
+  const modelStatus = <ModelStatus language={doc.language} onStatus={setDeviceStatus} />;
+  // After a failed Send, the dock's action is "Try again" (a daily limit does not recover now, and a
+  // reading this device could not do offers sending the silhouette in its own row).
+  const retryInDock = failed && !onDeviceFirst && !offlineSample && doc.error?.kind !== 'quota-daily' && doc.error?.kind !== 'on-device-unreliable';
   const lines = phoneLines(skeleton, map);
   // The longest line, in characters: wide screens size the mono type so no line breaks.
   const docCols = Math.max(20, ...lines.map((l) => l.reduce((n, seg) => n + seg.text.length, 0)));
@@ -295,7 +314,7 @@ export function DocumentPreviewScreen() {
     !onDeviceFirst && deviceStatus !== null && !offlineSample && recorded ? (
       <div className="recorded-choice" data-testid="use-recorded-card">
         <button type="button" className="text-link recorded-link" onClick={useRecorded} disabled={sending} data-testid="use-recorded">
-          {t('preview.useRecorded', { machine: recorded.machine })}
+          {t(notDownloaded ? 'preview.useRecorded.notDownloaded' : 'preview.useRecorded', { machine: recorded.machine })}
           <ChevronRight />
         </button>
         <p className="small muted">{t('preview.useRecordedNote', { date: recorded.date })}</p>
@@ -368,10 +387,13 @@ export function DocumentPreviewScreen() {
       {!wide && <p className="small muted">{t('preview.leadShort')}</p>}
       {/* Without a model here, the on-device half of the story is one press away: the recorded run. */}
       {wide && recordedChoice}
+      {/* The download, beside the recording on a wide screen; on a phone under the document, so the
+          silhouette stays in the first screen. */}
+      {downloadHere && modelStatus}
       {/* The recordings are of the paystub's reading: a W-2 does not point at them. */}
       {!onDeviceFirst && deviceStatus !== null && !offlineSample && !recorded && doc.docType === 'paystub' && (
         <a className="text-link recorded-link" href={routeHref({ name: 'device-check' })} data-testid="see-recorded">
-          {t('preview.seeRecorded')}
+          {t(notDownloaded ? 'preview.seeRecorded.notDownloaded' : 'preview.seeRecorded')}
           <ChevronRight />
         </a>
       )}
@@ -406,9 +428,9 @@ export function DocumentPreviewScreen() {
           <ChevronRight />
         </summary>
         <p className="small muted">{t('preview.lead')}</p>
-        <p className="small muted">{offlineSample ? t('preview.sample') : onDeviceFirst ? t('preview.onDevice') : t('preview.cloud')}</p>
+        <p className="small muted">{offlineSample ? t('preview.sample') : onDeviceFirst ? t('preview.onDevice') : t(notDownloaded ? 'preview.cloud.notDownloaded' : 'preview.cloud')}</p>
         <p className="small muted">{t('preview.hideHelp')}</p>
-        <ModelStatus language={doc.language} onStatus={setDeviceStatus} />
+        {!downloadHere && modelStatus}
         <p className="small muted">{t('leaving.network')}</p>
       </details>
       {sending && <Loading />}
@@ -430,11 +452,18 @@ export function DocumentPreviewScreen() {
                 {t('preview.sendSilhouette')}
               </button>
             ) : (
-              doc.error.kind !== 'quota-daily' && (
+              doc.error.kind !== 'quota-daily' &&
+              !retryInDock && (
                 <button type="button" className="outline-button" onClick={() => void retry()} data-testid="retry">
                   {t('error.retry')}
                 </button>
               )
+            )}
+            {/* The way on that sends nothing: this paystub as the on-device model read it (a recording). */}
+            {recorded && !onDeviceFirst && (
+              <button type="button" className="outline-button" onClick={useRecorded} data-testid="error-use-recorded">
+                {t('preview.error.useRecorded')}
+              </button>
             )}
             <button type="button" className="outline-button" onClick={() => navigate({ name: 'doc-review' })}>
               {t('error.typeInstead')}
@@ -471,6 +500,12 @@ export function DocumentPreviewScreen() {
             // if this device cannot read it (the line above the document says that), never as a first step.
             <button type="button" className="action" disabled={sending} onClick={() => void send()} data-testid="read-here">
               <ActionLabel>{sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : t('preview.readHere')}</ActionLabel>
+              <span className="action-arrow">{sending ? <Spinner /> : <ArrowRight />}</span>
+            </button>
+          ) : retryInDock ? (
+            // After a failed Send: the same request again, not a fresh orange "Send".
+            <button type="button" className="action" disabled={sending} onClick={() => void retry()} data-testid="retry">
+              <ActionLabel>{sending ? (stage ? t(STAGE_COPY[stage]) : t('preview.sending')) : t('error.retry')}</ActionLabel>
               <span className="action-arrow">{sending ? <Spinner /> : <ArrowRight />}</span>
             </button>
           ) : (

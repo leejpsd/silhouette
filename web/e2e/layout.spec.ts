@@ -105,20 +105,17 @@ test.describe('documents', () => {
     // The date shown first is the one the yearly income uses: the period end (the sample has one).
     for (const name of ['grossPay', 'ytdGross', 'periodEnd', 'payFrequency']) await expect(lead.getByTestId(`field-${name}`)).toBeVisible();
     await expect(lead.getByTestId('field-payDate')).toHaveCount(0);
+    // Every value is in view from the start.
     const more = page.getByTestId('more-values');
-    await expect(more).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.getByTestId('field-hoursWorked')).toBeHidden();
-    const seeAll = page.getByRole('button', { name: /^See all \d+ values$/ });
-    const confirmAll = page.getByRole('button', { name: /^Confirm all \d+ values$/ });
-    const count = Number(/(\d+)/.exec((await seeAll.textContent()) ?? '')?.[1]);
-    expect(count).toBeGreaterThan(10);
-    // While values are folded away the button says what it does: it shows them, and confirms nothing.
-    await seeAll.click();
     await expect(more).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByTestId('field-hoursWorked')).toBeVisible();
-    await expect(page.getByTestId('field-hoursWorked')).toHaveAttribute('data-status', 'pending');
-    await confirmAll.click();
+    // Pressing "Check these values" first is answered beside the button.
+    await page.getByRole('button', { name: 'Check these values' }).click();
+    await expect(page.getByTestId('confirm-first')).toContainText('Confirm the values above first');
+    // One press confirms them all.
+    await page.getByRole('button', { name: /^Confirm all \d+ values$/ }).click();
     await expect(page.getByTestId('field-hoursWorked')).toHaveAttribute('data-status', 'confirmed');
+    await expect(page.getByTestId('confirm-first')).toHaveCount(0);
     await page.getByRole('button', { name: 'Check these values' }).click();
     // The yearly income, with its arithmetic, comes right after the leading values, as money.
     await expect(page.getByTestId('annual-income')).toHaveText(/^\$[\d,]+$/);

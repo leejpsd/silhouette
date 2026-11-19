@@ -29,13 +29,21 @@ test.describe('the judges’ way in', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Try it in two minutes');
   });
 
-  test('in the wide layout the rail has the link and the start screen does not repeat it', async ({ page }, testInfo) => {
+  test('in the wide layout the rail has the link, and the hero has it beside the start actions', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'chromium', 'a wide layout');
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByTestId('start-judges')).toHaveCount(0);
     await expect(page.locator('.rail-links').getByRole('link', { name: 'For judges' })).toBeVisible();
+    // A quiet link beside the start actions, in the first screen.
+    const hero = page.getByTestId('start-judges-hero');
+    await expect(hero).toHaveText('For judges: try it in two minutes');
+    await expect(hero).toHaveAttribute('href', '#/judges');
+    await expect(hero).toBeInViewport({ ratio: 1 });
+    await expect(page.getByTestId('screen-actions').getByTestId('start-judges-hero')).toBeVisible();
+    await hero.click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Try it in two minutes');
   });
 });
 

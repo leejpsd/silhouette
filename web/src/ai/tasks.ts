@@ -52,9 +52,15 @@ export interface TaskResult<T> {
   readonly reason: RoutingReason;
   /** For explanations: the length and language that decided the route (shown in the reason chip). */
   readonly route?: ExplainRoute | undefined;
-  /** A device-first call ran in the cloud because this device has no model (shown in the reason chip). */
-  readonly ranInCloudBecause?: 'no-device-model' | undefined;
+  /** A device-first call ran in the cloud because this device has no model, or has not downloaded it yet (shown in the reason chip). */
+  readonly ranInCloudBecause?: CloudBecause | undefined;
 }
+
+/** Why a device-first call ran in the cloud: this browser has no on-device model, or has not downloaded it yet. */
+export type CloudBecause = 'no-device-model' | 'model-not-downloaded';
+
+/** The reason chip's detail for a device status other than "available". */
+export const cloudBecause = (status: string): CloudBecause => (status === 'downloadable' || status === 'downloading' ? 'model-not-downloaded' : 'no-device-model');
 
 /** Languages of Chrome's on-device model. Other languages fall back to the cloud. */
 export const ON_DEVICE_LANGUAGES: ReadonlySet<string> = new Set(['en', 'es', 'ja', 'de', 'fr']);
@@ -547,7 +553,8 @@ export async function extractPointers(
   const reason = POINTER_TASK.reason as RoutingReason;
   const config = options.config ?? activePointerConfig();
   const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
-  const available = options.forceCloud ? false : (await deviceAvailability(createOptions)) === 'available';
+  const deviceState = options.forceCloud ? 'unavailable' : await deviceAvailability(createOptions);
+  const available = deviceState === 'available';
   if (options.deviceOnly && !available) throw new TaskError('on-device-unavailable', 'the on-device model is not available');
   // On a device with a ready model, a paystub is read in two parts (core, then deductions). Only a
   // core that fails its check is a failed on-device attempt; the cloud retry stays one single pass.
@@ -594,7 +601,7 @@ export async function extractPointers(
       inferenceSource: r.source,
       reason,
       usage: r.usage,
-      ranInCloudBecause: noModel ? 'no-device-model' : undefined,
+      ranInCloudBecause: noModel ? cloudBecause(deviceState) : undefined,
       deviceAttempt: r.source === 'ON_DEVICE' ? { rawText: r.rawText, parsed: true, value: r.value, problems: [] } : undefined,
     };
   } catch (error) {
@@ -818,9 +825,10 @@ async function runCall(call: PlannedCall, forceCloud: boolean, options: RunOptio
 const OUTPUT_CHECKS = outputChecks as unknown as OutputChecks;
 
 /** Why a device-first call ran in the cloud when the device had no model to try. */
-async function noDeviceModel(call: PlannedCall, source: InferenceSource): Promise<boolean> {
-  if (source !== 'IN_CLOUD' || call.mode !== 'PREFER_ON_DEVICE' || !call.deviceOptions) return false;
-  return (await deviceAvailability(call.deviceOptions)) !== 'available';
+async function noDeviceModel(call: PlannedCall, source: InferenceSource): Promise<CloudBecause | undefined> {
+  if (source !== 'IN_CLOUD' || call.mode !== 'PREFER_ON_DEVICE' || !call.deviceOptions) return undefined;
+  const status = await deviceAvailability(call.deviceOptions);
+  return status === 'available' ? undefined : cloudBecause(status);
 }
 
 /**
@@ -832,7 +840,7 @@ async function runText(call: PlannedCall, options: RunOptions): Promise<TaskResu
   const once = async (): Promise<TaskResult<ModelAnswer>> => {
     try {
       const { response, source } = await runCall(call, false, options);
-      const detail = (await noDeviceModel(call, source)) ? 'no-device-model' : undefined;
+      const detail = await noDeviceModel(call, source);
       return { value: modelAnswer(response.text()), inferenceSource: source, reason: call.reason, route: call.route, ranInCloudBecause: detail };
     } catch (error) {
       if (error instanceof TaskError && error.kind === 'cancelled') throw error;

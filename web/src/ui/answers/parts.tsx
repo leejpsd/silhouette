@@ -182,10 +182,19 @@ export function SendPanel({
   // Device first only means the device when it has a model for this. Without one the request can only go
   // to the cloud, and the step says so (never "On this device" over a Send that leaves).
   const [deviceReady, setDeviceReady] = useState<boolean | null>(destinationOf(plan) === 'cloud' ? false : null);
+  // Not downloaded yet is not "no model": the line says which.
+  const [notDownloaded, setNotDownloaded] = useState(false);
   useEffect(() => {
     if (destinationOf(plan) === 'cloud') return;
     let live = true;
-    void askDeviceStatus(locale).then((status) => live && setDeviceReady(status === 'available'), () => live && setDeviceReady(false));
+    void askDeviceStatus(locale).then(
+      (status) => {
+        if (!live) return;
+        setDeviceReady(status === 'available');
+        setNotDownloaded(status === 'downloadable' || status === 'downloading');
+      },
+      () => live && setDeviceReady(false),
+    );
     return () => {
       live = false;
     };
@@ -274,7 +283,7 @@ export function SendPanel({
           {deviceReady !== null && (
             <p className="routing-line">
               <strong className={`badge ${cloud ? 'badge-cloud' : 'badge-device'}`}>{cloud ? t('badge.cloud') : t('badge.onDevice')}</strong>
-              <span>{cloud && destinationOf(plan) !== 'cloud' ? `${t(dynamicKey(`reason.${plan.reason}`))} (${t('reason.detail.noDeviceModel')})` : cloud ? t(dynamicKey(`reason.${plan.reason}`)) : t('tasks.first')}</span>
+              <span>{cloud && destinationOf(plan) !== 'cloud' ? `${t(dynamicKey(`reason.${plan.reason}`))} (${t(notDownloaded ? 'reason.detail.notDownloaded' : 'reason.detail.noDeviceModel')})` : cloud ? t(dynamicKey(`reason.${plan.reason}`)) : t('tasks.first')}</span>
             </p>
           )}
           {!online && (

@@ -86,6 +86,7 @@ describe('year to date read from the wrong line', () => {
     // Every other number placeholder that the checks without these rules would accept as year to date.
     let simulated = 0;
     let caught = 0;
+    let notMoney = 0;
     const missed: string[] = [];
     for (const d of GOLD) {
       const goldYtd = new Set(d.ids['ytdGross'] ?? []);
@@ -93,15 +94,18 @@ describe('year to date read from the wrong line', () => {
       for (const m of new Set([...d.skeleton.matchAll(/⟦(N[0-9]+)⟧/g)].map((x) => x[1] as string))) {
         if (goldYtd.has(m)) continue;
         const reading = { ...d.right, grossPay: gross, ytdGross: m };
-        if (corePointerProblems(S, reading, d.map, J).length > 0) continue;
+        const before = corePointerProblems(S, reading, d.map, J);
+        if (before.some((p) => !p.endsWith(':not-money'))) continue;
         simulated++;
+        if (before.length > 0) notMoney++;
         if (corePointerProblems(S, reading, d.map, J, d.skeleton).length > 0) caught++;
         else missed.push(`${d.file} ${m}`);
       }
     }
-    // The misses: two paystubs without any year to date (en-l03-1) and an employee number that fits (en-l04-1).
-    expect({ simulated, caught }).toEqual({ simulated: 34, caught: 31 });
-    expect(missed.map((m) => m.split(' ')[0])).toEqual(['en-l03-1.txt', 'en-l03-1.txt', 'en-l04-1.txt']);
+    // Ids, ZIP codes and years (no cents) are caught as not money, the employee number of en-l04-1 among
+    // them. The misses: a paystub without any year to date (en-l03-1), where nothing tells the two apart.
+    expect({ simulated, caught, notMoney }).toEqual({ simulated: 34, caught: 32, notMoney: 14 });
+    expect(missed.map((m) => m.split(' ')[0])).toEqual(['en-l03-1.txt', 'en-l03-1.txt']);
   });
 });
 

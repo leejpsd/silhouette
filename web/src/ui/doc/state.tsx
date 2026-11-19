@@ -5,7 +5,7 @@ import type { Raw, Skeleton } from '../../core/types';
 import type { PlaceholderMap } from '../../core/skeleton';
 import type { ReviewField } from '../../core/review';
 import type { PaystubValues, W2Values } from '../../core/validate';
-import type { InferenceSource, RoutingReason, TaskError } from '../../ai/tasks';
+import type { CloudBecause, InferenceSource, RoutingReason, TaskError } from '../../ai/tasks';
 import type { Locale } from '../i18n';
 
 export type SourceKind = 'pdf' | 'paste' | 'photo' | 'sample' | 'manual';
@@ -23,7 +23,7 @@ export interface Extraction {
   /** RECORDED: the machine and the date of the recording the answer comes from. */
   readonly recording?: { readonly machine: string; readonly date: string; readonly path: string } | undefined;
   readonly reason: RoutingReason;
-  readonly ranInCloudBecause?: 'no-device-model' | undefined;
+  readonly ranInCloudBecause?: CloudBecause | undefined;
   /** Read on this device without the deductions, which it could not read reliably (they feed no result). */
   readonly deductionsNotRead?: boolean | undefined;
   /** Fields this device left out as not read (deductions, names); none feeds a result. */

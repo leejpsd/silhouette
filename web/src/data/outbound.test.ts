@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clearOutbound, leftDevice, markSent, outboundState, recordAnsweredOnDevice, recordAttempt } from './outbound';
+import { clearOutbound, leftDevice, markSent, outboundState, recordAnsweredOnDevice, recordAttempt, recordRecordedReading } from './outbound';
 
 describe('the record of what left and what stayed', () => {
   beforeEach(() => clearOutbound());
@@ -14,5 +14,14 @@ describe('the record of what left and what stayed', () => {
     expect(kept).toMatchObject({ channel: 'on-device', status: 'answered', destination: '', path: '', bytes: 0, fields: ['kept:about'] });
     expect(kept.body).toBeUndefined();
     expect(leftDevice(entries).map((e) => e.id)).toEqual([sent]);
+  });
+
+  it('records a recorded on-device reading with its machine and date, kept here and never counted as sent', () => {
+    recordRecordedReading({ machine: 'Chrome 157 · Mac', date: 'Nov 17, 2026' }, 3);
+    const { entries } = outboundState();
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({ channel: 'on-device', status: 'answered', bytes: 0, fields: ['kept:recorded'], recording: { machine: 'Chrome 157 · Mac', date: 'Nov 17, 2026' } });
+    expect(entries[0]?.body).toBeUndefined();
+    expect(leftDevice(entries)).toEqual([]);
   });
 });

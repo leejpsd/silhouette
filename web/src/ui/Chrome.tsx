@@ -252,6 +252,7 @@ const KEPT_TITLES: Readonly<Record<string, CopyKey>> = {
   'kept:ask': 'ask.title',
   'kept:why': 'why.title',
   'kept:own-question': 'ask.free.label',
+  'kept:recorded': 'record.recorded.title',
 };
 
 /** What a request carries that comes from the person (a silhouette of their document or answers). */
@@ -342,7 +343,9 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   const carriesProfile = left.some((e) => e.fields.includes('profile-silhouette') || e.fields.includes('county-area'));
   const statusLine = (e: OutboundEntry) =>
     e.status === 'answered'
-      ? t('outbound.status.answeredShort')
+      ? e.recording
+        ? t('record.recorded.status')
+        : t('outbound.status.answeredShort')
       : e.status === 'attempted'
         ? t('outbound.status.attempted')
         : e.status === 'sent'
@@ -452,6 +455,12 @@ function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: 
         {e.status === 'answered' ? <Phone size={12} /> : e.status === 'attempted' ? <span className="spinner" aria-hidden="true" /> : e.status === 'sent' ? null : <CrossCircle />}
         <span>{status}</span>
       </span>
+      {/* A recorded reading: whose answer it was and when, under the row. */}
+      {e.recording && (
+        <p className="outbound-note" data-testid="recorded-note">
+          {t('record.recorded.note', { machine: e.recording.machine, date: e.recording.date })}
+        </p>
+      )}
       {e.status !== 'answered' && (
         <div className="outbound-main">
           <button type="button" className="disclosure" aria-expanded={show} aria-controls={body} onClick={() => setShow(!show)}>

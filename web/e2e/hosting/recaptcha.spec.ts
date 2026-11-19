@@ -15,7 +15,7 @@ const POLICY = hosting.hosting.headers.flatMap((h) => h.headers).find((h) => h.k
 
 async function judgesStepTwo(page: Page) {
   await page.goto('/#/judges');
-  await page.getByRole('button', { name: 'Open the sample paystub' }).click();
+  await page.getByRole('button', { name: 'Read the sample paystub' }).click();
   await page.getByTestId('skeleton-preview').waitFor();
   await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
 }

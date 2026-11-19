@@ -4,10 +4,12 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
 import { CONFIG_STORAGE_KEY, appConfig, subscribeConfig } from '../../data/remote-config';
 import routing from '../../../../shared/routing.json';
-// The cloud evaluation of the reading prompt (README, "Evidence"): only its totals are read here.
+// The cloud evaluation of the reading prompt (README, "Evidence"): its totals are read here, and
+// "Recount from the file" recounts them from the file itself.
 import { date as cloudDate, leakCheck, metrics } from '../../../eval/results/v15p4.json';
 import { countedCases, finalRan, isRunFile, summarize, type RunFile } from '../device-check/run';
 import { useApp } from '../context';
+import { Recount } from '../evidence/Recount';
 import { dynamicKey, packDate } from '../i18n';
 import { ScreenHeading } from '../Heading';
 import { navigate, routeHref } from '../router';
@@ -140,6 +142,12 @@ function Measured() {
             </Figure>
           </ul>
           <p className="small muted">{t('tasks.measured.cloudSource', { date: packDate(locale, cloudDate.slice(0, 10)) })}</p>
+          <Recount
+            shownRight={Math.round(cloud.allFieldsCorrect * cloud.documents)}
+            shownTotal={cloud.documents}
+            shownLeaks={leakCheck.leaks.length}
+            shownBodies={leakCheck.requestBodies}
+          />
         </div>
       </div>
       {exact > 0 && (
@@ -208,6 +216,9 @@ function Enforced() {
           </li>
           <li>
             <p>{t('tasks.enforce.types')}</p>
+          </li>
+          <li data-testid="enforced-appcheck">
+            <p>{t('tasks.enforce.appCheck')}</p>
           </li>
         </ul>
       </section>

@@ -353,22 +353,21 @@ export function DocumentReviewScreen() {
   const restRows = rows.filter((r) => !leadNames.has(r.name));
   // Fields a reading did not find (typing the numbers looked for nothing, so nothing is "not found").
   const restMissing = manual ? 0 : restRows.filter((r) => r.status === 'empty').length;
-  const [moreOpen, setMoreOpen] = useState(false);
-  const [moreSeen, setMoreSeen] = useState(false);
+  // Every value is in view from the start, so one press can confirm them all (nothing is confirmed unseen).
+  const [moreOpen, setMoreOpen] = useState(true);
   const moreButton = useRef<HTMLButtonElement>(null);
   const moreId = useId();
   const pendingId = useId();
   const [foldNotice, setFoldNotice] = useState(false);
+  // "Check these values" pressed before the deciding values were confirmed: said beside the button.
+  const [confirmFirst, setConfirmFirst] = useState(false);
   // "Check these values" needs the values that decide the result; folded values that were never
   // touched stay unconfirmed and are simply not used.
   const leadPending = leadRows.filter((r) => r.status === 'pending').length;
-  const restPending = restRows.some((r) => r.status === 'pending') || deductions.some((d) => d.status === 'pending');
-  const moreUnseen = restPending && !moreSeen;
   const needsAttention = deductionProblem !== null || flagged.has('deductions') || (editing !== null && restRows.some((r) => r.name === editing));
   useEffect(() => {
     if (needsAttention) {
       setMoreOpen(true);
-      setMoreSeen(true);
     }
   }, [needsAttention]);
 
@@ -648,6 +647,8 @@ export function DocumentReviewScreen() {
         </p>
       )}
 
+      {/* The values that decide the result are confirmed with one press: they are all in view. The folded
+          values are not needed for the result; once opened they can be confirmed together too. */}
       {!manual && pending > 0 && (
         <div className="confirm-all">
           <button
@@ -660,13 +661,13 @@ export function DocumentReviewScreen() {
               // and the status says how many still need a look.
               // Nothing is confirmed unseen: while some values are still folded away, the button says "See
               // all" and opens them; then it says "Confirm all" and confirms.
-              if (!moreOpen && moreUnseen) {
+              // Folded away by the person: the press first shows them again, and confirms nothing unseen.
+              if (!moreOpen) {
                 setMoreOpen(true);
-                setMoreSeen(true);
-                setFoldNotice(true);
                 requestAnimationFrame(() => moreButton.current?.focus());
                 return;
               }
+              setConfirmFirst(false);
               // The marks run down the list, one after another (styles.css, .fields-card[data-all]).
               const card = document.querySelector<HTMLElement>('.doc-review .fields-card');
               if (card) {
@@ -681,7 +682,7 @@ export function DocumentReviewScreen() {
               requestAnimationFrame(() => checkButton.current?.focus());
             }}
           >
-            {!moreOpen && moreUnseen ? t('review.seeAllCount', { count: pending }) : t('review.confirmAllCount', { count: pending })}
+            {moreOpen ? t('review.confirmAllCount', { count: pending }) : t('review.seeAllCount', { count: pending })}
           </button>
           <p className={foldNotice ? 'small strong' : 'small'} id={pendingId} role="status" data-testid="review-pending">
             {t('review.pending', { count: pending })}
@@ -705,7 +706,6 @@ export function DocumentReviewScreen() {
             data-testid="more-values"
             onClick={() => {
               setMoreOpen(!moreOpen);
-              setMoreSeen(true);
             }}
           >
             {/* Counted as the button above counts: values found; fields not found are named apart. */}
@@ -803,6 +803,12 @@ export function DocumentReviewScreen() {
             </div>
           </>
         ) : (
+          <>
+          {confirmFirst && leadPending > 0 && (
+            <p className="block-alert" role="alert" data-testid="confirm-first">
+              {t('review.confirmFirst')}
+            </p>
+          )}
           <button
             ref={checkButton}
             type="button"
@@ -813,6 +819,7 @@ export function DocumentReviewScreen() {
               // Not ready: the press is answered. It shows what still needs the person, in view.
               if (leadPending > 0) {
                 setFoldNotice(true);
+                setConfirmFirst(true);
                 const first = document.querySelector<HTMLElement>('.doc-review .field-row[data-status="pending"]');
                 bringIntoView(first, { focus: first?.querySelector<HTMLElement>('.state-mark') });
                 return;
@@ -831,6 +838,7 @@ export function DocumentReviewScreen() {
               <ArrowRight />
             </span>
           </button>
+          </>
         )}
       </BlockActions>
 

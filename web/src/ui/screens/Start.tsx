@@ -10,14 +10,21 @@ import type { ReactNode } from 'react';
 import { BlockActions, useTwoColumns, useWide } from '../design/block';
 import { ArrowRight, Clock, Eye, Phone } from '../design/icons';
 import { Bar, ActionLabel } from '../design/parts';
+import { useDocument } from '../doc/state';
+import { preparedHousehold } from '../judges/household';
+import { openSamplePaystub } from '../judges/next';
 
-/** The example paystub's yearly income (invented). */
-const EXAMPLE_INCOME = 29183;
+/**
+ * The example paystub's yearly income, as the app works it out from that very paystub (validation/SPEC.md
+ * section 7: year-to-date gross 23,103.25 through October 15 over 9.48 months). A test keeps them equal.
+ */
+export const EXAMPLE_INCOME = 29233;
 
 export function StartScreen({ notice }: { notice: string | null }) {
   const twoColumns = useTwoColumns();
   const wide = useWide();
-  const { t, locale, steps, answers, resetAnswers } = useApp();
+  const { t, locale, steps, answers, resetAnswers, setAnswer } = useApp();
+  const { update } = useDocument();
   const started = Object.keys(answers).length > 0;
   const open = firstOpenStep(steps, answers);
   const firstStep = steps[0]?.id ?? 'income';
@@ -64,6 +71,13 @@ export function StartScreen({ notice }: { notice: string | null }) {
     </figure>
   );
 
+  // "Try with a sample paystub": the sample's own invented household when nothing is answered yet (the
+  // person's answers otherwise), and the paystub opened on its silhouette, so its reading ends in results.
+  const trySample = () => {
+    if (!started) for (const [id, value] of Object.entries(preparedHousehold(steps))) setAnswer(id, value);
+    openSamplePaystub(update);
+  };
+
   const begin = () => {
     if (!started) return navigate({ name: 'question', id: firstStep, then: null });
     const next = steps[open];
@@ -89,8 +103,8 @@ export function StartScreen({ notice }: { notice: string | null }) {
               {t('start.promiseShort')}
             </span>
           </p>
-          {/* Narrow screens: the judges' way in, quietly under the promise (wide screens have it in the rail;
-              the dock keeps its one link). */}
+          {/* Narrow screens: the judges' way in, quietly under the promise (wide screens have it beside the
+              start actions; the dock keeps its one link). */}
           {!wide && (
             <a className="text-link quiet-link" href={routeHref({ name: 'judges' })} data-testid="start-judges">
               {t('demo.judges')}
@@ -105,9 +119,9 @@ export function StartScreen({ notice }: { notice: string | null }) {
           </span>
         </button>
         <div className="block-links">
-          <a className="text-link" href={routeHref({ name: 'doc' })}>
+          <button type="button" className="text-link" onClick={trySample} data-testid="start-sample">
             {t('sample.try')}
-          </a>
+          </button>
           {started && (
             <button
               type="button"
@@ -119,6 +133,12 @@ export function StartScreen({ notice }: { notice: string | null }) {
             >
               {t('start.restart')}
             </button>
+          )}
+          {/* Wide screens: the judges' way in beside the start actions, as a quiet link. */}
+          {wide && (
+            <a className="text-link quiet-link" href={routeHref({ name: 'judges' })} data-testid="start-judges-hero">
+              {t('demo.judges')}
+            </a>
           )}
         </div>
         </BlockActions>

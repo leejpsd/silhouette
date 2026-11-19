@@ -8,6 +8,9 @@ import { makeTextPdf } from './scripts/text-pdf.mjs';
 
 const here = (rel: string): string => fileURLToPath(new URL(rel, import.meta.url));
 
+/** Files fetched only when asked for: the cloud evaluation file (432 KB) behind "Recount from the file". */
+const NOT_PRECACHED = /^assets\/v15p4-[^/]*\.json$/;
+
 /** Emits /sw.js with the precache list of every file in the build (bundle + public/). */
 function serviceWorker(): Plugin {
   return {
@@ -19,7 +22,7 @@ function serviceWorker(): Plugin {
       const publicFiles = readdirSync(here('./public'), { recursive: true, withFileTypes: true })
         .filter((d) => d.isFile() && !d.name.startsWith('.'))
         .map((d) => `${d.parentPath.slice(here('./public').length).replace(/^\/+/, '')}${d.parentPath.length > here('./public').length ? '/' : ''}${d.name}`);
-      const files = [...Object.keys(bundle), ...publicFiles].filter((f) => f !== 'sw.js' && !f.endsWith('.map'));
+      const files = [...Object.keys(bundle), ...publicFiles].filter((f) => f !== 'sw.js' && !f.endsWith('.map') && !NOT_PRECACHED.test(f));
       const hash = createHash('sha256');
       for (const name of [...files].sort()) {
         hash.update(name);

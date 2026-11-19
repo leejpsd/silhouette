@@ -63,7 +63,7 @@ test.describe('the California pack', () => {
     await expect(verdictOf(page, 'fera')).toHaveAttribute('data-verdict', 'unlikely');
 
     await page.goto('/#/judges');
-    await page.getByRole('button', { name: 'Open the sample paystub' }).click();
+    await page.getByRole('button', { name: 'Read the sample paystub' }).click();
     await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
     await confirmAllValues(page);

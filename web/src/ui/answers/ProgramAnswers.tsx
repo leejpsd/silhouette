@@ -17,6 +17,7 @@ import { classifyError, type TaskError } from '../../ai/errors';
 import {
   askChip,
   explainProgram,
+  ON_DEVICE_LANGUAGES,
   planAskChip,
   planCurrentStatus,
   planExplain,
@@ -28,6 +29,7 @@ import {
 } from '../../ai/tasks';
 import { useApp } from '../context';
 import { InferenceBadge } from '../InferenceBadge';
+import { DEVICE_MODEL_EVENT, ModelStatus } from '../doc/ModelStatus';
 import { ArrowRight, Check, CrossCircle, Minus, Phone } from '../design/icons';
 import { BlockActions } from '../design/block';
 import { ActionLabel } from '../design/parts';
@@ -58,9 +60,13 @@ function useDeviceStatus(): DeviceStatus | 'checking' {
   useEffect(() => {
     let live = true;
     setStatus('checking');
-    void askDeviceStatus(locale).then((s) => live && setStatus(s));
+    const ask = () => void askDeviceStatus(locale).then((s) => live && setStatus(s));
+    ask();
+    // A download finished on this page: the typed question and the personal explanation open up.
+    window.addEventListener(DEVICE_MODEL_EVENT, ask);
     return () => {
       live = false;
+      window.removeEventListener(DEVICE_MODEL_EVENT, ask);
     };
   }, [locale]);
   return status;
@@ -210,7 +216,15 @@ function WhySection({ program, verdict, device }: { program: Program; verdict: V
             </div>
           )}
         </>
-      ) : device === 'checking' ? null : (
+      ) : device === 'checking' ? null : (device === 'downloadable' || device === 'downloading') && ON_DEVICE_LANGUAGES.has(locale) ? (
+        // Chrome can download the model here: said so (never "no model"), with the same download.
+        <>
+          <p className="card-note" data-testid="why-unavailable" data-status="downloadable">
+            {t('why.notDownloaded')}
+          </p>
+          <ModelStatus language={locale} />
+        </>
+      ) : (
         <p className="card-note" data-testid="why-unavailable">
           {t('why.unavailable')}
         </p>
@@ -374,8 +388,8 @@ function FreeTextQuestion({ program, verdict, device }: { program: Program; verd
   if (device !== 'available') {
     return (
       <section className="ask" aria-label={t('ask.free.label')}>
-        <p className="dashed-note" data-testid="free-text-unavailable">
-          {t('ask.free.unavailable')}
+        <p className="dashed-note" data-testid="free-text-unavailable" data-status={device}>
+          {t(device === 'downloadable' || device === 'downloading' ? 'ask.free.notDownloaded' : 'ask.free.unavailable')}
         </p>
       </section>
     );

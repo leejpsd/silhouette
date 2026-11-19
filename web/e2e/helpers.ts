@@ -135,15 +135,10 @@ export async function openDeleteEverything(page: Page, from: 'record' | 'demo' =
   return dialog;
 }
 
-/**
- * Confirms every value. While some of them are folded under "More values" and were never shown, the
- * button reads "See all N values" and only opens them; then it reads "Confirm all N values".
- */
+/** Confirms every value with one press: they are all in view from the start. */
 export async function confirmAllValues(page: Page): Promise<void> {
-  const seeAll = page.getByRole('button', { name: /^See all \d+ values$/ });
-  const confirmAll = page.getByRole('button', { name: /^Confirm all \d+ values$/ });
-  await expect(seeAll.or(confirmAll)).toBeVisible();
-  if (await seeAll.isVisible()) await seeAll.click();
+  const confirmAll = page.getByRole('button', { name: /^Confirm (all \d+ values|\d+ value)$/ });
+  await expect(confirmAll).toBeVisible();
   await confirmAll.click();
   await expect(confirmAll).toHaveCount(0);
 }
