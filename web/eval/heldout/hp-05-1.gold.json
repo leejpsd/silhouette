@@ -1,0 +1,49 @@
+{
+  "employerName": "Fairmount Community Health Partners, Inc.",
+  "employeeName": "Gwendolyn A. Breckenridge",
+  "payFrequency": "monthly",
+  "payDate": "30-Sep-2026",
+  "periodStart": "01-Sep-2026",
+  "periodEnd": "30-Sep-2026",
+  "grossPay": 5833.33,
+  "netPay": 3941.33,
+  "ytdGross": 52499.97,
+  "deductions": [
+    {
+      "amount": 350.0,
+      "kind": "retirement"
+    },
+    {
+      "amount": 148.6,
+      "kind": "health"
+    },
+    {
+      "amount": 125.0,
+      "kind": "other"
+    },
+    {
+      "amount": 547.02,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 344.7,
+      "kind": "social_security"
+    },
+    {
+      "amount": 80.62,
+      "kind": "medicare"
+    },
+    {
+      "amount": 260.49,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 25.57,
+      "kind": "other"
+    },
+    {
+      "amount": 10.0,
+      "kind": "other"
+    }
+  ]
+}

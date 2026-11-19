@@ -1,0 +1,43 @@
+{
+  "employerName": "RED CLAY MOBILITY SERVICES INC",
+  "employeeName": "OKAFOR, DANIEL J",
+  "payFrequency": "biweekly",
+  "payDate": "10/16/2026",
+  "periodStart": "09/27/2026",
+  "periodEnd": "10/10/2026",
+  "grossPay": 1708.0,
+  "netPay": 1222.97,
+  "ytdGross": 32475.59,
+  "hoursWorked": 72.0,
+  "hourlyRate": 21.35,
+  "deductions": [
+    {
+      "amount": 126.47,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 102.1,
+      "kind": "social_security"
+    },
+    {
+      "amount": 23.88,
+      "kind": "medicare"
+    },
+    {
+      "amount": 81.03,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 85.4,
+      "kind": "retirement"
+    },
+    {
+      "amount": 61.3,
+      "kind": "health"
+    },
+    {
+      "amount": 4.85,
+      "kind": "other"
+    }
+  ]
+}

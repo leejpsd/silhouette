@@ -1,0 +1,58 @@
+Fairmount Community Health Partners, Inc.
+Payroll Office . 60 Wexford Street . Worcester, MA 01604 . (508) 555-0121
+
+STATEMENT OF EARNINGS
+
+Check Date
+30-Sep-2026
+Pay Period
+01-Sep-2026 to 30-Sep-2026
+Pay Frequency
+Monthly
+Employee
+Gwendolyn A. Breckenridge
+Employee No.
+000781
+SSN
+XXX-XX-5528
+Mailing Address
+14 Orchard Hill Rd
+Shrewsbury, MA 01545
+
+Earnings
+Salary
+   Current       5,833.33
+   YTD          52,499.97
+Gross
+   Current       5,833.33
+   YTD          52,499.97
+
+Pre-Tax Deductions
+   403(b) Retirement             Current     350.00   YTD    3,150.00
+   Medical HDHP                  Current     148.60   YTD    1,337.40
+   HSA                           Current     125.00   YTD    1,125.00
+
+Taxes
+   Federal Income Tax            Current     547.02   YTD    4,923.18
+   Social Security               Current     344.70   YTD    3,102.30
+   Medicare                      Current      80.62   YTD      725.58
+   MA State Income Tax           Current     260.49   YTD    2,344.41
+   MA PFML                       Current      25.57   YTD      230.13
+
+After-Tax Deductions
+   Charitable Giving             Current      10.00   YTD       90.00
+
+Net Check
+   Current       3,941.33
+   YTD          35,471.97
+Direct Deposit: Checking ****2093
+
+Employer Paid Benefits
+(These amounts are paid by Fairmount and are not deducted from your pay)
+   HSA Employer Contribution     Current      50.00   YTD      450.00
+   403(b) Employer Match         Current     175.00   YTD    1,575.00
+   Medical Employer Share        Current     612.40   YTD    5,511.60
+
+Leave Balances
+   Vacation  62.00 hrs
+   Earned Sick  28.50 hrs

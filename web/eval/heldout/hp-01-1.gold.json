@@ -1,0 +1,47 @@
+{
+  "employerName": "HARBORLINE FABRICATION INC.",
+  "employeeName": "Marisol T. Quintana",
+  "payFrequency": "biweekly",
+  "payDate": "10/16/2026",
+  "periodStart": "09/27/2026",
+  "periodEnd": "10/10/2026",
+  "grossPay": 2221.31,
+  "netPay": 1587.85,
+  "ytdGross": 45967.05,
+  "hoursWorked": 80.0,
+  "hourlyRate": 24.75,
+  "deductions": [
+    {
+      "amount": 177.64,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 132.05,
+      "kind": "social_security"
+    },
+    {
+      "amount": 30.88,
+      "kind": "medicare"
+    },
+    {
+      "amount": 62.58,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 27.69,
+      "kind": "other"
+    },
+    {
+      "amount": 111.07,
+      "kind": "retirement"
+    },
+    {
+      "amount": 9.4,
+      "kind": "health"
+    },
+    {
+      "amount": 82.15,
+      "kind": "health"
+    }
+  ]
+}

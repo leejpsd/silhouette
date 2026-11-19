@@ -1,0 +1,42 @@
+{
+  "employerName": "PRAIRIE STATE COLD STORAGE CO.",
+  "employeeName": "Reginald O. Pembroke",
+  "payFrequency": "semimonthly",
+  "payDate": "10/20/2026",
+  "periodStart": "10/01/2026",
+  "periodEnd": "10/15/2026",
+  "grossPay": 2175.6,
+  "netPay": 1638.43,
+  "hoursWorked": 80.0,
+  "hourlyRate": 22.4,
+  "deductions": [
+    {
+      "amount": 166.99,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 131.05,
+      "kind": "social_security"
+    },
+    {
+      "amount": 30.65,
+      "kind": "medicare"
+    },
+    {
+      "amount": 104.63,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 58.75,
+      "kind": "health"
+    },
+    {
+      "amount": 3.1,
+      "kind": "health"
+    },
+    {
+      "amount": 42.0,
+      "kind": "other"
+    }
+  ]
+}

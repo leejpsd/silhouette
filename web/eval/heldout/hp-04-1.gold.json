@@ -1,0 +1,38 @@
+{
+  "employerName": "CEDAR & SALT KITCHEN",
+  "employeeName": "Dana K. Whitfield",
+  "payFrequency": "biweekly",
+  "payDate": "Oct 16, 2026",
+  "periodStart": "Sep 27, 2026",
+  "periodEnd": "Oct 10, 2026",
+  "grossPay": 1789.58,
+  "netPay": 1519.65,
+  "hoursWorked": 62.25,
+  "hourlyRate": 21.1,
+  "deductions": [
+    {
+      "amount": 101.6,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 110.51,
+      "kind": "social_security"
+    },
+    {
+      "amount": 25.84,
+      "kind": "medicare"
+    },
+    {
+      "amount": 14.44,
+      "kind": "other"
+    },
+    {
+      "amount": 10.34,
+      "kind": "other"
+    },
+    {
+      "amount": 7.2,
+      "kind": "health"
+    }
+  ]
+}

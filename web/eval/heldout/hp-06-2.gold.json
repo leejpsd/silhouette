@@ -1,0 +1,46 @@
+{
+  "employerName": "PRAIRIE STATE COLD STORAGE CO.",
+  "employeeName": "Ana Lucia Ferraro",
+  "payFrequency": "semimonthly",
+  "payDate": "04/20/2026",
+  "periodStart": "04/01/2026",
+  "periodEnd": "04/15/2026",
+  "grossPay": 1667.4,
+  "netPay": 1177.23,
+  "hoursWorked": 76.0,
+  "hourlyRate": 19.85,
+  "deductions": [
+    {
+      "amount": 96.14,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 99.34,
+      "kind": "social_security"
+    },
+    {
+      "amount": 23.23,
+      "kind": "medicare"
+    },
+    {
+      "amount": 79.31,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 58.75,
+      "kind": "health"
+    },
+    {
+      "amount": 6.4,
+      "kind": "health"
+    },
+    {
+      "amount": 42.0,
+      "kind": "other"
+    },
+    {
+      "amount": 85.0,
+      "kind": "other"
+    }
+  ]
+}

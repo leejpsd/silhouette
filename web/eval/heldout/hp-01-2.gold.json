@@ -1,0 +1,47 @@
+{
+  "employerName": "SUNDIAL PACKAGING CORP",
+  "employeeName": "Arturo Benavides-Lowe",
+  "payFrequency": "biweekly",
+  "payDate": "04/24/2026",
+  "periodStart": "04/05/2026",
+  "periodEnd": "04/18/2026",
+  "grossPay": 1608.0,
+  "netPay": 1209.04,
+  "ytdGross": 13208.4,
+  "hoursWorked": 72.0,
+  "hourlyRate": 19.6,
+  "deductions": [
+    {
+      "amount": 104.74,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 95.45,
+      "kind": "social_security"
+    },
+    {
+      "amount": 22.32,
+      "kind": "medicare"
+    },
+    {
+      "amount": 36.88,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 64.32,
+      "kind": "retirement"
+    },
+    {
+      "amount": 64.38,
+      "kind": "health"
+    },
+    {
+      "amount": 4.12,
+      "kind": "health"
+    },
+    {
+      "amount": 6.75,
+      "kind": "other"
+    }
+  ]
+}

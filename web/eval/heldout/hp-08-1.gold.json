@@ -1,0 +1,61 @@
+{
+  "employerName": "ALLEGHENY RIDGE MEDICAL CENTER",
+  "employeeName": "Theodore M. Vasquez-Lindgren",
+  "payFrequency": "monthly",
+  "payDate": "9/30/2026",
+  "periodStart": "9/1/2026",
+  "periodEnd": "9/30/2026",
+  "grossPay": 9416.67,
+  "netPay": 6048.9,
+  "ytdGross": 72750.03,
+  "deductions": [
+    {
+      "amount": 659.17,
+      "kind": "retirement"
+    },
+    {
+      "amount": 310.5,
+      "kind": "health"
+    },
+    {
+      "amount": 42.8,
+      "kind": "health"
+    },
+    {
+      "amount": 9.15,
+      "kind": "health"
+    },
+    {
+      "amount": 1074.57,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 561.36,
+      "kind": "social_security"
+    },
+    {
+      "amount": 131.29,
+      "kind": "medicare"
+    },
+    {
+      "amount": 277.96,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 271.63,
+      "kind": "other"
+    },
+    {
+      "amount": 6.59,
+      "kind": "other"
+    },
+    {
+      "amount": 4.33,
+      "kind": "other"
+    },
+    {
+      "amount": 18.42,
+      "kind": "other"
+    }
+  ]
+}

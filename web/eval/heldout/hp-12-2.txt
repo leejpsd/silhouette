@@ -1,0 +1,34 @@
+Larkspur & Vine Design Studio
+Pay stub - monthly payroll
+Studio: 1450 Wazee St, Unit 3, Denver, CO 80202
+Phone: 303.555.0168
+
+Employee:            Jasper Whitcombe
+Employee address:    780 Clermont St Apt 5, Denver, CO 80220
+Employee number:     L&V-009
+SSN:                 XXX-XX-6142
+Pay period:          April 1, 2026 to April 30, 2026
+Payment date:        April 30, 2026
+Pay frequency:       Monthly
+
+WHAT YOU EARNED
+                                    This month   Year to date
+Monthly salary                        3,900.00      15,600.00
+Total Earnings                        3,900.00      15,600.00
+
+WHAT WAS TAKEN OUT
+Federal income tax                      264.74       1,058.96
+Social Security                         232.81         931.24
+Medicare                                 54.45         217.80
+Colorado income tax                     161.79         647.16
+Colorado FAMLI premium                   16.90          67.60
+SIMPLE IRA contribution
+  (pre-tax)                              78.00         312.00
+Health insurance premium                145.00         580.00
+Total taken out                         953.69       3,814.76
+
+NET PAY DEPOSITED
+                                      2,946.31      11,785.24
+Account: checking ending 0372
+
+Welcome aboard. Your SIMPLE IRA deferral started this month.

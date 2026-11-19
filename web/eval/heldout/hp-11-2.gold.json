@@ -1,0 +1,51 @@
+{
+  "employerName": "TAMARACK BEND HEALTH",
+  "employeeName": "Lupe A. Reyes Navarro",
+  "payFrequency": "biweekly",
+  "payDate": "01-23-2026",
+  "periodStart": "01-04-2026",
+  "periodEnd": "01-17-2026",
+  "grossPay": 1882.8,
+  "netPay": 1360.69,
+  "ytdGross": 3765.6,
+  "hoursWorked": 72.0,
+  "hourlyRate": 24.15,
+  "deductions": [
+    {
+      "amount": 56.48,
+      "kind": "retirement"
+    },
+    {
+      "amount": 58.2,
+      "kind": "health"
+    },
+    {
+      "amount": 107.86,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 113.13,
+      "kind": "social_security"
+    },
+    {
+      "amount": 26.46,
+      "kind": "medicare"
+    },
+    {
+      "amount": 119.35,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 1.88,
+      "kind": "other"
+    },
+    {
+      "amount": 7.3,
+      "kind": "other"
+    },
+    {
+      "amount": 31.45,
+      "kind": "other"
+    }
+  ]
+}

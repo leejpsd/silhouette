@@ -1,0 +1,34 @@
+{
+  "employerName": "LOW TIDE OYSTER BAR",
+  "employeeName": "Benicio Aranda",
+  "payFrequency": "biweekly",
+  "payDate": "Jan 23, 2026",
+  "periodStart": "Jan 4, 2026",
+  "periodEnd": "Jan 17, 2026",
+  "grossPay": 1428.53,
+  "netPay": 1235.11,
+  "hoursWorked": 54.5,
+  "hourlyRate": 19.75,
+  "deductions": [
+    {
+      "amount": 64.28,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 88.57,
+      "kind": "social_security"
+    },
+    {
+      "amount": 20.71,
+      "kind": "medicare"
+    },
+    {
+      "amount": 11.57,
+      "kind": "other"
+    },
+    {
+      "amount": 8.29,
+      "kind": "other"
+    }
+  ]
+}

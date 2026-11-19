@@ -1,0 +1,41 @@
+{
+  "employerName": "Larkspur & Vine Design Studio",
+  "employeeName": "Celeste Abernathy-Okoro",
+  "payFrequency": "monthly",
+  "payDate": "October 30, 2026",
+  "periodStart": "October 1, 2026",
+  "periodEnd": "October 31, 2026",
+  "grossPay": 5350.0,
+  "netPay": 3962.07,
+  "ytdGross": 49300.0,
+  "deductions": [
+    {
+      "amount": 438.87,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 322.71,
+      "kind": "social_security"
+    },
+    {
+      "amount": 75.47,
+      "kind": "medicare"
+    },
+    {
+      "amount": 221.96,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 23.42,
+      "kind": "other"
+    },
+    {
+      "amount": 160.5,
+      "kind": "retirement"
+    },
+    {
+      "amount": 145.0,
+      "kind": "health"
+    }
+  ]
+}

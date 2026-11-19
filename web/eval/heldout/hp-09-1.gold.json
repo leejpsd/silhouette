@@ -1,0 +1,38 @@
+{
+  "employerName": "BUCKEYE TRUSS & FRAME, LTD.",
+  "employeeName": "Lyle Hargrove",
+  "payFrequency": "weekly",
+  "payDate": "9/9/26",
+  "periodStart": "8/30/26",
+  "periodEnd": "9/5/26",
+  "grossPay": 1391.0,
+  "netPay": 1068.33,
+  "hoursWorked": 40.0,
+  "hourlyRate": 26.0,
+  "deductions": [
+    {
+      "amount": 125.19,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 86.24,
+      "kind": "social_security"
+    },
+    {
+      "amount": 20.17,
+      "kind": "medicare"
+    },
+    {
+      "amount": 38.25,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 27.82,
+      "kind": "other"
+    },
+    {
+      "amount": 25.0,
+      "kind": "other"
+    }
+  ]
+}

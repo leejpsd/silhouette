@@ -1,0 +1,45 @@
+{
+  "employerName": "Tule Fog Coffee Roasters, Inc.",
+  "employeeName": "Desmond K. Ito",
+  "payFrequency": "semimonthly",
+  "payDate": "02/13/2026",
+  "periodStart": "02/01/2026",
+  "periodEnd": "02/15/2026",
+  "grossPay": 2450.0,
+  "netPay": 1836.21,
+  "ytdGross": 7350.0,
+  "deductions": [
+    {
+      "amount": 73.5,
+      "kind": "retirement"
+    },
+    {
+      "amount": 61.2,
+      "kind": "health"
+    },
+    {
+      "amount": 41.67,
+      "kind": "other"
+    },
+    {
+      "amount": 163.7,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 145.52,
+      "kind": "social_security"
+    },
+    {
+      "amount": 34.03,
+      "kind": "medicare"
+    },
+    {
+      "amount": 63.66,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 30.51,
+      "kind": "other"
+    }
+  ]
+}

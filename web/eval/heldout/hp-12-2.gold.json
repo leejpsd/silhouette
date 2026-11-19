@@ -1,0 +1,41 @@
+{
+  "employerName": "Larkspur & Vine Design Studio",
+  "employeeName": "Jasper Whitcombe",
+  "payFrequency": "monthly",
+  "payDate": "April 30, 2026",
+  "periodStart": "April 1, 2026",
+  "periodEnd": "April 30, 2026",
+  "grossPay": 3900.0,
+  "netPay": 2946.31,
+  "ytdGross": 15600.0,
+  "deductions": [
+    {
+      "amount": 264.74,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 232.81,
+      "kind": "social_security"
+    },
+    {
+      "amount": 54.45,
+      "kind": "medicare"
+    },
+    {
+      "amount": 161.79,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 16.9,
+      "kind": "other"
+    },
+    {
+      "amount": 78.0,
+      "kind": "retirement"
+    },
+    {
+      "amount": 145.0,
+      "kind": "health"
+    }
+  ]
+}

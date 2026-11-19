@@ -1,0 +1,38 @@
+Tule Fog Coffee Roasters, Inc.                               Pay Statement
+
+Company                                  Employee
+Tule Fog Coffee Roasters, Inc.           Desmond K. Ito
+1730 Ventura St                          4428 N Fruit Ave
+Fresno, CA 93721                         Fresno, CA 93705
+559-555-0193                             Employee ID: TF-0031
+FEIN 47-5520918                          SSN: XXX-XX-2054
+
+Pay Period:  02/01/2026 - 02/15/2026     Pay Date: 02/13/2026
+Pay Schedule: Semi-monthly     Salary: $58,800.00 / year
+
+Earnings               Current Hrs  Current Amt   YTD Hrs      YTD Amt
+Salary                       80.00     2,450.00    248.00     7,350.00
+Gross Pay                              2,450.00               7,350.00
+
+Pre-Tax Deductions                      Current                    YTD
+401(k)                                    73.50                 220.50
+Medical                                   61.20                 183.60
+Health FSA                                41.67                 125.01
+
+Employee Taxes                          Current                    YTD
+Federal Income Tax                       163.70                 491.10
+Social Security                          145.52                 436.56
+Medicare                                  34.03                 102.09
+CA Income Tax                             63.66                 190.98
+CA SDI                                    30.51                  91.53
+
+Net Pay                                1,836.21               5,508.63
+
+Employer Contributions (not deducted from pay)
+401(k) Match                              61.25                 183.75
+Medical (Employer)                       380.00               1,140.00
+
+Net Pay Distribution
+Checking ****8841                      1,836.21
+
+PTO Balance: 21.50 hours

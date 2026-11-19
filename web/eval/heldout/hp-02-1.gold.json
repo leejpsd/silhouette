@@ -1,0 +1,31 @@
+{
+  "employerName": "Bluebonnet Lawn & Irrigation LLC",
+  "employeeName": "Tomas R. Villanueva",
+  "payFrequency": "weekly",
+  "payDate": "3/13/26",
+  "periodStart": "3/2/26",
+  "periodEnd": "3/8/26",
+  "grossPay": 916.75,
+  "netPay": 774.45,
+  "ytdGross": 9711.17,
+  "hoursWorked": 40.0,
+  "hourlyRate": 19.0,
+  "deductions": [
+    {
+      "amount": 64.17,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 56.84,
+      "kind": "social_security"
+    },
+    {
+      "amount": 13.29,
+      "kind": "medicare"
+    },
+    {
+      "amount": 8.0,
+      "kind": "other"
+    }
+  ]
+}

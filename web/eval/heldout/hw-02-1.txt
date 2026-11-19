@@ -1,0 +1,36 @@
+Tri-County Home Health Services, Inc.
+2600 Lititz Pike, Suite 5, Lancaster, PA 17601     EIN 23-2817734
+
+2025 WAGE AND TAX STATEMENT - EMPLOYEE SUMMARY
+Keep this summary with your tax records. Your official Form W-2 copies follow on the next page.
+
+Employee:   Marguerite L. Szabo
+            119 E Orange St, Lancaster, PA 17602
+SSN:        XXX-XX-5094          Employee ID: TC-2281
+
+HOW YOUR W-2 WAGES WERE FIGURED
+                                                     Box 1    Boxes 3 & 5        Box 16
+Gross pay (all 2025 paychecks)                   48,920.36      48,920.36     48,920.36
+Less 401(k) deferrals (box 12, code D)           -2,446.02           0.00          0.00
+Less Section 125 (medical, dental, HSA)          -1,872.00      -1,872.00     -1,872.00
+Reported wages                                   44,602.34      47,048.36     47,048.36
+
+FORM W-2 AMOUNTS
+Box 1   Wages, tips, other compensation          44,602.34
+Box 2   Federal income tax withheld               3,988.14
+Box 3   Social security wages                    47,048.36
+Box 4   Social security tax withheld              2,917.00
+Box 5   Medicare wages and tips                  47,048.36
+Box 6   Medicare tax withheld                       682.20
+Box 12a  Code D (401(k) deferrals)                2,446.02
+Box 12b  Code DD (cost of health coverage)        6,364.80
+Box 13   Retirement plan                                 X
+Box 15   State / Employer state ID           PA  10-488219
+Box 16   State wages, tips, etc.                 47,048.36
+Box 17   State income tax                         1,444.38
+Box 18   Local wages, tips                       47,048.36
+Box 19   Local income tax                           517.53
+Box 20   Locality name                      LANCASTER CITY
+
+Pennsylvania does not exclude 401(k) deferrals from state wages, so box 16 is higher than box 1.
+Box 14 amounts (PA SUI 34.24) are informational.

@@ -1,0 +1,28 @@
+BUCKEYE TRUSS & FRAME, LTD.
+PO Box 2291, Mansfield, OH 44905
+Phone 419.555.0187
+
+PAYROLL CHECK STUB          WEEKLY PAYROLL          Check # 004819
+Employee: Lyle Hargrove             Clock #: 117     SSN XXX-XX-2618
+          815 Grace St
+          Mansfield, OH 44906
+Period: 8/30/26 thru 9/5/26     Check Date: 9/9/26
+
+DESCRIPTION           HRS    RATE     AMOUNT
+REG                 40.00   26.00    1040.00
+O.T.                 9.00   39.00     351.00
+TOTAL PAY                            1391.00
+
+WITHHOLDINGS
+FED INC TAX                           125.19
+SOC SEC                                86.24
+MEDICARE                               20.17
+OH STATE TAX                           38.25
+MANSFIELD CITY TAX                     27.82
+TOOL LOAN REPAY                        25.00
+TOTAL W/H                             322.67
+
+CHECK AMOUNT                         1068.33
+
+TOOL LOAN BALANCE AFTER THIS CHECK: 125.00
+DETACH AND RETAIN FOR YOUR RECORDS

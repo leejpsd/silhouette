@@ -1,0 +1,22 @@
+a Employee's social security number      XXX-XX-8820            OMB No. 1545-0029
+b Employer identification number (EIN)          1 Wages, tips, other compensation   2 Federal income tax withheld
+93-1765024                                      187980.00                           36412.55
+c Employer's name, address, and ZIP code        3 Social security wages             4 Social security tax withheld
+Ironwood Ridge Semiconductor Corp               176100.00                           10918.20
+7100 NE Evergreen Pkwy                          5 Medicare wages and tips           6 Medicare tax withheld
+Hillsboro, OR 97124                             211480.00                           3169.78
+                                                7 Social security tips              8 Allocated tips
+d Control number                                9                                   10 Dependent care benefits
+IRSC-0077310
+e Employee's first name, initial, last name     11 Nonqualified plans               12a See instructions for box 12
+Vivian C Thorsby                                                                    D  23500.00
+3418 NW Thurman St                              13 Statutory employee  Retirement plan  Third-party sick pay
+Portland, OR 97210                                            X                     12b  DD  10608.00
+f Employee's address and ZIP code               14 Other                            12c
+                                                OR STT 214.60                       12d
+15 State  Employer's state ID number   16 State wages, tips, etc.   17 State income tax   18 Local wages, tips, etc.   19 Local income tax   20 Locality name
+OR        1187402-6              187980.00                    16448.25
+
+Form W-2 Wage and Tax Statement          2025          Department of the Treasury-Internal Revenue Service
+Copy B-To Be Filed With Employee's FEDERAL Tax Return.
+This information is being furnished to the Internal Revenue Service.

@@ -1,0 +1,55 @@
+{
+  "employerName": "TAMARACK BEND HEALTH",
+  "employeeName": "Hollis J. Ferreira-Nakamura",
+  "payFrequency": "biweekly",
+  "payDate": "10-16-2026",
+  "periodStart": "09-27-2026",
+  "periodEnd": "10-10-2026",
+  "grossPay": 4351.2,
+  "netPay": 2621.25,
+  "ytdGross": 76779.19,
+  "hoursWorked": 60.0,
+  "hourlyRate": 52.4,
+  "deductions": [
+    {
+      "amount": 261.07,
+      "kind": "retirement"
+    },
+    {
+      "amount": 118.4,
+      "kind": "health"
+    },
+    {
+      "amount": 16.3,
+      "kind": "health"
+    },
+    {
+      "amount": 585.4,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 261.42,
+      "kind": "social_security"
+    },
+    {
+      "amount": 61.14,
+      "kind": "medicare"
+    },
+    {
+      "amount": 346.1,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 4.35,
+      "kind": "other"
+    },
+    {
+      "amount": 16.87,
+      "kind": "other"
+    },
+    {
+      "amount": 58.9,
+      "kind": "other"
+    }
+  ]
+}

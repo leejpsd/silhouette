@@ -1,0 +1,22 @@
+a Employee's social security number      XXX-XX-3318            OMB No. 1545-0029
+b Employer identification number (EIN)          1 Wages, tips, other compensation   2 Federal income tax withheld
+83-4410927                                      55270.19                            5412.88
+c Employer's name, address, and ZIP code        3 Social security wages             4 Social security tax withheld
+Kestrel Point Logistics LLC                     58947.44                            3654.74
+2950 W Franklin Rd                              5 Medicare wages and tips           6 Medicare tax withheld
+Meridian, ID 83642                              58947.44                            854.74
+                                                7 Social security tips              8 Allocated tips
+d Control number                                9                                   10 Dependent care benefits
+KPL-00418
+e Employee's first name, initial, last name     11 Nonqualified plans               12a See instructions for box 12
+Rowan J Atherly                                                                     D  3677.25
+1188 N Linder Rd Apt 304                        13 Statutory employee  Retirement plan  Third-party sick pay
+Meridian, ID 83646                                            X                     12b  DD  7956.00
+f Employee's address and ZIP code               14 Other                            12c
+                                                                                    12d
+15 State  Employer's state ID number   16 State wages, tips, etc.   17 State income tax   18 Local wages, tips, etc.   19 Local income tax   20 Locality name
+ID        000418829-W            55270.19                     2874.05
+
+Form W-2 Wage and Tax Statement          2025          Department of the Treasury-Internal Revenue Service
+Copy B-To Be Filed With Employee's FEDERAL Tax Return.
+This information is being furnished to the Internal Revenue Service.

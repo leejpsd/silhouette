@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Silhouette held-out reading on this device</title>
+    <style>
+      body { font: 15px/1.45 system-ui, sans-serif; margin: 24px; max-width: 980px; }
+      pre { white-space: pre-wrap; word-break: break-all; font-size: 11px; background: #f4f4f4; padding: 8px; max-height: 40vh; overflow: auto; }
+      table { border-collapse: collapse; font-size: 13px; } td, th { border-bottom: 1px solid #ddd; padding: 2px 8px; text-align: left; }
+    </style>
+  </head>
+  <body>
+    <h1>Held-out set, read on this device</h1>
+    <p>Reads every document of <code>eval/heldout/</code> exactly as the app does (device first, the same checks, one cloud retry of the silhouette when the device's answer fails them) and scores it against its answer key. Dev server only.</p>
+    <p id="status">Loading…</p>
+    <button id="run" disabled>Run the held-out set</button>
+    <table><thead><tr><th>Document</th><th>Answered</th><th>First answer (device)</th><th>Final answer</th><th>Wrong fields shown</th></tr></thead><tbody id="rows"></tbody></table>
+    <h2>Result file</h2>
+    <pre id="result"></pre>
+    <script type="module" src="./heldout-device.ts"></script>
+  </body>
+</html>

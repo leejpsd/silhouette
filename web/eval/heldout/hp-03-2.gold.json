@@ -1,0 +1,53 @@
+{
+  "employerName": "HUDSON SLATE ARCHITECTS PC",
+  "employeeName": "Marcus E. Delacroix-Hunt",
+  "payFrequency": "semimonthly",
+  "payDate": "2026-03-31",
+  "periodStart": "2026-03-16",
+  "periodEnd": "2026-03-31",
+  "grossPay": 2958.33,
+  "netPay": 2055.5,
+  "ytdGross": 17749.98,
+  "deductions": [
+    {
+      "amount": 147.92,
+      "kind": "retirement"
+    },
+    {
+      "amount": 72.1,
+      "kind": "health"
+    },
+    {
+      "amount": 9.8,
+      "kind": "health"
+    },
+    {
+      "amount": 256.48,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 178.34,
+      "kind": "social_security"
+    },
+    {
+      "amount": 41.71,
+      "kind": "medicare"
+    },
+    {
+      "amount": 133.7,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 1.3,
+      "kind": "other"
+    },
+    {
+      "amount": 11.48,
+      "kind": "other"
+    },
+    {
+      "amount": 50.0,
+      "kind": "retirement"
+    }
+  ]
+}

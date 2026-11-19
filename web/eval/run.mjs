@@ -16,7 +16,8 @@ import { VARIANTS } from './variant-list.mjs';
 import { appears, goldStrings } from './leaks.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const DATASET = new URL('dataset/', import.meta.url);
+// --dataset heldout reads eval/heldout/ (written independently of the prompts, word lists and tuning documents).
+const DATASET = new URL(process.argv.includes('--dataset') && process.argv[process.argv.indexOf('--dataset') + 1] === 'heldout' ? 'heldout/' : 'dataset/', import.meta.url);
 const RESULTS = new URL('results/', import.meta.url);
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -41,6 +42,7 @@ const docs = limit ? manifest.slice(0, limit) : manifest;
 const schemaFields = {
   paystub: Object.keys(JSON.parse(readFileSync(new URL('../../shared/schemas/pointer.paystub.json', import.meta.url), 'utf8')).properties),
   lease: Object.keys(JSON.parse(readFileSync(new URL('../../shared/schemas/pointer.lease.json', import.meta.url), 'utf8')).properties),
+  w2: Object.keys(JSON.parse(readFileSync(new URL('../../shared/schemas/pointer.w2.json', import.meta.url), 'utf8')).properties),
 };
 
 for (const id of variantIds) if (!VARIANTS[id]) throw new Error(`unknown variant ${id}; known: ${Object.keys(VARIANTS).join(', ')}`);
@@ -147,10 +149,12 @@ try {
       console.log(`  ${doc.id.padEnd(16)} ${out.ok ? `${String(out.latencyMs).padStart(5)}ms` : 'ERROR  '} ${fails.join(' ') || 'all correct'}`);
     }
     const groups = {
-      enPaystub: scored.filter((d) => d.docType === 'paystub' && d.language === 'en' && d.layout !== 'L11'),
+      enPaystub: scored.filter((d) => !d.heldout && d.docType === 'paystub' && d.language === 'en' && d.layout !== 'L11'),
       enRules: scored.filter((d) => d.layout === 'L11'),
       koPaystub: scored.filter((d) => d.docType === 'paystub' && d.language === 'ko'),
       lease: scored.filter((d) => d.docType === 'lease'),
+      heldoutPaystub: scored.filter((d) => d.heldout && d.docType === 'paystub'),
+      heldoutW2: scored.filter((d) => d.heldout && d.docType === 'w2'),
     };
     const metrics = Object.fromEntries(Object.entries(groups).filter(([, g]) => g.length).map(([k, g]) => [k, aggregate(g)]));
     // The same answers scored without and with the on-device name clean-up (src/core/tidy.ts).

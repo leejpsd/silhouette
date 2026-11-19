@@ -1,0 +1,31 @@
+{
+  "employerName": "Red Mesa Tile & Stone LLC",
+  "employeeName": "Jolene P. Harwick",
+  "payFrequency": "weekly",
+  "payDate": "7/2/26",
+  "periodStart": "6/22/26",
+  "periodEnd": "6/28/26",
+  "grossPay": 696.88,
+  "netPay": 533.73,
+  "ytdGross": 16978.47,
+  "hoursWorked": 37.5,
+  "hourlyRate": 17.25,
+  "deductions": [
+    {
+      "amount": 34.84,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 43.21,
+      "kind": "social_security"
+    },
+    {
+      "amount": 10.1,
+      "kind": "medicare"
+    },
+    {
+      "amount": 75.0,
+      "kind": "other"
+    }
+  ]
+}

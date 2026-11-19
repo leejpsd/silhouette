@@ -1,0 +1,43 @@
+{
+  "employerName": "RED CLAY MOBILITY SERVICES INC",
+  "employeeName": "LINDQVIST, MAREN E",
+  "payFrequency": "biweekly",
+  "payDate": "06/05/2026",
+  "periodStart": "05/17/2026",
+  "periodEnd": "05/30/2026",
+  "grossPay": 1717.54,
+  "netPay": 1326.83,
+  "ytdGross": 18719.11,
+  "hoursWorked": 72.0,
+  "hourlyRate": 18.9,
+  "deductions": [
+    {
+      "amount": 106.06,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 105.94,
+      "kind": "social_security"
+    },
+    {
+      "amount": 24.78,
+      "kind": "medicare"
+    },
+    {
+      "amount": 86.0,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 51.53,
+      "kind": "retirement"
+    },
+    {
+      "amount": 8.9,
+      "kind": "health"
+    },
+    {
+      "amount": 7.5,
+      "kind": "other"
+    }
+  ]
+}

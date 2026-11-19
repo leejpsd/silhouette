@@ -5,10 +5,8 @@ import { placeholderCounts, buildReview, type SourceSegment } from '../../core/r
 import { cancelPreparedReading, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
-import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, unconfirmedFields, w2PointerProblems, ytdMissingWithCandidate } from '../../core/pointer-check';
-import { PACK } from '../pack';
-import type { Raw, Skeleton } from '../../core/types';
-import type { PlaceholderMap } from '../../core/skeleton';
+import { readingChecks } from '../doc/reading-checks';
+import type { Skeleton } from '../../core/types';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
 import { classifyError } from '../../ai/errors';
@@ -18,7 +16,7 @@ import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
 import { ModelStatus } from '../doc/ModelStatus';
-import { useDocument, type FlowDocType } from '../doc/state';
+import { useDocument } from '../doc/state';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { recordedReading, type RecordedReading } from '../doc/recorded-reading';
@@ -45,26 +43,6 @@ function splitWords(text: string): { word?: string; text: string }[] {
 
 let firstPreview = true;
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-
-/**
- * The deterministic checks of a reading of this silhouette (core/pointer-check.ts). A paystub: a core that
- * fails is a failed attempt; deductions, names, hours or rate that fail are left out as not read. A W-2 is
- * read in one request: an answer that fails its check is a failed attempt.
- */
-function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>, language: string, docType: FlowDocType = 'paystub') {
-  if (docType === 'w2') return { validate: (pointers: Record<string, unknown>) => w2PointerProblems(POINTER_SCHEMAS.w2, pointers, map), checkParts: undefined };
-  const schema = POINTER_SCHEMAS.paystub;
-  return {
-    validate: (pointers: Record<string, unknown>) => pointerProblems(schema, pointers, skeleton, map, PACK.jurisdiction),
-    checkParts: {
-      core: (pointers: Record<string, unknown>) => corePointerProblems(schema, pointers, map, PACK.jurisdiction, skeleton),
-      deductions: (pointers: Record<string, unknown>) => deductionsProblems(schema, pointers, map, PACK.jurisdiction),
-      notRead: (pointers: Record<string, unknown>) => notReadFields(pointers, skeleton),
-      ytdMissing: (pointers: Record<string, unknown>) => ytdMissingWithCandidate(schema, pointers, skeleton, map, PACK.jurisdiction),
-      confirm: (pointers: Record<string, unknown>) => unconfirmedFields(schema, pointers, skeleton, map, PACK.jurisdiction, language),
-    },
-  };
-}
 
 export function DocumentPreviewScreen() {
   const { t, locale } = useApp();

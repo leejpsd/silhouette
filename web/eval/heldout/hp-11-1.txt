@@ -1,0 +1,44 @@
+TAMARACK BEND HEALTH
+3300 Riverbend Pkwy, Salem, OR 97302 - 503-555-0145
+
+Earnings Statement                              Bi-weekly
+Employee  Hollis J. Ferreira-Nakamura
+          1460 Chemeketa St NE
+          Salem, OR 97301
+ID 77120   SSN XXX-XX-5832   Job: RN II - Med/Surg   Dept 4120
+Pay Date 10-16-2026     Period 09-27-2026 to 10-10-2026
+
+Earnings                 Hours      Rate     Current          YTD
+Regular                  60.00   52.4000    3,144.00    63,327.71
+Overtime                  4.00   78.6000      314.40     6,273.01
+Evening Shift Diff       36.00    3.5000      126.00     2,528.27
+Weekend Diff             24.00    2.7500       66.00     1,318.25
+On-Call                  12.00    6.0000       72.00     1,445.55
+Sick                     12.00   52.4000      628.80     1,886.40
+Gross Pay                                   4,351.20    76,779.19
+
+Deductions                                   Current          YTD
+403(b) (pre-tax)                              261.07     4,606.72
+Medical (pre-tax)                             118.40     2,486.40
+Dental (pre-tax)                               16.30       342.30
+Federal Income Tax                            585.40    10,329.69
+Social Security                               261.42     4,612.89
+Medicare                                       61.14     1,078.85
+Oregon Income Tax                             346.10     6,107.11
+Oregon Statewide Transit Tax                    4.35        76.76
+Oregon Paid Leave                              16.87       297.68
+Union Dues (after-tax)                         58.90     1,236.90
+Total Deductions                            1,729.95    31,175.30
+
+Net Pay                                     2,621.25    45,603.89
+
+Employer Paid Benefits
+403(b) Employer Contribution                  217.56     3,838.96
+Medical                                       742.00    15,582.00
+Life / AD&D                                     8.10       170.10
+
+Net Pay Distribution
+  Savings ****1170                            250.00
+  Checking ****6042                         2,371.25
+
+Leave Balances (hours)   PTO 88.40   Sick 41.25   Holiday Bank 8.00

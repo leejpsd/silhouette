@@ -1,0 +1,42 @@
+{
+  "employerName": "BUCKEYE TRUSS & FRAME, LTD.",
+  "employeeName": "Wendell T. Abara",
+  "payFrequency": "weekly",
+  "payDate": "1/28/26",
+  "periodStart": "1/18/26",
+  "periodEnd": "1/24/26",
+  "grossPay": 869.0,
+  "netPay": 630.53,
+  "hoursWorked": 36.5,
+  "hourlyRate": 22.0,
+  "deductions": [
+    {
+      "amount": 21.5,
+      "kind": "health"
+    },
+    {
+      "amount": 50.85,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 52.55,
+      "kind": "social_security"
+    },
+    {
+      "amount": 12.29,
+      "kind": "medicare"
+    },
+    {
+      "amount": 23.9,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 17.38,
+      "kind": "other"
+    },
+    {
+      "amount": 60.0,
+      "kind": "other"
+    }
+  ]
+}

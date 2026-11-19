@@ -1,0 +1,46 @@
+Solano Grid Software, Inc.                                   Pay Statement
+
+Company                                  Employee
+Solano Grid Software, Inc.               Imogen Castellanos-Reyes
+88 Mare Island Pkwy, Ste 400             2716 Alameda St
+Vallejo, CA 94592                        Vallejo, CA 94590
+707-555-0154                             Employee ID: SG-1042
+FEIN 83-2907716                          SSN: XXX-XX-7716
+
+Pay Period:  10/16/2026 - 10/31/2026     Pay Date: 10/30/2026
+Pay Schedule: Semi-monthly     Salary: $132,000.00 / year
+
+Earnings               Current Hrs  Current Amt   YTD Hrs      YTD Amt
+Salary                       80.00     5,000.00  1,704.00   106,500.00
+PTO                           8.00       500.00     56.00     3,500.00
+Referral Bonus                             0.00               1,000.00
+Gross Pay                              5,500.00             111,000.00
+
+Pre-Tax Deductions                      Current                    YTD
+401(k)                                   440.00               8,880.00
+Medical                                  128.40               2,568.00
+Dental                                    18.75                 375.00
+HSA                                      150.00               3,000.00
+Dependent Care FSA                       208.33               4,166.60
+
+Employee Taxes                          Current                    YTD
+Federal Income Tax                       633.08              12,776.71
+Social Security                          309.66               6,249.50
+Medicare                                  72.42               1,461.57
+CA Income Tax                            273.27               5,515.09
+CA SDI                                    64.93               1,310.41
+
+Post-Tax Deductions                     Current                    YTD
+ESPP                                     275.00               5,500.00
+
+Net Pay                                2,926.16              59,197.12
+
+Employer Contributions (not deducted from pay)
+401(k) Match                             220.00               4,440.00
+HSA Employer Contribution                 41.67                 833.40
+Medical (Employer)                       520.00              10,400.00
+
+Net Pay Distribution
+Checking ****5523                      2,926.16
+
+PTO Balance: 61.33 hours

@@ -1,0 +1,61 @@
+{
+  "employerName": "NORTHGATE ANALYTICS GROUP, LLC",
+  "employeeName": "Priya N. Raghunathan",
+  "payFrequency": "semimonthly",
+  "payDate": "2026-10-15",
+  "periodStart": "2026-10-01",
+  "periodEnd": "2026-10-15",
+  "grossPay": 4104.17,
+  "netPay": 2598.37,
+  "ytdGross": 78479.23,
+  "deductions": [
+    {
+      "amount": 246.25,
+      "kind": "retirement"
+    },
+    {
+      "amount": 96.2,
+      "kind": "health"
+    },
+    {
+      "amount": 11.4,
+      "kind": "health"
+    },
+    {
+      "amount": 3.85,
+      "kind": "health"
+    },
+    {
+      "amount": 85.0,
+      "kind": "other"
+    },
+    {
+      "amount": 432.05,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 242.28,
+      "kind": "social_security"
+    },
+    {
+      "amount": 56.66,
+      "kind": "medicare"
+    },
+    {
+      "amount": 190.4,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 124.49,
+      "kind": "other"
+    },
+    {
+      "amount": 1.3,
+      "kind": "other"
+    },
+    {
+      "amount": 15.92,
+      "kind": "other"
+    }
+  ]
+}

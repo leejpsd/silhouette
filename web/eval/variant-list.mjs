@@ -17,4 +17,6 @@ export const VARIANTS = {
   // Candidate prompt: v3 plus "hours and rate are those of the Regular (base pay) line".
   v15p4: { tidy: true, skeletons: 'v1.5', prompt: 'v4' },
   v15p4r: { tidy: true, skeletons: 'v1.5', prompt: 'v4' },
+  // The app's cloud request since contract v1.24 (pointer-extract.v5, whose text is v4's word for word), on the held-out set.
+  h36: { tidy: true, skeletons: 'v1.36', prompt: 'v5' },
 };

@@ -1,0 +1,61 @@
+{
+  "employerName": "SUSQUEHANNA BEND COLLEGE",
+  "employeeName": "Noor F. Haddad",
+  "payFrequency": "monthly",
+  "payDate": "5/29/2026",
+  "periodStart": "5/1/2026",
+  "periodEnd": "5/31/2026",
+  "grossPay": 5350.0,
+  "netPay": 3637.55,
+  "ytdGross": 26750.0,
+  "deductions": [
+    {
+      "amount": 267.5,
+      "kind": "retirement"
+    },
+    {
+      "amount": 88.4,
+      "kind": "health"
+    },
+    {
+      "amount": 12.1,
+      "kind": "health"
+    },
+    {
+      "amount": 200.0,
+      "kind": "other"
+    },
+    {
+      "amount": 459.07,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 313.07,
+      "kind": "social_security"
+    },
+    {
+      "amount": 73.22,
+      "kind": "medicare"
+    },
+    {
+      "amount": 155.02,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 100.99,
+      "kind": "other"
+    },
+    {
+      "amount": 3.75,
+      "kind": "other"
+    },
+    {
+      "amount": 4.33,
+      "kind": "other"
+    },
+    {
+      "amount": 35.0,
+      "kind": "other"
+    }
+  ]
+}

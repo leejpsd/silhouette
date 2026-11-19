@@ -1,0 +1,57 @@
+{
+  "employerName": "Solano Grid Software, Inc.",
+  "employeeName": "Imogen Castellanos-Reyes",
+  "payFrequency": "semimonthly",
+  "payDate": "10/30/2026",
+  "periodStart": "10/16/2026",
+  "periodEnd": "10/31/2026",
+  "grossPay": 5500.0,
+  "netPay": 2926.16,
+  "ytdGross": 111000.0,
+  "deductions": [
+    {
+      "amount": 440.0,
+      "kind": "retirement"
+    },
+    {
+      "amount": 128.4,
+      "kind": "health"
+    },
+    {
+      "amount": 18.75,
+      "kind": "health"
+    },
+    {
+      "amount": 150.0,
+      "kind": "other"
+    },
+    {
+      "amount": 208.33,
+      "kind": "other"
+    },
+    {
+      "amount": 633.08,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 309.66,
+      "kind": "social_security"
+    },
+    {
+      "amount": 72.42,
+      "kind": "medicare"
+    },
+    {
+      "amount": 273.27,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 64.93,
+      "kind": "other"
+    },
+    {
+      "amount": 275.0,
+      "kind": "other"
+    }
+  ]
+}

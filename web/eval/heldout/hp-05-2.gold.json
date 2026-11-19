@@ -1,0 +1,45 @@
+{
+  "employerName": "Fairmount Community Health Partners, Inc.",
+  "employeeName": "Rafael Osei-Mensah",
+  "payFrequency": "monthly",
+  "payDate": "31-Mar-2026",
+  "periodStart": "01-Mar-2026",
+  "periodEnd": "31-Mar-2026",
+  "grossPay": 4766.67,
+  "netPay": 3501.77,
+  "ytdGross": 13866.67,
+  "deductions": [
+    {
+      "amount": 190.67,
+      "kind": "retirement"
+    },
+    {
+      "amount": 92.0,
+      "kind": "health"
+    },
+    {
+      "amount": 14.25,
+      "kind": "health"
+    },
+    {
+      "amount": 366.52,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 288.95,
+      "kind": "social_security"
+    },
+    {
+      "amount": 67.58,
+      "kind": "medicare"
+    },
+    {
+      "amount": 223.49,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 21.44,
+      "kind": "other"
+    }
+  ]
+}
