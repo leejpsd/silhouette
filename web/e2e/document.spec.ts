@@ -314,6 +314,10 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.getByRole('button', { name: 'English paystub (text)' }).click();
     await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('task-error')).toHaveAttribute('data-kind', 'app-check');
+    // A browser driven by a test tool: the notice names the cause (treated as a bot), says nothing was sent and what to do.
+    await expect(page.getByTestId('task-error')).toContainText('treated this browser as a bot, because automation software is controlling it');
+    await expect(page.getByTestId('task-error')).toContainText('The silhouette was not sent.');
+    await expect(page.getByTestId('task-error')).toContainText('Try again, or type the numbers instead.');
     await page.getByRole('button', { name: 'Type the numbers instead' }).click();
     // Typing the numbers: nothing was looked for, so nothing is "not found".
     await expect(page.getByTestId('value-grossPay')).toHaveText('Not typed yet');

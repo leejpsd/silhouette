@@ -8,7 +8,7 @@ import { askDeviceStatus } from '../../ai/device-model';
 import { useOnline } from '../design/online';
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
 import { pcm16ToFloat, pcmRate, type Source } from '../../core/explain';
-import { classifyError, TaskError } from '../../ai/errors';
+import { appCheckCause, classifyError, TaskError } from '../../ai/errors';
 import { planReadAloud, readAloud, requestBody, type ModelAnswer, type PlannedCall, type TaskResult } from '../../ai/tasks';
 import type { Program } from '../../core/rules';
 import { useApp } from '../context';
@@ -352,7 +352,7 @@ export function errorCopy(error: TaskError): CopyKey {
   if (error.kind === 'blocked') return 'answers.blocked';
   if (error.kind === 'network') return 'error.network';
   if (error.kind === 'server') return 'error.server';
-  if (error.kind === 'app-check') return 'error.app-check';
+  if (error.kind === 'app-check') return `error.appCheck.${appCheckCause(error)}`;
   return 'answers.error';
 }
 

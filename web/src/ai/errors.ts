@@ -35,6 +35,18 @@ interface ErrorLike {
   readonly customErrorData?: { readonly status?: unknown };
 }
 
+/**
+ * Why App Check could not get a token, as far as the page can tell: a browser controlled by automation
+ * software (reCAPTCHA treats it as a bot), a visit reCAPTCHA did not accept (the exchange answered 403;
+ * the SDK then waits a day before it tries again), or no answer from reCAPTCHA at all.
+ */
+export type AppCheckCause = 'automation' | 'refused' | 'unreachable';
+export function appCheckCause(error: TaskError): AppCheckCause {
+  if (typeof navigator !== 'undefined' && navigator.webdriver === true) return 'automation';
+  if (/\b403\b|throttle/i.test(error.detail)) return 'refused';
+  return 'unreachable';
+}
+
 export function classifyError(error: unknown): TaskError {
   if (error instanceof TaskError) return error;
   const e = (error ?? {}) as ErrorLike;
