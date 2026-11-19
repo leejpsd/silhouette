@@ -52,7 +52,8 @@ struct DocumentEffectCard: View {
             NoteText(text: model.t("results.incomeFrom.lead", ["how": model.t("results.incomeFrom.\(effect.incomeFromKey)")]), size: 15)
                 .padding(.top, 4)
                 .accessibilityIdentifier("results.incomeFrom")
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
+            // The display face fills the width it is given, so "a year" stands under the amount.
+            VStack(alignment: .leading, spacing: 0) {
                 Display(text: model.money(Double(effect.amount)), size: 46, maxLines: 1)
                 Text(model.t("results.docEffect.year")).sfFont(15).foregroundStyle(theme.note)
             }

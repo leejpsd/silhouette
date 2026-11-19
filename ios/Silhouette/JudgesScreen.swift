@@ -116,7 +116,9 @@ struct JudgesScreen: View {
     /// A numbered step: the title and a one-line subline (what the button does); the row is the button.
     private func step(_ n: Int, _ key: String, id: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            ListRow(title: model.t("\(key).title"), subtitle: model.t("\(key).button"), titleSize: 17, titleWeight: .regular) {
+            // The subline says what the press does, unless it would repeat the title ("Read the sample paystub").
+            let subtitle = model.t("\(key).button") == model.t("\(key).title") ? nil : model.t("\(key).button")
+            ListRow(title: model.t("\(key).title"), subtitle: subtitle, titleSize: 17, titleWeight: .regular) {
                 Text(verbatim: model.number(Double(n)))
                     .font(Font(DesignFonts.uiFont(.display, weight: 900, size: 18)))
                     .foregroundStyle(theme.color("onPrimary"))
