@@ -1,5 +1,15 @@
 # Contract changelog
 
+## v1.39 — 2026-11-19
+
+The "unlikely" result no longer reads as a no.
+
+| Change | Why |
+|---|---|
+| `verdict.unlikely` "Probably not" → "Not from these answers — you can still apply"; `verdict.short.unlikely` → "Not from these answers" (es, ko likewise) | A reviewer speaking for the people it is for: a household that is eligible after all (a limit that is close, an answer that changed, a rule the check does not cover) could stop at "Probably not" in the list, before the program page says it is not a decision |
+
+Platforms: the same words wherever the unlikely result is shown. Reference tests: 30.
+
 ## v1.38 — 2026-11-19
 
 Form W-2: boxes 1 and 2 that do not fit together are both left out, and one box that does not fit no longer stops the other checks.
