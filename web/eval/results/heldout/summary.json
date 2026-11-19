@@ -1,0 +1,6 @@
+{
+  "$comment": "Figured from the result files in this folder by src/ui/evidence/heldout-eval.ts; its test recomputes them and must match. Sets: eval/heldout/ (frozen in 83dccc5) and eval/heldout-2/ (frozen in 35ca134). W-2 afterChecks: the same stored cloud answers checked again with the rules of contract v1.38, made after seeing both sets.",
+  "date": "2026-11-19",
+  "frozen": { "first": "83dccc5", "second": "35ca134" },
+  "figures": {"paystubs":{"documents":24,"cloudWrong":0,"cloudAllRight":22,"deviceWrong":0,"deviceAllRight":17,"deviceFirstWrong":12,"retried":11},"w2":{"firstSet":{"documents":6,"cloudWrong":2,"deviceWrong":3},"secondSet":{"documents":12,"cloudWrong":2,"deviceWrong":1},"afterChecks":{"documents":18,"right":10,"leftOut":8,"wrong":0}},"leaks":{"bodies":42,"withValue":0}}
+}

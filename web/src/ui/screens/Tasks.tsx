@@ -10,6 +10,8 @@ import { date as cloudDate, leakCheck, metrics } from '../../../eval/results/v15
 import { countedCases, finalRan, isRunFile, summarize, type RunFile } from '../device-check/run';
 import { useApp } from '../context';
 import { Recount } from '../evidence/Recount';
+import { HeldoutRecount } from '../evidence/HeldoutRecount';
+import heldoutSummary from '../../../eval/results/heldout/summary.json';
 import { dynamicKey, packDate } from '../i18n';
 import { ScreenHeading } from '../Heading';
 import { navigate, routeHref } from '../router';
@@ -89,6 +91,46 @@ function Figure({ value, total, met, children, testId }: { value: number; total:
   );
 }
 
+/**
+ * The never-seen sets (eval/heldout/, eval/heldout-2/): documents written independently of the prompts, word
+ * lists and tuning documents, committed before they were read. Figures from eval/results/heldout/summary.json,
+ * which a test recomputes from the result files; the button recounts them here.
+ */
+function HeldOut() {
+  const { t, locale } = useApp();
+  const f = heldoutSummary.figures;
+  return (
+    <div className="measured-block measured-heldout" data-testid="measured-heldout">
+      <p className="measured-source">{t('tasks.heldout.title')}</p>
+      <p className="small muted">{t('tasks.heldout.lead', { paystubs: f.paystubs.documents, w2s: f.w2.firstSet.documents + f.w2.secondSet.documents, date: packDate(locale, heldoutSummary.date) })}</p>
+      <ul className="device-headline">
+        <Figure value={f.paystubs.cloudWrong} total={f.paystubs.documents} met={f.paystubs.cloudWrong === 0} testId="heldout-paystub-cloud">
+          {t('tasks.heldout.paystubCloud')}
+        </Figure>
+        <Figure value={f.paystubs.deviceWrong} total={f.paystubs.documents} met={f.paystubs.deviceWrong === 0} testId="heldout-paystub-device">
+          {t('tasks.heldout.paystubDevice')}
+        </Figure>
+      </ul>
+      <p className="small" data-testid="heldout-caught">
+        {t('tasks.heldout.caught', { caught: f.paystubs.deviceFirstWrong, total: f.paystubs.documents, retried: f.paystubs.retried })}
+      </p>
+      <p className="small" data-testid="heldout-w2">
+        {t('tasks.heldout.w2', {
+          wrong: f.w2.firstSet.cloudWrong,
+          total: f.w2.firstSet.documents,
+          wrong2: f.w2.secondSet.cloudWrong,
+          total2: f.w2.secondSet.documents,
+          right: f.w2.afterChecks.right,
+          left: f.w2.afterChecks.leftOut,
+          after: f.w2.afterChecks.wrong,
+          all: f.w2.afterChecks.documents,
+        })}
+      </p>
+      <HeldoutRecount shown={f} />
+    </div>
+  );
+}
+
 /** Why the routing is what it is: the measured figures behind it, each traceable to a file. */
 function Measured() {
   const { t, locale } = useApp();
@@ -150,6 +192,7 @@ function Measured() {
           />
         </div>
       </div>
+      <HeldOut />
       {exact > 0 && (
         <ul className="device-headline">
           <Figure value={exactOnDevice} total={exact} met={exactOnDevice === exact} testId="measured-exact">

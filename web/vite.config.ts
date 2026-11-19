@@ -8,8 +8,8 @@ import { makeTextPdf } from './scripts/text-pdf.mjs';
 
 const here = (rel: string): string => fileURLToPath(new URL(rel, import.meta.url));
 
-/** Files fetched only when asked for: the cloud evaluation file (432 KB) behind "Recount from the file". */
-const NOT_PRECACHED = /^assets\/v15p4-[^/]*\.json$/;
+/** Files fetched only when asked for: the evaluation result files behind the recount buttons on the tasks page. */
+const NOT_PRECACHED = /^assets\/(v15p4|cloud-h36|device-2026-11-19T0631-chrome157-macos|heldout-2-cloud-h37|heldout-2-device-2026-11-19T0705-chrome157-macos)-[^/]*\.json$/;
 
 /** Emits /sw.js with the precache list of every file in the build (bundle + public/). */
 function serviceWorker(): Plugin {

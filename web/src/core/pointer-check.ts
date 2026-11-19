@@ -434,6 +434,19 @@ export function w2LeftOut(schema: PointerSchema, pointers: unknown, rawMap: Raw<
   return { problems, fields };
 }
 
+/**
+ * For the never-seen evaluation sets (synthetic documents only): box 1 of a stored W-2 answer after the boxes
+ * left out by today's checks, compared with the answer key inside core. Only the outcome leaves, never a value.
+ */
+export function w2WagesOutcome(schema: PointerSchema, pointers: unknown, rawMap: Raw<PlaceholderMap>, goldWages: number): 'right' | 'left-out' | 'wrong' {
+  if (!isObject(pointers)) return 'left-out';
+  const left = w2LeftOut(schema, pointers, rawMap).fields.map((f) => f.field);
+  const kept = Object.fromEntries(Object.entries(pointers).filter(([k]) => !left.includes(k)));
+  const wages = (reveal(rehydrate(schema, kept, rawMap)) as unknown as W2Values).wages;
+  if (typeof wages !== 'number') return 'left-out';
+  return Math.abs(wages - goldWages) < 0.005 ? 'right' : 'wrong';
+}
+
 /** Problems with a whole answer (core and deductions), as one list. */
 export function pointerProblems(schema: PointerSchema, pointers: unknown, skeleton: Skeleton, rawMap: Raw<PlaceholderMap>, jurisdiction: string): string[] {
   void skeleton;
