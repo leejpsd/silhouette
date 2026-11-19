@@ -43,7 +43,9 @@ export type RoutingReason =
   | 'your-result-stays-on-device'
   | 'sample-answer-key'
   /** routing.json recordedSample: the bundled sample read from an on-device run recording, nothing sent. */
-  | 'recorded-on-device';
+  | 'recorded-on-device'
+  /** routing.json recordedCloud: the bundled sample read from a recorded cloud reading of its silhouette, nothing sent now. */
+  | 'recorded-in-cloud';
 
 /** Every model response carries its provenance: where it ran, and why. */
 export interface TaskResult<T> {

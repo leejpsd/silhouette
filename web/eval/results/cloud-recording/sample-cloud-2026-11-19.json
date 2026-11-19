@@ -1,0 +1,53 @@
+{
+  "kind": "silhouette-cloud-recording",
+  "version": 1,
+  "date": "2026-11-19T11:58:30.087Z",
+  "document": "shared/samples/paystub-en-01.txt",
+  "task": "document.pointer.extract",
+  "mode": "ONLY_IN_CLOUD",
+  "prompt": "shared/prompts/pointer-extract.v5.md",
+  "sdk": "firebase 13.3.0",
+  "endpoint": "/v1beta/projects/silhouette-hybrid/models/gemini-3.5-flash-lite:generateContent",
+  "inferenceSource": "IN_CLOUD",
+  "latencyMs": 3331,
+  "requestBody": "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a paystub skeleton. Values are placeholder references or closed enums, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"properties\":{\"employerName\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"payFrequency\":{\"enum\":[\"weekly\",\"biweekly\",\"semimonthly\",\"monthly\"],\"type\":\"string\",\"nullable\":true},\"payDate\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"array\",\"minItems\":3,\"maxItems\":3,\"items\":{\"type\":\"string\"}}],\"nullable\":true},\"periodStart\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"array\",\"minItems\":3,\"maxItems\":3,\"items\":{\"type\":\"string\"}}],\"nullable\":true},\"periodEnd\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"array\",\"minItems\":3,\"maxItems\":3,\"items\":{\"type\":\"string\"}}],\"nullable\":true},\"grossPay\":{\"type\":\"string\",\"nullable\":true},\"netPay\":{\"type\":\"string\",\"nullable\":true},\"ytdGross\":{\"type\":\"string\",\"nullable\":true},\"hoursWorked\":{\"type\":\"string\",\"nullable\":true},\"hourlyRate\":{\"type\":\"string\",\"nullable\":true},\"deductions\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"amount\":{\"type\":\"string\"},\"kind\":{\"enum\":[\"federal_tax\",\"state_tax\",\"social_security\",\"medicare\",\"retirement\",\"health\",\"other\"],\"type\":\"string\"}},\"required\":[\"amount\"]},\"nullable\":true}},\"required\":[\"employerName\",\"employeeName\",\"payFrequency\",\"payDate\",\"periodStart\",\"periodEnd\",\"grossPay\",\"netPay\",\"ytdGross\",\"hoursWorked\",\"hourlyRate\",\"deductions\"]},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: paystub\\nDocument:\\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧                         Earnings Statement\\nEmployee: ⟦W4⟧ ⟦W5⟧            Employee ID: ⟦N1⟧\\nAddress: ⟦N2⟧ ⟦W6⟧ ⟦W7⟧, ⟦W8⟧ ⟦W9⟧, ⟦W10⟧ ⟦N3⟧\\nPay Period: ⟦D1⟧ - ⟦D2⟧      Pay Date: ⟦D3⟧\\nPay Frequency: Semi-Monthly\\n\\nEarnings          Rate      Hours     Current        YTD\\nRegular           ⟦N4⟧     ⟦N5⟧     ⟦N6⟧       ⟦N7⟧\\nOvertime          ⟦N8⟧     ⟦N9⟧      ⟦N10⟧         ⟦N11⟧\\nGross Pay                             ⟦N12⟧       ⟦N13⟧\\n\\nDeductions                            Current        YTD\\nFederal Income Tax                    ⟦N14⟧          ⟦N15⟧\\nSocial Security                       ⟦N16⟧          ⟦N17⟧\\nMedicare                              ⟦N18⟧          ⟦N19⟧\\n⟦W11⟧ ⟦W12⟧                                ⟦N20⟧          ⟦N21⟧\\nNet Pay                               ⟦N22⟧\\n\"}]}]}",
+  "responseBody": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"{\\\"employerName\\\": [\\\"W1\\\", \\\"W2\\\", \\\"W3\\\"], \\\"employeeName\\\": [\\\"W4\\\", \\\"W5\\\"], \\\"payFrequency\\\": \\\"semimonthly\\\", \\\"payDate\\\": \\\"D3\\\", \\\"periodStart\\\": \\\"D1\\\", \\\"periodEnd\\\": \\\"D2\\\", \\\"grossPay\\\": \\\"N12\\\", \\\"netPay\\\": \\\"N22\\\", \\\"ytdGross\\\": \\\"N13\\\", \\\"hoursWorked\\\": \\\"N5\\\", \\\"hourlyRate\\\": \\\"N4\\\", \\\"deductions\\\": [{\\\"amount\\\": \\\"N14\\\", \\\"kind\\\": \\\"federal_tax\\\"}, {\\\"amount\\\": \\\"N16\\\", \\\"kind\\\": \\\"social_security\\\"}, {\\\"amount\\\": \\\"N18\\\", \\\"kind\\\": \\\"medicare\\\"}, {\\\"amount\\\": \\\"N20\\\", \\\"kind\\\": \\\"other\\\"}]}\",\n            \"thoughtSignature\": \"EnsKeQFpFH0TDWdH0iXfazZ3tiUu3ROiaBP+6qrxfm1UeQk8cwP/ix9Iz5kMB8oGf8YHqqjV5ZtbQVg0pnZor8fa0LDFBBjs5JSuJFZx6RuJrEXjr8on96msSDVU00LHZW1oNMcma00GpRBBWmoAD3wHX3mhA0stCODRThM=\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 583,\n    \"candidatesTokenCount\": 173,\n    \"totalTokenCount\": 756,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 583\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"ZOT-asrJCPGl0-kP9b2vSA\"\n}\n",
+  "pointers": {
+    "employerName": [
+      "W1",
+      "W2",
+      "W3"
+    ],
+    "employeeName": [
+      "W4",
+      "W5"
+    ],
+    "payFrequency": "semimonthly",
+    "payDate": "D3",
+    "periodStart": "D1",
+    "periodEnd": "D2",
+    "grossPay": "N12",
+    "netPay": "N22",
+    "ytdGross": "N13",
+    "hoursWorked": "N5",
+    "hourlyRate": "N4",
+    "deductions": [
+      {
+        "amount": "N14",
+        "kind": "federal_tax"
+      },
+      {
+        "amount": "N16",
+        "kind": "social_security"
+      },
+      {
+        "amount": "N18",
+        "kind": "medicare"
+      },
+      {
+        "amount": "N20",
+        "kind": "other"
+      }
+    ]
+  }
+}

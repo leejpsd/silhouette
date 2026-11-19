@@ -113,9 +113,9 @@ function TwoViews({ skeleton, field, refId }: { skeleton: Skeleton | null; field
   );
 }
 
-function PointerReveal({ review, source, machine, docType, skeleton }: { review: readonly ReviewField[]; source: string; machine?: string | undefined; docType: FlowDocType; skeleton: Skeleton | null }) {
+function PointerReveal({ review, source, machine, recordedDate, docType, skeleton }: { review: readonly ReviewField[]; source: string; machine?: string | undefined; recordedDate?: string | undefined; docType: FlowDocType; skeleton: Skeleton | null }) {
   const { t } = useApp();
-  if (source !== 'ON_DEVICE' && source !== 'IN_CLOUD' && source !== 'RECORDED') return null;
+  if (source !== 'ON_DEVICE' && source !== 'IN_CLOUD' && source !== 'RECORDED' && source !== 'RECORDED_CLOUD') return null;
   const scalar = (f: ReviewField) => f.refs.length === 1 && f.value !== null && /^N[0-9]+$/.test(f.refs[0] as string);
   // The value the yearly income comes from: gross pay on a paystub, box 1 (wages) on a W-2.
   const lead = docType === 'w2' ? 'wages' : 'grossPay';
@@ -146,6 +146,8 @@ function PointerReveal({ review, source, machine, docType, skeleton }: { review:
       <figcaption className="small">
         {source === 'RECORDED'
           ? t('review.pointer.recorded', { machine: machine ?? '', ref, value })
+          : source === 'RECORDED_CLOUD'
+            ? t('review.pointer.recordedCloud', { date: recordedDate ?? '', ref, value })
           : docType === 'w2'
             ? t(source === 'IN_CLOUD' ? 'review.pointer.cloudW2' : 'review.pointer.deviceW2', { ref, value })
             : t(source === 'IN_CLOUD' ? 'review.pointer.cloud' : 'review.pointer.device', { ref, value })}
@@ -700,7 +702,7 @@ export function DocumentReviewScreen() {
           <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
         )}
       </div>
-      {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} machine={doc.extraction.recording?.machine} docType={docType} skeleton={doc.skeleton} />}
+      {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} machine={doc.extraction.recording?.machine} recordedDate={doc.extraction.recording?.date} docType={docType} skeleton={doc.skeleton} />}
       <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
       {manual && manualHint && nothingTyped && (
         <p className="error" role="alert">

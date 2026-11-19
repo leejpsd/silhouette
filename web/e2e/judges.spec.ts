@@ -311,3 +311,30 @@ test.describe('how the routing is enforced', () => {
     await expect(page.getByTestId('enforced-browser')).toHaveAttribute('data-status', 'available');
   });
 });
+
+test.describe('the recorded cloud reading (routing.json recordedCloud)', () => {
+  test('the sample read from a recorded cloud reading: nothing sent now, the record shows the exact request as recorded, silhouette only', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    const toModel: string[] = [];
+    page.on('request', (r) => {
+      if (/firebasevertexai|generativelanguage/.test(r.url())) toModel.push(r.url());
+    });
+    await page.goto('/#/judges');
+    await page.getByRole('button', { name: 'Read the sample paystub' }).first().click();
+    await page.getByTestId('use-recorded-cloud').click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Check what was found' })).toBeVisible();
+    await expect(page.getByTestId('inference-badge').first()).toContainText('Recorded in the cloud');
+    await expect(page.getByTestId('pointer-reveal')).toContainText('Firebase AI Logic in the cloud answered only');
+    await expect(page.getByTestId('pointer-line-model')).not.toContainText('1,271.88');
+    // The record: kept, nothing sent now, with the request exactly as it was sent when recorded.
+    await page.getByRole('button', { name: 'Details' }).first().click();
+    const row = page.locator('li').filter({ hasText: 'Recorded cloud reading of the sample paystub' }).first();
+    await expect(row).toContainText('Nothing sent now');
+    const toggle = row.getByRole('button', { name: /exactly|request/i }).first();
+    if ((await row.getByTestId('outbound-payload').count()) === 0) await toggle.click();
+    const payload = page.getByTestId('outbound-payload').first();
+    await expect(payload).toContainText('⟦N12⟧');
+    for (const value of ['1,271.88', '23,103.25', 'NORTHWIND', 'Juniper']) await expect(payload).not.toContainText(value);
+    expect(toModel).toHaveLength(0);
+  });
+});

@@ -18,8 +18,9 @@ export interface Extraction {
   /**
    * SAMPLE_KEY: a bundled sample filled from its answer key on this device, with no model.
    * RECORDED: the bundled sample read from the on-device model's recorded answer (routing.json recordedSample).
+   * RECORDED_CLOUD: the bundled sample read from a recorded cloud reading of its silhouette (routing.json recordedCloud).
    */
-  readonly inferenceSource: InferenceSource | 'SAMPLE_KEY' | 'RECORDED';
+  readonly inferenceSource: InferenceSource | 'SAMPLE_KEY' | 'RECORDED' | 'RECORDED_CLOUD';
   /** RECORDED: the machine and the date of the recording the answer comes from. */
   readonly recording?: { readonly machine: string; readonly date: string; readonly path: string } | undefined;
   readonly reason: RoutingReason;

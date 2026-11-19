@@ -24,7 +24,7 @@ export type IncomeAnswer =
       readonly amount: number;
       readonly from?:
         | {
-            readonly paystub: 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY';
+            readonly paystub: 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'RECORDED_CLOUD' | 'SAMPLE_KEY';
             readonly basis?: IncomeBasis | undefined;
             /** The rule variables the document answered (yearly income, money from work). */
             readonly filled?: readonly string[] | undefined;

@@ -253,6 +253,7 @@ const KEPT_TITLES: Readonly<Record<string, CopyKey>> = {
   'kept:why': 'why.title',
   'kept:own-question': 'ask.free.label',
   'kept:recorded': 'record.recorded.title',
+  'kept:recorded-cloud': 'record.recordedCloud.title',
 };
 
 /** What a request carries that comes from the person (a silhouette of their document or answers). */
@@ -344,7 +345,7 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   const statusLine = (e: OutboundEntry) =>
     e.status === 'answered'
       ? e.recording
-        ? t('record.recorded.status')
+        ? t(e.recording.place === 'cloud' ? 'record.recordedCloud.status' : 'record.recorded.status')
         : t('outbound.status.answeredShort')
       : e.status === 'attempted'
         ? t('outbound.status.attempted')
@@ -458,10 +459,10 @@ function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: 
       {/* A recorded reading: whose answer it was and when, under the row. */}
       {e.recording && (
         <p className="outbound-note" data-testid="recorded-note">
-          {t('record.recorded.note', { machine: e.recording.machine, date: e.recording.date })}
+          {e.recording.place === 'cloud' ? t('record.recordedCloud.note', { date: e.recording.date }) : t('record.recorded.note', { machine: e.recording.machine, date: e.recording.date })}
         </p>
       )}
-      {e.status !== 'answered' && (
+      {(e.status !== 'answered' || e.body !== undefined) && (
         <div className="outbound-main">
           <button type="button" className="disclosure" aria-expanded={show} aria-controls={body} onClick={() => setShow(!show)}>
             <Caret open={show} />
@@ -475,7 +476,7 @@ function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: 
             <Paper className="payload-slip" id={body}>
               <div className="payload-head">
                 <p>
-                  <strong>{t('record.exactlySent')}</strong>
+                  <strong>{e.recording?.place === 'cloud' ? t('record.recordedCloud.exactly', { date: e.recording.date }) : t('record.exactlySent')}</strong>
                   <span>
                     {at} · {title} · {t('record.bytes', { count: e.bytes })}
                   </span>
@@ -498,6 +499,13 @@ function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: 
               <pre className="payload" data-testid="outbound-payload" tabIndex={0} aria-label={t('outbound.showPayload')}>
                 {e.body}
               </pre>
+              {e.recordedAnswer !== undefined && (
+                <div className="answer-received" data-testid="answer-received">
+                  <strong>{t('record.answerReceived')}</strong>
+                  <code>{e.recordedAnswer}</code>
+                  <span>{t('record.answerNote')}</span>
+                </div>
+              )}
               {isReading && reading && (
                 <div className="answer-received" data-testid="answer-received">
                   <strong>{t('record.answerReceived')}</strong>

@@ -55,7 +55,7 @@ export function ResultsRoute() {
 }
 
 /** How the yearly income in the answers was read from a paystub, when it was (not typed, not a range). */
-function useIncomeFrom(): 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY' | undefined {
+function useIncomeFrom(): 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'RECORDED_CLOUD' | 'SAMPLE_KEY' | undefined {
   const { answers } = useApp();
   const income = answers['income'];
   return isIncomeAnswer(income) && income.kind === 'exact' ? income.from?.paystub : undefined;

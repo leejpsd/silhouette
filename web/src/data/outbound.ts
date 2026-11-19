@@ -27,7 +27,9 @@ export interface OutboundEntry {
   /** Why a request failed (HTTP status text or network error message). */
   readonly error?: string | undefined;
   /** For a recorded on-device reading (`kept:recorded`): the machine and the date of the recording. */
-  readonly recording?: { readonly machine: string; readonly date: string } | undefined;
+  readonly recording?: { readonly machine: string; readonly date: string; readonly place?: 'device' | 'cloud' | undefined } | undefined;
+  /** A recorded cloud reading (`kept:recorded-cloud`): the placeholder ids the cloud answered then, as JSON. */
+  readonly recordedAnswer?: string | undefined;
 }
 
 export interface OutboundState {
@@ -84,9 +86,16 @@ export function recordAnsweredOnDevice(kind: KeptKind, at: number = Date.now()):
  * routing.json recordedSample: the bundled sample was read from a recorded on-device answer. The values
  * were put back on this device and nothing was sent; listed with the answers kept here, never as sent.
  */
-export function recordRecordedReading(recording: { machine: string; date: string }, at: number = Date.now()): string {
+export function recordRecordedReading(
+  recording: { machine: string; date: string },
+  at: number = Date.now(),
+  cloud?: { readonly body: string; readonly path: string; readonly model: string; readonly answer: string },
+): string {
   const id = `${at}-${++counter}`;
-  const entry: OutboundEntry = { id, channel: 'on-device', at, destination: '', path: '', fields: ['kept:recorded'], bytes: 0, status: 'answered', recording };
+  // routing.json recordedCloud: the exact request as it was sent when it was recorded; nothing is sent now.
+  const entry: OutboundEntry = cloud
+    ? { id, channel: 'on-device', at, destination: 'firebasevertexai.googleapis.com', path: cloud.path, model: cloud.model, fields: ['kept:recorded-cloud'], body: cloud.body, bytes: new TextEncoder().encode(cloud.body).length, status: 'answered', recording: { ...recording, place: 'cloud' }, recordedAnswer: cloud.answer }
+    : { id, channel: 'on-device', at, destination: '', path: '', fields: ['kept:recorded'], bytes: 0, status: 'answered', recording };
   set({ ...state, entries: [...state.entries, entry] });
   return id;
 }

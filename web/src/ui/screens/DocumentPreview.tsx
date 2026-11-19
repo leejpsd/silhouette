@@ -20,6 +20,7 @@ import { useDocument } from '../doc/state';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { recordedReading, type RecordedReading } from '../doc/recorded-reading';
+import { recordedCloudReading } from '../doc/recorded-cloud';
 import { phoneLines } from '../doc/phone-view';
 import { rememberReading } from '../doc/last-reading';
 import { recordRecordedReading } from '../../data/outbound';
@@ -226,6 +227,19 @@ export function DocumentPreviewScreen() {
   };
 
   /** routing.json recordedSample: the on-device model's recorded answer, put back on this device now; nothing is sent. */
+  /** routing.json recordedCloud: a recorded cloud reading of this silhouette, put back on this device now; nothing is sent. */
+  const recordedCloud = recordedCloudReading(skeleton);
+  const useRecordedCloud = () => {
+    if (!recordedCloud) return;
+    const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], recordedCloud.pointers, map, introducersFor(doc.language));
+    const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
+    const date = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(recordedCloud.date));
+    update({ error: null, extraction: { review, inferenceSource: 'RECORDED_CLOUD', reason: 'recorded-in-cloud', recording: { machine: 'Firebase AI Logic', date, path: recordedCloud.path } } });
+    // The record lists it with the exact request as it was sent when it was recorded; nothing is sent now.
+    recordRecordedReading({ machine: 'Firebase AI Logic', date }, Date.now(), recordedCloud);
+    navigate({ name: 'doc-review' });
+  };
+
   const useRecorded = () => {
     if (!recorded) return;
     const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], recorded.pointers, map, introducersFor(doc.language));
@@ -296,6 +310,12 @@ export function DocumentPreviewScreen() {
           <ChevronRight />
         </button>
         <p className="small muted">{t('preview.useRecordedNote', { date: recorded.date })}</p>
+        {recordedCloud && (
+          <button type="button" className="text-link recorded-link" onClick={useRecordedCloud} disabled={sending} data-testid="use-recorded-cloud">
+            {t('preview.useRecordedCloud')}
+            <ChevronRight />
+          </button>
+        )}
       </div>
     ) : null;
 
