@@ -22,9 +22,13 @@ struct WhySection: View {
                         .accessibilityAddTraits(.isHeader)
                         .accessibilityIdentifier("why.title")
                     Spacer(minLength: 8)
-                    Text(model.t("badge.rulesOnly")).sfFont(13, weight: .semibold).foregroundStyle(theme.note)
+                    // The same badge as the results: the yearly income came from a paystub when it did.
+                    Text(model.t(model.currentDocumentEffect != nil ? "badge.rulesAndPaystub" : "badge.rulesOnly"))
+                        .sfFont(13, weight: .semibold).foregroundStyle(theme.note)
+                        .accessibilityIdentifier("why.badge")
                 }
-                NoteText(text: model.t("why.lead")).padding(.top, 4)
+                NoteText(text: model.t(model.isSampleHousehold ? "why.leadSample" : "why.lead")).padding(.top, 4)
+                    .accessibilityIdentifier("why.lead")
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(model.whyRows(programId).enumerated()), id: \.element.id) { i, row in
                         if i > 0 { Rectangle().fill(theme.line.opacity(0.7)).frame(height: 0.5) }
@@ -402,15 +406,16 @@ struct ProvenanceBadge: View {
         case .onDevice: model.t("badge.onDevice")
         case .inCloud: model.t("badge.cloud")
         case .sampleAnswerKey: model.t("badge.sampleKey")
+        case .recordedCloud: model.t("badge.recordedCloud")
         }
         VStack(alignment: .leading, spacing: 4) {
-            WhereBadge(kind: source == .onDevice ? .device : source == .inCloud ? .cloud : .noModel, label: badge)
+            WhereBadge(kind: source == .onDevice ? .device : source == .inCloud || source == .recordedCloud ? .cloud : .noModel, label: badge)
             Text(reasonText).sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(source == .onDevice ? model.t("badge.sentence.device", ["reason": reasonText])
             : source == .inCloud ? model.t("badge.sentence.cloud", ["reason": reasonText]) : "\(badge): \(reasonText).")
-        .accessibilityIdentifier(source == .sampleAnswerKey ? "source.badge" : "answer.badge")
+        .accessibilityIdentifier(source == .sampleAnswerKey || source == .recordedCloud ? "source.badge" : "answer.badge")
     }
 }
 

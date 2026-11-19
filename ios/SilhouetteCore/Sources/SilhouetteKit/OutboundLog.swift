@@ -28,13 +28,32 @@ public struct OutboundEntry: Sendable, Identifiable {
         case blocked(String)
         /// Answered by the on-device model: nothing left the device.
         case answeredOnDevice
+        /// A recorded reading used on this device (routing.json `recordedCloud`): nothing left now.
+        case recorded
+    }
+
+    /// A request recorded earlier, shown exactly as it was sent then (bundled, synthetic sample only).
+    public struct RecordedRequest: Sendable {
+        public let date: String
+        public let endpoint: String
+        public let body: String
+        public let answer: String
+        public let model: String
+
+        public init(date: String, endpoint: String, body: String, answer: String, model: String) {
+            self.date = date
+            self.endpoint = endpoint
+            self.body = body
+            self.answer = answer
+            self.model = model
+        }
     }
 
     /// Whether the request left the device (attempted, sent or failed); blocked and answered entries did not.
     public var left: Bool {
         switch status {
         case .attempted, .sent, .failed: true
-        case .blocked, .answeredOnDevice: false
+        case .blocked, .answeredOnDevice, .recorded: false
         }
     }
 
@@ -50,10 +69,13 @@ public struct OutboundEntry: Sendable, Identifiable {
     public var status: Status
     /// The cloud model, for model requests.
     public let model: String?
+    /// A recorded request used now without sending anything: its exact request and answer.
+    public let recording: RecordedRequest?
 
     public init(channel: Channel, at: Date = Date(), destination: String, fields: [String], payload: CloudText? = nil,
-                status: Status = .sent(200), model: String? = nil) {
+                status: Status = .sent(200), model: String? = nil, recording: RecordedRequest? = nil) {
         self.id = UUID()
+        self.recording = recording
         self.status = status
         self.model = model
         self.channel = channel

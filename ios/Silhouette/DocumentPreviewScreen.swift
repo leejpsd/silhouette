@@ -55,6 +55,7 @@ struct DocumentPreviewScreen: View {
                         NoteText(text: model.t("preview.missing"), size: 15)
                     }
                     if model.silhouette != nil { decisionInfo.padding(.top, 4) }
+                    if model.recordedCloudReading != nil && !reading { recordedCloudChoice }
                     if model.silhouette != nil && !pinsActions {
                         VStack(spacing: 2) { decisionActions }
                     }
@@ -146,6 +147,28 @@ struct DocumentPreviewScreen: View {
             NoteText(text: model.t("preview.noExtractor"))
                 .accessibilityIdentifier("preview.noExtractor")
         }
+    }
+
+    /// routing.json `recordedCloud`, for the bundled sample only: the cloud half of the reading, seen without
+    /// sending anything (a recording of the exact request and its answer).
+    private var recordedCloudChoice: some View {
+        Button {
+            guard !reading else { return }
+            reading = true
+            Task { await model.useRecordedCloud(); reading = false }
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(model.t("preview.useRecordedCloud")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
+                    .underline(color: theme.underline)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right").sfFont(13, weight: .semibold).foregroundStyle(theme.icon)
+            }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("preview.useRecordedCloud")
     }
 
     /// Where the reading will run, in one line beside the action: the badge and why.

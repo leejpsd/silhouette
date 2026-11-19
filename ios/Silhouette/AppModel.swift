@@ -101,6 +101,11 @@ final class AppModel {
     private(set) var document: DocumentSession
     /// Verdicts that changed when the yearly income from a paystub was used.
     private(set) var incomeChange: [(program: String, before: Verdict, after: Verdict)]?
+    /// What the paystub did to the answers when its yearly income was used (results.docEffect.*): kept
+    /// while the income answer is still that amount.
+    private(set) var documentEffect: DocumentEffect?
+    /// The recorded cloud readings bundled with the app (routing.json `recordedCloud`), newest first.
+    @ObservationIgnored let cloudRecordings: [RecordedCloudReading]
     /// The sample answer key for the bundled samples (routing.json offlineSample).
     @ObservationIgnored let sampleKey: SampleAnswerKeyExtractor?
     /// Model access through Firebase AI Logic (or the scripted model in UI tests).
@@ -147,8 +152,10 @@ final class AppModel {
         let saved = (try? store.load(steps: steps)) ?? Raw(QuickCheckAnswers())
         session = QuickCheckSession(steps: steps, answers: saved)
         let preferred = AppLocale.preferred(from: Locale.preferredLanguages)
-        document = (try? store.loadDocument(schema: bundle.paystubSchema)) ?? DocumentSession(language: preferred)
+        document = (try? store.loadDocument(schema: bundle.paystubSchema)).flatMap { AppLocale.offered.contains($0.language) ? $0 : nil }
+            ?? DocumentSession(language: preferred)
         sampleKey = try? SampleAnswerKeyExtractor(bundle: bundle)
+        cloudRecordings = RecordedCloudReading.load(directory: bundle.directory.appendingPathComponent("recordings/cloud", isDirectory: true))
         self.testModel = testModel
         port = testModel.map { mode in
             TestModelPort(mode: mode, answerKeys: ((try? SampleAnswerKeyExtractor(bundle: bundle))?.entries.map { ($0.skeleton.text, $0.pointers) } ?? [])
@@ -159,7 +166,7 @@ final class AppModel {
         let log = OutboundLog.shared
         runner = TaskRunner(port: port, log: log, outputChecks: bundle.outputChecks,
                             afterCloudRequest: { await rc.fetchOnce(log: log) })
-        locale = defaults.string(forKey: Self.localeKey).flatMap(AppLocale.init(rawValue:))
+        locale = defaults.string(forKey: Self.localeKey).flatMap(AppLocale.init(rawValue:)).flatMap { AppLocale.offered.contains($0) ? $0 : nil }
             ?? AppLocale.preferred(from: Locale.preferredLanguages)
         outbound = OutboundLog.shared.entries
         outboundObserver = OutboundLog.shared.observe { [weak self] entries in
@@ -210,7 +217,7 @@ final class AppModel {
     /// Requests that left and did not complete (`leaving.notCompleted`).
     var notCompletedCount: Int { outbound.filter { if case .failed = $0.status { true } else { false } }.count }
     /// Answers written on the device that never left (`leaving.keptCount`).
-    var keptCount: Int { outbound.filter(\.isAnsweredOnDevice).count }
+    var keptCount: Int { outbound.filter { $0.isAnsweredOnDevice || $0.isRecorded }.count }
 
     /// The count row's subline: what left, or when the record was deleted, or nothing.
     var countSubline: String {
@@ -337,6 +344,7 @@ final class AppModel {
         case .failed(let reason): t("outbound.status.failed", ["reason": reason])
         case .blocked(let reason): t(reason == "noAppCheck" ? "outbound.status.noAppCheck" : "outbound.status.blocked")
         case .answeredOnDevice: t("outbound.status.answeredOnDevice")
+        case .recorded: t("record.recordedCloud.status")
         }
     }
 
@@ -385,6 +393,7 @@ final class AppModel {
 
     func restart() {
         notice = nil
+        documentEffect = nil
         session.reset()
         persist()
         tab = .check
@@ -394,6 +403,7 @@ final class AppModel {
     /// Clears the answers without moving (the judges' prepared household starts from nothing).
     func restartForDemo() {
         notice = nil
+        documentEffect = nil
         session.reset()
         persist()
     }
@@ -441,6 +451,7 @@ final class AppModel {
         session.reset()
         document = DocumentSession(language: AppLocale.preferred(from: Locale.preferredLanguages))
         incomeChange = nil
+        documentEffect = nil
         locale = AppLocale.preferred(from: Locale.preferredLanguages)
         tab = .check
         checkPath = []
@@ -620,16 +631,76 @@ final class AppModel {
         try? document.validation(jurisdiction: bundle.packInfo.jurisdiction)
     }
 
-    /// Uses the yearly income from the paystub as the exact Quick Check income, and records which
-    /// verdicts changed.
-    func useIncome(_ amount: Int) {
+    /// Uses the yearly income from the paystub as the exact Quick Check income, records which verdicts
+    /// changed, and opens the results. Wages are money from work: a paystub also answers that question
+    /// with yes when it was not already (contract v1.40).
+    func useIncome(_ annualization: ValidationResult.Annualization) {
+        let amount = annualization.annualIncome
         let before = Dictionary(uniqueKeysWithValues: results.map { ($0.programId, $0.verdict) })
+        var filled = ["annualIncome"]
+        if session.step(Self.earnedIncomeStep) != nil, session.displayAnswer(for: Self.earnedIncomeStep) != .value(.choice("yes")) {
+            answer(Self.earnedIncomeStep, .choice("yes"))
+            filled.append(Self.earnedIncomeStep)
+        }
         answer(QuickCheck.incomeStep, .income(.exact(Double(amount))))
-        incomeChange = results.compactMap { r in
+        let changed = results.compactMap { r -> (program: String, before: Verdict, after: Verdict)? in
             guard let b = before[r.programId], b != r.verdict else { return nil }
             return (r.programId, b, r.verdict)
         }
+        incomeChange = changed
+        // Read from the document (not typed): the results say how it was read and what it changed.
+        documentEffect = document.extraction.map { e in
+            DocumentEffect(source: e.source, amount: amount, annualization: annualization, filled: filled, changed: changed)
+        }
+        showResults()
     }
+
+    /// The question "Does anyone in the household earn money from work?".
+    static let earnedIncomeStep = "hasEarnedIncome"
+
+    /// What the paystub changed, while the income answer is still the amount it gave.
+    var currentDocumentEffect: DocumentEffect? {
+        guard let effect = documentEffect, session.displayAnswer(for: QuickCheck.incomeStep) == .value(.income(.exact(Double(effect.amount))))
+        else { return nil }
+        return effect
+    }
+
+    /// Whether the answers are the prepared household's (judges' path), not the person's own. The yearly
+    /// income and money from work are left out of the comparison: a paystub read on the way may have
+    /// answered them.
+    var isSampleHousehold: Bool {
+        let prepared = (bundle.judgesHousehold?.answers ?? []).filter {
+            $0.0 != QuickCheck.incomeStep && $0.0 != Self.earnedIncomeStep && session.step($0.0) != nil
+        }
+        return !prepared.isEmpty && prepared.allSatisfy { session.displayAnswer(for: $0.0) == .value($0.1) }
+    }
+
+    // MARK: Recorded cloud reading
+
+    /// The recorded cloud reading of this silhouette: only the bundled English sample with nothing hidden.
+    var recordedCloudReading: RecordedCloudReading? {
+        guard let silhouette else { return nil }
+        return RecordedCloudReading.matching(cloudRecordings, skeleton: silhouette.skeleton, language: document.language, key: sampleKey)
+    }
+
+    /// routing.json `recordedCloud`: the recording's placeholder ids are the reading; the values are put
+    /// back on this device now and nothing is sent. The record lists it as kept, with the exact request as
+    /// it was sent when it was recorded, and the answer.
+    func useRecordedCloud() async {
+        guard let silhouette, let recording = recordedCloudReading else { return }
+        documentError = nil
+        document.apply(recording.result, silhouette: silhouette, schema: bundle.paystubSchema, recordedDate: recording.date)
+        OutboundLog.shared.record(OutboundEntry(
+            channel: .aiCloud, destination: TaskRunner.cloudDestination, fields: ["document-silhouette"], status: .recorded,
+            model: recording.model,
+            recording: .init(date: recording.date, endpoint: recording.endpoint, body: recording.requestBody, answer: recording.answer,
+                             model: recording.model)))
+        persistDocument()
+        await arriveAtReview()
+    }
+
+    /// An ISO date-time as a medium date in the UI language ("Nov 19, 2026").
+    func recordedDay(_ iso: String) -> String { mediumDate(String(iso.prefix(10))) }
 
     func addAnotherPaystub() {
         document.addAnother()

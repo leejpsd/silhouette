@@ -169,7 +169,7 @@ struct ContentTests {
 
     @Test("the preferred locale comes from the device languages, else English")
     func preferredLocale() {
-        #expect(AppLocale.preferred(from: ["ko-KR", "en-US"]) == .ko)
+        #expect(AppLocale.preferred(from: ["ko-KR", "es-US"]) == .es)
         #expect(AppLocale.preferred(from: ["fr-FR", "es-MX"]) == .es)
         #expect(AppLocale.preferred(from: ["fr-FR"]) == .en)
         #expect(AppLocale.preferred(from: []) == .en)
@@ -232,6 +232,8 @@ struct RoutingReasonTests {
         }
         if let r = routing["onDeviceFailure"]?["reason"]?.stringValue { reasons.insert(r) }
         if let r = routing["offlineSample"]?["reason"]?.stringValue { reasons.insert(r) }
+        // recordedSample (recorded-on-device) is for the web: its recordings are Chrome runs.
+        if let r = routing["recordedCloud"]?["reason"]?.stringValue { reasons.insert(r) }
         #expect(reasons == Set(RoutingReason.allCases.map(\.rawValue)))
         let copy = try Repo.bundle().copy
         for reason in RoutingReason.allCases { #expect(copy.has(reason.copyKey), "missing \(reason.copyKey)") }

@@ -15,6 +15,8 @@ struct DocumentReviewScreen: View {
     @State private var moreOpen = false
     @State private var scrollTarget: String?
     @State private var pendingNudges = 0
+    /// "Check" was pressed while values that decide the result still waited.
+    @State private var confirmFirst = false
 
     /// What decides the yearly income: shown first. The date is the pay date, or the period end without one.
     static let leadFields = ["grossPay", "ytdGross", "payDate", "payFrequency"]
@@ -80,6 +82,13 @@ struct DocumentReviewScreen: View {
         let leadRows = leadNames.compactMap { n in doc.fieldsForDisplay.first { $0.name == n } }
         let restRows = doc.fieldsForDisplay.filter { !seen.contains($0.name) }
         let moreShown = moreOpen || flagged.contains("deductions")
+        // Only the values in view are confirmed together: folded, the values that decide the result; open, all.
+        let leadPending = leadRows.filter { $0.found && !$0.confirmed }.count
+        let restMissing = doc.extraction == nil ? 0 : restRows.filter { $0.value == nil }.count
+        let restFound = restRows.count - restMissing + doc.deductionsForDisplay.count
+        let moreLabel = restMissing > 0
+            ? model.t("review.moreValues.notFound", ["count": model.number(Double(restFound)), "missing": model.number(Double(restMissing))])
+            : model.t("review.moreValues", ["count": model.number(Double(restRows.count + doc.deductionsForDisplay.count))])
         return ScrollViewReader { proxy in
             RevealingScroll {
                 VStack(alignment: .leading, spacing: 16) {
@@ -88,24 +97,30 @@ struct DocumentReviewScreen: View {
                     if let extraction = doc.extraction {
                         ProvenanceBadge(source: extraction.source, reason: extraction.reason)
                         if extraction.reason == .onDeviceFailed { NoteText(text: model.t("answers.retried")) }
+                        PointerCard()
                     }
                     NoteText(text: model.t(doc.extraction == nil ? "review.manualLead" : "review.lead"), size: 15)
-                    if doc.pendingCount > 0 {
-                        // Two steps while values are folded away: first show them all, then confirm
-                        // them (nothing is confirmed unseen).
-                        let folded = !moreShown && !restRows.isEmpty
-                        SecondaryButton(label: model.t(folded ? "review.seeAllCount" : "review.confirmAllCount", ["count": String(doc.pendingCount)]),
+                    if doc.extraction != nil, moreShown ? doc.pendingCount > 0 : leadPending > 0 {
+                        // The values that decide the result are confirmed with one press: they are all in
+                        // view. Opened, the other values can be confirmed together too. Nothing unseen.
+                        let names = Set(leadRows.map(\.name))
+                        SecondaryButton(label: moreShown ? model.t("review.confirmAllCount", ["count": model.number(Double(doc.pendingCount))])
+                                            : model.t("review.confirmLeadCount", ["count": model.number(Double(leadPending))]),
                                         id: "review.confirmAll") {
-                            if folded {
-                                withMotion(Motion.reveal) { moreOpen = true }
-                            } else {
-                                withMotion(Motion.short) { model.editDocument { $0.confirmAll() } }
+                            withMotion(Motion.short) {
+                                if moreShown { model.editDocument { $0.confirmAll() } } else {
+                                    model.editDocument { d in for n in names { d.confirm(n) } }
+                                }
                             }
                         }
-                        NoteText(text: model.t("review.pending", ["count": String(doc.pendingCount)]))
+                        NoteText(text: moreShown ? model.t("review.pending", ["count": model.number(Double(doc.pendingCount))])
+                                     : model.t("review.pendingLead", ["count": model.number(Double(leadPending))]))
                             .accessibilityIdentifier("review.pending")
                             .id("review.pending")
                             .sensoryFeedback(Haptic.error, trigger: pendingNudges)
+                    }
+                    if confirmFirst && leadPending > 0 {
+                        NoticeCard(text: model.t("review.confirmFirst")).accessibilityIdentifier("review.confirmFirst")
                     }
                     SectionLabel(text: model.t("review.inPaystub"), large: false)
                     ListCard {
@@ -115,17 +130,14 @@ struct DocumentReviewScreen: View {
                         }
                         RowDivider()
                         Button { withMotion(Motion.reveal) { moreOpen.toggle() } } label: {
-                            ListRow(title: model.t("review.moreValuesShort"), chevron: false, leading: { EmptyView() }) {
-                                HStack(spacing: 6) {
-                                    Text(model.number(Double(restRows.count + doc.deductionsForDisplay.count)))
-                                        .monoFont(15, weight: 500).foregroundStyle(theme.note)
-                                    Image(systemName: moreShown ? "chevron.down" : "chevron.right").sfFont(14, weight: .semibold)
-                                        .foregroundStyle(theme.icon)
-                                }
+                            // "Other values, not used for the result (7)": counted as the button above counts.
+                            ListRow(title: moreLabel, chevron: false, titleSize: 15, leading: { EmptyView() }) {
+                                Image(systemName: moreShown ? "chevron.down" : "chevron.right").sfFont(14, weight: .semibold)
+                                    .foregroundStyle(theme.icon)
                             }
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(model.t("review.moreValues", ["count": String(restRows.count + doc.deductionsForDisplay.count)]))
+                        .accessibilityLabel(moreLabel)
                         .accessibilityIdentifier("review.more")
                         if moreShown {
                             VStack(spacing: 0) {
@@ -174,15 +186,14 @@ struct DocumentReviewScreen: View {
         } else if let a = validation?.annualization {
             // Quiet while values wait for confirmation; pressed then, it shows which (never silent).
             PrimaryButton(label: model.t("review.useIncome", ["amount": model.money(Double(a.annualIncome))]), id: "review.useIncome",
-                          ready: model.document.pendingCount == 0) {
-                guard model.document.pendingCount == 0 else { return nudgePending() }
-                model.useIncome(a.annualIncome)
-                scrollTarget = "review.changes"
+                          ready: leadPending == 0) {
+                guard leadPending == 0 else { return nudgePending() }
+                model.useIncome(a)
             }
         } else {
             PrimaryButton(label: model.t("review.continue"), id: "review.continue",
-                          ready: model.document.pendingCount == 0 && anyValue) {
-                guard model.document.pendingCount == 0 else { return nudgePending() }
+                          ready: leadPending == 0 && anyValue) {
+                guard leadPending == 0 else { return nudgePending() }
                 scrollTarget = "review.annual"
             }
         }
@@ -191,11 +202,31 @@ struct DocumentReviewScreen: View {
     /// Something has been read or typed (typing the numbers starts with none).
     private var anyValue: Bool { model.document.fieldsForDisplay.contains { $0.value != nil } }
 
-    /// A press while values still wait: scroll to the line that says how many, read it out, and tap.
+    /// Values that decide the result and still wait for confirmation (what "Use" waits for).
+    private var leadPending: Int {
+        let names = Set(Self.leadNames(model.document, flagged: Self.flagged(model.documentValidation)))
+        return model.document.fieldsForDisplay.filter { names.contains($0.name) && $0.found && !$0.confirmed }.count
+    }
+
+    static func flagged(_ validation: ValidationResult?) -> Set<String> {
+        Set((validation?.checks.last ?? []).filter { $0.status == .warn }.flatMap { checkFields[$0.id] ?? [] })
+    }
+
+    /// What decides the result, then any value a check flags.
+    static func leadNames(_ doc: DocumentSession, flagged: Set<String>) -> [String] {
+        let dateField = doc.fieldsForDisplay.first { $0.name == "payDate" }?.value == nil ? "periodEnd" : "payDate"
+        let order = leadFields.map { $0 == "payDate" ? dateField : $0 } + doc.fieldsForDisplay.map(\.name).filter { flagged.contains($0) }
+        var seen = Set<String>()
+        return order.filter { seen.insert($0).inserted }
+    }
+
+    /// A press while values still wait: scroll to the line that says how many, say they decide the
+    /// result, read it out, and tap.
     private func nudgePending() {
+        confirmFirst = true
         scrollTarget = "review.pending"
         pendingNudges += 1
-        AccessibilityNotification.Announcement(model.t("review.pending", ["count": String(model.document.pendingCount)])).post()
+        AccessibilityNotification.Announcement(model.t("review.confirmFirst")).post()
     }
 
     // MARK: Yearly income and checks
@@ -207,7 +238,7 @@ struct DocumentReviewScreen: View {
             if let a = validation.annualization {
                 Display(text: model.money(Double(a.annualIncome)), size: 64, maxLines: 1)
                     .padding(.top, 4)
-                Text(basisText(a))
+                Text(model.reviewBasisText(a))
                     .monoFont(13, weight: 400)
                     .foregroundStyle(theme.note)
                     .fixedSize(horizontal: false, vertical: true)
@@ -308,18 +339,6 @@ struct DocumentReviewScreen: View {
             LinkText(label: model.t("review.addDeduction"), id: "review.addDeduction") { model.editDocument { $0.addDeduction() } }
         }
         .padding(16)
-    }
-
-    private func basisText(_ a: ValidationResult.Annualization) -> String {
-        switch a.basis {
-        case .ytd(let cents, let date, let num, let den, _):
-            let months = CopyBook.formatAmount((Double(num) / Double(den) * 100).rounded() / 100, model.locale)
-            return model.t("review.basis.ytd", ["ytd": model.money(Double(cents) / 100, cents: true), "date": model.mediumDate(date), "months": months,
-                                                "amount": model.money(Double(a.annualIncome))])
-        case .average(let avg, let periods, _, _):
-            return model.t("review.basis.average", ["average": model.money(Double(avg) / 100, cents: true), "periods": String(periods),
-                                                    "amount": model.money(Double(a.annualIncome))])
-        }
     }
 }
 

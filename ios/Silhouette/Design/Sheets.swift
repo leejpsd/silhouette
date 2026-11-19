@@ -254,7 +254,8 @@ private struct RecordEntry: View {
             Button { withMotion(Motion.reveal) { open.toggle() } } label: {
                 layout {
                     Text(model.time(entry.at)).monoFont(13, weight: 400).foregroundStyle(theme.note)
-                    Text(entry.fields.isEmpty ? model.outboundFieldName("model-request") : entry.fields.map(model.outboundFieldName).joined(separator: ", "))
+                    Text(entry.isRecorded ? model.t("record.recordedCloud.title")
+                         : entry.fields.isEmpty ? model.outboundFieldName("model-request") : entry.fields.map(model.outboundFieldName).joined(separator: ", "))
                         // The whole title, on two lines when it needs them (never "Document silhouette, Mo…").
                         .sfFont(17).foregroundStyle(theme.ink)
                         .fixedSize(horizontal: false, vertical: true)
@@ -264,7 +265,9 @@ private struct RecordEntry: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            if open && !entry.isAnsweredOnDevice {
+            if open, let recording = entry.recording {
+                recorded(recording).revealsIntoView().transition(Motion.revealTransition)
+            } else if open && !entry.isAnsweredOnDevice {
               VStack(alignment: .leading, spacing: 10) {
                 NoteText(text: model.t("outbound.requestTo", ["destination": entry.destination, "path": ""]))
                 NoteText(text: model.longDate(entry.at))
@@ -290,6 +293,33 @@ private struct RecordEntry: View {
         .accessibilityElement(children: .contain)
     }
 
+    /// A recorded cloud reading used now: nothing sent now; the request exactly as it was sent when it was
+    /// recorded, and the answer it got (placeholder ids only).
+    private func recorded(_ r: OutboundEntry.RecordedRequest) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            NoteText(text: model.t("record.recordedCloud.note", ["date": model.recordedDay(r.date)]))
+            NoteText(text: model.t("outbound.requestTo", ["destination": entry.destination, "path": r.endpoint]))
+            if !r.model.isEmpty { NoteText(text: model.t("outbound.model", ["model": r.model])) }
+            Button { withMotion(Motion.reveal) { showPayload.toggle() } } label: {
+                HStack(spacing: 4) {
+                    Text(model.t("record.recordedCloud.exactly", ["date": model.recordedDay(r.date)])).sfFont(15, weight: .semibold)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Image(systemName: showPayload ? "chevron.up" : "chevron.down").sfFont(12, weight: .semibold)
+                }
+                .foregroundStyle(theme.ink)
+                .frame(minHeight: 44)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("record.recordedRequest")
+            if showPayload {
+                MonoBlock(text: r.body, id: "record.recordedBody").revealsIntoView().transition(Motion.revealTransition)
+                Text(model.t("record.answerReceived")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
+                MonoBlock(text: r.answer, id: "record.recordedAnswer")
+                NoteText(text: model.t("record.answerNote"))
+            }
+        }
+    }
+
     private var status: some View {
         Group {
             switch entry.status {
@@ -297,6 +327,7 @@ private struct RecordEntry: View {
             case .sent: StatusPill(label: model.t("record.sentShort"), style: .redact, dot: true)
             // One short word on the pill ("On iPhone"); the full status is the row's VoiceOver label.
             case .answeredOnDevice: StatusPill(label: model.t("record.keptShort"), style: .outline)
+            case .recorded: StatusPill(label: model.t("record.recordedCloud.status"), style: .outline)
             case .failed, .blocked: StatusPill(label: model.recordStatus(entry), style: .muted)
             }
         }
@@ -325,6 +356,7 @@ struct MonoBlock: View {
 
 extension OutboundEntry {
     var isAnsweredOnDevice: Bool { if case .answeredOnDevice = status { true } else { false } }
+    var isRecorded: Bool { if case .recorded = status { true } else { false } }
 }
 
 // MARK: - Language
@@ -335,7 +367,7 @@ private struct LanguageSheet: View {
 
     var body: some View {
         ListCard {
-            ForEach(Array(AppLocale.allCases.enumerated()), id: \.element) { i, locale in
+            ForEach(Array(AppLocale.offered.enumerated()), id: \.element) { i, locale in
                 let selected = locale == model.locale
                 if i > 0 { RowDivider() }
                 Button {

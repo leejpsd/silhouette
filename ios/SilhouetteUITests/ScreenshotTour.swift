@@ -190,9 +190,8 @@ final class ScreenshotTour: XCTestCase {
         app.tapButton("review.confirmAll")
         shot("29-review-confirmed")
         app.tapButton("review.useIncome")
-        _ = app.element("review.changes").waitForExistence(timeout: 5)
-        shot("30-review-changes")
-        app.tapButton("review.results")
+        _ = app.element("results.docEffect").waitForExistence(timeout: 5)
+        shot("30-results-document-effect")
 
         // Delete everything from the record; the record after deleting.
         app.tapButton("leaving.details")

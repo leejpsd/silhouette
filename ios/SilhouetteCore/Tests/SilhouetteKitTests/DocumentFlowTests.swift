@@ -63,6 +63,36 @@ struct DocumentFlowTests {
         #expect(v.checks[0].contains { $0.id == "net-sum" && $0.status == .ok })
     }
 
+    @Test("the recorded cloud reading (web/eval/results/cloud-recording) was made on this app's silhouette of the sample and agrees with its key")
+    func recordedCloudReading() throws {
+        let (b, s) = try sample("paystub-en-01")
+        let folder = Repo.ios.deletingLastPathComponent().appendingPathComponent("web/eval/results/cloud-recording", isDirectory: true)
+        let recordings = RecordedCloudReading.load(directory: folder)
+        let recording = try #require(recordings.first)
+        var doc = DocumentSession(language: .en)
+        doc.setText(s.text, source: .sample, sampleId: s.id, language: .en)
+        let silhouette = try #require(try doc.silhouette(bundle: b))
+        let key = try SampleAnswerKeyExtractor(bundle: b)
+        // The request body as it was sent carries exactly this app's silhouette of the sample.
+        let body = try JSON.parse(recording.requestBody)
+        let sent = body["contents"]?.arrayValue?.compactMap { $0["parts"]?.arrayValue }.joined().compactMap { $0["text"]?.stringValue }.joined() ?? ""
+        #expect(sent.contains(silhouette.skeleton.text), "the recorded request carries the iOS silhouette")
+        let matched = try #require(RecordedCloudReading.matching(recordings, skeleton: silhouette.skeleton, language: .en, key: key))
+        #expect(matched.model.hasPrefix("gemini"))
+        // Its pointers read the sample's own values on this device.
+        doc.apply(matched.result, silhouette: silhouette, schema: b.paystubSchema, recordedDate: matched.date)
+        #expect(doc.fieldsForDisplay.first { $0.name == "grossPay" }?.value == .number(1271.88))
+        #expect(doc.extraction?.source == .recordedCloud && doc.extraction?.reason == .recordedInCloud)
+        #expect(doc.pointers?["grossPay"]?.stringValue == "N12")
+        doc.confirmAll()
+        #expect(try doc.validation(jurisdiction: "us-ca").annualization?.annualIncome == 29233)
+        // Hidden words or another language: not the sample, no recording.
+        doc.hide("gross")
+        let changed = try #require(try doc.silhouette(bundle: b))
+        #expect(RecordedCloudReading.matching(recordings, skeleton: changed.skeleton, language: .en, key: key) == nil)
+        #expect(JSON.object(JSONObject([("a", .array([.number(1)]))])).prettyText == "{\n  \"a\": [\n    1\n  ]\n}")
+    }
+
     @Test("the answer key reads only an unchanged sample in its own language")
     func answerKeyIsStrict() throws {
         let (b, s) = try sample("paystub-en-01")

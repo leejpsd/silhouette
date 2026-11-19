@@ -137,6 +137,23 @@ enum SnapshotRunner {
                 m.openSamplePreview()
                 await m.readDocument(keepOnDevice: m.deviceModelAvailable)
             },
+            // The recorded cloud reading of the sample (routing.json recordedCloud): the pointer card with the
+            // line as the model saw it and on this iPhone; then the results it changed; then the record.
+            Scene(name: "review-recorded-cloud", pages: 3, wait: 1.0) { m in
+                m.openSamplePreview()
+                await m.useRecordedCloud()
+            },
+            Scene(name: "results-document-effect", pages: 3, wait: 1.0) { m in
+                m.startJudgesSample()
+                await m.useRecordedCloud()
+                m.editDocument { $0.confirmAll() }
+                if let a = m.documentValidation?.annualization { m.useIncome(a) }
+            },
+            Scene(name: "record-recorded-cloud", pages: 2, wait: 1.0) { m in
+                m.openSamplePreview()
+                await m.useRecordedCloud()
+                m.sheet = .record
+            },
             Scene(name: "review-type-numbers", pages: 3) { m in
                 m.openDocument()
                 m.typeNumbers()

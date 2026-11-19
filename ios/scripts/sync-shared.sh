@@ -40,6 +40,13 @@ for run in "$IOS_DIR"/eval/on-device/device-check-*.json; do
   [ -e "$run" ] && cp "$run" "$DEST/recordings/"
 done
 
+# The recorded cloud reading of the sample paystub (routing.json recordedCloud): the same file the web app
+# uses, bundled as it is.
+mkdir -p "$DEST/recordings/cloud"
+for rec in "$IOS_DIR"/../web/eval/results/cloud-recording/*.json; do
+  [ -e "$rec" ] && cp "$rec" "$DEST/recordings/cloud/"
+done
+
 # Remote Config defaults: the template the Firebase project is published from.
 TEMPLATE="$IOS_DIR/../firebase/remoteconfig.template.json"
 if [ -f "$TEMPLATE" ]; then

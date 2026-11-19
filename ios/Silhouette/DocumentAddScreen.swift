@@ -126,7 +126,7 @@ struct DocumentAddScreen: View {
     /// line cannot hold both whole (large text on a small iPhone).
     @ViewBuilder private var languageRow: some View {
         let label = Text(model.t("doc.languageShort")).sfFont(15).foregroundStyle(theme.note).lineLimit(1).fixedSize()
-        let picker = Segmented(options: AppLocale.allCases.map { ($0, $0.nativeName, "doc.language.\($0.rawValue)") },
+        let picker = Segmented(options: AppLocale.offered.map { ($0, $0.nativeName, "doc.language.\($0.rawValue)") },
                                selection: Binding(get: { model.document.language }, set: { model.setDocumentLanguage($0) }))
         let stacked = VStack(alignment: .leading, spacing: 8) {
             Text(model.t("doc.languageShort")).sfFont(15).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)

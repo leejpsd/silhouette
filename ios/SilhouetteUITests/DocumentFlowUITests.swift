@@ -28,16 +28,15 @@ final class DocumentFlowUITests: XCTestCase {
         let gross = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "1,271.88")).firstMatch
         XCTAssertTrue(gross.waitForExistence(timeout: 5), "gross pay from the sample is shown")
         XCTAssertTrue(app.element("review.basisDate").exists, "the date the yearly income was worked out from")
-        // Two steps: the first press shows the folded values ("See all"), the second confirms them.
-        app.tapButton("review.confirmAll")
+        XCTAssertFalse(app.element("pointer.card").exists, "the answer key is not a model: no pointer card")
+        // One press confirms the values that decide the result; the others stay folded.
         app.tapButton("review.confirmAll")
         app.tapButton("review.useIncome")
-        let change = app.element("review.change.caleitc")
-        XCTAssertTrue(change.waitForExistence(timeout: 5))
-        XCTAssertTrue(change.label.contains("You may qualify"), change.label)
-        app.tapButton("review.results")
+        // The results open with what the paystub changed; the changed row says what it was.
+        XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 5))
         XCTAssertTrue(caleitc.waitForExistence(timeout: 5))
         XCTAssertEqual(caleitc.value as? String, "You may qualify")
+        XCTAssertTrue(caleitc.label.contains("was Possible"), caleitc.label)
         XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
     }
 

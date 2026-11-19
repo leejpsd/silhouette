@@ -1,5 +1,5 @@
-// "For judges: try it in two minutes": three numbered rows (the prepared household's Quick
-// Check, the sample paystub's silhouette, the record of what left), where each task runs, and the
+// "For judges: try it in two minutes": three numbered rows (the sample paystub read for an invented
+// household, the results it sharpens, the record of what left), where each task runs, and the
 // on-device check behind "Run the check". Invented data only.
 
 import SilhouetteCore
@@ -20,9 +20,9 @@ struct JudgesScreen: View {
                 Display(text: model.t("judges.title"), size: 54)
                     .accessibilityIdentifier("judges.title")
                 ListCard {
-                    step(1, "judges.step1", id: "judges.quickCheck") { model.runPreparedHousehold() }
+                    step(1, "judges.step1", id: "judges.sample") { model.startJudgesSample() }
                     RowDivider(inset: 60)
-                    step(2, "judges.step2", id: "judges.sample") { model.openSamplePreview() }
+                    step(2, "judges.step2", id: "judges.results") { model.seeJudgesResults() }
                     RowDivider(inset: 60)
                     step(3, "judges.step3", id: "judges.record") { model.sheet = .record }
                 }
@@ -132,16 +132,35 @@ struct JudgesScreen: View {
 }
 
 extension AppModel {
-    /// Judges, step 1: the prepared household's answers, then the results. Nothing is sent.
-    func runPreparedHousehold() {
+    /// The prepared household's answers (shared/rulepacks/us-ca/judges-household.json, synthetic).
+    private func fillPreparedHousehold() {
         restartForDemo()
-        onJudgesPath = true
-        // The judges' household of shared/rulepacks/us-ca/judges-household.json (synthetic).
         for (id, value) in bundle.judgesHousehold?.answers ?? [] where session.step(id) != nil { answer(id, value) }
+    }
+
+    /// Judges, step 1: the invented household's answers are filled in and its paystub opens on its
+    /// silhouette, so the first results a judge sees already use the income the model read.
+    func startJudgesSample() {
+        onJudgesPath = true
+        fillPreparedHousehold()
+        openSamplePreview()
+    }
+
+    /// Judges, step 2: the results (the household's own income range until the paystub has been read).
+    func seeJudgesResults() {
+        onJudgesPath = true
+        if !session.isStarted { fillPreparedHousehold() }
         showResults()
     }
 
-    /// Judges, step 2: the bundled English sample paystub, opened at its silhouette.
+    /// The prepared household's answers, then the results. Nothing is sent.
+    func runPreparedHousehold() {
+        onJudgesPath = true
+        fillPreparedHousehold()
+        showResults()
+    }
+
+    /// The bundled English sample paystub, opened at its silhouette.
     func openSamplePreview() {
         guard let sample = bundle.samples.first(where: { $0.id == "paystub-en-01" }) ?? bundle.samples.first else { return }
         useDocumentText(sample.text, source: .sample, sample: sample)

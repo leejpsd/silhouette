@@ -22,11 +22,15 @@ public enum AppLocale: String, Sendable, CaseIterable, Identifiable {
         }
     }
 
-    /// The first supported language in the user's preference list, else English.
+    /// The languages the app offers: English and Spanish. Korean copy stays in the shared contract but
+    /// is not offered in any picker or sample list.
+    public static let offered: [AppLocale] = [.en, .es]
+
+    /// The first offered language in the user's preference list, else English.
     public static func preferred(from languages: [String]) -> AppLocale {
         for tag in languages {
             let code = Locale(identifier: tag).language.languageCode?.identifier ?? String(tag.prefix(2))
-            if let locale = AppLocale(rawValue: code) { return locale }
+            if let locale = AppLocale(rawValue: code), offered.contains(locale) { return locale }
         }
         return .en
     }

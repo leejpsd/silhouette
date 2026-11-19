@@ -39,10 +39,15 @@ struct ResultsScreen: View {
         .heroScreen(theme)
     }
 
-    /// On the judges' path the next step (the sample paystub, read by a model); otherwise add a paystub.
+    /// On the judges' path the next step: the sample paystub read by a model, or, once its income is in
+    /// the results, what left this iPhone. Otherwise add a paystub.
     @ViewBuilder private var paystubAction: some View {
         if model.onJudgesPath {
-            PrimaryButton(label: model.t("judges.step2.button"), id: "results.openSample", showsArrow: true) { model.openSamplePreview() }
+            if model.currentDocumentEffect != nil {
+                PrimaryButton(label: model.t("judges.step3.button"), id: "results.openRecord", showsArrow: true) { model.sheet = .record }
+            } else {
+                PrimaryButton(label: model.t("judges.step1.button"), id: "results.openSample", showsArrow: true) { model.openSamplePreview() }
+            }
         } else {
             PrimaryButton(label: model.t("results.addDocument"), id: "results.addDocument", showsArrow: true) { model.openDocument() }
         }
@@ -82,9 +87,17 @@ struct ResultsScreen: View {
 
     @ViewBuilder private var resultsView: some View {
         let results = model.results
-        let likely = results.filter { $0.verdict == .likely }
-        let worth = results.filter { $0.verdict == .maybe || $0.verdict == .depends }
-        let unlikely = results.filter { $0.verdict == .unlikely }
+        // Within a verdict, programs with an estimated amount first, the largest first (contract v1.40).
+        let byAmount = { (list: [ProgramVerdict]) in
+            list.enumerated().sorted { a, b in
+                let x = a.element.estimatedAmount ?? 0, y = b.element.estimatedAmount ?? 0
+                return x != y ? x > y : a.offset < b.offset
+            }.map(\.element)
+        }
+        let likely = byAmount(results.filter { $0.verdict == .likely })
+        let worth = byAmount(results.filter { $0.verdict == .maybe || $0.verdict == .depends })
+        let unlikely = byAmount(results.filter { $0.verdict == .unlikely })
+        let effect = model.currentDocumentEffect
         let nothingFits = !results.isEmpty && results.allSatisfy { $0.verdict == .unlikely }
         Hero(eyebrow: likely.isEmpty ? nil : model.t("results.title"),
              title: likely.isEmpty ? model.t("results.title") : model.t("results.mayQualifyCount", ["count": model.number(Double(likely.count))]),
@@ -93,14 +106,17 @@ struct ResultsScreen: View {
         } content: {
             FlowLayout(spacing: 8, lineSpacing: 8) {
                 HeroPill(label: model.t("badge.checkedHere"), systemImage: "iphone")
-                HeroPill(label: model.t("badge.rulesOnly"))
+                HeroPill(label: model.t(effect != nil ? "badge.rulesAndPaystub" : "badge.rulesOnly"))
+                    .accessibilityIdentifier("results.badge")
             }
             .padding(.top, 16)
         }
         VStack(alignment: .leading, spacing: 12) {
             DraftLine()
+            if model.isSampleHousehold { SampleHouseholdCard() }
+            if let effect { DocumentEffectCard(effect: effect) }
             NoteText(text: model.t(model.anythingLeft ? "results.leadAfterSend" : "results.lead"))
-            if model.onJudgesPath { JudgeNext(step: 2) }
+            if model.onJudgesPath { JudgeNext(step: effect != nil ? 3 : 1) }
             if !pinsActions { paystubAction }
             if model.isOffline {
                 NoticeCard(text: model.t("state.offline"), systemImage: "wifi.slash").accessibilityIdentifier("results.offline")
@@ -158,6 +174,10 @@ extension AppModel {
         }
         if let amount = result.estimatedAmount, amount > 0 {
             out.append(t("results.estimate", ["amount": money(amount)]))
+        }
+        // A result the paystub changed says what it was (results.docEffect.was).
+        if let change = currentDocumentEffect?.change(result.programId), change.after == result.verdict {
+            out.append(t("results.docEffect.was", ["before": t("verdict.short.\(change.before.rawValue)")]))
         }
         return out
     }
@@ -345,7 +365,9 @@ private struct UnlikelyRow: View {
     var body: some View {
         let notes = model.resultNotes(result)
         Button { model.openProgram(result.programId) } label: {
-            ListRow(title: model.programName(result.programId), subtitle: ([model.t("verdict.short.unlikely")] + notes).joined(separator: " · "),
+            // Not a decision: the short word says how to go on (results.stillApply).
+            ListRow(title: model.programName(result.programId),
+                    subtitle: ([model.t("verdict.short.unlikely"), model.t("results.stillApply")] + notes).joined(separator: " · "),
                     dimmed: true, titleWeight: .semibold) {
                 VerdictMarker(verdict: .unlikely)
             }
@@ -367,7 +389,11 @@ struct JudgeNext: View {
 
     var body: some View {
         Button {
-            if step == 2 { model.openSamplePreview() } else { model.sheet = .record }
+            switch step {
+            case 1: model.openSamplePreview()
+            case 2: model.showResults()
+            default: model.sheet = .record
+            }
         } label: {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {

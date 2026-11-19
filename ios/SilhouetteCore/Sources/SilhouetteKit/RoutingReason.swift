@@ -17,6 +17,8 @@ public enum RoutingReason: String, Sendable, CaseIterable {
     case onDeviceFailed = "on-device-failed"
     /// `offlineSample`: a bundled sample filled from its fixed answer key; no model, nothing sent.
     case sampleAnswerKey = "sample-answer-key"
+    /// `recordedCloud`: a recorded cloud reading of the bundled sample's silhouette; nothing sent now.
+    case recordedInCloud = "recorded-in-cloud"
 
     public var copyKey: String { "reason.\(rawValue)" }
 }

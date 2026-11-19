@@ -186,7 +186,7 @@ struct GlassCapsule: View {
     }
 }
 
-/// The language button (EN, ES, 한국어) that opens the language sheet.
+/// The language button (EN, ES) that opens the language sheet.
 struct LanguageButton: View {
     @Environment(AppModel.self) private var model
     static let short: [AppLocale: String] = [.en: "EN", .es: "ES", .ko: "한국어"]

@@ -12,6 +12,9 @@ public enum InferenceSource: String, Sendable {
     case inCloud = "IN_CLOUD"
     /// No model: the fixed answers of a built-in sample document.
     case sampleAnswerKey = "SAMPLE_ANSWER_KEY"
+    /// routing.json `recordedCloud`: a real cloud reading of the bundled sample's silhouette, recorded
+    /// with its exact request; the values are put back on this device now and nothing is sent.
+    case recordedCloud = "RECORDED_CLOUD"
 }
 
 public struct PointerRequest: Sendable {
@@ -86,7 +89,6 @@ public struct SampleDocument: Sendable, Identifiable {
 
     static let catalog: [(id: String, language: AppLocale, titleKey: String)] = [
         ("paystub-en-01", .en, "doc.sample.enText"),
-        ("payslip-ko-01", .ko, "doc.sample.koText"),
     ]
 }
 
