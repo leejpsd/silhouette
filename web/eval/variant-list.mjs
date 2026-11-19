@@ -19,4 +19,6 @@ export const VARIANTS = {
   v15p4r: { tidy: true, skeletons: 'v1.5', prompt: 'v4' },
   // The app's cloud request since contract v1.24 (pointer-extract.v5, whose text is v4's word for word), on the held-out set.
   h36: { tidy: true, skeletons: 'v1.36', prompt: 'v5' },
+  // The same cloud request; the app since contract v1.37 leaves out W-2 boxes that are not money or not a year.
+  h37: { tidy: true, skeletons: 'v1.37', prompt: 'v5' },
 };

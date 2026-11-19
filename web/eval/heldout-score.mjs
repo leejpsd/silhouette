@@ -54,20 +54,23 @@ function scoreSet(rows, label) {
   return out;
 }
 
-const gold = Object.fromEntries(
-  JSON.parse(readFileSync(new URL('heldout/manifest.json', import.meta.url), 'utf8')).map((m) => [m.id, JSON.parse(readFileSync(new URL(`heldout/${m.id}.gold.json`, import.meta.url), 'utf8'))]),
-);
+const goldOf = (set) =>
+  Object.fromEntries(
+    JSON.parse(readFileSync(new URL(`${set}/manifest.json`, import.meta.url), 'utf8')).map((m) => [m.id, JSON.parse(readFileSync(new URL(`${set}/${m.id}.gold.json`, import.meta.url), 'utf8'))]),
+  );
 
 const reports = [];
 for (const path of process.argv.slice(2)) {
   const file = JSON.parse(readFileSync(path, 'utf8'));
+  const gold = goldOf(file.set === 'heldout-2' || file.dataset === 'heldout-2' ? 'heldout-2' : 'heldout');
   if (file.kind === 'silhouette-heldout-device') {
     const rows = file.documents.map((d) => ({ id: d.id, docType: d.docType, gold: gold[d.id], values: d.final?.values ?? null }));
     const first = file.documents.map((d) => ({ id: d.id, docType: d.docType, gold: gold[d.id], values: d.device?.values ?? null }));
     const ran = (r) => file.documents.filter((d) => d.ran === r).length;
     reports.push({ file: path, answered: { onDevice: ran('ON_DEVICE'), inCloud: ran('IN_CLOUD'), retried: file.documents.filter((d) => d.retried).length, notRun: ran('not-run') }, final: scoreSet(rows, 'final (what the person is shown)'), deviceFirst: scoreSet(first, 'first answer of the device') });
   } else {
-    const rows = file.documents.map((d) => ({ id: d.id, docType: d.docType, gold: gold[d.id], values: d.ok ? d.rehydrated : null }));
+    // What the app shows: since v1.37, a W-2 answer without the boxes left out (rehydratedUsed).
+    const rows = file.documents.map((d) => ({ id: d.id, docType: d.docType, gold: gold[d.id], values: d.ok ? (d.rehydratedUsed ?? d.rehydrated) : null }));
     reports.push({ file: path, cloud: scoreSet(rows, 'cloud answer'), leakCheck: { requestBodies: file.leakCheck.requestBodies, valuesFound: file.leakCheck.leaks.length } });
   }
 }

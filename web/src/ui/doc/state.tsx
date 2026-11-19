@@ -28,6 +28,8 @@ export interface Extraction {
   readonly deductionsNotRead?: boolean | undefined;
   /** Fields this device left out as not read (deductions, names); none feeds a result. */
   readonly notRead?: readonly string[] | undefined;
+  /** W-2 boxes left out of the answer, from the device or the cloud (DEVICE_READING.md section 9), and why. */
+  readonly leftOut?: readonly { readonly field: string; readonly problem: 'not-money' | 'not-a-year' }[] | undefined;
 }
 
 export interface DocumentState {

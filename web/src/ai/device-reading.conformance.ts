@@ -6,7 +6,7 @@ import { expect, it } from 'vitest';
 import { Raw } from '../core/types';
 import type { PlaceholderMap } from '../core/skeleton';
 import type { Skeleton } from '../core/types';
-import { corePointerProblems, deductionsProblems, incompleteNameProblems, notReadFields, pointerProblems, unconfirmedFields, ytdMissingWithCandidate } from '../core/pointer-check';
+import { corePointerProblems, deductionsProblems, incompleteNameProblems, notReadFields, pointerProblems, unconfirmedFields, w2LeftOut, w2PointerProblems, ytdMissingWithCandidate } from '../core/pointer-check';
 import { setModelProviderForTests } from './model-port';
 import { setDeviceModelForTests } from './device-fake';
 import { POINTER_SCHEMAS, activePointerConfig, extractPointers } from './tasks';
@@ -96,6 +96,19 @@ export function runDeviceReadingFixture(raw: unknown): void {
       expect(notReadFields(c.pointers, skeleton)).toEqual(c.expected.notRead);
       expect(ytdMissingWithCandidate(S, c.pointers, skeleton, map, J)).toBe(c.expected.ytdMissingWithCandidate);
       if (fixture.confirmedOnly && c.expected.unconfirmed) expect(unconfirmedFields(S, c.pointers, skeleton, map, J, fixture.confirmedOnly.language)).toEqual(c.expected.unconfirmed);
+    });
+  }
+
+  // Contract v1.37: the checks of a W-2 answer and the boxes left out (DEVICE_READING.md section 9).
+  const w2 = (fixture as unknown as { w2?: { cases: { id: string; document: string; pointers: Record<string, unknown>; expected: { problems: string[]; leftOut: { problems: string[]; fields: string[] } } }[] } }).w2;
+  it('has W-2 cases', () => expect(w2?.cases.length ?? 0).toBeGreaterThan(0));
+  for (const c of w2?.cases ?? []) {
+    it(`W-2 ${c.id}`, () => {
+      const { map } = doc(c.document);
+      expect(w2PointerProblems(POINTER_SCHEMAS.w2, c.pointers, map)).toEqual(c.expected.problems);
+      const left = w2LeftOut(POINTER_SCHEMAS.w2, c.pointers, map);
+      expect(left.problems).toEqual(c.expected.leftOut.problems);
+      expect(left.fields.map((f) => f.field)).toEqual(c.expected.leftOut.fields);
     });
   }
 

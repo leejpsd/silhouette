@@ -375,6 +375,14 @@ export function DocumentReviewScreen() {
     const isEditing = editing === row.name;
     const inputId = `field-${row.name}`;
     const shownValue = () => {
+      const left = row.text === '' && row.status !== 'confirmed' ? doc.extraction?.leftOut?.find((l) => l.field === row.name) : undefined;
+      if (left) {
+        return (
+          <span className="not-found" data-testid={`left-out-${row.name}`}>
+            {t(left.problem === 'not-a-year' ? 'review.leftOut.notAYear' : 'review.leftOut.notMoney')}
+          </span>
+        );
+      }
       if (row.text === '' && row.status !== 'confirmed' && doc.extraction?.notRead?.includes(row.name)) {
         return (
           <span className="not-found" data-testid={`not-read-${row.name}`}>

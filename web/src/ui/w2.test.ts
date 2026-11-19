@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { Raw } from '../core/types';
 import { skeletonize } from '../core/skeleton';
-import { w2PointerProblems } from '../core/pointer-check';
+import { w2LeftOut, w2PointerProblems } from '../core/pointer-check';
+import { leaveOutBoxes } from './doc/reading-checks';
 import { validateW2s, type W2Values } from '../core/validate';
 import { POINTER_SCHEMAS } from '../ai/tasks';
 import { basisTextW2, incomeBasis } from './screens/DocumentReview';
@@ -51,7 +52,19 @@ describe('w2PointerProblems', () => {
     void wages;
     expect(w2PointerProblems(POINTER_SCHEMAS.w2, noWages, map)).toEqual(['wages:missing']);
     expect(w2PointerProblems(POINTER_SCHEMAS.w2, { ...key, wages: 'W1' }, map)).toEqual(['wages:bad-reference']);
-    expect(w2PointerProblems(POINTER_SCHEMAS.w2, { ...key, taxYear: 'N14' }, map)).toEqual(['values:invalid']);
+    // An amount with cents is not a year either (validation/SPEC.md section 9: an integer from 2000 to 2100).
+    expect(w2PointerProblems(POINTER_SCHEMAS.w2, { ...key, taxYear: 'N14' }, map)).toEqual(['taxYear:not-a-year']);
+  });
+
+  it('refuses a money box answered from a number without cents, and leaves it out of the answer used', () => {
+    // N7 is the street number of the address, N8 the ZIP code: the sample prints its amounts with cents.
+    expect(w2PointerProblems(POINTER_SCHEMAS.w2, { ...key, wages: 'N7' }, map)).toEqual(['wages:not-money']);
+    const left = w2LeftOut(POINTER_SCHEMAS.w2, { ...key, wages: 'N8', taxYear: 'N1' }, map);
+    expect(left.fields).toEqual([{ field: 'wages', problem: 'not-money' }, { field: 'taxYear', problem: 'not-a-year' }]);
+    const used = leaveOutBoxes('w2', { ...key, wages: 'N8' }, map);
+    expect(used.pointers).not.toHaveProperty('wages');
+    expect(used.leftOut).toEqual([{ field: 'wages', problem: 'not-money' }]);
+    expect(leaveOutBoxes('w2', key, map)).toEqual({ pointers: key, leftOut: undefined });
   });
 
   it('the offline answer key covers the W-2 sample', () => {

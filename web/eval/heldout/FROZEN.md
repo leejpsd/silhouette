@@ -13,6 +13,10 @@ This set was added and committed before any document in it was read by the syste
 - No prompt, word list, schema or check is changed because of what this set shows. A later change that is measured on this set makes it no longer held out, and the README will say so.
 - The set is scored by the same rules as `eval/dataset/` (`eval/score.mjs`) and the on-device check (`shared/validation/DEVICE_CHECK.md` section 2).
 
+## After measuring
+
+- **2026-11-19, contract v1.37:** the W-2 checks were changed after seeing this set's W-2 results (`shared/CHANGELOG.md` v1.37). From then on, the six W-2s (`hw-*`) no longer count as held out; a second W-2 set, written independently and frozen before measuring, is in `../heldout-2/`. The 24 paystubs (`hp-*`) are unchanged and still held out.
+
 ## Files (SHA-256)
 
 | File | SHA-256 |

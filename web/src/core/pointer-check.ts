@@ -21,7 +21,7 @@
 
 import { reveal, Raw, type Skeleton } from './types';
 import { parseNumber, rehydrate, type PlaceholderMap, type PointerSchema } from './skeleton';
-import { dayNumber, parseDate, validatePaystubs, validateW2s, ValidationInputError, type PaystubValues, type W2Values } from './validate';
+import { dayNumber, parseDate, validatePaystubs, ValidationInputError, type PaystubValues, type W2Values } from './validate';
 
 /** Core checks that warn only when a reading is wrong (measured on all 38 English evaluation paystubs). */
 export const CORE_CHECKS: ReadonlySet<string> = new Set(['period-length', 'pay-date', 'ytd-gross', 'ytd-periods', 'dates-parsed']);
@@ -379,25 +379,40 @@ export function deductionsProblems(schema: PointerSchema, pointers: unknown, raw
   return [...new Set(problems)];
 }
 
+/** W-2 boxes that hold money (boxes 1, 2, 3, 5 and 16). */
+export const W2_MONEY_FIELDS: ReadonlySet<string> = new Set(['wages', 'federalIncomeTaxWithheld', 'socialSecurityWages', 'medicareWages', 'stateWages']);
+
 /**
- * Problems with a pointer answer for a Form W-2 (validation/SPEC.md section 9), read in one request: every
- * reference fits its field, box 1 (wages) is there, and the tax year is a year (a year read from the
- * form's title, the 2 of "W-2", is not).
+ * Problems with a W-2 answer, from the device or the cloud (validation/DEVICE_READING.md section 9): a
+ * reference that does not fit its field, a money box answered from a number without cents (a box number, a
+ * street number, a ZIP code), no wages in box 1, and a tax year that is not a year (the 2 of "W-2").
  */
 export function w2PointerProblems(schema: PointerSchema, pointers: unknown, rawMap: Raw<PlaceholderMap>): string[] {
   if (!isObject(pointers)) return ['not-an-object'];
-  const problems = coreFieldProblems(schema, pointers, reveal(rawMap));
+  const map = reveal(rawMap);
+  const problems = coreFieldProblems(schema, pointers, map);
+  // A reference that does not fit stops the checks there.
   if (problems.length > 0) return problems;
+  for (const field of W2_MONEY_FIELDS) if (notMoney(pointers[field], map)) problems.push(`${field}:not-money`);
   const v = reveal(rehydrate(schema, pointers, rawMap)) as unknown as W2Values;
   if (typeof v.wages !== 'number') problems.push('wages:missing');
-  try {
-    const result = validateW2s(Raw.of([v]));
-    for (const c of result.checks[0] ?? []) if (c.id === 'w2-year' && c.status === 'warn') problems.push('taxYear:not-a-year');
-  } catch (error) {
-    if (!(error instanceof ValidationInputError)) throw error;
-    problems.push('values:invalid');
-  }
+  // The year rule of validation/SPEC.md section 9 (check w2-year): an integer from 2000 to 2100.
+  const year = v.taxYear;
+  if (typeof year === 'number' && !(Number.isInteger(year) && year >= 2000 && year <= 2100)) problems.push('taxYear:not-a-year');
   return problems;
+}
+
+/** Why a box of a W-2 answer was left out. */
+export type W2LeftOutProblem = 'not-money' | 'not-a-year';
+
+/**
+ * The boxes of a W-2 answer left out as not read, on every answer used, from the device or the cloud
+ * (DEVICE_READING.md section 9): a money box that is not money, a tax year that is not a year. Code never
+ * picks another placeholder; the person types the box from the form.
+ */
+export function w2LeftOut(schema: PointerSchema, pointers: unknown, rawMap: Raw<PlaceholderMap>): { problems: string[]; fields: { field: string; problem: W2LeftOutProblem }[] } {
+  const problems = w2PointerProblems(schema, pointers, rawMap).filter((p) => p.endsWith(':not-money') || p === 'taxYear:not-a-year');
+  return { problems, fields: problems.map((p) => ({ field: p.split(':')[0] as string, problem: p.split(':')[1] as W2LeftOutProblem })) };
 }
 
 /** Problems with a whole answer (core and deductions), as one list. */

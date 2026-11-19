@@ -4,6 +4,7 @@ import { Raw, reveal } from '../src/core/types';
 import { rehydrate, skeletonize } from '../src/core/skeleton';
 import { allowlistFor, introducersFor } from '../src/ui/doc/allowlists';
 import { tidyNamePointers } from '../src/core/tidy';
+import { leaveOutBoxes } from '../src/ui/doc/reading-checks';
 import { extractPointers, presentSkeleton, TaskError, type DocType } from '../src/ai/tasks';
 import { asPublic } from '../src/core/types';
 import type { ExactProfile } from '../src/core/generalize';
@@ -27,6 +28,8 @@ export type EvalOutput =
       rehydrated: unknown;
       rehydratedRaw: unknown;
       rehydratedTidy: unknown;
+      rehydratedUsed: unknown;
+      leftOut: unknown;
       usage: unknown;
       latencyMs: number;
       inferenceSource: string;
@@ -50,12 +53,17 @@ async function evalExtract(input: EvalInput): Promise<EvalOutput> {
     const rehydrated = reveal(rehydrate(schema, pointers, map));
     const rehydratedRaw = reveal(rehydrate(schema, result.value, map));
     const rehydratedTidy = reveal(rehydrate(schema, tidied, map));
+    // What the app shows (contract v1.37): a W-2 answer without the boxes left out as not money or not a year.
+    const used = input.docType === 'w2' ? leaveOutBoxes('w2', pointers, map) : { pointers, leftOut: undefined };
+    const rehydratedUsed = reveal(rehydrate(schema, used.pointers, map));
     return {
       ok: true,
       pointers,
       rehydrated,
       rehydratedRaw,
       rehydratedTidy,
+      rehydratedUsed,
+      leftOut: used.leftOut ?? [],
       usage: result.usage ?? null,
       latencyMs: Math.round(performance.now() - started),
       inferenceSource: result.inferenceSource,

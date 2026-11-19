@@ -84,6 +84,24 @@ test.describe('Form W-2', () => {
     await expect(page.getByTestId('income-basis').getByRole('button', { name: 'Change the yearly income' })).toBeVisible();
   });
 
+  test('a cloud answer that points box 1 at the ZIP code and the tax year at the form title: both left out, said why, typed by the person', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    // N8 is the ZIP code of the address (no cents), N1 the 2 of "W-2" (contract v1.37, DEVICE_READING.md section 9).
+    await fakeCloudModel(page, { pointers: { ...fixturePointers('w2-en-01-correct'), wages: 'N8', taxYear: 'N1' } });
+    await page.goto('/');
+    await completeQuickCheck(page, { numChildren: '1', income: { band: '$30,000 to $44,999' } });
+    await page.getByRole('link', { name: 'Add a paystub or W-2' }).last().click();
+    await page.getByTestId('more-samples').locator('summary').click();
+    await page.getByRole('button', { name: 'W-2 for 2025 (text)' }).click();
+    await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Check what was found' })).toBeVisible();
+    await expect(page.getByTestId('left-out-wages')).toHaveText('Left out: what was found here is not an amount (a box number, a street number or a ZIP code). Type it from your form.');
+    await expect(page.getByTestId('left-out-taxYear')).toHaveText('Left out: what was found here is not a year. Type the tax year from your form.');
+    // The ZIP code is never shown as wages.
+    await expect(page.getByTestId('field-wages')).not.toContainText('90011');
+    await expect(page.getByTestId('field-medicareWages')).toContainText('28,880.18');
+  });
+
   test('a pasted W-2 is recognised by its title and read as a W-2; a pasted paystub is not', async ({ page, context }) => {
     await noOnDeviceModel(context);
     const cloud = await fakeCloudModel(page, { pointers: fixturePointers('w2-en-01-correct') });

@@ -9,11 +9,14 @@ import { buildReview } from '../src/core/review';
 import { tidyNamePointers } from '../src/core/tidy';
 import { extractPointers, POINTER_SCHEMAS, type DeviceAttempt } from '../src/ai/tasks';
 import { allowlistFor, introducersFor } from '../src/ui/doc/allowlists';
-import { readingChecks } from '../src/ui/doc/reading-checks';
+import { leaveOutBoxes, readingChecks } from '../src/ui/doc/reading-checks';
 import { availabilityStates, browserVersion, fieldStatuses, platformString, scoreFields, wrongFields, type FieldStatus } from '../src/ui/device-check/run';
 
-const texts = import.meta.glob('./heldout/*.txt', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
-const golds = import.meta.glob('./heldout/*.gold.json', { import: 'default', eager: true }) as Record<string, Record<string, unknown>>;
+/** ?set=heldout-2 reads eval/heldout-2/; the default is eval/heldout/. */
+const SET = new URLSearchParams(location.search).get('set') === 'heldout-2' ? 'heldout-2' : 'heldout';
+const allTexts = import.meta.glob(['./heldout/*.txt', './heldout-2/*.txt'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+const golds = import.meta.glob(['./heldout/*.gold.json', './heldout-2/*.gold.json'], { import: 'default', eager: true }) as Record<string, Record<string, unknown>>;
+const texts = Object.fromEntries(Object.entries(allTexts).filter(([p]) => p.startsWith(`./${SET}/`)));
 
 interface Doc {
   readonly id: string;
@@ -27,10 +30,10 @@ const DOCS: readonly Doc[] = Object.keys(texts)
   .filter((p) => p.endsWith('.txt'))
   .sort()
   .map((path) => {
-    const id = path.replace('./heldout/', '').replace('.txt', '');
-    const gold = golds[`./heldout/${id}.gold.json`];
+    const id = path.replace(`./${SET}/`, '').replace('.txt', '');
+    const gold = golds[`./${SET}/${id}.gold.json`];
     if (!gold) throw new Error(`no answer key for ${id}`);
-    return { id, docType: id.startsWith('hw-') ? 'w2' : 'paystub', layout: id.replace(/-\d+$/, ''), text: texts[path] as string, gold };
+    return { id, docType: id.startsWith('hw-') || id.startsWith('hv-') ? 'w2' : 'paystub', layout: id.replace(/-\d+$/, ''), text: texts[path] as string, gold };
   });
 
 const statusOf = (statuses: Record<string, FieldStatus>) => statuses;
@@ -51,7 +54,9 @@ async function readOne(doc: Doc) {
   const checks = readingChecks(skeleton, map, 'en', doc.docType);
   try {
     const result = await extractPointers(skeleton, doc.docType, 'en', { validate: checks.validate, checkParts: checks.checkParts });
-    const finalStatuses = fieldStatuses(review(result.value), doc.gold);
+    // What the app shows (contract v1.37): a W-2 answer without the boxes left out.
+    const used = leaveOutBoxes(doc.docType, result.value, map);
+    const finalStatuses = fieldStatuses(review(used.pointers), doc.gold);
     const attempt = result.deviceAttempt;
     const first = attempt ? deviceAnswer(attempt) : undefined;
     return {
@@ -66,8 +71,9 @@ async function readOne(doc: Doc) {
         : null,
       final: {
         statuses: statusOf(finalStatuses),
-        values: valuesOf(review(result.value)),
-        fields: scoreFields(review(result.value), doc.gold),
+        values: valuesOf(review(used.pointers)),
+        fields: scoreFields(review(used.pointers), doc.gold),
+        leftOut: used.leftOut ?? [],
         wrongFields: wrongFields(finalStatuses),
         notRead: result.notRead ?? [],
         deductionsNotRead: result.deductionsNotRead ?? false,
@@ -94,6 +100,7 @@ async function run() {
   const availability = await availabilityStates();
   const out = {
     kind: 'silhouette-heldout-device',
+    set: SET,
     date: new Date().toISOString(),
     browser: browserVersion(navigator.userAgent),
     platform: platformString(),

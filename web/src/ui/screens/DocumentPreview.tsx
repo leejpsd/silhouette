@@ -5,7 +5,7 @@ import { placeholderCounts, buildReview, type SourceSegment } from '../../core/r
 import { cancelPreparedReading, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
-import { readingChecks } from '../doc/reading-checks';
+import { leaveOutBoxes, readingChecks } from '../doc/reading-checks';
 import type { Skeleton } from '../../core/types';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
@@ -201,9 +201,9 @@ export function DocumentPreviewScreen() {
       const result = await extractPointers(skeleton, doc.docType, doc.language, { validate: checkAnswer, checkParts, onProgress: setStage });
       // Ids only (the model never sees a value): shown in the record beside the exact request.
       if (result.inferenceSource === 'IN_CLOUD') rememberReading(result.value as Readonly<Record<string, unknown>>);
-      const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
+      const { pointers, leftOut } = leaveOutBoxes(doc.docType, tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language)), map);
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
-      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead } });
+      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead, leftOut } });
       navigate({ name: 'doc-review' });
     } catch (error) {
       update({ error: classifyError(error) });
@@ -249,9 +249,9 @@ export function DocumentPreviewScreen() {
     update({ error: null });
     try {
       const result = await extractPointers(skeleton, doc.docType, doc.language, { deviceOnly: true, validate: checkAnswer, checkParts, onProgress: setStage });
-      const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language));
+      const { pointers, leftOut } = leaveOutBoxes(doc.docType, tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language)), map);
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
-      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead } });
+      update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead, leftOut } });
       navigate({ name: 'doc-review' });
     } catch (error) {
       update({ error: classifyError(error) });
