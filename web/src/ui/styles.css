@@ -3952,6 +3952,95 @@ main h2.judge-title {
   color: var(--icon);
 }
 
+/* The pointer, on the values found: the model's answer (a placeholder id, orange like every chip that
+   may leave), then the value this device put back, wiping in after it. Played once, on arrival. */
+.pointer-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: var(--space-sm) 0;
+  padding: 14px 16px;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+
+.pointer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 14px;
+}
+
+.pointer-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pointer-label {
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+}
+
+.pointer-answer {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  white-space: nowrap;
+  animation: rise-in var(--duration-reveal) var(--ease-standard) both;
+}
+
+.pointer-ref {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--redact);
+  color: var(--on-redact);
+  font-weight: 700;
+}
+
+.pointer-arrow {
+  display: inline-flex;
+  padding-bottom: 4px;
+  animation: fade-in var(--duration-reveal) var(--ease-fade) 350ms both;
+}
+
+.pointer-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  animation: value-back 450ms var(--ease-standard) 650ms both;
+}
+
+/* No room for the three in a row: the answer above the value, the arrow pointing down between them. */
+@media (max-width: 520px) {
+  .pointer-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .pointer-arrow {
+    padding: 0 0 0 2px;
+    transform: rotate(90deg);
+  }
+}
+
+@keyframes value-back {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.3;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
 /* Where each task runs, first: why it is hybrid, in measured figures. One card per recorded device and
    one for the cloud (dashed, as everything that may leave), side by side when there is room. */
 .measured {

@@ -33,6 +33,16 @@ test.describe('Document silhouette and pointer extraction', () => {
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
     await expect(page.getByTestId('inference-badge')).toContainText('Cloud');
     await expect(page.getByTestId('inference-badge')).toContainText('document silhouette only');
+    // The pointer, with this reading's own answer: the model's placeholder id, then the value put back.
+    const pointer = page.getByTestId('pointer-reveal');
+    await expect(pointer).toHaveAttribute('data-source', 'IN_CLOUD');
+    await expect(pointer.getByTestId('pointer-answer')).toHaveText(/"grossPay": "N\d+"/);
+    await expect(pointer.getByTestId('pointer-value')).toHaveText('1,271.88');
+    await expect(pointer).toContainText('The model in the cloud saw only N');
+    // The request that left carried the id, never the value.
+    const id = (await pointer.locator('.pointer-ref').innerText()).trim();
+    expect(cloud.bodies[0]).toContain(id);
+    expect(cloud.bodies[0]).not.toContain('1,271.88');
     const gross = page.getByTestId('field-grossPay');
     await expect(gross.getByTestId('value-grossPay')).toHaveText('1,271.88');
     // Where the value was found shows when the row is opened.
@@ -321,6 +331,8 @@ test.describe('Document silhouette and pointer extraction', () => {
     await page.getByRole('button', { name: 'Type the numbers instead' }).click();
     // Typing the numbers: nothing was looked for, so nothing is "not found".
     await expect(page.getByTestId('value-grossPay')).toHaveText('Not typed yet');
+    // No model answered: no pointer to show.
+    await expect(page.getByTestId('pointer-reveal')).toHaveCount(0);
   });
 
   test('manual entry with no model at all', async ({ page }) => {

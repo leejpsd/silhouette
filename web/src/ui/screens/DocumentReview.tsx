@@ -57,6 +57,43 @@ function displayText(field: ReviewField): string {
   return field.value === null ? '' : String(field.value);
 }
 
+/**
+ * The pointer, with this reading's own answer: the model answered one field with a placeholder id
+ * ("grossPay": "N12") and this device put the value back (1,271.88). It arrives in that order: the
+ * answer, then the value (styles.css, "The pointer"); with reduced motion both are simply there.
+ */
+function PointerReveal({ review, source }: { review: readonly ReviewField[]; source: string }) {
+  const { t } = useApp();
+  if (source !== 'ON_DEVICE' && source !== 'IN_CLOUD') return null;
+  const scalar = (f: ReviewField) => f.refs.length === 1 && f.value !== null && /^N[0-9]+$/.test(f.refs[0] as string);
+  const field = review.find((f) => f.name === 'grossPay' && scalar(f)) ?? review.find((f) => f.kind === 'number' && scalar(f));
+  if (!field) return null;
+  const ref = field.refs[0] as string;
+  const value = displayText(field);
+  return (
+    <figure className="pointer-reveal" data-testid="pointer-reveal" data-source={source}>
+      <div className="pointer-row">
+        <div className="pointer-side">
+          <span className="pointer-label">{t('review.pointer.said')}</span>
+          <code className="pointer-answer" data-testid="pointer-answer">
+            &quot;{field.name}&quot;: &quot;<span className="pointer-ref">{ref}</span>&quot;
+          </code>
+        </div>
+        <span className="pointer-arrow" aria-hidden="true">
+          <ArrowRight />
+        </span>
+        <div className="pointer-side">
+          <span className="pointer-label">{t('review.pointer.put')}</span>
+          <span className="pointer-value" data-testid="pointer-value">
+            {value}
+          </span>
+        </div>
+      </div>
+      <figcaption className="small">{t(source === 'IN_CLOUD' ? 'review.pointer.cloud' : 'review.pointer.device', { ref, value })}</figcaption>
+    </figure>
+  );
+}
+
 function initialRows(review: readonly ReviewField[] | null): { rows: Row[]; deductions: DeductionRow[] } {
   const rows: Row[] = [];
   let deductions: DeductionRow[] = [];
@@ -546,6 +583,7 @@ export function DocumentReviewScreen() {
           <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
         )}
       </div>
+      {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} />}
       <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
       {manual && manualHint && nothingTyped && (
         <p className="error" role="alert">
