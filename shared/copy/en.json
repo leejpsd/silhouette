@@ -659,5 +659,9 @@
   "pack.checked.short": "Rules checked against official sources {date}.",
   "pack.checked.title": "California rules, checked",
   "pack.checked.body": "These are real California and federal programs. Every limit and amount was compared with the agency’s own publication on {date}, and each program links to that source. Federal figures are for tax year 2026; the California credits use tax year 2025 figures until the 2026 ones are final. Results say “may qualify”, never more: the agency decides.",
-  "rail.checkedRules": "How the rules were checked"
+  "rail.checkedRules": "How the rules were checked",
+  "error.appCheck.automation": "The security check (reCAPTCHA) treated this browser as a bot, because automation software is controlling it, so the cloud service refused the request. The silhouette was not sent. Open the app in an ordinary browser window.",
+  "error.appCheck.refused": "The security check (reCAPTCHA) did not accept this visit as an ordinary one, so the cloud service refused the request. The silhouette was not sent. A VPN, strict privacy settings or a browser extension can cause this.",
+  "error.appCheck.unreachable": "The app could not reach the security check (reCAPTCHA) the cloud service asks for, so the silhouette was not sent. A content blocker or a weak connection can stop it.",
+  "error.appCheck.typeInstead": "Try again, or type the numbers instead."
 }

@@ -659,5 +659,9 @@
   "pack.checked.short": "{date}에 공식 출처와 대조한 규칙.",
   "pack.checked.title": "캘리포니아 규칙, 대조 완료",
   "pack.checked.body": "These are real California and federal programs. Every limit and amount was compared with the agency’s own publication on {date}, and each program links to that source. Federal figures are for tax year 2026; the California credits use tax year 2025 figures until the 2026 ones are final. Results say “may qualify”, never more: the agency decides.",
-  "rail.checkedRules": "규칙을 확인한 방법"
+  "rail.checkedRules": "규칙을 확인한 방법",
+  "error.appCheck.automation": "자동화 소프트웨어가 이 브라우저를 조종하고 있어 보안 검사(reCAPTCHA)가 봇으로 판단했고, 클라우드 서비스가 요청을 거절했습니다. 실루엣은 보내지 않았습니다. 일반 브라우저 창에서 앱을 여세요.",
+  "error.appCheck.refused": "보안 검사(reCAPTCHA)가 이 방문을 정상적인 접근으로 인정하지 않아 클라우드 서비스가 요청을 거절했습니다. 실루엣은 보내지 않았습니다. VPN, 강한 개인정보 설정, 브라우저 확장 프로그램이 원인일 수 있습니다.",
+  "error.appCheck.unreachable": "클라우드 서비스가 요구하는 보안 검사(reCAPTCHA)에 연결하지 못해 실루엣을 보내지 않았습니다. 콘텐츠 차단기나 약한 연결이 원인일 수 있습니다.",
+  "error.appCheck.typeInstead": "다시 시도하거나 숫자를 직접 입력하세요."
 }

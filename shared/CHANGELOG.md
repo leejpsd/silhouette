@@ -1,5 +1,15 @@
 # Contract changelog
 
+## v1.28 — 2026-11-19
+
+A refused security check says why.
+
+| Change | Why |
+|---|---|
+| `error.appCheck.automation`, `error.appCheck.refused`, `error.appCheck.unreachable`, `error.appCheck.typeInstead` | When App Check could not get a token, the app said only that it "happens now and then". It now says which of three causes it was: a browser controlled by automation software (treated as a bot), a visit reCAPTCHA did not accept as ordinary (403, after which the SDK waits a day), or no answer from reCAPTCHA at all. Each says the silhouette was not sent |
+
+Platforms: the web tells the three apart (`navigator.webdriver`; a 403 or the SDK's throttle in the error). iOS uses App Attest, which has no bot score; it keeps `error.app-check`. Reference tests: 30.
+
 ## v1.27 — 2026-11-19
 
 The California rules are checked against their sources, and one rule is corrected.

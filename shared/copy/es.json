@@ -659,5 +659,9 @@
   "pack.checked.short": "Reglas comparadas con fuentes oficiales el {date}.",
   "pack.checked.title": "Reglas de California, revisadas",
   "pack.checked.body": "Son programas reales de California y federales. Cada límite y monto se comparó con la publicación de la propia agencia el {date}, y cada programa enlaza a esa fuente. Las cifras federales son del año tributario 2026; los créditos de California usan cifras de 2025 hasta que las de 2026 sean finales. Los resultados dicen “es posible que califiques”, nunca más: la agencia decide.",
-  "rail.checkedRules": "Cómo se revisaron las reglas"
+  "rail.checkedRules": "Cómo se revisaron las reglas",
+  "error.appCheck.automation": "La verificación de seguridad (reCAPTCHA) consideró que este navegador es un bot, porque un software de automatización lo controla, así que el servicio en la nube rechazó la solicitud. La silueta no se envió. Abre la app en una ventana normal del navegador.",
+  "error.appCheck.refused": "La verificación de seguridad (reCAPTCHA) no aceptó esta visita como una visita normal, así que el servicio en la nube rechazó la solicitud. La silueta no se envió. Una VPN, una configuración de privacidad estricta o una extensión del navegador pueden causarlo.",
+  "error.appCheck.unreachable": "La app no pudo conectar con la verificación de seguridad (reCAPTCHA) que pide el servicio en la nube, así que la silueta no se envió. Un bloqueador de contenido o una conexión débil pueden impedirlo.",
+  "error.appCheck.typeInstead": "Inténtalo de nuevo o escribe los números."
 }
