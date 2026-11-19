@@ -33,6 +33,10 @@ test.describe('for judges: try it in two minutes', () => {
     await page.getByRole('button', { name: /^Use \$[\d,]+ as my yearly income$/ }).click();
     await expect(page.getByTestId('results-source')).toHaveAttribute('data-income-from', 'IN_CLOUD');
     await expect(page.getByTestId('income-from')).toContainText('by Firebase AI Logic in the cloud, from the silhouette only');
+    // How the yearly income was worked out, said with the results, and a way to change it.
+    await expect(page.getByTestId('income-basis')).toHaveAttribute('data-method', 'ytd');
+    await expect(page.getByTestId('income-basis')).toContainText('worked out from the year-to-date gross pay: $23,103.25 through');
+    await expect(page.getByTestId('income-basis')).toContainText('so this is a projection');
     await expect(page.getByTestId('judge-next-3').first()).toBeVisible();
     await expect(page.getByTestId('judge-next-1')).toHaveCount(0);
 
@@ -58,6 +62,8 @@ test.describe('for judges: try it in two minutes', () => {
     await page.getByRole('button', { name: 'Check these values' }).click();
     await page.getByRole('button', { name: /^Use \$[\d,]+ as my yearly income$/ }).click();
     await expect(page.getByTestId('income-from')).toContainText('from a recorded on-device reading');
+    await page.getByTestId('income-basis').getByRole('button', { name: 'Change the yearly income' }).click();
+    await expect(page).toHaveURL(/#\/q\/income/);
     // Nothing left: no request to the model, nothing in the record.
     expect(cloud.bodies).toEqual([]);
     await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');

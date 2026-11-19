@@ -19,7 +19,7 @@ import { emptyDocument, useDocument } from '../doc/state';
 import { BlockActions } from '../design/block';
 import { Alert, ArrowRight, Check, ChevronLeft, ChevronRight } from '../design/icons';
 import { Marker, Paper, ActionLabel } from '../design/parts';
-import { computeVerdicts } from '../quickcheck';
+import { computeVerdicts, type IncomeBasis } from '../quickcheck';
 import { BANDS } from '../pack';
 
 type Kind = ReviewField['kind'];
@@ -206,6 +206,17 @@ export function basisText(annual: Annualization, stubs: readonly PaystubValues[]
     return t('review.basis.averageMany', { sum: money(locale, used.reduce((a, b) => a + b, 0)), count: used.length, periods, amount });
   }
   return t('review.basis.average', { average: money(locale, used[0] ?? annual.basis.averageGrossCents ?? 0), periods, amount });
+}
+
+/** The basis kept with a yearly income worked out from paystubs, for the results to show. */
+export function incomeBasis(annual: Annualization): IncomeBasis | undefined {
+  if (annual.method === 'ytd') {
+    const months = annual.basis.elapsedMonths;
+    if (annual.basis.ytdCents === undefined || !annual.basis.referenceDate || !months) return undefined;
+    return { method: 'ytd', ytdCents: annual.basis.ytdCents, referenceDate: annual.basis.referenceDate, monthsNumerator: months.numerator, monthsDenominator: months.denominator };
+  }
+  if (annual.basis.averageGrossCents === undefined || annual.basis.periodsPerYear === undefined) return undefined;
+  return { method: 'average', averageCents: annual.basis.averageGrossCents, periodsPerYear: annual.basis.periodsPerYear };
 }
 
 /**
@@ -723,7 +734,7 @@ export function DocumentReviewScreen() {
               className="action"
               onClick={() => {
                 // Read from a paystub (not typed): the results say how it was read.
-                setAnswer('income', doc.extraction ? { kind: 'exact', amount: annual.annualIncome, from: { paystub: doc.extraction.inferenceSource } } : { kind: 'exact', amount: annual.annualIncome });
+                setAnswer('income', doc.extraction ? { kind: 'exact', amount: annual.annualIncome, from: { paystub: doc.extraction.inferenceSource, basis: incomeBasis(annual) } } : { kind: 'exact', amount: annual.annualIncome });
                 reset(false);
                 navigate({ name: 'results' });
               }}

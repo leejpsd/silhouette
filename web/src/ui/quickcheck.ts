@@ -6,10 +6,22 @@ import { Raw } from '../core/types';
 import { verdicts, type Answers, type ProgramVerdict, type RulePack, type Verdict } from '../core/rules';
 import type { Bands, ExactProfile, IncomeBand } from '../core/generalize';
 
-/** `from`: an exact income worked out from a paystub reading, and how the paystub was read. */
+/**
+ * How a yearly income was worked out from paystubs (validation/SPEC.md section 7), kept with it so the
+ * results can say so: year-to-date gross over the months elapsed, or gross per period × periods.
+ */
+export type IncomeBasis =
+  | { readonly method: 'ytd'; readonly ytdCents: number; readonly referenceDate: string; readonly monthsNumerator: number; readonly monthsDenominator: number }
+  | { readonly method: 'average'; readonly averageCents: number; readonly periodsPerYear: number };
+
+/** `from`: an exact income worked out from a paystub reading, how the paystub was read, and the basis. */
 export type IncomeAnswer =
   | { readonly kind: 'band'; readonly bandId: string }
-  | { readonly kind: 'exact'; readonly amount: number; readonly from?: { readonly paystub: 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY' } | undefined };
+  | {
+      readonly kind: 'exact';
+      readonly amount: number;
+      readonly from?: { readonly paystub: 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY'; readonly basis?: IncomeBasis | undefined } | undefined;
+    };
 export type AnswerValue = number | string | boolean | readonly string[] | IncomeAnswer;
 
 export function isIncomeAnswer(value: unknown): value is IncomeAnswer {

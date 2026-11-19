@@ -10,7 +10,8 @@ import type { ProgramVerdict } from '../../core/rules';
 import { useApp } from '../context';
 import { dynamicKey, formatMoney, programName } from '../i18n';
 import { PACK } from '../pack';
-import { groupByVerdict, isIncomeAnswer } from '../quickcheck';
+import { groupByVerdict, isIncomeAnswer, type IncomeAnswer } from '../quickcheck';
+import { incomeBasisLine } from '../income-basis';
 import { OPEN_RECORD_EVENT } from '../Chrome';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
@@ -64,7 +65,10 @@ function useIncomeFrom(): 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY' |
  * paystub, how it was read (on this device, in the cloud from the silhouette, or a recorded reading).
  */
 function ResultsSource() {
-  const { t } = useApp();
+  const { t, locale, steps, answers } = useApp();
+  const income = answers['income'];
+  const exact = isIncomeAnswer(income) && income.kind === 'exact' ? (income as Extract<IncomeAnswer, { kind: 'exact' }>) : null;
+  const basis = exact?.from?.basis;
   const sentSomething = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length > 0, () => false);
   const from = useIncomeFrom();
   return (
@@ -77,6 +81,22 @@ function ResultsSource() {
         <p className="small strong income-from" data-testid="income-from">
           {t('results.incomeFrom.lead', { how: t(dynamicKey(`results.incomeFrom.${from}`)) })}
         </p>
+      )}
+      {/* How the yearly income was worked out, and that a tax credit counts the whole year. */}
+      {exact && basis && (
+        <div className="income-basis" data-testid="income-basis" data-method={basis.method}>
+          <p className="small">{incomeBasisLine(t, locale, exact.amount, basis)}</p>
+          <p className="small muted">
+            {t('results.incomeBasis.note')}{' '}
+            <button
+              type="button"
+              className="text-link inline"
+              onClick={() => navigate({ name: 'question', id: steps.find((s) => s.kind === 'income')?.id ?? 'income', then: { name: 'results' } })}
+            >
+              {t('results.incomeBasis.change')}
+            </button>
+          </p>
+        </div>
       )}
     </div>
   );

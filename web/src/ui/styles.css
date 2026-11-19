@@ -851,6 +851,14 @@ main h3.small {
   margin: 0;
 }
 
+.income-basis {
+  flex-basis: 100%;
+}
+
+.income-basis p {
+  margin: 0;
+}
+
 .badge-sample::before,
 .badge-none::before {
   display: none;
