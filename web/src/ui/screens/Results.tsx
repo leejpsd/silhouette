@@ -343,6 +343,8 @@ function ProgramRow({ result: r, name, summary, current = false, order = 0 }: { 
           {t(dynamicKey(`verdict.short.${r.verdict}`))}
           {/* The amount is the point of the result: wide rows show it too. */}
           {r.estimatedAmount !== undefined && r.estimatedAmount > 0 && <span className="program-amount">{t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}</span>}
+          {/* Not a decision: wide rows show only the short word, so the way on is said under it. */}
+          {r.verdict === 'unlikely' && <span className="program-amount" data-testid="still-apply">{t('results.stillApply')}</span>}
         </span>
         <ChevronRight />
       </a>
