@@ -198,15 +198,16 @@ In the latest run (2026-11-17), all 24 cases ran on the device: 15 paystub readi
 
 <p><img src="docs/images/device-check.png" width="250" alt="Recorded on-device check, 2026-11-17, Chrome 157, macOS: 24 of 24 cases answered on this device, 14 of 15 readings with every yearly-income input right, 0 of 15 readings with a wrong value."></p>
 
-**On-device runs on an iPhone 17 Pro, 2026-11-17** ([`ios/eval/on-device/README.md`](ios/eval/on-device/README.md)). Five recorded runs of the same check with Apple's on-device model through Firebase AI Logic (iOS 26.5.2), each a JSON file in that folder.
+**On-device runs on an iPhone 17 Pro, 2026-11-17 and 2026-11-19** ([`ios/eval/on-device/README.md`](ios/eval/on-device/README.md)). Seven recorded runs of the same check with Apple's on-device model through Firebase AI Logic (iOS 26.5.2), each a JSON file in that folder.
 
 | Run | What changed before it | Answered on the device / in the cloud | Readings with a wrong value reaching the person |
 |---|---|---|---|
 | 1 (baseline) | The checks as first ported | 12 / 1 of 13 | 3 of 5 |
 | 3 | Each paystub read three times | 17 / 6 of 23 | 6 of 15 |
-| 5 (latest) | Values that feed no result shown only when confirmed; greedy sampling | 20 / 3 of 23 | **0 of 15** |
+| 5 | Values that feed no result shown only when confirmed; greedy sampling | 20 / 3 of 23 | 0 of 15 |
+| 7 (latest, 2026-11-19) | The app at the current contract (v1.42) | **23 / 0 of 23** | **0 of 15** |
 
-In the latest run every yearly-income input was right in 15 of 15 readings. Apple's model refuses one of the five paystubs before answering ("unsupported language", recorded in the run file with the error), and that paystub is read in the cloud after the failed on-device attempt, as a silhouette. Explanations and questions ran on the phone in 1 to 2 s each; a paystub took 6.5 s (median) on the device. The phone's model takes text only, so the photo case does not run there and is not counted. The price of showing only confirmed values on this model: names, hours and rate were marked "not read" in 9 of 12 on-device readings, and deductions in 6.
+In the latest run every case was answered on the phone and nothing went to the cloud, and every yearly-income input was right in 15 of 15 readings. In the 11-17 runs Apple's model refused one of the five paystubs before answering ("unsupported language", recorded in the run file with the error), and that paystub was read in the cloud as a silhouette; on 11-19 it was answered on the device in all three repetitions. Explanations and questions ran on the phone in 1.4 to 2.8 s each; a paystub took 8.3 s (median, 6.1 to 13.0 s) on the device. The phone's model takes text only, so the photo case does not run there and is not counted. The price of showing only confirmed values on this model: in the latest run names were marked "not read" in 12 of 15 readings, hours, rate and deductions in 9 of 15.
 
 **Explanations, 2026-11-14** ([`web/eval/results/answers-v5.md`](web/eval/results/answers-v5.md)). 12 real cloud replies (explanations and prepared questions, English and Spanish): none said anything about the person, and the check on model text blocked none.
 
@@ -218,7 +219,7 @@ In the latest run every yearly-income input was right in 15 of 15 readings. Appl
 
 - Current information and other help (Google Search grounding), help nearby (Google Maps grounding) and read aloud are built behind Remote Config flags that are off by default, and are tested only with replies faked in the shapes the API documents.
 - No on-device run has been made on Android.
-- On iPhone, one of the five check paystubs is refused by Apple's model as an unsupported language and is read in the cloud instead; the cause is open.
+- On iPhone, in the 11-17 runs one of the five check paystubs was refused by Apple's model as an unsupported language and read in the cloud instead; in the 11-19 runs the same paystub was answered on the device. The cause is open.
 
 ## What is different
 
@@ -256,7 +257,7 @@ As of 2026-11-19.
 | Platform | Contract | Done and verified | Not yet |
 |---|---|---|---|
 | Web | v1.42 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
-| iOS | v1.42 | Native SwiftUI app: California pack, the paystub flow, on-device reading in parts with the shared fixtures (Form W-2 checks included), explanations, the on-device check and the two-minute path: the pointer card with the line as the model saw it, what the paystub changed, the sample household named as such, the recorded cloud reading with its exact request. Five recorded runs on a real iPhone 17 Pro, including the cloud retry | Form W-2 as a document on iPhone; a build to install without Xcode; the one paystub Apple's model refuses is read in the cloud |
+| iOS | v1.42 | Native SwiftUI app: California pack, the paystub flow, on-device reading in parts with the shared fixtures (Form W-2 checks included), explanations, the on-device check and the two-minute path: the pointer card with the line as the model saw it, what the paystub changed, the sample household named as such, the recorded cloud reading with its exact request. Seven recorded runs on a real iPhone 17 Pro; the latest answered all 23 cases on the phone | Form W-2 as a document on iPhone; a build to install without Xcode |
 | Android | v1.18 | Native Compose app: California pack, document flow, on-device reading in parts with the shared fixtures, Firebase AI Logic (`firebase-ai` and `firebase-ai-ondevice`), the on-device check and the two-minute path. Verified with a scripted model | The current visual design, and a recorded run on a phone with Gemini Nano |
 
 Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/`](android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
