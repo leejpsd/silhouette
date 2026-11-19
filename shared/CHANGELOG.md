@@ -146,7 +146,7 @@ Platforms: port the one-line rule and run the validate fixture; a recording's he
 
 ## v1.24 — 2026-11-19
 
-Words for what a mid-term review of the main path asked for.
+Words for what a review of the main path asked for.
 
 | Change | Why |
 |---|---|
