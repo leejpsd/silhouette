@@ -530,8 +530,15 @@
       "language": "en",
       "platform": "ios",
       "key": "judges.step1.body",
-      "text": "Fills in the answers of an invented household and shows the results that the rules on this device give it. Nothing is sent.",
-      "shown": "Fills in the answers of an invented household and shows the results that the rules on this iPhone give it. Nothing is sent."
+      "text": "An invented household and its paystub. You see the paystub’s silhouette; Firebase AI Logic reads it on this device, or in the cloud as a silhouette only, and answers by pointing at the fields. This device puts the values back.",
+      "shown": "An invented household and its paystub. You see the paystub’s silhouette; Firebase AI Logic reads it on this iPhone, or in the cloud as a silhouette only, and answers by pointing at the fields. This iPhone puts the values back."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "judges.step2.body",
+      "text": "The rules on this device use the yearly income read from the paystub: which programs the household may qualify for, with amounts. Nothing about it is sent.",
+      "shown": "The rules on this iPhone use the yearly income read from the paystub: which programs the household may qualify for, with amounts. Nothing about it is sent."
     },
     {
       "language": "en",
@@ -551,15 +558,15 @@
       "language": "en",
       "platform": "ios",
       "key": "judges.withModel.ios",
-      "text": "This iPhone has the on-device model: in step 2 the silhouette is read on this device first, and nothing leaves when that reading passes its checks. If the device cannot read it reliably, the silhouette (never the values) is sent to the cloud. A program page can explain your own result here.",
-      "shown": "This iPhone has the on-device model: in step 2 the silhouette is read on this iPhone first, and nothing leaves when that reading passes its checks. If the iPhone cannot read it reliably, the silhouette (never the values) is sent to the cloud. A program page can explain your own result here."
+      "text": "This iPhone has the on-device model: in step 1 the silhouette is read on this device first, and nothing leaves when that reading passes its checks. If the device cannot read it reliably, the silhouette (never the values) is sent to the cloud.",
+      "shown": "This iPhone has the on-device model: in step 1 the silhouette is read on this iPhone first, and nothing leaves when that reading passes its checks. If the iPhone cannot read it reliably, the silhouette (never the values) is sent to the cloud."
     },
     {
       "language": "en",
       "platform": "ios",
       "key": "judges.withoutModel.ios",
-      "text": "This iPhone has no on-device model available: step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Apple Intelligence on, step 2 runs on this device.",
-      "shown": "This iPhone has no on-device model available: step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Apple Intelligence on, step 2 runs on this iPhone."
+      "text": "This iPhone has no on-device model available: step 1 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Apple Intelligence on, step 1 runs on this device.",
+      "shown": "This iPhone has no on-device model available: step 1 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Apple Intelligence on, step 1 runs on this iPhone."
     },
     {
       "language": "en",
@@ -691,8 +698,8 @@
       "language": "en",
       "platform": "ios",
       "key": "judges.canDownload",
-      "text": "This browser can download Chrome’s on-device model. With it, step 2 is read on this device and nothing leaves. Without it, step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud.",
-      "shown": "This browser can download Chrome’s on-device model. With it, step 2 is read on this iPhone and nothing leaves. Without it, step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud."
+      "text": "This browser can download Chrome’s on-device model. With it, step 1 is read on this device and nothing leaves. Without it, step 1 sends the silhouette (never the values) to Firebase AI Logic in the cloud, or uses a recorded on-device reading.",
+      "shown": "This browser can download Chrome’s on-device model. With it, step 1 is read on this iPhone and nothing leaves. Without it, step 1 sends the silhouette (never the values) to Firebase AI Logic in the cloud, or uses a recorded on-device reading."
     },
     {
       "language": "en",
@@ -777,6 +784,34 @@
       "key": "review.pointer.device",
       "text": "Even the model on this device answers only {ref}. This device puts {value} back from your paystub.",
       "shown": "Even the model on this iPhone answers only {ref}. This iPhone puts {value} back from your paystub."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "preview.useRecordedNote",
+      "text": "A recording of the on-device model’s answer, made {date}. This device puts the values back now; nothing is sent.",
+      "shown": "A recording of the on-device model’s answer, made {date}. This iPhone puts the values back now; nothing is sent."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "review.pointer.recorded",
+      "text": "The model on {machine} answered only {ref} (a recorded reading). This device put {value} back just now, from your paystub.",
+      "shown": "The model on {machine} answered only {ref} (a recorded reading). This iPhone put {value} back just now, from your paystub."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "results.incomeFrom.ON_DEVICE",
+      "text": "by the model on this device",
+      "shown": "by the model on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "results.sharpenHelpCloud",
+      "text": "Read as a silhouette in the cloud. Your values stay on this device.",
+      "shown": "Read as a silhouette in the cloud. Your values stay on this iPhone."
     },
     {
       "language": "en",
@@ -1307,8 +1342,15 @@
       "language": "en",
       "platform": "android",
       "key": "judges.step1.body",
-      "text": "Fills in the answers of an invented household and shows the results that the rules on this device give it. Nothing is sent.",
-      "shown": "Fills in the answers of an invented household and shows the results that the rules on this phone give it. Nothing is sent."
+      "text": "An invented household and its paystub. You see the paystub’s silhouette; Firebase AI Logic reads it on this device, or in the cloud as a silhouette only, and answers by pointing at the fields. This device puts the values back.",
+      "shown": "An invented household and its paystub. You see the paystub’s silhouette; Firebase AI Logic reads it on this phone, or in the cloud as a silhouette only, and answers by pointing at the fields. This phone puts the values back."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "judges.step2.body",
+      "text": "The rules on this device use the yearly income read from the paystub: which programs the household may qualify for, with amounts. Nothing about it is sent.",
+      "shown": "The rules on this phone use the yearly income read from the paystub: which programs the household may qualify for, with amounts. Nothing about it is sent."
     },
     {
       "language": "en",
@@ -1328,15 +1370,15 @@
       "language": "en",
       "platform": "android",
       "key": "judges.withModel.android",
-      "text": "This phone has the on-device model: in step 2 the silhouette is read on this device first, and nothing leaves when that reading passes its checks. If the device cannot read it reliably, the silhouette (never the values) is sent to the cloud. A program page can explain your own result here.",
-      "shown": "This phone has the on-device model: in step 2 the silhouette is read on this phone first, and nothing leaves when that reading passes its checks. If the phone cannot read it reliably, the silhouette (never the values) is sent to the cloud. A program page can explain your own result here."
+      "text": "This phone has the on-device model: in step 1 the silhouette is read on this device first, and nothing leaves when that reading passes its checks. If the device cannot read it reliably, the silhouette (never the values) is sent to the cloud.",
+      "shown": "This phone has the on-device model: in step 1 the silhouette is read on this phone first, and nothing leaves when that reading passes its checks. If the phone cannot read it reliably, the silhouette (never the values) is sent to the cloud."
     },
     {
       "language": "en",
       "platform": "android",
       "key": "judges.withoutModel.android",
-      "text": "This phone has no on-device model available: step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Gemini Nano ready on this phone, step 2 runs on this device.",
-      "shown": "This phone has no on-device model available: step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Gemini Nano ready on this phone, step 2 runs on this phone."
+      "text": "This phone has no on-device model available: step 1 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Gemini Nano ready on this phone, step 1 runs on this device.",
+      "shown": "This phone has no on-device model available: step 1 sends the silhouette (never the values) to Firebase AI Logic in the cloud. Offline, the sample’s answer key is used instead. With Gemini Nano ready on this phone, step 1 runs on this phone."
     },
     {
       "language": "en",
@@ -1468,8 +1510,8 @@
       "language": "en",
       "platform": "android",
       "key": "judges.canDownload",
-      "text": "This browser can download Chrome’s on-device model. With it, step 2 is read on this device and nothing leaves. Without it, step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud.",
-      "shown": "This browser can download Chrome’s on-device model. With it, step 2 is read on this phone and nothing leaves. Without it, step 2 sends the silhouette (never the values) to Firebase AI Logic in the cloud."
+      "text": "This browser can download Chrome’s on-device model. With it, step 1 is read on this device and nothing leaves. Without it, step 1 sends the silhouette (never the values) to Firebase AI Logic in the cloud, or uses a recorded on-device reading.",
+      "shown": "This browser can download Chrome’s on-device model. With it, step 1 is read on this phone and nothing leaves. Without it, step 1 sends the silhouette (never the values) to Firebase AI Logic in the cloud, or uses a recorded on-device reading."
     },
     {
       "language": "en",
@@ -1554,6 +1596,34 @@
       "key": "review.pointer.device",
       "text": "Even the model on this device answers only {ref}. This device puts {value} back from your paystub.",
       "shown": "Even the model on this phone answers only {ref}. This phone puts {value} back from your paystub."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "preview.useRecordedNote",
+      "text": "A recording of the on-device model’s answer, made {date}. This device puts the values back now; nothing is sent.",
+      "shown": "A recording of the on-device model’s answer, made {date}. This phone puts the values back now; nothing is sent."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "review.pointer.recorded",
+      "text": "The model on {machine} answered only {ref} (a recorded reading). This device put {value} back just now, from your paystub.",
+      "shown": "The model on {machine} answered only {ref} (a recorded reading). This phone put {value} back just now, from your paystub."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "results.incomeFrom.ON_DEVICE",
+      "text": "by the model on this device",
+      "shown": "by the model on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "results.sharpenHelpCloud",
+      "text": "Read as a silhouette in the cloud. Your values stay on this device.",
+      "shown": "Read as a silhouette in the cloud. Your values stay on this phone."
     },
     {
       "language": "es",
@@ -2084,8 +2154,15 @@
       "language": "es",
       "platform": "ios",
       "key": "judges.step1.body",
-      "text": "Rellena las respuestas de un hogar inventado y muestra los resultados que le dan las reglas en este dispositivo. No se envía nada.",
-      "shown": "Rellena las respuestas de un hogar inventado y muestra los resultados que le dan las reglas en este iPhone. No se envía nada."
+      "text": "Un hogar inventado y su talón de pago. Ves la silueta del talón; Firebase AI Logic la lee en este dispositivo, o en la nube solo como silueta, y responde señalando los campos. Este dispositivo devuelve los valores.",
+      "shown": "Un hogar inventado y su talón de pago. Ves la silueta del talón; Firebase AI Logic la lee en este iPhone, o en la nube solo como silueta, y responde señalando los campos. Este iPhone devuelve los valores."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "judges.step2.body",
+      "text": "Las reglas de este dispositivo usan el ingreso anual leído del talón: para qué programas podría calificar el hogar, con montos. No se envía nada sobre él.",
+      "shown": "Las reglas de este iPhone usan el ingreso anual leído del talón: para qué programas podría calificar el hogar, con montos. No se envía nada sobre él."
     },
     {
       "language": "es",
@@ -2224,8 +2301,8 @@
       "language": "es",
       "platform": "ios",
       "key": "judges.canDownload",
-      "text": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 2 se lee en este dispositivo y no sale nada. Sin él, el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube.",
-      "shown": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 2 se lee en este iPhone y no sale nada. Sin él, el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube."
+      "text": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 1 se lee en este dispositivo y nada sale. Sin él, el paso 1 envía la silueta (nunca los valores) a Firebase AI Logic en la nube, o usa una lectura grabada en un dispositivo.",
+      "shown": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 1 se lee en este iPhone y nada sale. Sin él, el paso 1 envía la silueta (nunca los valores) a Firebase AI Logic en la nube, o usa una lectura grabada en un dispositivo."
     },
     {
       "language": "es",
@@ -2261,6 +2338,34 @@
       "key": "review.pointer.device",
       "text": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu talón de pago.",
       "shown": "Incluso el modelo de este iPhone responde solo {ref}. Este iPhone devuelve {value} desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "preview.useRecordedNote",
+      "text": "Una grabación de la respuesta del modelo del dispositivo, hecha el {date}. Este dispositivo devuelve los valores ahora; no se envía nada.",
+      "shown": "Una grabación de la respuesta del modelo del dispositivo, hecha el {date}. Este iPhone devuelve los valores ahora; no se envía nada."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "review.pointer.recorded",
+      "text": "El modelo en {machine} respondió solo {ref} (una lectura grabada). Este dispositivo devolvió {value} ahora mismo, desde tu talón de pago.",
+      "shown": "El modelo en {machine} respondió solo {ref} (una lectura grabada). Este iPhone devolvió {value} ahora mismo, desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "results.incomeFrom.ON_DEVICE",
+      "text": "por el modelo de este dispositivo",
+      "shown": "por el modelo de este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "results.sharpenHelpCloud",
+      "text": "Se lee como silueta en la nube. Tus valores se quedan en este dispositivo.",
+      "shown": "Se lee como silueta en la nube. Tus valores se quedan en este iPhone."
     },
     {
       "language": "es",
@@ -2791,8 +2896,15 @@
       "language": "es",
       "platform": "android",
       "key": "judges.step1.body",
-      "text": "Rellena las respuestas de un hogar inventado y muestra los resultados que le dan las reglas en este dispositivo. No se envía nada.",
-      "shown": "Rellena las respuestas de un hogar inventado y muestra los resultados que le dan las reglas en este teléfono. No se envía nada."
+      "text": "Un hogar inventado y su talón de pago. Ves la silueta del talón; Firebase AI Logic la lee en este dispositivo, o en la nube solo como silueta, y responde señalando los campos. Este dispositivo devuelve los valores.",
+      "shown": "Un hogar inventado y su talón de pago. Ves la silueta del talón; Firebase AI Logic la lee en este teléfono, o en la nube solo como silueta, y responde señalando los campos. Este teléfono devuelve los valores."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "judges.step2.body",
+      "text": "Las reglas de este dispositivo usan el ingreso anual leído del talón: para qué programas podría calificar el hogar, con montos. No se envía nada sobre él.",
+      "shown": "Las reglas de este teléfono usan el ingreso anual leído del talón: para qué programas podría calificar el hogar, con montos. No se envía nada sobre él."
     },
     {
       "language": "es",
@@ -2931,8 +3043,8 @@
       "language": "es",
       "platform": "android",
       "key": "judges.canDownload",
-      "text": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 2 se lee en este dispositivo y no sale nada. Sin él, el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube.",
-      "shown": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 2 se lee en este teléfono y no sale nada. Sin él, el paso 2 envía la silueta (nunca los valores) a Firebase AI Logic en la nube."
+      "text": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 1 se lee en este dispositivo y nada sale. Sin él, el paso 1 envía la silueta (nunca los valores) a Firebase AI Logic en la nube, o usa una lectura grabada en un dispositivo.",
+      "shown": "Este navegador puede descargar el modelo del dispositivo de Chrome. Con él, el paso 1 se lee en este teléfono y nada sale. Sin él, el paso 1 envía la silueta (nunca los valores) a Firebase AI Logic en la nube, o usa una lectura grabada en un dispositivo."
     },
     {
       "language": "es",
@@ -2968,6 +3080,34 @@
       "key": "review.pointer.device",
       "text": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu talón de pago.",
       "shown": "Incluso el modelo de este teléfono responde solo {ref}. Este teléfono devuelve {value} desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "preview.useRecordedNote",
+      "text": "Una grabación de la respuesta del modelo del dispositivo, hecha el {date}. Este dispositivo devuelve los valores ahora; no se envía nada.",
+      "shown": "Una grabación de la respuesta del modelo del dispositivo, hecha el {date}. Este teléfono devuelve los valores ahora; no se envía nada."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.pointer.recorded",
+      "text": "El modelo en {machine} respondió solo {ref} (una lectura grabada). Este dispositivo devolvió {value} ahora mismo, desde tu talón de pago.",
+      "shown": "El modelo en {machine} respondió solo {ref} (una lectura grabada). Este teléfono devolvió {value} ahora mismo, desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "results.incomeFrom.ON_DEVICE",
+      "text": "por el modelo de este dispositivo",
+      "shown": "por el modelo de este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "results.sharpenHelpCloud",
+      "text": "Se lee como silueta en la nube. Tus valores se quedan en este dispositivo.",
+      "shown": "Se lee como silueta en la nube. Tus valores se quedan en este teléfono."
     }
   ]
 }

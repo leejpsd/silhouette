@@ -679,5 +679,17 @@
   "review.pointer.put": "이 기기가 되돌려 넣은 값",
   "review.pointer.cloud": "클라우드의 모델은 {ref}만 보았고 {value}는 보지 못했습니다. 이 기기가 급여명세서에서 값을 되돌려 넣었습니다.",
   "review.pointer.device": "이 기기의 모델도 {ref}로만 답합니다. 이 기기가 급여명세서에서 {value}를 되돌려 넣습니다.",
-  "review.moreValues.notFound": "다른 값 (찾음 {count} · 못 찾음 {missing})"
+  "review.moreValues.notFound": "다른 값 (찾음 {count} · 못 찾음 {missing})",
+  "badge.recorded": "Recorded on a device",
+  "reason.recorded-on-device": "a recorded on-device reading, nothing sent",
+  "preview.useRecorded": "No on-device model in this browser. Continue with this paystub as read on {machine}",
+  "preview.useRecordedNote": "A recording of the on-device model’s answer, made {date}. This device puts the values back now; nothing is sent.",
+  "review.pointer.recorded": "The model on {machine} answered only {ref} (a recorded reading). This device put {value} back just now, from your paystub.",
+  "results.incomeFrom.lead": "Yearly income read from the paystub: {how}.",
+  "results.incomeFrom.ON_DEVICE": "by the model on this device",
+  "results.incomeFrom.IN_CLOUD": "by Firebase AI Logic in the cloud, from the silhouette only",
+  "results.incomeFrom.RECORDED": "from a recorded on-device reading",
+  "results.incomeFrom.SAMPLE_KEY": "from the sample’s answer key, no AI",
+  "badge.rulesAndPaystub": "Rules + paystub",
+  "results.sharpenHelpCloud": "Read as a silhouette in the cloud. Your values stay on this device."
 }

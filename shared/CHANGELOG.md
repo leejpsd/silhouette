@@ -1,5 +1,18 @@
 # Contract changelog
 
+## v1.32 — 2026-11-19
+
+The model's reading leads the judges' path, and it can be seen without sending anything.
+
+| Change | Why |
+|---|---|
+| Judges' path reordered: step 1 reads the sample paystub (the invented household's other answers are filled in with it), step 2 shows the results it sharpens, step 3 compares what left. `judges.lead`, `judges.step1.*`, `judges.step2.*` reworded; `judges.withModel.*`, `judges.withoutModel.*`, `judges.canDownload` now say "step 1" | The first result a judge met was "Rules only"; the AI came after it, as an option. Now the first result already uses the income the model read |
+| `routing.json` `recordedSample` and reason `recorded-on-device`; `badge.recorded`, `reason.recorded-on-device`, `preview.useRecorded`, `preview.useRecordedNote`, `review.pointer.recorded` | A browser with no on-device model could only send the silhouette (behind reCAPTCHA) or open a statistics page. It can now continue with the same paystub as Chrome's on-device model read it (the recorded answer), put back on this device now, labelled as a recording |
+| `results.sharpenHelpCloud` ("Read as a silhouette in the cloud. Your values stay on this device."), shown instead of `results.sharpenHelp` when this device has no model for the paystub; Add a paystub uses `doc.where.cloud` the same way | A browser without a model was told "Read on this device" one screen before it said "Cloud" |
+| `results.incomeFrom.lead`, `results.incomeFrom.{ON_DEVICE,IN_CLOUD,RECORDED,SAMPLE_KEY}`, `badge.rulesAndPaystub` | When the yearly income came from a paystub reading, the results say so and how it was read, instead of "Rules only" |
+
+Platforms: iOS and Android reorder the judges' path the same way and show where the income came from; `recordedSample` is for the web (its recordings are Chrome runs). Reference tests: 30.
+
 ## v1.31 — 2026-11-19
 
 The folded values count the same way as the button above them.
