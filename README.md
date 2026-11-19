@@ -1,6 +1,6 @@
 # Silhouette
 
-**Silhouette helps a household with a low or moderate income in California find out, in about a minute, which public benefits it may qualify for, and then makes the answer sharper with a paystub.**
+**Silhouette helps a household with a low or moderate income in California find out, in about a minute, which public benefits it may qualify for, and then makes the answer sharper with a paystub or a W-2.**
 
 Exact values never leave the device. A cloud model only ever receives a *silhouette* of the document: every number, date and unknown word is replaced by a placeholder such as `N12`, `D3` or `W4`. The model answers with those ids, and the device puts the real values back.
 
@@ -23,7 +23,7 @@ The same flow as a native SwiftUI app (simulator captures; the recorded runs on 
 
 ### Try it
 
-**Hosted demo: [silhouette-hybrid.web.app](https://silhouette-hybrid.web.app/#/judges)** opens on three steps with one button each: a prepared household, a sample paystub and its silhouette, and the record of what left. Everything in it is invented.
+**Hosted demo: [silhouette-hybrid.web.app](https://silhouette-hybrid.web.app/#/judges)** opens on three steps with one button each: read an invented household's sample paystub (its silhouette, then Firebase AI Logic on this device or in the cloud), see the results it sharpens, and compare what left. In a browser without Chrome's on-device model you can also continue with the same paystub as Chrome's on-device model read it on a Mac (a recording, nothing sent). Everything in it is invented. [`#/tasks`](https://silhouette-hybrid.web.app/#/tasks) shows why each task runs where it does, in measured figures, how the routing is enforced, and the Remote Config values in use.
 
 <!-- VIDEO_URL: replace this comment with the demo video link at release -->
 **Video: added at release.**
@@ -80,7 +80,7 @@ Every limit and amount was read from the agencies' own publications on 2026-11-1
 
 <p><img src="docs/images/why-this-result.png" width="250" alt="Why this result: each criterion with Met, or the limit and your value, from the rules on this device."></p>
 
-**3. Add a paystub.** A "possible" result depends on the exact income, which a paystub can settle. The paystub can be a text PDF, pasted text, a photo (read only by an on-device model), typed numbers, or a bundled sample. The file is read on the device and not uploaded.
+**3. Add a paystub or a W-2.** A "possible" result depends on the exact income, which a document can settle. A paystub gives the year-to-date pay, from which the year is worked out; a Form W-2 states the year's wages (box 1), and the W-2s of one year from several employers are added together. The document can be a text PDF, pasted text, a photo (read only by an on-device model), typed numbers, or a bundled sample; a W-2 is recognised by its own title. The file is read on the device and not uploaded.
 
 <p><img src="docs/images/add-paystub.png" width="250" alt="Add a paystub: photo (on this device only), text PDF, paste the text, type the numbers, or sample documents."></p>
 
@@ -91,7 +91,7 @@ Every limit and amount was read from the agencies' own publications on 2026-11-1
   <img src="docs/images/silhouette-what-could-leave.png" width="250" alt="What could leave: the same paystub with every value replaced by a token chip that carries its id.">
 </p>
 
-**5. Review, confirm, sharper results.** Each value found is shown next to the line it came from, to confirm or change. A badge says where it was read ("Cloud · document silhouette only" here, in a browser without an on-device model). Deterministic checks and annualization turn the confirmed paystub into a yearly income, and the results update.
+**5. Review, confirm, sharper results.** The review opens with the reading's own answer: the model answered `"grossPay": "N12"`, and this device put back `1,271.88`. Each value found is shown next to the line it came from, to confirm or change. A badge says where it was read ("Cloud · document silhouette only" here, in a browser without an on-device model). Deterministic checks and annualization turn the confirmed document into a yearly income, and the results update: they say "Rules + paystub" (or W-2), how the document was read, and how the yearly income was worked out, with a link to change it.
 
 <p><img src="docs/images/review.png" width="250" alt="Check what was found: gross pay, year to date and pay date, each next to its source line, with Confirm and Change."></p>
 
@@ -242,7 +242,7 @@ As of 2026-11-19.
 
 | Platform | Contract | Done and verified | Not yet |
 |---|---|---|---|
-| Web | v1.27 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
+| Web | v1.35 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
 | iOS | v1.27 | Native SwiftUI app: California pack, document flow, on-device reading in parts with the shared fixtures, explanations, the on-device check and the two-minute path. Five recorded runs on a real iPhone 17 Pro, including the cloud retry | A build to install without Xcode; the one paystub Apple's model refuses is read in the cloud |
 | Android | v1.18 | Native Compose app: California pack, document flow, on-device reading in parts with the shared fixtures, Firebase AI Logic (`firebase-ai` and `firebase-ai-ondevice`), the on-device check and the two-minute path. Verified with a scripted model | The current visual design, and a recorded run on a phone with Gemini Nano |
 
@@ -290,17 +290,17 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 | [`firebase/`](firebase/README.md), [`firebase.json`](firebase.json) | Remote Config template, Firestore rules, hosting headers |
 | [`docs/`](docs/ARCHITECTURE.md) | Architecture and these images |
 
-**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.27. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
+**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.35. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Limits and what is next
 
 - CalEITC and the Young Child Tax Credit use tax year 2025 figures because the 2026 figures are not final. The separated-spouse exception for married filing separately is shown as "Possible", because the app does not ask whether the spouses lived apart.
-- One jurisdiction. Paystubs are the document type in the app flow.
+- One jurisdiction. Two document types: paystubs and Form W-2.
 - Photos are read only by an on-device model; there is no separate text recognition library.
 - The on-device checks have known gaps, listed in [`shared/validation/DEVICE_READING.md`](shared/validation/DEVICE_READING.md) section 9.
-- Next: the current design on Android and its recorded on-device run, a person's confirmation of the pack's numbers, and the video.
+- Next: the current design on Android and its recorded on-device run, and the video.
 
 ## License
 
