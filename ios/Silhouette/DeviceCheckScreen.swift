@@ -35,6 +35,20 @@ struct DeviceCheckScreen: View {
         }
     }
 
+    /// The iPhone a run file was made on ("iPhone 17 Pro"), from its device block or user agent.
+    static func deviceName(_ file: JSON) -> String {
+        let id = file["device"]?["model"]?.stringValue
+            ?? file["userAgent"]?.stringValue.flatMap { ua in ua.firstMatch(of: /iPhone\d+,\d+/).map { String($0.output) } }
+        let names = ["iPhone18,1": "iPhone 17 Pro", "iPhone18,2": "iPhone 17 Pro Max", "iPhone17,1": "iPhone 16 Pro", "iPhone17,2": "iPhone 16 Pro Max"]
+        return id.map { names[$0] ?? $0 } ?? (file["browser"]?.stringValue ?? "")
+    }
+
+    /// The run's date written as a date in the interface language ("November 17, 2026").
+    static func recordedDate(_ file: JSON, _ model: AppModel) -> String {
+        let iso = String((file["date"]?.stringValue ?? "").prefix(10))
+        return model.packDate(iso)
+    }
+
     /// "05:05 UTC" from an ISO date-time, when it has a time.
     static func recordedTime(_ iso: String?) -> String? {
         guard let iso, let t = iso.firstIndex(of: "T"), iso.count >= iso.distance(from: iso.startIndex, to: t) + 6 else { return nil }
@@ -72,8 +86,9 @@ struct DeviceCheckScreen: View {
             Display(text: model.t(recording == nil ? "deviceCheck.title" : "deviceCheck.titleRecording"), size: 50)
                 .accessibilityIdentifier("deviceCheck.title")
             if let recording {
-                Text(model.t("deviceCheck.recordingMeta", ["date": String((recording.file["date"]?.stringValue ?? "").prefix(10)),
-                                                           "browser": recording.file["browser"]?.stringValue ?? "",
+                // Whose run it is: the iPhone and the system it was made on, and when.
+                Text(model.t("deviceCheck.recordingMeta", ["date": Self.recordedDate(recording.file, model),
+                                                           "browser": Self.deviceName(recording.file),
                                                            "platform": recording.file["platform"]?.stringValue ?? ""]))
                     .sfFont(15, weight: .semibold).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("deviceCheck.recordingMeta")
@@ -83,7 +98,8 @@ struct DeviceCheckScreen: View {
             }
             NoteText(text: model.t("deviceCheck.lead"), size: 15)
             NoteText(text: model.t("deviceCheck.cloudNote"))
-            if !available {
+            // A recording made elsewhere is not about this iPhone: no "no model here" card over it.
+            if !available && recording == nil {
                 NoticeCard(text: model.t("deviceCheck.noModel"), systemImage: "iphone.slash").accessibilityIdentifier("deviceCheck.noModel")
             }
             if recording == nil && available {
@@ -96,8 +112,8 @@ struct DeviceCheckScreen: View {
                     .accessibilityIdentifier("deviceCheck.repeat")
             }
             // The actions sit in the content, under what they act on: pinned, they covered the
-            // switch and the results as they arrived.
-            actions
+            // switch and the results as they arrived. A recording's figures come first.
+            if recording == nil { actions }
             if let run, recording == nil {
                 Group {
                     if run.running {
@@ -114,6 +130,8 @@ struct DeviceCheckScreen: View {
             }
             // Results arrive below the status line; nothing above them moves while a run streams in.
             if let shown, !(shown["cases"]?.arrayValue ?? []).isEmpty { headlines(shown); summary(shown); caseList(shown) }
+            // Back to a live run, only where one can run.
+            if recording != nil && available { actions }
             recordings
           }
           .gutter()
@@ -171,7 +189,7 @@ struct DeviceCheckScreen: View {
     private func headlines(_ file: JSON) -> some View {
         let s = counted(file)
         return VStack(alignment: .leading, spacing: 10) {
-            headline("\(s.onDevice) / \(s.total)", model.t("deviceCheck.headline.onDevice"))
+            headline("\(s.onDevice) / \(s.total)", model.t(recording == nil ? "deviceCheck.headline.onDevice" : "deviceCheck.headline.onRecordingDevice"))
             if s.extractionCases > 0, let income = s.income {
                 headline("\(income.allRight) / \(s.extractionCases)", model.t("deviceCheck.headline.incomeRight")
                          + (income.notFound > 0 ? " " + model.t("deviceCheck.headline.notFound", ["count": String(income.notFound)]) : ""))
@@ -276,9 +294,10 @@ struct DeviceCheckScreen: View {
                 ForEach(Array(bundled.enumerated()), id: \.element.name) { i, r in
                     if i > 0 { RowDivider(inset: 64) }
                     Button { recording = (r.file, r.name) } label: {
-                        ListRow(title: model.t("deviceCheck.showRecording", ["date": String((r.file["date"]?.stringValue ?? "").prefix(10))]),
-                                // The time it was recorded tells two recordings of one day apart.
-                                subtitle: [r.file["platform"]?.stringValue, Self.recordedTime(r.file["date"]?.stringValue)].compactMap { $0 }.joined(separator: " · "),
+                        // The latest first; the one before it is named as the earlier run.
+                        ListRow(title: model.t(i == 0 ? "deviceCheck.recordingLatest" : "deviceCheck.recordingEarlier", ["date": Self.recordedDate(r.file, model)]),
+                                subtitle: [Self.deviceName(r.file), r.file["platform"]?.stringValue, Self.recordedTime(r.file["date"]?.stringValue)]
+                                    .compactMap { $0 }.joined(separator: " · "),
                                 titleSize: 15, titleWeight: .semibold) { IconTile(systemImage: "record.circle") }
                     }
                     .buttonStyle(.plain)
@@ -294,5 +313,40 @@ struct DeviceCheckScreen: View {
             if badFile { NoteText(text: model.t("deviceCheck.badFile")) }
         }
         .padding(.top, 8)
+    }
+}
+
+/// The three figures of the latest recorded run on a real iPhone, for the judges' page: answered on
+/// that device, yearly-income inputs right, wrong values that reached the person. Labelled as a
+/// recording, with the device and the date.
+struct RecordedFigures: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        if let latest = DeviceCheckScreen.bundledRecordings.first?.file {
+            let s = DeviceCheck.summarize(DeviceCheck.countedCases(latest), version: Int(latest["version"]?.numberValue ?? 3))
+            VStack(alignment: .leading, spacing: 8) {
+                Text(model.t("judges.recordedFigures", ["device": DeviceCheckScreen.deviceName(latest), "date": DeviceCheckScreen.recordedDate(latest, model)]))
+                    .sfFont(13, weight: .semibold).foregroundStyle(theme.note)
+                    .accessibilityIdentifier("judges.recordedFigures")
+                figure("\(s.onDevice) / \(s.total)", model.t("deviceCheck.headline.onRecordingDevice"))
+                if s.extractionCases > 0, let income = s.income {
+                    figure("\(income.allRight) / \(s.extractionCases)", model.t("deviceCheck.headline.incomeRight"))
+                }
+                if s.extractionCases > 0, let wrong = s.wrongReachedPerson {
+                    figure("\(wrong) / \(s.extractionCases)", model.t(wrong == 0 ? "deviceCheck.headline.wrongNone" : "deviceCheck.headline.wrong"))
+                }
+            }
+            .accessibilityElement(children: .contain)
+        }
+    }
+
+    private func figure(_ value: String, _ text: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text(verbatim: value).font(Font(DesignFonts.uiFont(.display, weight: 900, size: 26))).foregroundStyle(theme.ink)
+            Text(text).sfFont(13).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .combine)
     }
 }

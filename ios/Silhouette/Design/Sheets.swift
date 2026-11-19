@@ -186,10 +186,12 @@ private struct RecordSheet: View {
                     .accessibilityIdentifier("leaving.notCompleted")
             }
             if let cleared = model.recordClearedAt { NoteText(text: model.t("leaving.cleared", ["date": model.longDate(cleared)])) }
+            // The latest request that left is open: what was sent, where, the model and the time.
+            let latestId = entries.max(by: { $0.at < $1.at }).map(\.id)
             ListCard {
                 ForEach(Array(entries.enumerated()), id: \.element.id) { i, entry in
                     if i > 0 { RowDivider(inset: 0) }
-                    RecordEntry(entry: entry)
+                    RecordEntry(entry: entry, latest: entry.id == latestId)
                 }
             }
         }
@@ -236,8 +238,14 @@ private struct RecordEntry: View {
     @Environment(\.theme) private var theme
     @Environment(\.dynamicTypeSize) private var dynamicType
     let entry: OutboundEntry
-    @State private var showPayload = false
-    @State private var open = false
+    @State private var showPayload: Bool
+    @State private var open: Bool
+
+    init(entry: OutboundEntry, latest: Bool) {
+        self.entry = entry
+        _open = State(initialValue: latest)
+        _showPayload = State(initialValue: latest)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -247,8 +255,9 @@ private struct RecordEntry: View {
                 layout {
                     Text(model.time(entry.at)).monoFont(13, weight: 400).foregroundStyle(theme.note)
                     Text(entry.fields.isEmpty ? model.outboundFieldName("model-request") : entry.fields.map(model.outboundFieldName).joined(separator: ", "))
+                        // The whole title, on two lines when it needs them (never "Document silhouette, Mo…").
                         .sfFont(17).foregroundStyle(theme.ink)
-                        .lineLimit(dynamicType.isAccessibilitySize ? nil : 1)
+                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     status
                 }
@@ -258,6 +267,7 @@ private struct RecordEntry: View {
             if open && !entry.isAnsweredOnDevice {
               VStack(alignment: .leading, spacing: 10) {
                 NoteText(text: model.t("outbound.requestTo", ["destination": entry.destination, "path": ""]))
+                NoteText(text: model.longDate(entry.at))
                 if let m = entry.model { NoteText(text: model.t("outbound.model", ["model": m])) }
                 if let payload = entry.payload {
                     Button { withMotion(Motion.reveal) { showPayload.toggle() } } label: {

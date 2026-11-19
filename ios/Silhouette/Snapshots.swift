@@ -112,6 +112,12 @@ enum SnapshotRunner {
                 m.startAbout(first, long: false)
                 m.send(m.aboutKey(first, long: false))
             },
+            // The person's own result explained on this iPhone (device model only).
+            Scene(name: "program-why-answer", pages: 3, wait: 1.2) { m in
+                m.runPreparedHousehold()
+                m.openProgram(first)
+                m.explainPersonal(first)
+            },
             Scene(name: "record-empty") { m in m.sheet = .record },
             Scene(name: "record-sent", pages: 2, wait: 1.2) { m in
                 m.runPreparedHousehold()
@@ -135,7 +141,7 @@ enum SnapshotRunner {
                 m.openDocument()
                 m.typeNumbers()
             },
-            Scene(name: "judges") { m in m.open(.judges) },
+            Scene(name: "judges", pages: 2) { m in m.open(.judges) },
             Scene(name: "tasks") { m in m.open(.tasks) },
             Scene(name: "device-check", pages: 2) { m in m.open(.deviceCheck) },
             Scene(name: "device-check-recording", pages: 6) { m in

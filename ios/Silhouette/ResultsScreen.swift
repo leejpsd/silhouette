@@ -10,6 +10,7 @@ import SwiftUI
 struct ResultsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
+    @Environment(\.pinsActions) private var pinsActions
 
     /// At least one question has an answer (skipped questions do not count).
     private var answered: Bool {
@@ -25,7 +26,26 @@ struct ResultsScreen: View {
             }
             .padding(.bottom, 24)
         }
+        // The way to the paystub is on the first screen: pinned above the bars (in the content on a
+        // small iPhone or at large text).
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if answered && pinsActions {
+                paystubAction
+                    .gutter()
+                    .padding(.vertical, 8)
+                    .background(theme.ground)
+            }
+        }
         .heroScreen(theme)
+    }
+
+    /// On the judges' path the next step (the sample paystub, read by a model); otherwise add a paystub.
+    @ViewBuilder private var paystubAction: some View {
+        if model.onJudgesPath {
+            PrimaryButton(label: model.t("judges.step2.button"), id: "results.openSample", showsArrow: true) { model.openSamplePreview() }
+        } else {
+            PrimaryButton(label: model.t("results.addDocument"), id: "results.addDocument", showsArrow: true) { model.openDocument() }
+        }
     }
 
     private var topRow: some View {
@@ -73,13 +93,15 @@ struct ResultsScreen: View {
         } content: {
             FlowLayout(spacing: 8, lineSpacing: 8) {
                 HeroPill(label: model.t("badge.checkedHere"), systemImage: "iphone")
-                HeroPill(label: model.t("badge.noAi"))
+                HeroPill(label: model.t("badge.rulesOnly"))
             }
             .padding(.top, 16)
         }
         VStack(alignment: .leading, spacing: 12) {
             DraftLine()
             NoteText(text: model.t(model.anythingLeft ? "results.leadAfterSend" : "results.lead"))
+            if model.onJudgesPath { JudgeNext(step: 2) }
+            if !pinsActions { paystubAction }
             if model.isOffline {
                 NoticeCard(text: model.t("state.offline"), systemImage: "wifi.slash").accessibilityIdentifier("results.offline")
             }
@@ -110,15 +132,6 @@ struct ResultsScreen: View {
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("group.unlikely")
             }
-            // A paystub can sharpen the possible results.
-            Card {
-                Text(model.t("results.sharpen")).sfFont(17, weight: .semibold).foregroundStyle(theme.ink)
-                    .fixedSize(horizontal: false, vertical: true)
-                NoteText(text: model.t("results.sharpenHelp")).padding(.top, 4)
-                PrimaryButton(label: model.t("results.addDocument"), id: "results.addDocument") { model.openDocument() }
-                    .padding(.top, 12)
-            }
-            .padding(.top, 8)
             LinkText(label: model.t("results.edit"), id: "results.edit") { model.editAnswers() }
         }
         .gutter()
@@ -343,5 +356,34 @@ private struct UnlikelyRow: View {
         .accessibilityValue(model.t("verdict.\(result.verdict.rawValue)"))
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("program.\(result.programId)")
+    }
+}
+
+/// "Next for judges · step 2 of 3": the step the judges' path goes on to, one press away.
+struct JudgeNext: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.theme) private var theme
+    let step: Int
+
+    var body: some View {
+        Button {
+            if step == 2 { model.openSamplePreview() } else { model.sheet = .record }
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(model.t("judges.next", ["n": String(step)])).sfFont(13, weight: .semibold).foregroundStyle(theme.onHeroMuted)
+                    Text(model.t("judges.step\(step).title")).sfFont(17, weight: .semibold).foregroundStyle(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right").sfFont(14, weight: .semibold).foregroundStyle(theme.onHeroMuted)
+            }
+            .padding(16)
+            .background(RoundedRectangle(cornerRadius: 24).fill(theme.hero))
+            .contentShape(RoundedRectangle(cornerRadius: 24))
+        }
+        .buttonStyle(PressScale())
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("judges.next")
     }
 }

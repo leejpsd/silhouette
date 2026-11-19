@@ -91,8 +91,16 @@ struct DocumentReviewScreen: View {
                     }
                     NoteText(text: model.t(doc.extraction == nil ? "review.manualLead" : "review.lead"), size: 15)
                     if doc.pendingCount > 0 {
-                        SecondaryButton(label: model.t("review.confirmAllCount", ["count": String(doc.pendingCount)]), id: "review.confirmAll") {
-                            withMotion(Motion.short) { model.editDocument { $0.confirmAll() } }
+                        // Two steps while values are folded away: first show them all, then confirm
+                        // them (nothing is confirmed unseen).
+                        let folded = !moreShown && !restRows.isEmpty
+                        SecondaryButton(label: model.t(folded ? "review.seeAllCount" : "review.confirmAllCount", ["count": String(doc.pendingCount)]),
+                                        id: "review.confirmAll") {
+                            if folded {
+                                withMotion(Motion.reveal) { moreOpen = true }
+                            } else {
+                                withMotion(Motion.short) { model.editDocument { $0.confirmAll() } }
+                            }
                         }
                         NoteText(text: model.t("review.pending", ["count": String(doc.pendingCount)]))
                             .accessibilityIdentifier("review.pending")
@@ -306,7 +314,7 @@ struct DocumentReviewScreen: View {
         switch a.basis {
         case .ytd(let cents, let date, let num, let den, _):
             let months = CopyBook.formatAmount((Double(num) / Double(den) * 100).rounded() / 100, model.locale)
-            return model.t("review.basis.ytd", ["ytd": model.money(Double(cents) / 100, cents: true), "date": date, "months": months,
+            return model.t("review.basis.ytd", ["ytd": model.money(Double(cents) / 100, cents: true), "date": model.mediumDate(date), "months": months,
                                                 "amount": model.money(Double(a.annualIncome))])
         case .average(let avg, let periods, _, _):
             return model.t("review.basis.average", ["average": model.money(Double(avg) / 100, cents: true), "periods": String(periods),

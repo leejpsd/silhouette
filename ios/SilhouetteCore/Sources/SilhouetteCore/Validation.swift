@@ -295,8 +295,10 @@ public enum Validator {
         } else { add("net-sum", .skipped) }
 
         if let rate = s.rate, let hours = s.hoursHundredths, let gross = s.gross {
-            let diff = abs(rate * hours - gross * 100)
-            add("rate-hours", diff * 100 <= gross * 100 ? .ok : .warn)
+            // Rate × hours is the regular pay: overtime and other earnings add to it, so gross may be
+            // more. Only a product above gross (by more than 1 %) cannot be right.
+            let over = rate * hours - gross * 100
+            add("rate-hours", over * 100 <= gross * 100 ? .ok : .warn)
         } else { add("rate-hours", .skipped) }
 
         if let start = s.periodStart, let end = s.periodEnd {

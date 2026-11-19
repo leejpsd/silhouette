@@ -121,8 +121,8 @@ struct DocumentPreviewScreen: View {
         case 0:
             // A model reads the silhouette: on this device first, or in the cloud when this device has
             // no model. What could leave is exactly the silhouette shown above.
-            ProvenanceBadge(source: model.deviceModelAvailable ? .onDevice : .inCloud, reason: .documentSilhouetteOnly,
-                            noDeviceModel: !model.deviceModelAvailable)
+            // Where it runs is beside the action (decisionActions); here the request as it would be built.
+            RequestDisclosure()
             if unreliable {
                 // Kept on the device by the person's choice, and the device could not read it reliably:
                 // nothing was filled in and nothing was sent.
@@ -133,8 +133,6 @@ struct DocumentPreviewScreen: View {
                     .revealsIntoView()
                     .onAppear { AccessibilityNotification.Announcement(model.t("error.on-device-unreliable")).post() }
             } else {
-                NoteText(text: model.t(model.deviceModelAvailable ? "preview.onDevice" : "preview.cloud"))
-                    .accessibilityIdentifier("preview.modelLead")
                 if let error = model.documentError {
                     NoticeCard(text: model.t(error.copyKey)).accessibilityIdentifier("preview.error")
                         .revealsIntoView()
@@ -150,6 +148,18 @@ struct DocumentPreviewScreen: View {
         }
     }
 
+    /// Where the reading will run, in one line beside the action: the badge and why.
+    private var whereLine: some View {
+        HStack(spacing: 8) {
+            WhereBadge(kind: model.deviceModelAvailable ? .device : .cloud, label: model.t(model.deviceModelAvailable ? "badge.onDevice" : "badge.cloud"))
+            Text(model.t(model.deviceModelAvailable ? "doc.where.device" : "doc.where.cloud"))
+                .sfFont(13).foregroundStyle(theme.note).lineLimit(1).minimumScaleFactor(0.85)
+            Spacer(minLength: 0)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("preview.where")
+    }
+
     /// The actions, pinned above the pill: send the silhouette (redact) or keep it on this iPhone.
     @ViewBuilder private var decisionActions: some View {
         switch extractorKind {
@@ -163,7 +173,14 @@ struct DocumentPreviewScreen: View {
                 PrimaryButton(label: model.t("preview.sendSilhouette"), sends: true, id: "preview.sendSilhouette") { read(keep: false) }
                 SecondaryButton(label: model.t("error.typeInstead"), filled: false, id: "preview.typeInstead") { model.typeNumbers() }
             } else {
-                PrimaryButton(label: model.t("preview.sendSilhouette"), sends: true, id: "preview.send") { read(keep: false) }
+                whereLine
+                // With the model on this iPhone the reading starts here, and the action says so (ink); it
+                // leaves only if this iPhone cannot read it. Without one the action sends (orange).
+                if model.deviceModelAvailable {
+                    PrimaryButton(label: model.t("preview.readHere"), id: "preview.send", showsArrow: true) { read(keep: false) }
+                } else {
+                    PrimaryButton(label: model.t("preview.sendSilhouette"), sends: true, id: "preview.send") { read(keep: false) }
+                }
                 // Keep everything on this device: the device reads it when it has a model; otherwise type the numbers.
                 SecondaryButton(label: model.t("send.skip"), filled: false, id: "preview.keep") {
                     if model.deviceModelAvailable { read(keep: true) } else { model.typeNumbers() }
@@ -399,5 +416,38 @@ private struct ChipWipe: ViewModifier {
                 guard !shown else { return }
                 withAnimation(Motion.reveal.delay(Double(min(order, Motion.staggerCap)) * Motion.stagger)) { shown = true }
             }
+    }
+}
+
+/// "Show the request": the reading request exactly as the app builds it, as for explanations.
+private struct RequestDisclosure: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.theme) private var theme
+    @State private var open = false
+
+    var body: some View {
+        if let text = model.documentRequestText {
+            VStack(alignment: .leading, spacing: 8) {
+                Button { withMotion(Motion.reveal) { open.toggle() } } label: {
+                    HStack(spacing: 4) {
+                        Text(model.t("send.showRequest")).sfFont(15, weight: .semibold)
+                        Image(systemName: open ? "chevron.up" : "chevron.right").sfFont(12, weight: .semibold)
+                    }
+                    .foregroundStyle(theme.ink)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("preview.showRequest")
+                if open {
+                    VStack(alignment: .leading, spacing: 8) {
+                        NoteText(text: model.t("send.requestAsBuilt"))
+                        MonoBlock(text: text, id: "preview.request")
+                    }
+                    .revealsIntoView()
+                    .transition(Motion.revealTransition)
+                }
+            }
+        }
     }
 }

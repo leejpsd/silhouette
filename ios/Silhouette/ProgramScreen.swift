@@ -25,6 +25,15 @@ struct ProgramScreen: View {
                                 NoteText(text: model.t("detail.amount", ["amount": model.money(amount)])).padding(.top, 4)
                             }
                         }
+                        // A "Probably not" is a first check, not a decision: said before the reasons.
+                        if result.verdict == .unlikely {
+                            Text(model.t("detail.unlikelyNote")).sfFont(15).foregroundStyle(theme.ink)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16).padding(.vertical, 14)
+                                .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(theme.ink, style: StrokeStyle(lineWidth: 1, dash: [3, 3])))
+                                .accessibilityIdentifier("detail.unlikelyNote")
+                        }
                         WhySection(programId: programId)
                         if !result.dependsOn.isEmpty { dependsOn(result) }
                         HowItWorks(program: program)
@@ -64,6 +73,21 @@ struct ProgramScreen: View {
             let key = model.aboutKey(programId, long: false)
             // At accessibility sizes the button and its note stack, and the label wraps.
             let ax = dynamicType.isAccessibilitySize
+            // A result a document can confirm ("Possible") leads to the document first.
+            if result.verdict == .maybe {
+                Button { model.openDocument() } label: {
+                    HStack(spacing: 8) {
+                        Text(model.t("detail.confirmWithPaystub")).sfFont(17, weight: .semibold)
+                        Image(systemName: "arrow.right").sfFont(15, weight: .semibold).accessibilityHidden(true)
+                    }
+                    .foregroundStyle(Color(red: 0.055, green: 0.055, blue: 0.055))
+                    .frame(maxWidth: .infinity, minHeight: 52)
+                    .background(Capsule().fill(.white))
+                }
+                .buttonStyle(PressScale())
+                .accessibilityIdentifier("detail.confirmWithPaystub")
+                .padding(.top, 16)
+            }
             (ax ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(spacing: 14))) {
                 Button { model.startAbout(programId, long: false) } label: {
                     Label(model.t("about.explain"), systemImage: "bubble.left")
@@ -71,10 +95,17 @@ struct ProgramScreen: View {
                         .lineLimit(ax ? nil : 1)
                         .fixedSize(horizontal: !ax, vertical: ax)
                         .padding(.vertical, ax ? 8 : 0)
-                        .foregroundStyle(Color(red: 0.055, green: 0.055, blue: 0.055))
+                        .foregroundStyle(result.verdict == .maybe ? .white : Color(red: 0.055, green: 0.055, blue: 0.055))
                         .padding(.horizontal, 18)
                         .frame(minHeight: 48)
-                        .background(RoundedRectangle(cornerRadius: ax ? 20 : 24).fill(.white))
+                        // Second to the paystub when that leads: an outline then.
+                        .background {
+                            if result.verdict == .maybe {
+                                RoundedRectangle(cornerRadius: ax ? 20 : 24).strokeBorder(.white.opacity(0.6), lineWidth: 1.5)
+                            } else {
+                                RoundedRectangle(cornerRadius: ax ? 20 : 24).fill(.white)
+                            }
+                        }
                 }
                 .buttonStyle(PressScale())
                 .accessibilityIdentifier("about.explain")
@@ -82,7 +113,7 @@ struct ProgramScreen: View {
                 Text(model.t("about.seeFirst")).sfFont(13).foregroundStyle(theme.onHeroMuted)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.top, 16)
+            .padding(.top, result.verdict == .maybe ? 10 : 16)
         }
     }
 

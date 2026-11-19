@@ -95,6 +95,8 @@ final class AppModel {
     /// What was chosen on a question but not submitted, kept when the person leaves it by Back, so
     /// coming forward again shows the same choice (shared/design/DESIGN.md section 8).
     var questionDrafts: [String: QuestionDraft] = [:]
+    /// The judges' path is under way (their Quick Check ran): each screen names the next step.
+    var onJudgesPath = false
     /// The paystub in progress. Raw inside; saved only encrypted.
     private(set) var document: DocumentSession
     /// Verdicts that changed when the yearly income from a paystub was used.
@@ -250,15 +252,29 @@ final class AppModel {
         return f.string(from: date)
     }
 
+    /// The document reading request exactly as the app would build it for the cloud (the silhouette and
+    /// nothing else), for "Show the request" on the silhouette screen.
+    var documentRequestText: String? {
+        guard let silhouette, let template = pointerTemplate(version: currentConfig.promptPointerExtractV),
+              let request = try? Planner.pointers(silhouette.skeleton, language: document.language, template: template, pointerSchema: bundle.paystubSchema)
+        else { return nil }
+        return request.rendering.text
+    }
+
     /// A date the pack writes as `YYYY-MM-DD`, in the UI language ("November 12, 2026").
-    func packDate(_ iso: String) -> String {
+    func packDate(_ iso: String) -> String { packDate(iso, style: .long) }
+
+    /// The same, as a short date ("Oct 15, 2026").
+    func mediumDate(_ iso: String) -> String { packDate(iso, style: .medium) }
+
+    func packDate(_ iso: String, style: DateFormatter.Style) -> String {
         let parts = iso.split(separator: "-").compactMap { Int($0) }
         guard parts.count == 3, let date = Calendar(identifier: .gregorian).date(from: DateComponents(
             timeZone: TimeZone(identifier: "UTC"), year: parts[0], month: parts[1], day: parts[2])) else { return iso }
         let f = DateFormatter()
         f.locale = Locale(identifier: locale.rawValue)
         f.timeZone = TimeZone(identifier: "UTC")
-        f.dateStyle = .long
+        f.dateStyle = style
         // A date never breaks across lines ("November / 12, 2026"): no-break spaces inside it.
         return f.string(from: date).replacingOccurrences(of: " ", with: "\u{00A0}")
     }
@@ -530,7 +546,7 @@ final class AppModel {
                 return
             }
             persistDocument()
-            paystubPath.append(.documentReview)
+            await arriveAtReview()
             return
         }
         // Remote Config is fetched after the first cloud request (shared/RECORD.md section 1); until then the
@@ -561,6 +577,16 @@ final class AppModel {
             return
         }
         persistDocument()
+        await arriveAtReview()
+    }
+
+    /// The reading came back: the stage line says it is being checked for a moment (the app does check
+    /// it), then the review arrives with the standard push. Not in snapshots.
+    private func arriveAtReview() async {
+        if !MotionSwitch.off {
+            readingStage = .checking
+            try? await Task.sleep(for: .milliseconds(450))
+        }
         paystubPath.append(.documentReview)
     }
 

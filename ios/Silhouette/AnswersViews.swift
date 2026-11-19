@@ -367,7 +367,11 @@ struct AnswerView: View {
                 .padding(.top, 12)
                 .accessibilityIdentifier("answer.text")
             Rectangle().fill(theme.line.opacity(0.7)).frame(height: 0.5).padding(.vertical, 12)
-            NoteText(text: model.t("about.leadPublic"), size: 12)
+            // What is true for this task: your own result is written here from your answers; a typed
+            // question is answered here only; a public explanation sends only public material.
+            NoteText(text: model.t(result.reason == .yourResultStaysOnDevice ? "answer.notePersonal"
+                                   : result.reason == .typedTextMayBePersonal ? "ask.free.help" : "about.leadPublic"), size: 12)
+                .accessibilityIdentifier("answer.note")
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("answer")

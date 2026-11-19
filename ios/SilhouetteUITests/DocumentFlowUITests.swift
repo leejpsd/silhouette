@@ -19,8 +19,8 @@ final class DocumentFlowUITests: XCTestCase {
         XCTAssertTrue(caleitc.waitForExistence(timeout: 5))
         XCTAssertEqual(caleitc.value as? String, "Possible — a document can confirm")
 
-        app.tapButton("results.addDocument")
-        app.tapButton("doc.sample.paystub-en-01")
+        // On the judges' path the next step is one press: the sample paystub.
+        app.tapButton("results.openSample")
         XCTAssertTrue(app.element("preview.title").waitForExistence(timeout: 5))
         XCTAssertTrue(app.element("source.badge").exists, "sample answers are labelled")
         app.tapButton("preview.sampleButton")
@@ -28,6 +28,8 @@ final class DocumentFlowUITests: XCTestCase {
         let gross = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "1,271.88")).firstMatch
         XCTAssertTrue(gross.waitForExistence(timeout: 5), "gross pay from the sample is shown")
         XCTAssertTrue(app.element("review.basisDate").exists, "the date the yearly income was worked out from")
+        // Two steps: the first press shows the folded values ("See all"), the second confirms them.
+        app.tapButton("review.confirmAll")
         app.tapButton("review.confirmAll")
         app.tapButton("review.useIncome")
         let change = app.element("review.change.caleitc")

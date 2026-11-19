@@ -19,7 +19,9 @@ struct StartScreen: View {
             VStack(alignment: .leading, spacing: 16) {
                 // The headline keeps three lines (it steps down in size, in Spanish too), so the first
                 // screen holds the hero, the example, the way in and the sample, none of them cut.
-                Hero(title: model.t("start.title"), size: short ? 40 : 56,
+                // Who it is for, above the headline.
+                Hero(eyebrow: model.bundle.copy.has("pack.audience") ? model.t("pack.audience") : nil,
+                     title: model.t("start.title"), size: short ? 40 : 56,
                      lead: short && !typeSize.isAccessibilitySize ? nil : "\(model.t("start.leadShort")) \(model.t("start.promiseShort"))",
                      titleId: "start.title", titleLines: typeSize.isAccessibilitySize ? 5 : 3) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -49,6 +51,9 @@ struct StartScreen: View {
                             .onAppear { AccessibilityNotification.Announcement(model.t(notice)).post() }
                     }
                     ExampleCard()
+                    // What is different: the model points at a placeholder and never sees the value.
+                    NoteText(text: model.t("start.pointer"), size: 15)
+                        .accessibilityIdentifier("start.pointer")
                     VStack(spacing: 4) {
                         primary
                         SecondaryButton(label: model.t("sample.try"), filled: false, id: "start.sample") { model.openDocument() }

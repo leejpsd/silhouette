@@ -34,6 +34,8 @@ struct JudgesScreen: View {
                         .padding(.top, 10)
                         .accessibilityIdentifier("judges.device")
                     fact(model.t("judges.factFallback"), model.t("judges.factReplays"))
+                    // The latest real iPhone run, on this page: what the check measured there.
+                    RecordedFigures().padding(.top, 12)
                 }
                 if !pinsActions { runButton }
                 ListCard {
@@ -133,6 +135,7 @@ extension AppModel {
     /// Judges, step 1: the prepared household's answers, then the results. Nothing is sent.
     func runPreparedHousehold() {
         restartForDemo()
+        onJudgesPath = true
         // The judges' household of shared/rulepacks/us-ca/judges-household.json (synthetic).
         for (id, value) in bundle.judgesHousehold?.answers ?? [] where session.step(id) != nil { answer(id, value) }
         showResults()
