@@ -1,5 +1,17 @@
 # Contract changelog
 
+## v1.40 — 2026-11-19
+
+What the document did, first on the results.
+
+| Change | Why |
+|---|---|
+| `results.docEffect.*`: a card first on the results, "What your paystub changed" (or W-2): how it was read, the yearly income, the questions it answered, how many results it changed; each changed row says what it was (`results.docEffect.was`); how the income was worked out behind a disclosure (`results.docEffect.how`) | Reviewers: the model's part was buried under the arithmetic and an 11-value review; the payoff (results that changed, with amounts) was not shown as the document's doing |
+| `results.whoDecided.{paystub,w2}`: the rules decided each result; the AI only found where the values are, without seeing them | Why the AI does not decide eligibility, said where the result is |
+| A paystub or W-2 used for the yearly income also answers "money from work" with yes when it was not already | Wages on a paystub or W-2 are earned income: one document, two answers |
+
+Platforms: the same card and answers. Reference tests: 30.
+
 ## v1.39 — 2026-11-19
 
 The "unlikely" result no longer reads as a no.
