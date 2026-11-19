@@ -14,6 +14,8 @@ struct DocumentPreviewScreen: View {
     @Environment(\.pinsActions) private var pinsActions
     @State private var leave = true
     @State private var reading = false
+    /// The exact request, over the screen.
+    @State private var showRequest = false
 
     private func read(keep: Bool) {
         guard !reading else { return }
@@ -83,6 +85,7 @@ struct DocumentPreviewScreen: View {
             }
         }
         .animation(Motion.named(Motion.reveal), value: model.readingShow == nil)
+        .sheet(isPresented: $showRequest) { RequestSheet().environment(model).environment(\.theme, theme) }
     }
 
     /// A hidden word as the document writes it (they are kept lower-cased for matching).
@@ -130,8 +133,9 @@ struct DocumentPreviewScreen: View {
         case 0:
             // A model reads the silhouette: on this device first, or in the cloud when this device has
             // no model. What could leave is exactly the silhouette shown above.
-            // Where it runs is beside the action (decisionActions); here the request as it would be built.
-            RequestDisclosure()
+            // Where it runs is beside the action (decisionActions), with the exact request; here, with the
+            // model on this iPhone, what happens if it cannot read it.
+            if model.deviceModelAvailable { NoteText(text: model.t("preview.onDevice")).accessibilityIdentifier("preview.onDeviceNote") }
             if unreliable {
                 // Kept on the device by the person's choice, and the device could not read it reliably:
                 // nothing was filled in and nothing was sent.
@@ -179,16 +183,25 @@ struct DocumentPreviewScreen: View {
         .accessibilityIdentifier("preview.useRecordedCloud")
     }
 
-    /// Where the reading will run, in one line beside the action: the badge and why.
+    /// Where the reading goes, beside the action (contract v1.43): the badge and the destination, and the
+    /// exact request one press away.
     private var whereLine: some View {
-        HStack(spacing: 8) {
-            WhereBadge(kind: model.deviceModelAvailable ? .device : .cloud, label: model.t(model.deviceModelAvailable ? "badge.onDevice" : "badge.cloud"))
-            Text(model.t(model.deviceModelAvailable ? "doc.where.device" : "doc.where.cloud"))
-                .sfFont(13).foregroundStyle(theme.note).lineLimit(1).minimumScaleFactor(0.85)
-            Spacer(minLength: 0)
+        VStack(alignment: .leading, spacing: 0) {
+            DestinationLine(cloud: !model.deviceModelAvailable, id: "preview.where")
+            if model.documentRequestText != nil {
+                Button { showRequest = true } label: {
+                    HStack(spacing: 4) {
+                        Text(model.t("send.showJson")).sfFont(13, weight: .semibold).underline(color: theme.underline)
+                        Image(systemName: "chevron.right").sfFont(11, weight: .semibold)
+                    }
+                    .foregroundStyle(theme.ink)
+                    .frame(minHeight: 32)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("preview.showRequest")
+            }
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("preview.where")
     }
 
     /// The actions, pinned above the pill: send the silhouette (redact) or keep it on this iPhone.
@@ -450,35 +463,36 @@ private struct ChipWipe: ViewModifier {
     }
 }
 
-/// "Show the request": the reading request exactly as the app builds it, as for explanations.
-private struct RequestDisclosure: View {
+/// "Show the exact request": the reading request exactly as the app builds it, the silhouette and nothing
+/// else, in a sheet over the silhouette screen.
+private struct RequestSheet: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
-    @State private var open = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        if let text = model.documentRequestText {
-            VStack(alignment: .leading, spacing: 8) {
-                Button { withMotion(Motion.reveal) { open.toggle() } } label: {
-                    HStack(spacing: 4) {
-                        Text(model.t("send.showRequest")).sfFont(15, weight: .semibold)
-                        Image(systemName: open ? "chevron.up" : "chevron.right").sfFont(12, weight: .semibold)
-                    }
-                    .foregroundStyle(theme.ink)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                    .contentShape(Rectangle())
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    DestinationLine(cloud: !model.deviceModelAvailable)
+                    NoteText(text: model.t("send.requestAsBuilt"))
+                    if let text = model.documentRequestText { MonoBlock(text: text, id: "preview.request") }
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("preview.showRequest")
-                if open {
-                    VStack(alignment: .leading, spacing: 8) {
-                        NoteText(text: model.t("send.requestAsBuilt"))
-                        MonoBlock(text: text, id: "preview.request")
-                    }
-                    .revealsIntoView()
-                    .transition(Motion.revealTransition)
+                .padding(16)
+            }
+            .background(theme.ground.ignoresSafeArea())
+            .navigationTitle(model.t("send.showJson"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { dismiss() } label: { Image(systemName: "xmark") }
+                        .accessibilityLabel(model.t("nav.close"))
+                        .accessibilityIdentifier("request.close")
                 }
             }
         }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .presentationBackground(theme.ground)
     }
 }

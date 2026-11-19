@@ -269,9 +269,13 @@ private struct RecordEntry: View {
                 recorded(recording).revealsIntoView().transition(Motion.revealTransition)
             } else if open && !entry.isAnsweredOnDevice {
               VStack(alignment: .leading, spacing: 10) {
-                NoteText(text: model.t("outbound.requestTo", ["destination": entry.destination, "path": ""]))
-                NoteText(text: model.longDate(entry.at))
+                // Where it went (the endpoint for a model request), the model, how it was answered and when.
+                NoteText(text: model.t("outbound.requestTo", ["destination": entry.destination,
+                                                              "path": entry.channel == .aiCloud ? entry.model.flatMap(FirebaseServices.modelPath) ?? "" : ""]))
+                    .accessibilityIdentifier("record.endpoint")
                 if let m = entry.model { NoteText(text: model.t("outbound.model", ["model": m])) }
+                NoteText(text: model.statusText(entry)).accessibilityIdentifier("record.status")
+                NoteText(text: model.longDate(entry.at)).accessibilityIdentifier("record.time")
                 if let payload = entry.payload {
                     Button { withMotion(Motion.reveal) { showPayload.toggle() } } label: {
                         HStack(spacing: 4) {
@@ -282,7 +286,7 @@ private struct RecordEntry: View {
                         .frame(minHeight: 44)
                     }
                     .buttonStyle(.plain)
-                    if showPayload { MonoBlock(text: payload.text).revealsIntoView().transition(Motion.revealTransition) }
+                    if showPayload { MonoBlock(text: payload.text, id: "record.payload").revealsIntoView().transition(Motion.revealTransition) }
                 }
               }
               .revealsIntoView()

@@ -25,6 +25,13 @@ enum FirebaseServices {
     nonisolated(unsafe) private(set) static var isConfigured = false
     static var hasConfiguration: Bool { Bundle.main.url(forResource: "GoogleService-Info", withExtension: "plist") != nil }
 
+    /// The path a cloud model request goes to (the Gemini Developer API backend through Firebase AI Logic),
+    /// for the record; nil without a Firebase configuration.
+    static func modelPath(_ model: String) -> String? {
+        guard isConfigured, let project = FirebaseApp.app()?.options.projectID else { return nil }
+        return "/v1beta/projects/\(project)/models/\(model):generateContent"
+    }
+
     /// Call once at launch, before anything else touches Firebase. Makes no network request.
     static func configure() {
         guard !isConfigured, hasConfiguration else { return }

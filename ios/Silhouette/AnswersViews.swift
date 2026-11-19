@@ -469,7 +469,7 @@ struct SendSheet: View {
             }
             Button { withMotion(Motion.reveal) { showRequest.toggle() } } label: {
                 HStack(spacing: 4) {
-                    Text(model.t("send.showRequest")).sfFont(15, weight: .semibold)
+                    Text(model.t("send.showJson")).sfFont(15, weight: .semibold)
                     Image(systemName: showRequest ? "chevron.up" : "chevron.right").sfFont(12, weight: .semibold)
                 }
                 .foregroundStyle(theme.ink)
@@ -528,6 +528,9 @@ struct SendFooter: View {
             if model.isOffline {
                 NoticeCard(text: model.t("state.offline"), systemImage: "wifi.slash").accessibilityIdentifier("send.offline")
             }
+            // Where it goes, beside the button that sends it (contract v1.43).
+            // A request this iPhone prefers to answer goes to the cloud when it has no model of its own.
+            DestinationLine(cloud: AnswerSession.destination(of: request) == .cloud || !model.deviceModelAvailable, id: "send.destination")
             PrimaryButton(label: count > 1 ? model.t("send.sendLines", ["count": model.number(Double(count))]) : model.t("send.send"),
                           sends: true, id: "send.send") { model.send(key) }
                 .disabled(model.isOffline)
@@ -573,5 +576,26 @@ struct DashedRule: Shape {
         p.move(to: CGPoint(x: rect.minX, y: rect.midY))
         p.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
         return p
+    }
+}
+
+/// Where a request goes, in one line beside the button that sends it: the badge and `send.destination.*`.
+struct DestinationLine: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.theme) private var theme
+    let cloud: Bool
+    var id = ""
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            WhereBadge(kind: cloud ? .cloud : .device, label: model.t(cloud ? "badge.cloud" : "badge.onDevice"))
+                .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 4 }
+            Text(model.t(cloud ? "send.destination.cloud" : "send.destination.device"))
+                .sfFont(13).foregroundStyle(theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(id)
     }
 }
