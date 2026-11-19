@@ -7,6 +7,7 @@ The "unlikely" result no longer reads as a no.
 | Change | Why |
 |---|---|
 | `verdict.unlikely` "Probably not" → "Not from these answers — you can still apply"; `verdict.short.unlikely` → "Not from these answers" (es, ko likewise) | A reviewer speaking for the people it is for: a household that is eligible after all (a limit that is close, an answer that changed, a rule the check does not cover) could stop at "Probably not" in the list, before the program page says it is not a decision |
+| `results.stillApply` "You can still apply", under the short word on wide result rows | Wide rows show only the short word |
 
 Platforms: the same words wherever the unlikely result is shown. Reference tests: 30.
 

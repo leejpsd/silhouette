@@ -617,6 +617,7 @@
   "verdict.short.likely": "May qualify",
   "verdict.short.maybe": "Possible",
   "verdict.short.unlikely": "Not from these answers",
+  "results.stillApply": "You can still apply",
   "doc.languageShort": "Paystub language",
   "doc.where.device": "Read on this device first",
   "doc.where.cloud": "Only its silhouette is read, in the cloud",

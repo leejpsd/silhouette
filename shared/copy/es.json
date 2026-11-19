@@ -617,6 +617,7 @@
   "verdict.short.likely": "Podrías calificar",
   "verdict.short.maybe": "Posible",
   "verdict.short.unlikely": "No según estas respuestas",
+  "results.stillApply": "Aún puedes solicitar",
   "doc.languageShort": "Idioma del recibo",
   "doc.where.device": "Se lee primero en este dispositivo",
   "doc.where.cloud": "Solo su silueta se lee, en la nube",
