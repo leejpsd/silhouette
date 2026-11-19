@@ -18,7 +18,7 @@ import { preparedHousehold } from '../judges/household';
 import { OPEN_RECORD_EVENT } from '../Chrome';
 
 export function JudgesScreen() {
-  const { t, steps, resetAnswers, setAnswer } = useApp();
+  const { t, steps, answers, resetAnswers, setAnswer } = useApp();
   const { update } = useDocument();
   // Three states matter to a judge: the model is here, it can be downloaded (then step 2 can run on this
   // device after one press), or this browser has none.
@@ -33,23 +33,27 @@ export function JudgesScreen() {
     };
   }, [onStatus]);
 
-  const quickCheck = () => {
+  // Step 1: the invented household's answers are filled in and its paystub opens on its silhouette, so
+  // the first results a judge sees already use the income the model read.
+  const sample = () => {
     startJudgesPath();
     resetAnswers();
     for (const [id, value] of Object.entries(preparedHousehold(steps))) setAnswer(id, value);
-    navigate({ name: 'results' });
+    openSamplePaystub(update);
   };
 
-  const sample = () => {
+  // Step 2: the results (the household's own range of income until the paystub has been read).
+  const results = () => {
     startJudgesPath();
-    openSamplePaystub(update);
+    if (Object.keys(answers).length === 0) for (const [id, value] of Object.entries(preparedHousehold(steps))) setAnswer(id, value);
+    navigate({ name: 'results' });
   };
 
   const record = () => window.dispatchEvent(new Event(OPEN_RECORD_EVENT));
 
   const stepsList = [
-    { title: t('judges.step1.title'), body: t('judges.step1.body'), button: t('judges.step1.button'), run: quickCheck, id: 'quick-check' },
-    { title: t('judges.step2.title'), body: t('judges.step2.body'), button: t('judges.step2.button'), run: sample, id: 'sample' },
+    { title: t('judges.step1.title'), body: t('judges.step1.body'), button: t('judges.step1.button'), run: sample, id: 'sample' },
+    { title: t('judges.step2.title'), body: t('judges.step2.body'), button: t('judges.step2.button'), run: results, id: 'results' },
     { title: t('judges.step3.title'), body: t('judges.step3.body'), button: t('judges.step3.button'), run: record, id: 'record' },
   ];
 
@@ -120,7 +124,7 @@ export function JudgesScreen() {
         </li>
       </ul>
       <BlockActions>
-        <button type="button" className="action" onClick={quickCheck}>
+        <button type="button" className="action" onClick={sample}>
           <ActionLabel>{t('judges.start')}</ActionLabel>
           <span className="action-arrow">
             <ArrowRight />

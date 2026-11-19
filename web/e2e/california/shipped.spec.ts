@@ -13,7 +13,7 @@ const name = (id: string) => copyEn[`program.${id}.name`] as string;
 
 async function prepared(page: Page) {
   await page.goto('/#/judges');
-  await page.getByRole('button', { name: 'Fill in and see the results' }).click();
+  await page.getByRole('button', { name: 'See the results' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Your results' })).toBeVisible();
 }
 

@@ -1,6 +1,6 @@
 import { forgetResultsShown } from './screens/Results';
 import { forgetTravel, useDisclosures, useKeyboardFollow } from './design/motion';
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { deleteEverything, loadRecord, saveRecord, PREF_PREFIX } from '../data/store';
 import { isLocale, translator, type Locale } from './i18n';
 import { AppContext, type AppState } from './context';
@@ -57,6 +57,14 @@ export function App() {
   const route = useRoute();
   const wide = useWide();
   const twoColumns = useTwoColumns();
+  // A new screen starts at its top. The heading usually brings itself into view when it takes focus,
+  // but a heading that stays on screen (the results list beside a program) does not, and the page
+  // kept the scroll of the screen before it.
+  const screenKey = route.name === 'question' || route.name === 'program' ? `${route.name}/${route.id}` : route.name;
+  // Before the new screen's own effects run, so a screen that brings a part of itself into view still can.
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [screenKey]);
 
   useEffect(() => {
     let live = true;

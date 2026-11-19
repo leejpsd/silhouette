@@ -192,17 +192,17 @@ test('between 808 and 1100 px the content is one column: a program is not squeez
 test('the judges’ path stays on rails: the step is pressable as a whole, and the results lead to the sample paystub', async ({ page }) => {
   await page.goto('/#/judges');
   // The title of a step starts it, not only the small disc.
-  await page.getByTestId('judge-quick-check').getByRole('heading').click();
+  await page.getByTestId('judge-results').getByRole('heading').click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your results');
-  await expect(page.getByTestId('judge-next-2')).toBeVisible();
-  // One way to the next step on every width: the card (on a phone the pinned button does the same).
-  await page.getByTestId('judge-next-2').click();
+  // Before the paystub is read, the results lead to it (on a phone the pinned button does the same).
+  await expect(page.getByTestId('judge-next-1')).toBeVisible();
+  await page.getByTestId('judge-next-1').click();
   await expect(page.getByTestId('skeleton-preview')).toHaveAttribute('data-mode', 'leave');
 });
 
 test('a result that a document can confirm leads to the document', async ({ page }) => {
   await page.goto('/#/judges');
-  await page.getByTestId('judge-quick-check').getByRole('heading').click();
+  await page.getByTestId('judge-results').getByRole('heading').click();
   await page.locator('li[data-verdict="maybe"] .program-link').first().click();
   await expect(page.getByTestId('confirm-with-paystub')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Explain this program' })).toBeVisible();

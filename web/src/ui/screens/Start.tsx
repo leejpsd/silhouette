@@ -7,7 +7,7 @@ import { firstOpenStep } from '../quickcheck';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import type { ReactNode } from 'react';
-import { BlockActions, useTwoColumns } from '../design/block';
+import { BlockActions, useTwoColumns, useWide } from '../design/block';
 import { ArrowRight, Clock, Eye, Phone } from '../design/icons';
 import { Bar, ActionLabel } from '../design/parts';
 
@@ -16,6 +16,7 @@ const EXAMPLE_INCOME = 29183;
 
 export function StartScreen({ notice }: { notice: string | null }) {
   const twoColumns = useTwoColumns();
+  const wide = useWide();
   const { t, locale, steps, answers, resetAnswers } = useApp();
   const started = Object.keys(answers).length > 0;
   const open = firstOpenStep(steps, answers);
@@ -88,6 +89,13 @@ export function StartScreen({ notice }: { notice: string | null }) {
               {t('start.promiseShort')}
             </span>
           </p>
+          {/* Narrow screens: the judges' way in, quietly under the promise (wide screens have it in the rail;
+              the dock keeps its one link). */}
+          {!wide && (
+            <a className="text-link quiet-link" href={routeHref({ name: 'judges' })} data-testid="start-judges">
+              {t('demo.judges')}
+            </a>
+          )}
         </div>
         <BlockActions>
         <button type="button" className="action" onClick={begin}>

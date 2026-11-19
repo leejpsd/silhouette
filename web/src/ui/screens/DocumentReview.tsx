@@ -1,7 +1,6 @@
 // Extraction review: every field next to its highlighted source, confirm or change each one,
 // type what was not found, then deterministic checks and annualization (core/validate.ts).
 // Confirmed values feed an exact annualIncome into the verdict engine.
-import { JudgeNext } from '../judges/next';
 import { bringIntoView } from '../design/motion';
 import { moneyOnly } from '../design/inputs';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -62,9 +61,9 @@ function displayText(field: ReviewField): string {
  * ("grossPay": "N12") and this device put the value back (1,271.88). It arrives in that order: the
  * answer, then the value (styles.css, "The pointer"); with reduced motion both are simply there.
  */
-function PointerReveal({ review, source }: { review: readonly ReviewField[]; source: string }) {
+function PointerReveal({ review, source, machine }: { review: readonly ReviewField[]; source: string; machine?: string | undefined }) {
   const { t } = useApp();
-  if (source !== 'ON_DEVICE' && source !== 'IN_CLOUD') return null;
+  if (source !== 'ON_DEVICE' && source !== 'IN_CLOUD' && source !== 'RECORDED') return null;
   const scalar = (f: ReviewField) => f.refs.length === 1 && f.value !== null && /^N[0-9]+$/.test(f.refs[0] as string);
   const field = review.find((f) => f.name === 'grossPay' && scalar(f)) ?? review.find((f) => f.kind === 'number' && scalar(f));
   if (!field) return null;
@@ -89,7 +88,11 @@ function PointerReveal({ review, source }: { review: readonly ReviewField[]; sou
           </span>
         </div>
       </div>
-      <figcaption className="small">{t(source === 'IN_CLOUD' ? 'review.pointer.cloud' : 'review.pointer.device', { ref, value })}</figcaption>
+      <figcaption className="small">
+        {source === 'RECORDED'
+          ? t('review.pointer.recorded', { machine: machine ?? '', ref, value })
+          : t(source === 'IN_CLOUD' ? 'review.pointer.cloud' : 'review.pointer.device', { ref, value })}
+      </figcaption>
     </figure>
   );
 }
@@ -585,7 +588,7 @@ export function DocumentReviewScreen() {
           <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
         )}
       </div>
-      {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} />}
+      {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} machine={doc.extraction.recording?.machine} />}
       <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
       {manual && manualHint && nothingTyped && (
         <p className="error" role="alert">
@@ -689,7 +692,6 @@ export function DocumentReviewScreen() {
               })()}
               <p className="small muted">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>
               <Changes amount={annual.annualIncome} />
-              <JudgeNext step={3} />
             </>
           ) : (
             <p className="error" role="alert">
@@ -720,7 +722,8 @@ export function DocumentReviewScreen() {
               type="button"
               className="action"
               onClick={() => {
-                setAnswer('income', { kind: 'exact', amount: annual.annualIncome });
+                // Read from a paystub (not typed): the results say how it was read.
+                setAnswer('income', doc.extraction ? { kind: 'exact', amount: annual.annualIncome, from: { paystub: doc.extraction.inferenceSource } } : { kind: 'exact', amount: annual.annualIncome });
                 reset(false);
                 navigate({ name: 'results' });
               }}

@@ -836,6 +836,21 @@ main h3.small {
   color: var(--ink);
 }
 
+/* The results used the income a model read from the paystub: rules and a reading, not rules alone. */
+.badge-paystub {
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.badge-paystub::before {
+  display: none;
+}
+
+.income-from {
+  flex-basis: 100%;
+  margin: 0;
+}
+
 .badge-sample::before,
 .badge-none::before {
   display: none;
@@ -940,6 +955,15 @@ main h3.small {
   flex-wrap: wrap;
   justify-content: center;
   gap: 0 var(--space-md);
+}
+
+/* A secondary way in that does not compete with the screen's action (Start, narrow: the judges' page). */
+.quiet-link {
+  align-self: flex-start;
+  min-height: 32px;
+  color: var(--note);
+  font-size: var(--type-small-size);
+  font-weight: 500;
 }
 
 .block .text-link,
@@ -5134,6 +5158,25 @@ main h2.judge-title {
   text-align: left;
 }
 
+/* No model here: this paystub as the on-device model read it (a recording), one press away. */
+.recorded-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+
+.recorded-choice .recorded-link {
+  font-weight: 700;
+}
+
+.recorded-choice p {
+  margin: 0;
+}
+
 /* Start: under the example, the one line that says how a model can read a document it never sees. */
 .example-pointer {
   display: flex;
@@ -6097,12 +6140,19 @@ dialog.sheet[open][data-closing='true']::backdrop {
     min-height: calc(100dvh - 2 * clamp(28px, 5vw, 64px) - var(--space-xxl));
   }
 
+  /* When the papers and the notes under them are taller than the window, the row stays in view at its
+     foot, as the dock does on narrow screens: keep and send are never below the fold. */
   .doc-preview > .screen-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
     flex-direction: row;
     align-items: center;
     margin-top: auto;
     padding-top: var(--space-md);
+    padding-bottom: var(--space-md);
     border-top: 1px solid var(--line);
+    background: var(--ground);
   }
 
   .doc-preview > .screen-actions .preview-counts {

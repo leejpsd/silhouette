@@ -38,7 +38,7 @@ export const onJudgesPath = (): boolean => {
   }
 };
 
-/** Step 2: the bundled sample paystub, opened on its silhouette. */
+/** Step 1: the bundled sample paystub, opened on its silhouette. */
 export function openSamplePaystub(update: DocumentContextValue['update']): void {
   const text = Raw.of(sampleText);
   const { skeleton, map } = skeletonize(text, allowlistFor('en'), introducersFor('en'));
@@ -46,18 +46,21 @@ export function openSamplePaystub(update: DocumentContextValue['update']): void 
   navigate({ name: 'doc-preview' });
 }
 
-/** The next step of the judges' path (2: the sample paystub, 3: what left), when that path is in use. */
-export function JudgeNext({ step }: { step: 2 | 3 }) {
+/**
+ * The next step of the judges' path, when that path is in use: 1 the sample paystub read by a model,
+ * 2 the results it sharpens, 3 what left the device.
+ */
+export function JudgeNext({ step }: { step: 1 | 2 | 3 }) {
   const { t } = useApp();
   const { update } = useDocument();
   const [active] = useState(onJudgesPath);
   if (!active) return null;
-  const run = () => (step === 2 ? openSamplePaystub(update) : window.dispatchEvent(new Event(OPEN_RECORD_EVENT)));
+  const run = () => (step === 1 ? openSamplePaystub(update) : step === 2 ? navigate({ name: 'results' }) : window.dispatchEvent(new Event(OPEN_RECORD_EVENT)));
   return (
     <button type="button" className="judge-next" onClick={run} data-testid={`judge-next-${step}`}>
       <span className="judge-next-text">
         <span className="judge-next-eyebrow">{t('judges.next', { n: step })}</span>
-        <span className="judge-next-title">{t(step === 2 ? 'judges.step2.title' : 'judges.step3.title')}</span>
+        <span className="judge-next-title">{t(step === 1 ? 'judges.step1.title' : step === 2 ? 'judges.step2.title' : 'judges.step3.title')}</span>
       </span>
       <span className="judge-next-disc" aria-hidden="true">
         <Play />

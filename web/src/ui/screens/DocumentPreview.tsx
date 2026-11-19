@@ -21,6 +21,7 @@ import { ModelStatus } from '../doc/ModelStatus';
 import { useDocument } from '../doc/state';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
+import { recordedReading, type RecordedReading } from '../doc/recorded-reading';
 import { phoneLines } from '../doc/phone-view';
 import { rememberReading } from '../doc/last-reading';
 import { BlockActions, useTwoColumns } from '../design/block';
@@ -63,7 +64,7 @@ function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>, language: s
 }
 
 export function DocumentPreviewScreen() {
-  const { t } = useApp();
+  const { t, locale } = useApp();
   const { doc, update } = useDocument();
   // The two documents stand side by side only where there is room for both (two columns).
   const wide = useTwoColumns();
@@ -71,6 +72,8 @@ export function DocumentPreviewScreen() {
   // Where a reading is: on this device (main values, then deductions), checking, or sending after the device.
   const [stage, setStage] = useState<PointerStage | null>(null);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
+  // No model here: the bundled sample can still be read, from the on-device model's recorded answer.
+  const [recorded, setRecorded] = useState<RecordedReading | null>(null);
   const online = useOnline();
   // With a ready on-device model, the first part of the reading starts on this device while the person
   // looks at the silhouette (nothing is sent or stored; src/ai/tasks.ts prepareDeviceReading).
@@ -97,6 +100,18 @@ export function DocumentPreviewScreen() {
       cancelPreparedReading();
     };
   }, [aheadSkeleton, aheadMap, aheadLanguage, deviceStatus]);
+  const recordedSkeleton = doc.sourceKind === 'sample' && doc.hiddenWords.length === 0 ? doc.skeleton : null;
+  useEffect(() => {
+    if (!recordedSkeleton || deviceStatus === null || deviceStatus === 'available') {
+      setRecorded(null);
+      return;
+    }
+    let live = true;
+    void recordedReading(recordedSkeleton, locale).then((r) => live && setRecorded(r));
+    return () => {
+      live = false;
+    };
+  }, [recordedSkeleton, deviceStatus, locale]);
   // The preview opens on what could leave (the screen's heading). The first silhouette of a session is
   // shown being made: the bars wipe in once. Later changes animate only the bars that are new.
   const [mode, setMode] = useState<'phone' | 'leave'>('leave');
@@ -221,6 +236,15 @@ export function DocumentPreviewScreen() {
     await send();
   };
 
+  /** routing.json recordedSample: the on-device model's recorded answer, put back on this device now; nothing is sent. */
+  const useRecorded = () => {
+    if (!recorded) return;
+    const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], recorded.pointers, map, introducersFor(doc.language));
+    const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
+    update({ error: null, extraction: { review, inferenceSource: 'RECORDED', reason: 'recorded-on-device', recording: { machine: recorded.machine, date: recorded.date, path: recorded.path } } });
+    navigate({ name: 'doc-review' });
+  };
+
   /**
    * "Keep everything on this device" with an on-device model: the device reads the silhouette and
    * nothing is sent. A reading that fails the checks is not repeated anywhere; the person is told the
@@ -260,6 +284,19 @@ export function DocumentPreviewScreen() {
   }
   const fresh = freshRef.current.set;
 
+  // No model here: this paystub as the on-device model read it (a recording). On a wide screen it stands
+  // under the documents; on a phone above the document, where the dock does not cover it.
+  const recordedChoice =
+    !onDeviceFirst && deviceStatus !== null && !offlineSample && recorded ? (
+      <div className="recorded-choice" data-testid="use-recorded-card">
+        <button type="button" className="text-link recorded-link" onClick={useRecorded} disabled={sending} data-testid="use-recorded">
+          {t('preview.useRecorded', { machine: recorded.machine })}
+          <ChevronRight />
+        </button>
+        <p className="small muted">{t('preview.useRecordedNote', { date: recorded.date })}</p>
+      </div>
+    ) : null;
+
   return (
     <div className="screen doc-preview">
       <div className="preview-head">
@@ -276,6 +313,7 @@ export function DocumentPreviewScreen() {
         </strong>
         <span>{t(offlineSample ? 'reason.sample-answer-key' : 'reason.document-silhouette-only')}</span>
       </p>
+      {!wide && recordedChoice}
       <div className="preview-pair" data-wide={wide} style={{ '--doc-cols': docCols, '--hide-hint': JSON.stringify(t('preview.hideToo')) } as CSSProperties}>
       <div className="toggle" role="group" aria-label={t('preview.title')}>
         <button type="button" aria-pressed={mode === 'phone'} onClick={() => show('phone')}>
@@ -318,7 +356,8 @@ export function DocumentPreviewScreen() {
       </p>
       {!wide && <p className="small muted">{t('preview.leadShort')}</p>}
       {/* Without a model here, the on-device half of the story is one press away: the recorded run. */}
-      {!onDeviceFirst && deviceStatus !== null && !offlineSample && (
+      {wide && recordedChoice}
+      {!onDeviceFirst && deviceStatus !== null && !offlineSample && !recorded && (
         <a className="text-link recorded-link" href={routeHref({ name: 'device-check' })} data-testid="see-recorded">
           {t('preview.seeRecorded')}
           <ChevronRight />

@@ -12,8 +12,13 @@ export type SourceKind = 'pdf' | 'paste' | 'photo' | 'sample' | 'manual';
 
 export interface Extraction {
   readonly review: readonly ReviewField[];
-  /** SAMPLE_KEY: a bundled sample filled from its answer key on this device, with no model. */
-  readonly inferenceSource: InferenceSource | 'SAMPLE_KEY';
+  /**
+   * SAMPLE_KEY: a bundled sample filled from its answer key on this device, with no model.
+   * RECORDED: the bundled sample read from the on-device model's recorded answer (routing.json recordedSample).
+   */
+  readonly inferenceSource: InferenceSource | 'SAMPLE_KEY' | 'RECORDED';
+  /** RECORDED: the machine and the date of the recording the answer comes from. */
+  readonly recording?: { readonly machine: string; readonly date: string; readonly path: string } | undefined;
   readonly reason: RoutingReason;
   readonly ranInCloudBecause?: 'no-device-model' | undefined;
   /** Read on this device without the deductions, which it could not read reliably (they feed no result). */

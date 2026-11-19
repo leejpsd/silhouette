@@ -19,6 +19,7 @@ import { Alert, ArrowRight, Camera, ChevronLeft, ChevronRight, Clipboard, Doc } 
 import { ActionLabel } from '../design/parts';
 import { Loading } from '../answers/parts';
 import { ModelStatus } from '../doc/ModelStatus';
+import { usePaystubReadOnDevice } from '../doc/reads-on-device';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { useDocument, type SourceKind } from '../doc/state';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
@@ -45,6 +46,15 @@ export function DocumentAddScreen() {
   const [photoError, setPhotoError] = useState<TaskError | null>(null);
   const [photoStatus, setPhotoStatus] = useState<DeviceStatus | null>(null);
   const recheckPhoto = useCallback(() => void photoDeviceStatus(doc.language).then(setPhotoStatus), [doc.language]);
+  // Where a text document's silhouette is read: on this device only with a model here that reads its language.
+  const { onDevice: readsHere, setStatus: setPointerStatus } = usePaystubReadOnDevice(doc.language);
+  const onModelStatus = useCallback(
+    (status: DeviceStatus) => {
+      setPointerStatus(status);
+      recheckPhoto();
+    },
+    [setPointerStatus, recheckPhoto],
+  );
   const languageId = useId();
   const pasteId = useId();
 
@@ -194,7 +204,9 @@ export function DocumentAddScreen() {
           <h2 id="opt-pdf" className="source-title">
             {t('doc.pdf')}
           </h2>
-          <p className="small source-sub">{t('doc.pdf.short')}</p>
+          <p className="small source-sub" data-testid="pdf-where">
+            {t(readsHere ? 'doc.pdf.short' : 'doc.where.cloud')}
+          </p>
           <input
             type="file"
             accept="application/pdf,.pdf"
@@ -225,7 +237,9 @@ export function DocumentAddScreen() {
           </span>
           <span className="source-text">
             <span className="source-title">{t('doc.paste')}</span>
-            <span className="small source-sub">{t('doc.paste.short')}</span>
+            <span className="small source-sub" data-testid="paste-where">
+              {t(readsHere ? 'doc.paste.short' : 'doc.where.cloud')}
+            </span>
           </span>
           <ChevronRight />
         </button>
@@ -263,7 +277,7 @@ export function DocumentAddScreen() {
       </div>
 
       {/* When the model's state changes (a download finished), the photo row is asked again. */}
-      <ModelStatus language={doc.language} onStatus={recheckPhoto} />
+      <ModelStatus language={doc.language} onStatus={onModelStatus} />
       <p className="card-note">{t('doc.lead')}</p>
 
       {/* The other samples, behind one row; the one for the document's language is the main action. */}

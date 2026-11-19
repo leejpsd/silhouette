@@ -8,8 +8,11 @@ import type { InferenceSource, RoutingReason } from '../ai/tasks';
 import { useApp } from './context';
 import { LOCALE_NAMES, dynamicKey, isLocale, type Translate } from './i18n';
 
-/** SAMPLE_KEY: a bundled sample's answer key, no model (routing.json offlineSample). */
-export type ShownSource = InferenceSource | 'SAMPLE_KEY';
+/**
+ * SAMPLE_KEY: a bundled sample's answer key, no model (routing.json offlineSample).
+ * RECORDED: the on-device model's recorded answer to the bundled sample (routing.json recordedSample).
+ */
+export type ShownSource = InferenceSource | 'SAMPLE_KEY' | 'RECORDED';
 
 export interface Provenance {
   readonly inferenceSource: ShownSource;
@@ -32,6 +35,7 @@ export function provenanceSentence(t: Translate, p: Provenance): string {
   const detail = provenanceDetail(t, p);
   const reason = `${t(dynamicKey(`reason.${p.reason}`))}${detail ? `, ${detail}` : ''}`;
   if (p.inferenceSource === 'SAMPLE_KEY') return `${t('badge.sampleKey')}: ${reason}.`;
+  if (p.inferenceSource === 'RECORDED') return `${t('badge.recorded')}: ${reason}.`;
   return p.inferenceSource === 'ON_DEVICE' ? t('badge.sentence.device', { reason }) : t('badge.sentence.cloud', { reason });
 }
 
@@ -53,8 +57,8 @@ export function InferenceBadge({
     <p className="provenance" data-testid="inference-badge" data-source={source} data-reason={reason} data-detail={ranInCloudBecause ?? route?.basis ?? ''}>
       <span className="visually-hidden">{provenanceSentence(t, p)}</span>
       <span className="provenance-visible" aria-hidden="true">
-        <strong className={`badge ${source === 'ON_DEVICE' ? 'badge-device' : source === 'SAMPLE_KEY' ? 'badge-sample' : 'badge-cloud'}`}>
-          {source === 'ON_DEVICE' ? t('badge.onDevice') : source === 'SAMPLE_KEY' ? t('badge.sampleKey') : t('badge.cloud')}
+        <strong className={`badge ${source === 'ON_DEVICE' || source === 'RECORDED' ? 'badge-device' : source === 'SAMPLE_KEY' ? 'badge-sample' : 'badge-cloud'}`}>
+          {source === 'ON_DEVICE' ? t('badge.onDevice') : source === 'SAMPLE_KEY' ? t('badge.sampleKey') : source === 'RECORDED' ? t('badge.recorded') : t('badge.cloud')}
         </strong>
         <span className="chip">
           {t(dynamicKey(`reason.${reason}`))}

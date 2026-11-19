@@ -3,13 +3,15 @@
 // beside a program page, the first program's when none is chosen yet.
 import { JudgeNext, onJudgesPath, openSamplePaystub } from '../judges/next';
 import { useDocument } from '../doc/state';
+import { usePaystubReadOnDevice } from '../doc/reads-on-device';
 import { useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { leftDevice, outboundState, subscribeOutbound } from '../../data/outbound';
 import type { ProgramVerdict } from '../../core/rules';
 import { useApp } from '../context';
 import { dynamicKey, formatMoney, programName } from '../i18n';
 import { PACK } from '../pack';
-import { groupByVerdict } from '../quickcheck';
+import { groupByVerdict, isIncomeAnswer } from '../quickcheck';
+import { OPEN_RECORD_EVENT } from '../Chrome';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { MoreHelpLinks } from '../answers/MoreHelpLinks';
@@ -50,14 +52,43 @@ export function ResultsRoute() {
   return <ResultsScreen />;
 }
 
+/** How the yearly income in the answers was read from a paystub, when it was (not typed, not a range). */
+function useIncomeFrom(): 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY' | undefined {
+  const { answers } = useApp();
+  const income = answers['income'];
+  return isIncomeAnswer(income) && income.kind === 'exact' ? income.from?.paystub : undefined;
+}
+
+/**
+ * Where the results come from: the rules on this device, and, when the yearly income was read from a
+ * paystub, how it was read (on this device, in the cloud from the silhouette, or a recorded reading).
+ */
+function ResultsSource() {
+  const { t } = useApp();
+  const sentSomething = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length > 0, () => false);
+  const from = useIncomeFrom();
+  return (
+    <div className="badge-line" data-testid="results-source" data-income-from={from ?? ''}>
+      <strong className={`badge ${from ? 'badge-paystub' : 'badge-none'}`}>{t(from ? 'badge.rulesAndPaystub' : 'badge.rulesOnly')}</strong>
+      <p className="small muted" data-testid="results-lead">
+        {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
+      </p>
+      {from && (
+        <p className="small strong income-from" data-testid="income-from">
+          {t('results.incomeFrom.lead', { how: t(dynamicKey(`results.incomeFrom.${from}`)) })}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function ResultsScreen() {
   const { t, locale, steps, answers } = useApp();
-  // Once anything has left the device, the lead must not say that nothing was sent.
-  const sentSomething = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length > 0, () => false);
   const online = useOnline();
   const answered = Object.keys(answers).length > 0;
   const [judges] = useState(onJudgesPath);
   const { update } = useDocument();
+  const incomeFrom = useIncomeFrom();
 
   // The screen's main action, in the block: a paystub turns a possible result into a clearer one.
   const addPaystub = (
@@ -68,12 +99,18 @@ export function ResultsScreen() {
       </span>
       <p className="sharpen-text wide-only">
         <strong>{t('results.sharpen')}</strong>
-        <span>{t('results.sharpenHelp')}</span>
+        <SharpenHelp />
       </p>
       {judges ? (
-        // On the judges' path the next step is the main action: the sample paystub, read by a model.
-        <button type="button" className="action" onClick={() => openSamplePaystub(update)} data-testid="judge-primary">
-          <ActionLabel>{t('judges.step2.button')}</ActionLabel>
+        // On the judges' path the next step is the main action: the sample paystub read by a model, or,
+        // once its income is in the results, what left the device.
+        <button
+          type="button"
+          className="action"
+          onClick={() => (incomeFrom ? window.dispatchEvent(new Event(OPEN_RECORD_EVENT)) : openSamplePaystub(update))}
+          data-testid="judge-primary"
+        >
+          <ActionLabel>{t(incomeFrom ? 'judges.step3.button' : 'judges.step1.button')}</ActionLabel>
           <span className="action-arrow">
             <ArrowRight />
           </span>
@@ -132,12 +169,7 @@ export function ResultsScreen() {
           <ScreenHeading size={54} wideSize={64} maxLines={2} leading="tight">
             {t('results.title')}
           </ScreenHeading>
-          <div className="badge-line">
-            <strong className="badge badge-none">{t('badge.rulesOnly')}</strong>
-            <p className="small muted" data-testid="results-lead">
-              {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
-            </p>
-          </div>
+          <ResultsSource />
         </div>
         {!online && (
           <p className="dashed-note" role="status">
@@ -145,7 +177,7 @@ export function ResultsScreen() {
           </p>
         )}
         <ResultGroups />
-        <JudgeNext step={2} />
+        <JudgeNext step={incomeFrom ? 3 : 1} />
         {addPaystub}
         <div className="results-actions">{editAnswers}</div>
       </div>
@@ -210,8 +242,8 @@ export function ResultGroups({ current }: { current?: string }) {
  */
 export function ResultsAside({ current, isPage = false }: { current: string; /** On #/results: its title is the page's h1. */ isPage?: boolean }) {
   const { t, steps } = useApp();
-  const sentSomething = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length > 0, () => false);
   const [judges] = useState(onJudgesPath);
+  const incomeFromAside = useIncomeFrom();
   return (
     <aside className="results-aside" aria-label={t('results.title')}>
       {isPage ? (
@@ -221,15 +253,10 @@ export function ResultsAside({ current, isPage = false }: { current: string; /**
       ) : (
         <p className="aside-title">{t('results.title')}</p>
       )}
-      <div className="badge-line">
-        <strong className="badge badge-none">{t('badge.rulesOnly')}</strong>
-        <p className="small muted" data-testid="results-lead">
-          {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
-        </p>
-      </div>
+      <ResultsSource />
       <ResultGroups current={current} />
       {judges ? (
-        <JudgeNext step={2} />
+        <JudgeNext step={incomeFromAside ? 3 : 1} />
       ) : (
         <a className="sharpen-card" href={routeHref({ name: 'doc' })} data-testid="sharpen-card">
           <span className="sharpen-icon" aria-hidden="true">
@@ -237,7 +264,7 @@ export function ResultsAside({ current, isPage = false }: { current: string; /**
           </span>
           <span className="sharpen-text">
             <strong>{t('results.sharpen')}</strong>
-            <span>{t('results.sharpenHelp')}</span>
+            <SharpenHelp />
           </span>
           <span className="sharpen-button">{t('results.addDocument')}</span>
         </a>
@@ -248,6 +275,18 @@ export function ResultsAside({ current, isPage = false }: { current: string; /**
         </button>
       </div>
     </aside>
+  );
+}
+
+/** Where a paystub would be read: "on this device" only when the model here reads it. */
+function SharpenHelp() {
+  const { t } = useApp();
+  const { doc } = useDocument();
+  const { onDevice } = usePaystubReadOnDevice(doc.language);
+  return (
+    <span data-testid="sharpen-help" data-on-device={onDevice}>
+      {t(onDevice ? 'results.sharpenHelp' : 'results.sharpenHelpCloud')}
+    </span>
   );
 }
 

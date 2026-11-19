@@ -6,7 +6,10 @@ import { Raw } from '../core/types';
 import { verdicts, type Answers, type ProgramVerdict, type RulePack, type Verdict } from '../core/rules';
 import type { Bands, ExactProfile, IncomeBand } from '../core/generalize';
 
-export type IncomeAnswer = { readonly kind: 'band'; readonly bandId: string } | { readonly kind: 'exact'; readonly amount: number };
+/** `from`: an exact income worked out from a paystub reading, and how the paystub was read. */
+export type IncomeAnswer =
+  | { readonly kind: 'band'; readonly bandId: string }
+  | { readonly kind: 'exact'; readonly amount: number; readonly from?: { readonly paystub: 'ON_DEVICE' | 'IN_CLOUD' | 'RECORDED' | 'SAMPLE_KEY' } | undefined };
 export type AnswerValue = number | string | boolean | readonly string[] | IncomeAnswer;
 
 export function isIncomeAnswer(value: unknown): value is IncomeAnswer {

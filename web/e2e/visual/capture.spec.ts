@@ -45,7 +45,7 @@ async function setup(page: Page, context: BrowserContext, theme: Theme, opts: { 
 /** The prepared household of the two-minute path: the shipped pack's results, with every kind of answer. */
 async function prepared(page: Page) {
   await page.goto('/#/judges');
-  await page.getByRole('button', { name: /Fill in and see the results|Rellenar/ }).click();
+  await page.getByRole('button', { name: /^(See the results|Ver los resultados)$/ }).click();
   await page.getByRole('heading', { level: 1 }).waitFor();
   await page.getByTestId('results-lead').waitFor();
 }

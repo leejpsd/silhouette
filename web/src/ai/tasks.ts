@@ -41,7 +41,9 @@ export type RoutingReason =
   /** A PREFER_ON_DEVICE call failed on the device and was repeated in the cloud with the same cloud-safe input. */
   | 'on-device-failed'
   | 'your-result-stays-on-device'
-  | 'sample-answer-key';
+  | 'sample-answer-key'
+  /** routing.json recordedSample: the bundled sample read from an on-device run recording, nothing sent. */
+  | 'recorded-on-device';
 
 /** Every model response carries its provenance: where it ran, and why. */
 export interface TaskResult<T> {

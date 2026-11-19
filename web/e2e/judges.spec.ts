@@ -1,7 +1,7 @@
 // The judges' path and the on-device check, in browsers with and without the on-device model.
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { chooseLanguage } from './helpers';
+import { chooseLanguage, confirmAllValues } from './helpers';
 import { baselineRecording, bundledRecordingCount, latestRecording } from './recordings';
 import { fakeAnswerModels, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel } from './model-fakes';
 
@@ -14,21 +14,27 @@ test.describe('for judges: try it in two minutes', () => {
     await page.getByTestId('judges-link').click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Try it in two minutes');
     await expect(page.getByTestId('judges-device')).toHaveAttribute('data-device', 'other');
-    await expect(page.getByTestId('judges-device')).toContainText('sends the silhouette (never the values)');
+    await expect(page.getByTestId('judges-device')).toContainText('sending the silhouette (never the values)');
 
-    // 1. A prepared household: results from the rules on this device, nothing sent.
-    await page.getByRole('button', { name: 'Fill in and see the results' }).click();
-    await expect(page.getByRole('heading', { level: 1, name: 'Your results' })).toBeVisible();
-    await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
-
-    // 2. The sample paystub's silhouette, then Send (the cloud, silhouette only).
-    await page.goto('/#/judges');
+    // 1. The sample paystub of an invented household: its silhouette, then Send (the cloud, silhouette only).
     await page.getByRole('button', { name: 'Open the sample paystub' }).click();
     await expect(page.getByTestId('skeleton-preview')).toHaveAttribute('data-mode', 'leave');
+    await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
     await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
     await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
     expect(cloud.bodies.length).toBeGreaterThan(0);
     expect(cloud.bodies.join('\n')).not.toContain('1,271.88');
+
+    // 2. The results it sharpens: they say the yearly income was read from the paystub, and how.
+    await confirmAllValues(page);
+    await page.getByRole('button', { name: 'Check these values' }).click();
+    // The next step is offered only once the income is in the results.
+    await expect(page.getByTestId('judge-next-3')).toHaveCount(0);
+    await page.getByRole('button', { name: /^Use \$[\d,]+ as my yearly income$/ }).click();
+    await expect(page.getByTestId('results-source')).toHaveAttribute('data-income-from', 'IN_CLOUD');
+    await expect(page.getByTestId('income-from')).toContainText('by Firebase AI Logic in the cloud, from the silhouette only');
+    await expect(page.getByTestId('judge-next-3').first()).toBeVisible();
+    await expect(page.getByTestId('judge-next-1')).toHaveCount(0);
 
     // 3. What left, compared.
     await page.goto('/#/judges');
@@ -36,6 +42,25 @@ test.describe('for judges: try it in two minutes', () => {
     const record = page.getByTestId('record-sheet');
     await expect(record).toBeVisible();
     await expect(record.getByTestId('outbound-list')).toContainText('Document silhouette');
+  });
+
+  test('without a model and without sending anything: the same paystub as the on-device model read it (a recording)', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    const cloud = await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+    await page.goto('/#/judges');
+    await page.getByRole('button', { name: 'Open the sample paystub' }).click();
+    await page.getByTestId('use-recorded').click();
+    await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'RECORDED');
+    await expect(page.getByTestId('pointer-answer')).toHaveText(/"grossPay": "N\d+"/);
+    await expect(page.getByTestId('pointer-value')).toHaveText('1,271.88');
+    await expect(page.getByTestId('pointer-reveal')).toContainText('(a recorded reading)');
+    await confirmAllValues(page);
+    await page.getByRole('button', { name: 'Check these values' }).click();
+    await page.getByRole('button', { name: /^Use \$[\d,]+ as my yearly income$/ }).click();
+    await expect(page.getByTestId('income-from')).toContainText('from a recorded on-device reading');
+    // Nothing left: no request to the model, nothing in the record.
+    expect(cloud.bodies).toEqual([]);
+    await expect(page.getByTestId('leaving-bar')).toHaveAttribute('data-outbound-count', '0');
   });
 
   test('in Spanish the judges page is all Spanish', async ({ page, context }) => {
