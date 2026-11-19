@@ -6362,7 +6362,10 @@
               "wages:not-money"
             ],
             "fields": [
-              "wages"
+              {
+                "field": "wages",
+                "problem": "not-money"
+              }
             ]
           }
         }
@@ -6398,8 +6401,14 @@
               "stateWages:not-money"
             ],
             "fields": [
-              "wages",
-              "stateWages"
+              {
+                "field": "wages",
+                "problem": "not-money"
+              },
+              {
+                "field": "stateWages",
+                "problem": "not-money"
+              }
             ]
           }
         }
@@ -6433,7 +6442,10 @@
               "taxYear:not-a-year"
             ],
             "fields": [
-              "taxYear"
+              {
+                "field": "taxYear",
+                "problem": "not-a-year"
+              }
             ]
           }
         }
@@ -6469,8 +6481,14 @@
               "taxYear:not-a-year"
             ],
             "fields": [
-              "wages",
-              "taxYear"
+              {
+                "field": "wages",
+                "problem": "not-money"
+              },
+              {
+                "field": "taxYear",
+                "problem": "not-a-year"
+              }
             ]
           }
         }
@@ -6526,7 +6544,8 @@
         },
         "expected": {
           "problems": [
-            "wages:bad-reference"
+            "wages:bad-reference",
+            "wages:missing"
           ],
           "leftOut": {
             "problems": [],
@@ -6563,8 +6582,80 @@
               "federalIncomeTaxWithheld:not-money"
             ],
             "fields": [
-              "federalIncomeTaxWithheld"
+              {
+                "field": "federalIncomeTaxWithheld",
+                "problem": "not-money"
+              }
             ]
+          }
+        }
+      },
+      {
+        "id": "w2-wages-and-withheld-swapped",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N2",
+          "wages": "N10",
+          "federalIncomeTaxWithheld": "N9",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N15"
+        },
+        "expected": {
+          "problems": [
+            "wages:below-withheld"
+          ],
+          "leftOut": {
+            "problems": [
+              "wages:below-withheld"
+            ],
+            "fields": [
+              {
+                "field": "wages",
+                "problem": "not-consistent"
+              },
+              {
+                "field": "federalIncomeTaxWithheld",
+                "problem": "not-consistent"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "w2-wages-on-social-security-tax",
+        "document": "w2-sample",
+        "pointers": {
+          "employerName": [
+            "W1",
+            "W2",
+            "W3"
+          ],
+          "employeeName": [
+            "W8",
+            "W9"
+          ],
+          "taxYear": "N2",
+          "wages": "N12",
+          "federalIncomeTaxWithheld": "N10",
+          "socialSecurityWages": "N11",
+          "medicareWages": "N13",
+          "stateWages": "N15"
+        },
+        "expected": {
+          "problems": [],
+          "leftOut": {
+            "problems": [],
+            "fields": []
           }
         }
       }

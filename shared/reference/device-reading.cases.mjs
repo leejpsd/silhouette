@@ -154,4 +154,7 @@ export const w2Cases = [
   { id: 'w2-no-wages', document: 'w2-sample', pointers: { ...W2_KEY, wages: null } },
   { id: 'w2-wages-on-a-date', document: 'w2-sample', pointers: { ...W2_KEY, wages: 'D1' } },
   { id: 'w2-withheld-on-zip', document: 'w2-sample', pointers: { ...W2_KEY, federalIncomeTaxWithheld: 'N6' } },
+  // Contract v1.38: boxes 1 and 2 swapped (N9 is box 1, N10 box 2): withheld is not below wages, both left out.
+  { id: 'w2-wages-and-withheld-swapped', document: 'w2-sample', pointers: { ...W2_KEY, wages: 'N10', federalIncomeTaxWithheld: 'N9' } },
+  { id: 'w2-wages-on-social-security-tax', document: 'w2-sample', pointers: { ...W2_KEY, wages: 'N12' } },
 ];

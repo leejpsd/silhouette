@@ -175,13 +175,14 @@ A W-2 (`schemas/pointer.w2.json`) has no list field: it is read in one request w
 | `{field}:bad-reference` | as section 4.1 |
 | `{field}:not-money` | `wages`, `federalIncomeTaxWithheld`, `socialSecurityWages`, `medicareWages` or `stateWages` refers to an N id whose text is not money with cents, while some N placeholder of the silhouette is (as section 4.1): a box number, a street number or a ZIP code answered as an amount |
 | `wages:missing` | box 1 has no value |
+| `wages:below-withheld` | box 2 (`federalIncomeTaxWithheld`) is not below box 1 (`wages`), both being money (no `not-money` problem): tax withheld comes out of the wages, so two boxes were mixed up (box 1 and box 2 swapped, or every box moved by one) |
 | `taxYear:not-a-year` | the tax year is not an integer from 2000 to 2100 (`validation/SPEC.md` section 9, check `w2-year`): the 2 of "W-2", a box number |
 
-A reference that does not fit stops the checks there.
+A reference that does not fit is reported, and the other boxes are still checked without it. A box with `not-money` is not compared with another.
 
 **On the device**, an answer with any problem is a failed on-device attempt (section 7), repeated in the cloud as `routing.json` `onDeviceFailure` says.
 
-**Every answer used**, from the device or the cloud, leaves out the fields with `not-money` or `not-a-year` problems, marked not read (`w2LeftOut`). A cloud answer is never repeated, and code never picks another placeholder: a box left out is typed in by the person, and a form whose wages are left out has no wages until then (`validation/SPEC.md` section 9, `no-wages`). Missing is not wrong (section 1).
+**Every answer used**, from the device or the cloud, leaves out the fields with `not-money` or `not-a-year` problems, and both box 1 and box 2 when `wages:below-withheld` (code cannot tell which of the two is wrong), marked not read (`w2LeftOut`). A cloud answer is never repeated, and code never picks another placeholder: a box left out is typed in by the person, and a form whose wages are left out has no wages until then (`validation/SPEC.md` section 9, `no-wages`). Missing is not wrong (section 1).
 
 ## 10. Known limits
 

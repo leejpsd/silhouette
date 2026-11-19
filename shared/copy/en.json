@@ -411,6 +411,7 @@
   "review.fieldNotRead": "Not read on this device. This value is not needed for the yearly income or the results.",
   "review.leftOut.notMoney": "Left out: what was found here is not an amount (a box number, a street number or a ZIP code). Type it from your form.",
   "review.leftOut.notAYear": "Left out: what was found here is not a year. Type the tax year from your form.",
+  "review.leftOut.notConsistent": "Left out: box 1 and box 2 do not fit together (the tax withheld cannot be more than the wages). Type both from your form.",
   "answers.facts.uses": "This program uses:",
   "demo.deviceCheck": "Check the on-device model",
   "demo.judges": "For judges: try it in two minutes",
