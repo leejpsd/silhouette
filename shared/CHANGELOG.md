@@ -1,5 +1,15 @@
 # Contract changelog
 
+## v1.31 — 2026-11-19
+
+The folded values count the same way as the button above them.
+
+| Change | Why |
+|---|---|
+| `review.moreValues.notFound` ("More values ({count} found · {missing} not found)"), used when some folded fields were not found | "See all 9 values" counts the values found (the ones to confirm); "More values (7)" counted the fields not found too, so 4 + 7 did not make 9 |
+
+Platforms: count the folded values the way the confirm button does, and name the fields not found separately. Reference tests: 30.
+
 ## v1.30 — 2026-11-19
 
 The pointer, shown with the reading's own answer.

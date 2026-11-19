@@ -678,5 +678,6 @@
   "review.pointer.said": "El modelo respondió",
   "review.pointer.put": "Este dispositivo devolvió",
   "review.pointer.cloud": "El modelo en la nube solo vio {ref}, nunca {value}. Este dispositivo devolvió el valor desde tu talón de pago.",
-  "review.pointer.device": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu talón de pago."
+  "review.pointer.device": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu talón de pago.",
+  "review.moreValues.notFound": "Más valores ({count} encontrados · {missing} sin encontrar)"
 }

@@ -678,5 +678,6 @@
   "review.pointer.said": "모델의 답",
   "review.pointer.put": "이 기기가 되돌려 넣은 값",
   "review.pointer.cloud": "클라우드의 모델은 {ref}만 보았고 {value}는 보지 못했습니다. 이 기기가 급여명세서에서 값을 되돌려 넣었습니다.",
-  "review.pointer.device": "이 기기의 모델도 {ref}로만 답합니다. 이 기기가 급여명세서에서 {value}를 되돌려 넣습니다."
+  "review.pointer.device": "이 기기의 모델도 {ref}로만 답합니다. 이 기기가 급여명세서에서 {value}를 되돌려 넣습니다.",
+  "review.moreValues.notFound": "다른 값 (찾음 {count} · 못 찾음 {missing})"
 }
