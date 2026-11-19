@@ -75,6 +75,14 @@ struct DocumentPreviewScreen: View {
                     .background(theme.ground)
             }
         }
+        // The reading shown as it happens, over the silhouette it started from and its actions (contract v1.43).
+        .overlay {
+            if let show = model.readingShow {
+                ReadingStageView(show: show)
+                    .transition(.opacity)
+            }
+        }
+        .animation(Motion.named(Motion.reveal), value: model.readingShow == nil)
     }
 
     /// A hidden word as the document writes it (they are kept lower-cased for matching).

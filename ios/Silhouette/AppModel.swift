@@ -452,6 +452,7 @@ final class AppModel {
         document = DocumentSession(language: AppLocale.preferred(from: Locale.preferredLanguages))
         incomeChange = nil
         documentEffect = nil
+        readingShow = nil
         locale = AppLocale.preferred(from: Locale.preferredLanguages)
         tab = .check
         checkPath = []
@@ -554,8 +555,11 @@ final class AppModel {
     ///   read in parts when Remote Config says 5 or more (pointer-extract v5), every answer checked.
     /// - `keepOnDevice`: the person chose to keep everything on this device. The device reads it when
     ///   it has a model; nothing is sent, and a reading that does not hold up fills in nothing.
-    func readDocument(keepOnDevice: Bool = false) async {
-        guard let silhouette, let extractor = documentExtractor ?? (keepOnDevice && deviceModelAvailable ? modelExtractor : nil) else { return }
+    /// - `review`: open the review when the reading is in (the judges' one press goes on to the results itself).
+    /// - Returns: whether the reading is in.
+    @discardableResult
+    func readDocument(keepOnDevice: Bool = false, review: Bool = true) async -> Bool {
+        guard let silhouette, let extractor = documentExtractor ?? (keepOnDevice && deviceModelAvailable ? modelExtractor : nil) else { return false }
         documentError = nil
         readingStage = nil
         defer { readingStage = nil }
@@ -565,51 +569,104 @@ final class AppModel {
                 document.apply(result, silhouette: silhouette, schema: bundle.paystubSchema)
             } catch {
                 documentError = (error as? TaskError) ?? TaskError(.unknown, "extraction")
-                return
+                return false
             }
             persistDocument()
-            await arriveAtReview()
-            return
+            if review { await arriveAtReview() }
+            return true
         }
         // Remote Config is fetched after the first cloud request (shared/RECORD.md section 1); until then the
         // bundled defaults apply. Keeping everything on the device sends nothing.
+        // The reading is shown as it happens (contract v1.43): the silhouette going to the model on this
+        // device first when it has one, otherwise to the cloud.
+        beginShow(keepOnDevice || deviceModelAvailable ? .device : .cloud(afterDevice: false))
         lastConfig = await remoteConfig.current()
         let version = lastConfig?.promptPointerExtractV ?? currentConfig.promptPointerExtractV
         guard let template = pointerTemplate(version: version),
               let request = try? Planner.pointers(silhouette.skeleton, language: document.language, template: template, pointerSchema: bundle.paystubSchema)
-        else { documentError = TaskError(.unknown, "no pointer prompt"); return }
+        else { readingShow = nil; documentError = TaskError(.unknown, "no pointer prompt"); return false }
         let inParts: ReadingInParts? = template.id == "pointer-extract.v5" && version >= 5 && !bundle.prompts.deviceParts.isEmpty
             ? ReadingInParts(template: template, parts: bundle.prompts.deviceParts, schema: bundle.paystubSchema, skeleton: silhouette.skeleton,
                              map: silhouette.map, jurisdiction: bundle.packInfo.jurisdiction, language: document.language.rawValue)
             : nil
         do {
             let outcome = try await runner.extractPointers(request, inParts: inParts, keepOnDevice: keepOnDevice) { stage in
-                Task { @MainActor [weak self] in self?.readingStage = stage }
+                Task { @MainActor [weak self] in
+                    self?.readingStage = stage
+                    // This device could not read it reliably: the silhouette now goes to the cloud.
+                    if stage == .sendingAfterDevice { self?.beginShow(.cloud(afterDevice: true)) }
+                }
             }
             if outcome.source == .inCloud { answers.markSent(silhouette.skeleton.text) }
             lastDeviceAttempt = outcome.attempt
             document.apply(PointerResult(pointers: outcome.pointers, source: outcome.source, reason: outcome.reason, notRead: outcome.notRead),
                            silhouette: silhouette, schema: bundle.paystubSchema)
+            // The way it really went decides what comes back (a reading the runner sent on to the cloud).
+            if outcome.source == .inCloud, readingShow?.route == .device { readingShow?.route = .cloud(afterDevice: true) }
         } catch let failed as DeviceReadingFailed {
+            // An error is never delayed by the staging.
+            readingShow = nil
             lastDeviceAttempt = failed.attempt
             documentError = failed.error
-            return
+            return false
         } catch {
+            readingShow = nil
             documentError = (error as? TaskError) ?? TaskError(.unknown, "extraction")
-            return
+            return false
         }
         persistDocument()
-        await arriveAtReview()
+        await pointersBack(silhouette)
+        if review { await arriveAtReview() }
+        return true
     }
 
-    /// The reading came back: the stage line says it is being checked for a moment (the app does check
-    /// it), then the review arrives with the standard push. Not in snapshots.
+    /// The reading came back: the review arrives with the standard push. After a reading by a model the
+    /// staging has already shown the placeholders coming back and turning into values; it is cleared once
+    /// the review covers it. Otherwise (the sample's answer key) the stage line says it is being checked for
+    /// a moment. Not in snapshots.
     private func arriveAtReview() async {
+        if readingShow != nil {
+            paystubPath.append(.documentReview)
+            try? await Task.sleep(for: .milliseconds(450))
+            readingShow = nil
+            return
+        }
         if !MotionSwitch.off {
             readingStage = .checking
             try? await Task.sleep(for: .milliseconds(450))
         }
         paystubPath.append(.documentReview)
+    }
+
+    // MARK: The reading shown as it happens
+
+    /// The silhouette shown going to the model, and the answer coming back (contract v1.43).
+    var readingShow: ReadingShow?
+    /// The shortest time the silhouette is shown going out, and how long the placeholders take to come back
+    /// and turn into values. Together at most about 2.3 s added; a reading by a model that takes longer
+    /// than the first adds only the second.
+    static let showOut: Double = 0.9
+    static let showBack: Double = 1.4
+    /// UI tests hold each stage longer: the test runner takes a few tenths of a second per query.
+    private var showOutTime: Double { testModel != nil ? 3 : Self.showOut }
+    private var showBackTime: Double { testModel != nil ? 4 : Self.showBack }
+
+    private func beginShow(_ route: ReadingShow.Route) {
+        guard !MotionSwitch.off else { return }
+        // UI tests: the chips are drawn still (a running animation keeps the app from ever being idle for
+        // the test runner, which then sees the staging only after it has gone).
+        readingShow = ReadingShow(route: route, still: testModel != nil ? 0.3 : nil)
+    }
+
+    /// The answer is in: the silhouette has been seen going out for at least `showOut`, then the placeholders
+    /// come back and turn into the values on this device for `showBack`.
+    private func pointersBack(_ silhouette: SkeletonResult) async {
+        guard let show = readingShow else { return }
+        let shown = Date().timeIntervalSince(show.since)
+        if shown < showOutTime { try? await Task.sleep(for: .seconds(showOutTime - shown)) }
+        guard readingShow != nil else { return }
+        readingShow = ReadingShow(route: show.route, phase: .back, pairs: ReadingShow.pairs(document, silhouette: silhouette), still: show.still)
+        try? await Task.sleep(for: .seconds(showBackTime))
     }
 
     /// What the device answered in the last reading, part by part (placeholder ids only).
@@ -686,9 +743,12 @@ final class AppModel {
     /// routing.json `recordedCloud`: the recording's placeholder ids are the reading; the values are put
     /// back on this device now and nothing is sent. The record lists it as kept, with the exact request as
     /// it was sent when it was recorded, and the answer.
-    func useRecordedCloud() async {
-        guard let silhouette, let recording = recordedCloudReading else { return }
+    @discardableResult
+    func useRecordedCloud(review: Bool = true) async -> Bool {
+        guard let silhouette, let recording = recordedCloudReading else { return false }
         documentError = nil
+        // Shown as a cloud reading, labelled as a recording: nothing is sent now.
+        beginShow(.recordedCloud)
         document.apply(recording.result, silhouette: silhouette, schema: bundle.paystubSchema, recordedDate: recording.date)
         OutboundLog.shared.record(OutboundEntry(
             channel: .aiCloud, destination: TaskRunner.cloudDestination, fields: ["document-silhouette"], status: .recorded,
@@ -696,7 +756,9 @@ final class AppModel {
             recording: .init(date: recording.date, endpoint: recording.endpoint, body: recording.requestBody, answer: recording.answer,
                              model: recording.model)))
         persistDocument()
-        await arriveAtReview()
+        await pointersBack(silhouette)
+        if review { await arriveAtReview() }
+        return true
     }
 
     /// An ISO date-time as a medium date in the UI language ("Nov 19, 2026").

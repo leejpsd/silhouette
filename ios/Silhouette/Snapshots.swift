@@ -154,6 +154,13 @@ enum SnapshotRunner {
                 await m.useRecordedCloud()
                 m.sheet = .record
             },
+            // The reading shown as it happens (contract v1.43), held still mid-way: the silhouette going out, and
+            // the placeholders back and turned into values; on this iPhone, to the cloud, and the recorded cloud reading.
+            Scene(name: "reading-device-out") { m in m.openSamplePreview(); m.stillShow(.device, .out) },
+            Scene(name: "reading-device-back") { m in m.openSamplePreview(); m.stillShow(.device, .back) },
+            Scene(name: "reading-cloud-out") { m in m.openSamplePreview(); m.stillShow(.cloud(afterDevice: false), .out) },
+            Scene(name: "reading-cloud-back") { m in m.openSamplePreview(); m.stillShow(.cloud(afterDevice: false), .back) },
+            Scene(name: "reading-recorded-out") { m in m.openSamplePreview(); m.stillShow(.recordedCloud, .out) },
             Scene(name: "review-type-numbers", pages: 3) { m in
                 m.openDocument()
                 m.typeNumbers()
@@ -256,5 +263,18 @@ enum SnapshotRunner {
         }
         walk(view)
         return found.last
+    }
+}
+
+extension AppModel {
+    /// Snapshots: the reading staged and held still. The values come from the sample's recorded reading.
+    func stillShow(_ route: ReadingShow.Route, _ phase: ReadingShow.Phase) {
+        guard let silhouette, let recording = recordedCloudReading else { return }
+        var pairs: [ReadingShow.Pair] = []
+        if phase == .back {
+            editDocument { $0.apply(recording.result, silhouette: silhouette, schema: bundle.paystubSchema) }
+            pairs = ReadingShow.pairs(document, silhouette: silhouette)
+        }
+        readingShow = ReadingShow(route: route, phase: phase, pairs: pairs, still: 0.3)
     }
 }
