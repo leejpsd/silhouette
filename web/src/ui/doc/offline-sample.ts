@@ -5,6 +5,7 @@ import routing from '../../../../shared/routing.json';
 import answers from '../../../../shared/samples/answers.json';
 import enText from '../../../../shared/samples/paystub-en-01.txt?raw';
 import koText from '../../../../shared/samples/payslip-ko-01.txt?raw';
+import w2Text from '../../../../shared/samples/w2-en-01.txt?raw';
 import { skeletonize } from '../../core/skeleton';
 import { Raw, type Skeleton } from '../../core/types';
 import type { RoutingReason } from '../../ai/tasks';
@@ -13,7 +14,7 @@ import type { Locale } from '../i18n';
 
 export const OFFLINE_SAMPLE_REASON = routing.offlineSample.reason as RoutingReason;
 
-const TEXTS: Readonly<Record<string, string>> = { 'paystub-en-01.txt': enText, 'payslip-ko-01.txt': koText };
+const TEXTS: Readonly<Record<string, string>> = { 'paystub-en-01.txt': enText, 'payslip-ko-01.txt': koText, 'w2-en-01.txt': w2Text };
 
 /**
  * The answer key for this silhouette, when it is the silhouette of a bundled sample with nothing

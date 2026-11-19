@@ -6,11 +6,12 @@
 
 import paystubV2 from '../../../shared/schemas/pointer.paystub.json';
 import leaseV2 from '../../../shared/schemas/pointer.lease.json';
+import w2V1 from '../../../shared/schemas/pointer.w2.json';
 import type { PointerSchema } from '../core/skeleton';
 import { POINTER_EXTRACT, POINTER_EXTRACT_DEVICE_V1, POINTER_EXTRACT_V3, POINTER_EXTRACT_V4, POINTER_EXTRACT_V5, type DeviceParts, type PromptTemplate } from './prompts';
 import type { ModelSchemaOptions } from './model-schema';
 
-export type DocType = 'paystub' | 'lease';
+export type DocType = 'paystub' | 'lease' | 'w2';
 
 export interface PointerConfig {
   readonly id: string;
@@ -51,6 +52,7 @@ export interface PointerConfig {
 export const SHARED_POINTER_SCHEMAS: Readonly<Record<DocType, PointerSchema>> = {
   paystub: paystubV2 as unknown as PointerSchema,
   lease: leaseV2 as unknown as PointerSchema,
+  w2: w2V1 as unknown as PointerSchema,
 };
 
 /**

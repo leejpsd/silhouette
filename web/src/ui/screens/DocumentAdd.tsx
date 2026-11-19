@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useId, useState } from 'react';
 import enSampleText from '../../../../shared/samples/paystub-en-01.txt?raw';
 import koSampleText from '../../../../shared/samples/payslip-ko-01.txt?raw';
+import w2SampleText from '../../../../shared/samples/w2-en-01.txt?raw';
 import { Raw } from '../../core/types';
 import { skeletonize } from '../../core/skeleton';
 import { photoDeviceStatus, type DeviceStatus } from '../../ai/device-model';
@@ -22,12 +23,19 @@ import { ModelStatus } from '../doc/ModelStatus';
 import { usePaystubReadOnDevice } from '../doc/reads-on-device';
 import { allowlistFor, introducersFor } from '../doc/allowlists';
 import { useDocument, type SourceKind } from '../doc/state';
+import { detectDocType } from '../../core/doc-type';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 
-type SampleButton = { key: string; lang: 'en' | 'ko'; as: 'text' | 'pdf'; label: 'doc.sample.enText' | 'doc.sample.enPdf' | 'doc.sample.koText' | 'doc.sample.koPdf' };
+type SampleButton = {
+  key: string;
+  lang: keyof typeof SAMPLES;
+  as: 'text' | 'pdf';
+  label: 'doc.sample.enText' | 'doc.sample.enPdf' | 'doc.sample.koText' | 'doc.sample.koPdf' | 'doc.sample.w2Text';
+};
 const SAMPLE_BUTTONS: readonly SampleButton[] = [
   { key: 'en-text', lang: 'en', as: 'text', label: 'doc.sample.enText' },
   { key: 'en-pdf', lang: 'en', as: 'pdf', label: 'doc.sample.enPdf' },
+  { key: 'w2-text', lang: 'w2', as: 'text', label: 'doc.sample.w2Text' },
   { key: 'ko-text', lang: 'ko', as: 'text', label: 'doc.sample.koText' },
   { key: 'ko-pdf', lang: 'ko', as: 'pdf', label: 'doc.sample.koPdf' },
 ];
@@ -35,6 +43,8 @@ const SAMPLE_BUTTONS: readonly SampleButton[] = [
 const SAMPLES = {
   en: { text: enSampleText, pdf: '/samples/paystub-en-01.pdf', language: 'en' },
   ko: { text: koSampleText, pdf: '/samples/payslip-ko-01.pdf', language: 'ko' },
+  // A W-2 sample as text only (no PDF of it is bundled).
+  w2: { text: w2SampleText, pdf: null, language: 'en' },
 } as const;
 
 export function DocumentAddScreen() {
@@ -66,11 +76,17 @@ export function DocumentAddScreen() {
     };
   }, [doc.language]);
 
-  /** Every source ends here: Raw text → Skeleton + Raw map, then the preview. */
+  /**
+   * Every source ends here: Raw text → Skeleton + Raw map, then the preview. A text with a W-2's title at
+   * the top is read as a W-2 (decided by code, core/doc-type.ts); a document of the other type than the
+   * ones already confirmed starts a new set.
+   */
   const acceptText = useCallback(
     (text: Raw<string>, sourceKind: SourceKind, language: Locale = doc.language) => {
       const { skeleton, map } = skeletonize(text, allowlistFor(language), introducersFor(language));
-      update({ text, skeleton, map, sourceKind, language, extraction: null, error: null, hiddenWords: [] });
+      const docType = detectDocType(text);
+      const set = docType === 'w2' ? { confirmedStubs: [] } : { confirmedW2s: [] };
+      update({ docType, ...set, text, skeleton, map, sourceKind, language, extraction: null, error: null, hiddenWords: [] });
       navigate({ name: 'doc-preview' });
     },
     [doc.language, update],
@@ -95,7 +111,7 @@ export function DocumentAddScreen() {
 
   const sample = async (which: keyof typeof SAMPLES, as: 'pdf' | 'text') => {
     const s = SAMPLES[which];
-    if (as === 'text') return acceptText(Raw.of(s.text), 'sample', s.language);
+    if (as === 'text' || s.pdf === null) return acceptText(Raw.of(s.text), 'sample', s.language);
     const response = await fetch(s.pdf);
     await fromPdf(await response.arrayBuffer(), 'sample', s.language);
   };

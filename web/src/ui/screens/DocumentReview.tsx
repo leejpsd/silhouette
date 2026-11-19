@@ -1,5 +1,6 @@
 // Extraction review: every field next to its highlighted source, confirm or change each one,
-// type what was not found, then deterministic checks and annualization (core/validate.ts).
+// type what was not found, then deterministic checks and annualization (core/validate.ts): a paystub's
+// income is projected over the year, a W-2's box 1 is the year's wages (validation/SPEC.md section 9).
 // Confirmed values feed an exact annualIncome into the verdict engine.
 import { bringIntoView } from '../design/motion';
 import { moneyOnly } from '../design/inputs';
@@ -7,7 +8,18 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Raw } from '../../core/types';
 import { parseNumber, readTypedAmount, type PointerSchema } from '../../core/skeleton';
 import type { ReviewField, SourceSegment } from '../../core/review';
-import { parseDate, validatePaystubs, type Annualization, type PayFrequency, type PaystubValues, type ValidationResult } from '../../core/validate';
+import {
+  parseDate,
+  validatePaystubs,
+  validateW2s,
+  type Annualization,
+  type PayFrequency,
+  type PaystubValues,
+  type ValidationResult,
+  type W2Annualization,
+  type W2ValidationResult,
+  type W2Values,
+} from '../../core/validate';
 import { POINTER_SCHEMAS } from '../../ai/tasks';
 import { useApp } from '../context';
 import { dynamicKey, formatMoney, programName, type Locale, type Translate } from '../i18n';
@@ -15,7 +27,7 @@ import { NUMBER_FORMAT, PACK } from '../pack';
 import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
-import { emptyDocument, useDocument } from '../doc/state';
+import { emptyDocument, useDocument, type FlowDocType } from '../doc/state';
 import { BlockActions } from '../design/block';
 import { Alert, ArrowRight, Check, ChevronLeft, ChevronRight } from '../design/icons';
 import { Marker, Paper, ActionLabel } from '../design/parts';
@@ -44,10 +56,11 @@ interface DeductionRow {
   readonly source: readonly (readonly SourceSegment[])[];
 }
 
-const schema = POINTER_SCHEMAS.paystub as unknown as PointerSchema & {
+type ReviewSchema = PointerSchema & {
   properties: Record<string, { enum?: string[]; items?: { properties: Record<string, { enum?: string[] }> } }>;
 };
-const DEDUCTION_KINDS = schema.properties['deductions']?.items?.properties['kind']?.enum ?? [];
+const schemaOf = (docType: FlowDocType) => POINTER_SCHEMAS[docType] as unknown as ReviewSchema;
+const DEDUCTION_KINDS = schemaOf('paystub').properties['deductions']?.items?.properties['kind']?.enum ?? [];
 
 /** Text shown for a found value: the highlighted document token when there is one. */
 function displayText(field: ReviewField): string {
@@ -61,11 +74,13 @@ function displayText(field: ReviewField): string {
  * ("grossPay": "N12") and this device put the value back (1,271.88). It arrives in that order: the
  * answer, then the value (styles.css, "The pointer"); with reduced motion both are simply there.
  */
-function PointerReveal({ review, source, machine }: { review: readonly ReviewField[]; source: string; machine?: string | undefined }) {
+function PointerReveal({ review, source, machine, docType }: { review: readonly ReviewField[]; source: string; machine?: string | undefined; docType: FlowDocType }) {
   const { t } = useApp();
   if (source !== 'ON_DEVICE' && source !== 'IN_CLOUD' && source !== 'RECORDED') return null;
   const scalar = (f: ReviewField) => f.refs.length === 1 && f.value !== null && /^N[0-9]+$/.test(f.refs[0] as string);
-  const field = review.find((f) => f.name === 'grossPay' && scalar(f)) ?? review.find((f) => f.kind === 'number' && scalar(f));
+  // The value the yearly income comes from: gross pay on a paystub, box 1 (wages) on a W-2.
+  const lead = docType === 'w2' ? 'wages' : 'grossPay';
+  const field = review.find((f) => f.name === lead && scalar(f)) ?? review.find((f) => f.kind === 'number' && scalar(f));
   if (!field) return null;
   const ref = field.refs[0] as string;
   const value = displayText(field);
@@ -91,16 +106,18 @@ function PointerReveal({ review, source, machine }: { review: readonly ReviewFie
       <figcaption className="small">
         {source === 'RECORDED'
           ? t('review.pointer.recorded', { machine: machine ?? '', ref, value })
-          : t(source === 'IN_CLOUD' ? 'review.pointer.cloud' : 'review.pointer.device', { ref, value })}
+          : docType === 'w2'
+            ? t(source === 'IN_CLOUD' ? 'review.pointer.cloudW2' : 'review.pointer.deviceW2', { ref, value })
+            : t(source === 'IN_CLOUD' ? 'review.pointer.cloud' : 'review.pointer.device', { ref, value })}
       </figcaption>
     </figure>
   );
 }
 
-function initialRows(review: readonly ReviewField[] | null): { rows: Row[]; deductions: DeductionRow[] } {
+function initialRows(review: readonly ReviewField[] | null, docType: FlowDocType): { rows: Row[]; deductions: DeductionRow[] } {
   const rows: Row[] = [];
   let deductions: DeductionRow[] = [];
-  for (const [name, spec] of Object.entries(schema.properties)) {
+  for (const [name, spec] of Object.entries(schemaOf(docType).properties)) {
     const field = review?.find((f) => f.name === name);
     const kind = ((spec as { 'x-kind'?: Kind })['x-kind'] ?? 'text') as Kind;
     if (kind === 'list') {
@@ -126,25 +143,29 @@ const toNumber = (text: string, typed = false): number | undefined => {
   return read.ok ? read.value : undefined;
 };
 
-/** The message for a typed number that is refused. */
-const typedProblem = (text: string): 'q.error.amountDecimals' | 'review.invalidNumber' | null => {
+/** The message for a typed number that is refused. A tax year is a whole number. */
+const typedProblem = (text: string, field?: string): 'q.error.amountDecimals' | 'review.invalidNumber' | null => {
   const read = readTypedAmount(text);
+  if (read.ok && field === 'taxYear' && !Number.isInteger(read.value)) return 'review.invalidNumber';
   return read.ok ? null : read.reason === 'decimals' ? 'q.error.amountDecimals' : 'review.invalidNumber';
 };
 
-function toValues(rows: readonly Row[], deductions: readonly DeductionRow[]): PaystubValues {
+/** The confirmed values, as validation takes them: PaystubValues for a paystub, W2Values for a W-2. */
+function toValues(rows: readonly Row[], deductions: readonly DeductionRow[]): PaystubValues & W2Values {
   const out: Record<string, unknown> = {};
   for (const row of rows) {
     if (row.status !== 'confirmed' || row.text === '') continue;
     if (row.kind === 'number') out[row.name] = toNumber(row.text, row.typed);
     else out[row.name] = row.text;
+    // A tax year is a whole number; anything else is left out (its check is then skipped).
+    if (row.name === 'taxYear' && !Number.isInteger(out[row.name])) delete out[row.name];
   }
   const confirmed = deductions.filter((d) => d.status === 'confirmed' && toNumber(d.amount, d.typed) !== undefined);
   if (confirmed.length > 0) {
     out['deductions'] = confirmed.map((d) => ({ amount: toNumber(d.amount, d.typed) as number, ...(d.kind ? { kind: d.kind } : {}) }));
   }
   if (out['payFrequency'] !== undefined) out['payFrequency'] = out['payFrequency'] as PayFrequency;
-  return out as PaystubValues;
+  return out as PaystubValues & W2Values;
 }
 
 /** Where a value came from: its document line on a paper slip, the value circled. */
@@ -165,10 +186,16 @@ function Source({ lines, t }: { lines: readonly (readonly SourceSegment[])[]; t:
 const money = (locale: Locale, cents: number) => formatMoney(locale, cents / 100, { cents: true });
 
 /** Fields that are amounts of money (shown in the pack's currency). */
-const MONEY_FIELDS: ReadonlySet<string> = new Set(['grossPay', 'netPay', 'ytdGross', 'hourlyRate']);
+const MONEY_FIELDS: ReadonlySet<string> = new Set(['grossPay', 'netPay', 'ytdGross', 'hourlyRate', 'wages', 'federalIncomeTaxWithheld', 'socialSecurityWages', 'medicareWages', 'stateWages']);
 
-/** What decides the yearly income: shown first. The date is the one it is worked out from: the period end, or the pay date without one. */
-const LEAD_FIELDS = ['grossPay', 'ytdGross', 'payDate', 'payFrequency'] as const;
+/**
+ * What decides the yearly income: shown first. A paystub: the date is the one it is worked out from, the
+ * period end, or the pay date without one. A W-2: box 1 and the year it is for.
+ */
+const LEAD_FIELDS: Readonly<Record<FlowDocType, readonly string[]>> = {
+  paystub: ['grossPay', 'ytdGross', 'payDate', 'payFrequency'],
+  w2: ['wages', 'taxYear'],
+};
 
 /** The values each check compares; a value a check flags is shown with the leading values. */
 const CHECK_FIELDS: Readonly<Record<string, readonly string[]>> = {
@@ -179,6 +206,8 @@ const CHECK_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'ytd-gross': ['ytdGross', 'grossPay'],
   'ytd-periods': ['ytdGross', 'payDate', 'payFrequency'],
   'dates-parsed': ['payDate', 'periodStart', 'periodEnd'],
+  'w2-medicare-wages': ['wages', 'medicareWages'],
+  'w2-year': ['taxYear'],
 };
 
 /**
@@ -208,8 +237,18 @@ export function basisText(annual: Annualization, stubs: readonly PaystubValues[]
   return t('review.basis.average', { average: money(locale, used[0] ?? annual.basis.averageGrossCents ?? 0), periods, amount });
 }
 
-/** The basis kept with a yearly income worked out from paystubs, for the results to show. */
-export function incomeBasis(annual: Annualization): IncomeBasis | undefined {
+/** The W-2 line: box 1 of the year's forms, as they are (nothing is projected). */
+export function basisTextW2(annual: W2Annualization, locale: Locale, t: Translate): string {
+  const amount = formatMoney(locale, annual.annualIncome);
+  const count = annual.basis.formsUsed.length;
+  if (annual.basis.taxYear === null) return count > 1 ? t('review.basis.w2ManyNoYear', { count, amount }) : t('review.basis.w2NoYear', { amount });
+  const year = String(annual.basis.taxYear);
+  return count > 1 ? t('review.basis.w2Many', { count, year, amount }) : t('review.basis.w2', { year, amount });
+}
+
+/** The basis kept with a yearly income worked out from paystubs or W-2s, for the results to show. */
+export function incomeBasis(annual: Annualization | W2Annualization): IncomeBasis | undefined {
+  if (annual.method === 'w2') return { method: 'w2', wagesCents: annual.basis.wagesCents, taxYear: annual.basis.taxYear, forms: annual.basis.formsUsed.length };
   if (annual.method === 'ytd') {
     const months = annual.basis.elapsedMonths;
     if (annual.basis.ytdCents === undefined || !annual.basis.referenceDate || !months) return undefined;
@@ -223,7 +262,7 @@ export function incomeBasis(annual: Annualization): IncomeBasis | undefined {
  * Which date of the reference paystub the year-to-date method used (validation/SPEC.md section 7: the
  * period end if it parses, else the pay date), so the review can say so. Null for the average method.
  */
-export function referenceDateSource(annual: Annualization, stubs: readonly PaystubValues[]): 'periodEnd' | 'payDate' | null {
+export function referenceDateSource(annual: Annualization | W2Annualization, stubs: readonly PaystubValues[]): 'periodEnd' | 'payDate' | null {
   if (annual.method !== 'ytd') return null;
   const stub = stubs[annual.basis.stubsUsed[0] ?? -1];
   if (!stub) return null;
@@ -233,7 +272,8 @@ export function referenceDateSource(annual: Annualization, stubs: readonly Payst
 export function DocumentReviewScreen() {
   const { t, locale, setAnswer } = useApp();
   const { doc, update, reset } = useDocument();
-  const initial = useMemo(() => initialRows(doc.extraction?.review ?? null), [doc.extraction]);
+  const docType = doc.docType;
+  const initial = useMemo(() => initialRows(doc.extraction?.review ?? null, docType), [doc.extraction, docType]);
   const [rows, setRows] = useState<Row[]>(initial.rows);
   const [deductions, setDeductions] = useState<DeductionRow[]>(initial.deductions);
   const [editing, setEditing] = useState<string | null>(null);
@@ -257,14 +297,14 @@ export function DocumentReviewScreen() {
   const [draft, setDraft] = useState('');
   const [invalid, setInvalid] = useState<'q.error.amountDecimals' | 'review.invalidNumber' | null>(null);
   const [deductionProblem, setDeductionProblem] = useState<{ index: number; key: 'q.error.amountDecimals' | 'review.invalidNumber' } | null>(null);
-  const [result, setResult] = useState<ValidationResult | null>(null);
+  const [result, setResult] = useState<ValidationResult | W2ValidationResult | null>(null);
   const [typeAnyway, setTypeAnyway] = useState(false);
   const manual = doc.extraction === null;
   const nothingFound =
     doc.extraction !== null && doc.extraction.review.every((f) => f.value === null && f.items.length === 0);
 
   const pending = rows.filter((r) => r.status === 'pending').length + deductions.filter((d) => d.status === 'pending').length;
-  const label = (name: string) => t(dynamicKey(`field.paystub.${name}`));
+  const label = (name: string) => t(dynamicKey(`field.${docType}.${name}`));
   const setRow = (name: string, patch: Partial<Row>) => {
     setRows((rs) => rs.map((r) => (r.name === name ? { ...r, ...patch } : r)));
     setResult(null);
@@ -272,7 +312,7 @@ export function DocumentReviewScreen() {
 
   const save = (row: Row) => {
     const text = draft.trim();
-    const problem = row.kind === 'number' && text !== '' ? typedProblem(text) : null;
+    const problem = row.kind === 'number' && text !== '' ? typedProblem(text, row.name) : null;
     if (problem !== null) {
       setInvalid(problem);
       return;
@@ -289,13 +329,13 @@ export function DocumentReviewScreen() {
   const checkButton = useRef<HTMLButtonElement>(null);
   const check = () => {
     const current = toValues(rows, deductions);
-    setResult(validatePaystubs(Raw.of([...doc.confirmedStubs, current]), PACK.jurisdiction));
+    setResult(docType === 'w2' ? validateW2s(Raw.of([...doc.confirmedW2s, current])) : validatePaystubs(Raw.of([...doc.confirmedStubs, current]), PACK.jurisdiction));
     // The button is replaced by the result: focus goes to the yearly income it worked out, and the
     // figure with its arithmetic comes into view (not only the heading at the bottom edge).
     requestAnimationFrame(() => bringIntoView(annualHeading.current?.closest('.validation'), { focus: annualHeading.current }));
   };
 
-  const currentIndex = doc.confirmedStubs.length;
+  const currentIndex = docType === 'w2' ? doc.confirmedW2s.length : doc.confirmedStubs.length;
   const annual = result?.annualization ?? null;
 
   // What decides the result first; everything else behind "More values", opened when it needs attention.
@@ -307,7 +347,7 @@ export function DocumentReviewScreen() {
   // it parses, otherwise the pay date. That one is shown with the leading values.
   const periodEndText = rows.find((r) => r.name === 'periodEnd')?.text ?? '';
   const dateField = periodEndText !== '' && parseDate(periodEndText, PACK.jurisdiction) !== null ? 'periodEnd' : 'payDate';
-  const leadOrder = [...LEAD_FIELDS.map((n) => (n === 'payDate' ? dateField : n)), ...rows.map((r) => r.name).filter((n) => flagged.has(n))];
+  const leadOrder = [...LEAD_FIELDS[docType].map((n) => (n === 'payDate' ? dateField : n)), ...rows.map((r) => r.name).filter((n) => flagged.has(n))];
   const leadNames = new Set<string>(leadOrder);
   const leadRows = [...new Set(leadOrder)].flatMap((n) => rows.filter((r) => r.name === n));
   const restRows = rows.filter((r) => !leadNames.has(r.name));
@@ -466,7 +506,7 @@ export function DocumentReviewScreen() {
   const deductionsSection = (
     <section className="deductions" aria-labelledby="deductions-title">
       <h2 id="deductions-title" className="section-heading">
-        {label('deductions')}
+        {t('field.paystub.deductions')}
       </h2>
       {deductionsUnread && (
         <p className="small muted" data-testid="deductions-not-read">
@@ -599,7 +639,7 @@ export function DocumentReviewScreen() {
           <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
         )}
       </div>
-      {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} machine={doc.extraction.recording?.machine} />}
+      {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} machine={doc.extraction.recording?.machine} docType={docType} />}
       <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
       {manual && manualHint && nothingTyped && (
         <p className="error" role="alert">
@@ -676,7 +716,7 @@ export function DocumentReviewScreen() {
           </button>
           <div id={moreId} hidden={!moreOpen}>
             <ul className="fields">{restRows.map(fieldItem)}</ul>
-            {deductionsSection}
+            {docType === 'paystub' && deductionsSection}
           </div>
         </div>
 
@@ -692,7 +732,9 @@ export function DocumentReviewScreen() {
               <p className="annual" data-testid="annual-income" data-amount={annual.annualIncome}>
                 {formatMoney(locale, annual.annualIncome)}
               </p>
-              <p className="basis">{basisText(annual, [...doc.confirmedStubs, toValues(rows, deductions)], locale, t)}</p>
+              <p className="basis" data-testid="basis">
+                {annual.method === 'w2' ? basisTextW2(annual, locale, t) : basisText(annual, [...doc.confirmedStubs, toValues(rows, deductions)], locale, t)}
+              </p>
               {(() => {
                 const source = referenceDateSource(annual, [...doc.confirmedStubs, toValues(rows, deductions)]);
                 return source ? (
@@ -701,7 +743,8 @@ export function DocumentReviewScreen() {
                   </p>
                 ) : null;
               })()}
-              <p className="small muted">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>
+              {/* A W-2's line already counts its forms. */}
+              {docType === 'paystub' && <p className="small muted">{t('review.stubsCount', { count: doc.confirmedStubs.length + 1 })}</p>}
               <Changes amount={annual.annualIncome} />
             </>
           ) : (
@@ -733,7 +776,7 @@ export function DocumentReviewScreen() {
               type="button"
               className="action"
               onClick={() => {
-                // Read from a paystub (not typed): the results say how it was read.
+                // Read from a paystub or a W-2 (not typed): the results say how it was read, and the basis.
                 setAnswer('income', doc.extraction ? { kind: 'exact', amount: annual.annualIncome, from: { paystub: doc.extraction.inferenceSource, basis: incomeBasis(annual) } } : { kind: 'exact', amount: annual.annualIncome });
                 reset(false);
                 navigate({ name: 'results' });
@@ -749,11 +792,13 @@ export function DocumentReviewScreen() {
                 type="button"
                 className="text-link"
                 onClick={() => {
-                  update({ ...emptyDocument(doc.language, [...doc.confirmedStubs, toValues(rows, deductions)]) });
+                  // Another of the same type: a W-2 from another employer, or another paystub.
+                  const values = toValues(rows, deductions);
+                  update({ ...(docType === 'w2' ? emptyDocument(doc.language, [], [...doc.confirmedW2s, values]) : emptyDocument(doc.language, [...doc.confirmedStubs, values])) });
                   navigate({ name: 'doc' });
                 }}
               >
-                {t('review.addAnother')}
+                {t(docType === 'w2' ? 'review.addAnotherW2' : 'review.addAnother')}
               </button>
             </div>
           </>

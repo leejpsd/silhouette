@@ -21,7 +21,7 @@
 
 import { reveal, Raw, type Skeleton } from './types';
 import { parseNumber, rehydrate, type PlaceholderMap, type PointerSchema } from './skeleton';
-import { dayNumber, parseDate, validatePaystubs, ValidationInputError, type PaystubValues } from './validate';
+import { dayNumber, parseDate, validatePaystubs, validateW2s, ValidationInputError, type PaystubValues, type W2Values } from './validate';
 
 /** Core checks that warn only when a reading is wrong (measured on all 38 English evaluation paystubs). */
 export const CORE_CHECKS: ReadonlySet<string> = new Set(['period-length', 'pay-date', 'ytd-gross', 'ytd-periods', 'dates-parsed']);
@@ -359,6 +359,27 @@ export function deductionsProblems(schema: PointerSchema, pointers: unknown, raw
   if (typeof v.netPay !== 'number' || typeof v.grossPay !== 'number') problems.push('deductions:cannot-check');
   else problems.push(...checkWarnings(v, jurisdiction, new Set(['net-sum'])));
   return [...new Set(problems)];
+}
+
+/**
+ * Problems with a pointer answer for a Form W-2 (validation/SPEC.md section 9), read in one request: every
+ * reference fits its field, box 1 (wages) is there, and the tax year is a year (a year read from the
+ * form's title, the 2 of "W-2", is not).
+ */
+export function w2PointerProblems(schema: PointerSchema, pointers: unknown, rawMap: Raw<PlaceholderMap>): string[] {
+  if (!isObject(pointers)) return ['not-an-object'];
+  const problems = coreFieldProblems(schema, pointers, reveal(rawMap));
+  if (problems.length > 0) return problems;
+  const v = reveal(rehydrate(schema, pointers, rawMap)) as unknown as W2Values;
+  if (typeof v.wages !== 'number') problems.push('wages:missing');
+  try {
+    const result = validateW2s(Raw.of([v]));
+    for (const c of result.checks[0] ?? []) if (c.id === 'w2-year' && c.status === 'warn') problems.push('taxYear:not-a-year');
+  } catch (error) {
+    if (!(error instanceof ValidationInputError)) throw error;
+    problems.push('values:invalid');
+  }
+  return problems;
 }
 
 /** Problems with a whole answer (core and deductions), as one list. */

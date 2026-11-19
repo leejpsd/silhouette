@@ -7,12 +7,14 @@ import { verdicts, type Answers, type ProgramVerdict, type RulePack, type Verdic
 import type { Bands, ExactProfile, IncomeBand } from '../core/generalize';
 
 /**
- * How a yearly income was worked out from paystubs (validation/SPEC.md section 7), kept with it so the
- * results can say so: year-to-date gross over the months elapsed, or gross per period × periods.
+ * How a yearly income was worked out from paystubs (validation/SPEC.md section 7) or W-2s (section 9),
+ * kept with it so the results can say so: year-to-date gross over the months elapsed, gross per period ×
+ * periods, or box 1 of the year's W-2s as they are (`forms`: how many were added together).
  */
 export type IncomeBasis =
   | { readonly method: 'ytd'; readonly ytdCents: number; readonly referenceDate: string; readonly monthsNumerator: number; readonly monthsDenominator: number }
-  | { readonly method: 'average'; readonly averageCents: number; readonly periodsPerYear: number };
+  | { readonly method: 'average'; readonly averageCents: number; readonly periodsPerYear: number }
+  | { readonly method: 'w2'; readonly wagesCents: number; readonly taxYear: number | null; readonly forms: number };
 
 /** `from`: an exact income worked out from a paystub reading, how the paystub was read, and the basis. */
 export type IncomeAnswer =

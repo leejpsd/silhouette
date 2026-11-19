@@ -26,7 +26,7 @@ import {
 import { GeneralizeError, canonical, generalize, silhouetteVerdicts, type Bands, type ExactProfile, type GeneralizedProfile } from './generalize';
 import { modelTextIsBlocked, type OutputChecks, type OutputScope, type ShownVerdict } from './output-check';
 import { InputError, RuleError, UNKNOWN, evaluate, verdicts, type Answers, type RulePack } from './rules';
-import { ValidationInputError, validatePaystubs, type PaystubValues } from './validate';
+import { ValidationInputError, validatePaystubs, validateW2s, type PaystubValues, type W2Values } from './validate';
 import { toModelSchema, type ModelSchemaOptions } from '../ai/model-schema';
 import { runDeviceReadingFixture } from '../ai/device-reading.conformance';
 import { runDeviceCheckFixture, runJudgesHouseholdFixture } from '../ui/device-check/device-check.conformance';
@@ -221,7 +221,10 @@ const extraRunners: Record<string, (fixture: unknown) => void> = {
     for (const k of fixture.cases) it(k.id, () => expect(modelTextIsBlocked(k.text, k.locale, k.scope, checks, k.verdict)).toBe(k.blocked));
   },
   'validate.json': (raw) => {
-    const fixture = raw as { cases: ({ id: string; jurisdiction: string; stubs: PaystubValues[] } & ({ expected: unknown } | { expectedError: string }))[] };
+    const fixture = raw as {
+      cases: ({ id: string; jurisdiction: string; stubs: PaystubValues[] } & ({ expected: unknown } | { expectedError: string }))[];
+      w2Cases: ({ id: string; forms: W2Values[] } & ({ expected: unknown } | { expectedError: string }))[];
+    };
     it('has at least 40 cases', () => expect(fixture.cases.length).toBeGreaterThanOrEqual(40));
     for (const c of fixture.cases) {
       it(c.id, () => {
@@ -230,6 +233,17 @@ const extraRunners: Record<string, (fixture: unknown) => void> = {
         else expectExact(run(), c.expected);
       });
     }
+    // Section 9: Form W-2.
+    describe('w2Cases', () => {
+      it('has cases', () => expect(fixture.w2Cases.length).toBeGreaterThan(0));
+      for (const c of fixture.w2Cases) {
+        it(c.id, () => {
+          const run = () => validateW2s(Raw.of(c.forms));
+          if ('expectedError' in c) expectError(run, c.expectedError);
+          else expectExact(run(), c.expected);
+        });
+      }
+    });
   },
   'model-schema.json': (raw) => {
     const fixture = raw as { cases: { id: string; schema: Record<string, unknown>; options: ModelSchemaOptions; expected?: unknown; expectedError?: boolean }[] };

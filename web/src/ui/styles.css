@@ -4087,6 +4087,73 @@ main h2.judge-title {
   }
 }
 
+/* Where each task runs, last: how the routing is held to, and the Remote Config values in use. */
+.enforced,
+.config {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+}
+
+.enforced-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.enforced-list li {
+  padding: 12px 16px;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+
+.enforced-list p {
+  margin: 0;
+}
+
+.enforced-list p + p {
+  margin-top: 6px;
+}
+
+.config-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--card);
+}
+
+.config-table th,
+.config-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ground);
+  text-align: left;
+  vertical-align: top;
+  font-size: var(--type-small-size);
+}
+
+.config-table th {
+  font-weight: 500;
+}
+
+.config-table td {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.config-key {
+  display: block;
+  margin-top: 2px;
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  word-break: break-all;
+}
+
 /* Where each task runs, first: why it is hybrid, in measured figures. One card per recorded device and
    one for the cloud (dashed, as everything that may leave), side by side when there is room. */
 .measured {

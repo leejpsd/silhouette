@@ -42,7 +42,7 @@ export const onJudgesPath = (): boolean => {
 export function openSamplePaystub(update: DocumentContextValue['update']): void {
   const text = Raw.of(sampleText);
   const { skeleton, map } = skeletonize(text, allowlistFor('en'), introducersFor('en'));
-  update({ text, skeleton, map, sourceKind: 'sample', language: 'en', extraction: null, error: null, hiddenWords: [], photoSource: null });
+  update({ docType: 'paystub', confirmedW2s: [], text, skeleton, map, sourceKind: 'sample', language: 'en', extraction: null, error: null, hiddenWords: [], photoSource: null });
   navigate({ name: 'doc-preview' });
 }
 

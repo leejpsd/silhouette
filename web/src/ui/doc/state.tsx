@@ -4,11 +4,14 @@ import { createContext, useContext } from 'react';
 import type { Raw, Skeleton } from '../../core/types';
 import type { PlaceholderMap } from '../../core/skeleton';
 import type { ReviewField } from '../../core/review';
-import type { PaystubValues } from '../../core/validate';
+import type { PaystubValues, W2Values } from '../../core/validate';
 import type { InferenceSource, RoutingReason, TaskError } from '../../ai/tasks';
 import type { Locale } from '../i18n';
 
 export type SourceKind = 'pdf' | 'paste' | 'photo' | 'sample' | 'manual';
+
+/** The documents this flow reads: a paystub, or a Form W-2 (recognised by its title, core/doc-type.ts). */
+export type FlowDocType = 'paystub' | 'w2';
 
 export interface Extraction {
   readonly review: readonly ReviewField[];
@@ -28,7 +31,7 @@ export interface Extraction {
 }
 
 export interface DocumentState {
-  readonly docType: 'paystub';
+  readonly docType: FlowDocType;
   readonly language: Locale;
   readonly sourceKind: SourceKind | null;
   readonly text: Raw<string> | null;
@@ -41,10 +44,13 @@ export interface DocumentState {
   readonly hiddenWords: readonly string[];
   /** Paystubs already confirmed in this session (for multi-paystub annualization). */
   readonly confirmedStubs: readonly PaystubValues[];
+  /** W-2s already confirmed in this session (another employer's form of the same year is added). */
+  readonly confirmedW2s: readonly W2Values[];
 }
 
-export const emptyDocument = (language: Locale, confirmedStubs: readonly PaystubValues[] = []): DocumentState => ({
-  docType: 'paystub',
+/** A set holds one type: with W-2s confirmed, the next document of the set is a W-2. */
+export const emptyDocument = (language: Locale, confirmedStubs: readonly PaystubValues[] = [], confirmedW2s: readonly W2Values[] = []): DocumentState => ({
+  docType: confirmedW2s.length > 0 ? 'w2' : 'paystub',
   language,
   sourceKind: null,
   text: null,
@@ -55,6 +61,7 @@ export const emptyDocument = (language: Locale, confirmedStubs: readonly Paystub
   error: null,
   hiddenWords: [],
   confirmedStubs,
+  confirmedW2s,
 });
 
 export interface DocumentContextValue {

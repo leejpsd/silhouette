@@ -71,23 +71,25 @@ function ResultsSource() {
   const basis = exact?.from?.basis;
   const sentSomething = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length > 0, () => false);
   const from = useIncomeFrom();
+  // Read from a W-2: the wages of a past tax year, said so with the year.
+  const w2 = basis?.method === 'w2' ? basis : null;
   return (
     <div className="badge-line" data-testid="results-source" data-income-from={from ?? ''}>
-      <strong className={`badge ${from ? 'badge-paystub' : 'badge-none'}`}>{t(from ? 'badge.rulesAndPaystub' : 'badge.rulesOnly')}</strong>
+      <strong className={`badge ${from ? 'badge-paystub' : 'badge-none'}`}>{t(from ? (w2 ? 'badge.rulesAndW2' : 'badge.rulesAndPaystub') : 'badge.rulesOnly')}</strong>
       <p className="small muted" data-testid="results-lead">
         {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
       </p>
       {from && (
         <p className="small strong income-from" data-testid="income-from">
-          {t('results.incomeFrom.lead', { how: t(dynamicKey(`results.incomeFrom.${from}`)) })}
+          {t(w2 ? 'results.incomeFromW2.lead' : 'results.incomeFrom.lead', { how: t(dynamicKey(`results.incomeFrom.${from}`)) })}
         </p>
       )}
       {/* How the yearly income was worked out, and that a tax credit counts the whole year. */}
       {exact && basis && (
         <div className="income-basis" data-testid="income-basis" data-method={basis.method}>
           <p className="small">{incomeBasisLine(t, locale, exact.amount, basis)}</p>
-          <p className="small muted">
-            {t('results.incomeBasis.note')}{' '}
+          <p className="small muted" data-testid="income-basis-note">
+            {w2 ? (w2.taxYear === null ? t('results.incomeBasis.w2NoteNoYear') : t('results.incomeBasis.w2Note', { year: String(w2.taxYear) })) : t('results.incomeBasis.note')}{' '}
             <button
               type="button"
               className="text-link inline"
@@ -137,7 +139,7 @@ export function ResultsScreen() {
         </button>
       ) : (
         <a className="action" href={routeHref({ name: 'doc' })}>
-          <ActionLabel>{t('results.addDocument')}</ActionLabel>
+          <ActionLabel>{t('results.addDocumentW2')}</ActionLabel>
           <span className="action-arrow">
             <ArrowRight />
           </span>
@@ -286,7 +288,7 @@ export function ResultsAside({ current, isPage = false }: { current: string; /**
             <strong>{t('results.sharpen')}</strong>
             <SharpenHelp />
           </span>
-          <span className="sharpen-button">{t('results.addDocument')}</span>
+          <span className="sharpen-button">{t('results.addDocumentW2')}</span>
         </a>
       )}
       <div className="results-actions">

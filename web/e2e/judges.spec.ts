@@ -268,3 +268,23 @@ test.describe('why hybrid, measured', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on‑device check');
   });
 });
+
+test.describe('how the routing is enforced', () => {
+  test('"Where each task runs" says how ONLY_ON_DEVICE holds without a model, and shows the Remote Config values in use', async ({ page, context }) => {
+    await noOnDeviceModel(context);
+    await page.goto('/#/tasks');
+    const enforced = page.getByTestId('tasks-enforced');
+    await expect(enforced).toContainText('the Firebase AI Logic SDK would send even an ONLY_ON_DEVICE request to the cloud');
+    await expect(page.getByTestId('enforced-browser')).toHaveAttribute('data-status', 'unavailable');
+    const config = page.getByTestId('tasks-config');
+    await expect(config).toHaveAttribute('data-source', 'defaults');
+    await expect(config).toContainText('route_short_text_max_words');
+    await expect(config).toContainText('prompt_pointer_extract_v');
+  });
+
+  test('with a ready model, the page says so', async ({ page, context }) => {
+    await fakeOnDeviceModel(context, { availability: 'available', replies: {} });
+    await page.goto('/#/tasks');
+    await expect(page.getByTestId('enforced-browser')).toHaveAttribute('data-status', 'available');
+  });
+});

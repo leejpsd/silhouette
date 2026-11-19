@@ -126,7 +126,7 @@ export function App() {
     () => ({
       doc,
       update: (patch) => setDoc((d) => ({ ...d, ...patch })),
-      reset: (keepStubs) => setDoc((d) => emptyDocument(d.language, keepStubs ? d.confirmedStubs : [])),
+      reset: (keepStubs) => setDoc((d) => emptyDocument(d.language, keepStubs ? d.confirmedStubs : [], keepStubs ? d.confirmedW2s : [])),
     }),
     [doc],
   );

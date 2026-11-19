@@ -1,6 +1,8 @@
 // "Where each task runs" (#/tasks): the routing table (shared/routing.json) as four cards: on this device
 // only, device first with the cloud if needed, in the cloud, and no model at all.
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
+import { CONFIG_STORAGE_KEY, appConfig, subscribeConfig } from '../../data/remote-config';
 import routing from '../../../../shared/routing.json';
 // The cloud evaluation of the reading prompt (README, "Evidence"): only its totals are read here.
 import { date as cloudDate, leakCheck, metrics } from '../../../eval/results/v15p4.json';
@@ -154,6 +156,87 @@ function Measured() {
   );
 }
 
+/**
+ * How the routing is held to, as a reviewer asked: the guard before every ONLY_ON_DEVICE call (the SDK
+ * would send such a request to the cloud in a browser without the model), this browser's model, the
+ * network check, the Raw type; then the Remote Config values in use and where they came from.
+ */
+function Enforced() {
+  const { t } = useApp();
+  const [status, setStatus] = useState<DeviceStatus | null>(null);
+  useEffect(() => {
+    let live = true;
+    void pointerDeviceStatus('paystub', 'en').then((s) => live && setStatus(s));
+    return () => {
+      live = false;
+    };
+  }, []);
+  const config = useSyncExternalStore(subscribeConfig, appConfig, appConfig);
+  const fetched = (() => {
+    try {
+      return globalThis.localStorage?.getItem(CONFIG_STORAGE_KEY) !== null && globalThis.localStorage?.getItem(CONFIG_STORAGE_KEY) !== undefined;
+    } catch {
+      return false;
+    }
+  })();
+  const onOff = (on: boolean) => t(on ? 'tasks.config.on' : 'tasks.config.off');
+  const rows: [string, string, string][] = [
+    ['route_short_text_max_words', t('tasks.config.route_short_text_max_words'), String(config.routeShortTextMaxWords)],
+    ['route_ondevice_locales_web', t('tasks.config.route_ondevice_locales_web'), config.onDeviceLocales.join(', ')],
+    ['prompt_pointer_extract_v', t('tasks.config.prompt_pointer_extract_v'), `v${config.promptPointerExtractV}`],
+    ['prompt_explain_v', t('tasks.config.prompt_explain_v'), `v${config.promptExplainV}`],
+    ['prompt_ask_v', t('tasks.config.prompt_ask_v'), `v${config.promptAskV}`],
+    ['feature_grounding_search · feature_grounding_maps · feature_tts', t('tasks.config.features'), onOff(config.groundingSearch || config.groundingMaps || config.tts)],
+  ];
+  return (
+    <>
+      <section className="enforced" aria-labelledby="enforced-title" data-testid="tasks-enforced">
+        <h2 id="enforced-title" className="section-heading">
+          {t('tasks.enforce.title')}
+        </h2>
+        <ul className="enforced-list">
+          <li>
+            <p>{t('tasks.enforce.onlyOnDevice')}</p>
+            {status !== null && (
+              <p className="small strong" data-testid="enforced-browser" data-status={status}>
+                {t('tasks.enforce.thisBrowser', { status: t(dynamicKey(`tasks.enforce.status.${status}`)) })}
+              </p>
+            )}
+          </li>
+          <li>
+            <p>{t('tasks.enforce.monitor')}</p>
+          </li>
+          <li>
+            <p>{t('tasks.enforce.types')}</p>
+          </li>
+        </ul>
+      </section>
+      <section className="config" aria-labelledby="config-title" data-testid="tasks-config" data-source={fetched ? 'fetched' : 'defaults'}>
+        <h2 id="config-title" className="section-heading">
+          {t('tasks.config.title')}
+        </h2>
+        <p className="small muted">{t('tasks.config.lead')}</p>
+        <table className="config-table">
+          <tbody>
+            {rows.map(([key, label, value]) => (
+              <tr key={key}>
+                <th scope="row">
+                  {label}
+                  <code className="config-key">{key}</code>
+                </th>
+                <td>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="small muted" data-testid="config-source">
+          {t(fetched ? 'tasks.config.source.fetched' : 'tasks.config.source.defaults')}
+        </p>
+      </section>
+    </>
+  );
+}
+
 export function TasksScreen() {
   const { t } = useApp();
   const tasks = Object.entries(routing.tasks as Readonly<Record<string, Task>>);
@@ -188,6 +271,7 @@ export function TasksScreen() {
         })}
       </ul>
       <p className="card-note">{t('tasks.foot')}</p>
+      <Enforced />
     </div>
   );
 }

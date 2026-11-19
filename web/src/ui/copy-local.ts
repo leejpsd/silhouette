@@ -87,6 +87,7 @@ const EN = {
   'record.answerReceived': 'Answer received',
   'record.answerNote': 'The model answered with placeholders only. This device put the real values back.',
   'record.pick': 'Choose a request in the list to see exactly what it carried.',
+  // Form W-2 (contract v1.34): the lines that said "paystub" on a W-2's way.
 } as const;
 
 export type LocalKey = keyof typeof EN;

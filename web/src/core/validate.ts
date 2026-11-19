@@ -401,3 +401,80 @@ export function validatePaystubs(rawStubs: Raw<readonly PaystubValues[]>, jurisd
     },
   };
 }
+
+// ---------- 9. Form W-2 ----------
+
+/** Confirmed values of one Form W-2 (shared/schemas/pointer.w2.json): box 1 is `wages`. */
+export interface W2Values {
+  readonly taxYear?: number | null | undefined;
+  readonly wages?: number | null | undefined;
+  readonly federalIncomeTaxWithheld?: number | null | undefined;
+  readonly socialSecurityWages?: number | null | undefined;
+  readonly medicareWages?: number | null | undefined;
+  readonly stateWages?: number | null | undefined;
+}
+
+export type W2CheckId = 'w2-medicare-wages' | 'w2-year';
+
+export interface W2Check {
+  readonly id: W2CheckId;
+  readonly status: CheckStatus;
+}
+
+export interface W2Annualization {
+  /** Whole currency units, rounded half up. */
+  readonly annualIncome: number;
+  readonly method: 'w2';
+  readonly basis: {
+    /** Box 1 of the forms used, summed, in cents. */
+    readonly wagesCents: number;
+    /** The latest tax year among the forms with wages; null when none has a year. */
+    readonly taxYear: number | null;
+    readonly formsUsed: readonly number[];
+  };
+}
+
+export interface W2ValidationResult {
+  /** Checks per input form, in input order. */
+  readonly checks: readonly (readonly W2Check[])[];
+  readonly failure: 'no-wages' | null;
+  readonly annualization: W2Annualization | null;
+}
+
+const W2_MONEY = ['wages', 'federalIncomeTaxWithheld', 'socialSecurityWages', 'medicareWages', 'stateWages'] as const;
+
+/**
+ * Section 9. A W-2's box 1 (wages) is the year's earned income from that employer: nothing is
+ * projected. The forms of the latest tax year are summed (one per employer); a form without a year
+ * counts with them.
+ */
+export function validateW2s(rawForms: Raw<readonly W2Values[]>): W2ValidationResult {
+  const forms = reveal(rawForms).map((v, index) => {
+    if (typeof v !== 'object' || v === null) throw new ValidationInputError('each form must be an object');
+    const cents: Partial<Record<(typeof W2_MONEY)[number], number | null>> = {};
+    for (const key of W2_MONEY) cents[key] = v[key] === undefined || v[key] === null ? null : toCents(v[key] as number);
+    const year = v.taxYear;
+    if (year !== undefined && year !== null && (typeof year !== 'number' || !Number.isInteger(year))) throw new ValidationInputError('taxYear must be an integer');
+    return { index, wages: cents.wages ?? null, medicareWages: cents.medicareWages ?? null, taxYear: year ?? null };
+  });
+  const checks = forms.map((f): W2Check[] => [
+    // Box 5 (Medicare wages) is box 1 plus pre-tax deductions: it is not less than box 1.
+    { id: 'w2-medicare-wages', status: f.wages === null || f.medicareWages === null ? 'skipped' : f.medicareWages >= f.wages ? 'ok' : 'warn' },
+    { id: 'w2-year', status: f.taxYear === null ? 'skipped' : f.taxYear >= 2000 && f.taxYear <= 2100 ? 'ok' : 'warn' },
+  ]);
+  const withWages = forms.filter((f) => f.wages !== null && f.wages > 0);
+  if (withWages.length === 0) return { checks, failure: 'no-wages', annualization: null };
+  const years = withWages.map((f) => f.taxYear).filter((y): y is number => y !== null);
+  const taxYear = years.length > 0 ? Math.max(...years) : null;
+  const used = withWages.filter((f) => f.taxYear === null || f.taxYear === taxYear);
+  const wagesCents = used.reduce((a, f) => a + (f.wages as number), 0);
+  return {
+    checks,
+    failure: null,
+    annualization: {
+      annualIncome: roundRatio(BigInt(wagesCents), 100n),
+      method: 'w2',
+      basis: { wagesCents, taxYear, formsUsed: used.map((f) => f.index) },
+    },
+  };
+}

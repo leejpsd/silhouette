@@ -5,7 +5,7 @@ import { placeholderCounts, buildReview, type SourceSegment } from '../../core/r
 import { cancelPreparedReading, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
-import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, unconfirmedFields, ytdMissingWithCandidate } from '../../core/pointer-check';
+import { corePointerProblems, deductionsProblems, notReadFields, pointerProblems, unconfirmedFields, w2PointerProblems, ytdMissingWithCandidate } from '../../core/pointer-check';
 import { PACK } from '../pack';
 import type { Raw, Skeleton } from '../../core/types';
 import type { PlaceholderMap } from '../../core/skeleton';
@@ -18,7 +18,7 @@ import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
 import { ModelStatus } from '../doc/ModelStatus';
-import { useDocument } from '../doc/state';
+import { useDocument, type FlowDocType } from '../doc/state';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { recordedReading, type RecordedReading } from '../doc/recorded-reading';
@@ -46,10 +46,12 @@ let firstPreview = true;
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
 /**
- * The deterministic checks of a paystub reading of this silhouette (core/pointer-check.ts): a core that
- * fails is a failed attempt; deductions, names, hours or rate that fail are left out as not read.
+ * The deterministic checks of a reading of this silhouette (core/pointer-check.ts). A paystub: a core that
+ * fails is a failed attempt; deductions, names, hours or rate that fail are left out as not read. A W-2 is
+ * read in one request: an answer that fails its check is a failed attempt.
  */
-function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>, language: string) {
+function readingChecks(skeleton: Skeleton, map: Raw<PlaceholderMap>, language: string, docType: FlowDocType = 'paystub') {
+  if (docType === 'w2') return { validate: (pointers: Record<string, unknown>) => w2PointerProblems(POINTER_SCHEMAS.w2, pointers, map), checkParts: undefined };
   const schema = POINTER_SCHEMAS.paystub;
   return {
     validate: (pointers: Record<string, unknown>) => pointerProblems(schema, pointers, skeleton, map, PACK.jurisdiction),
@@ -81,13 +83,15 @@ export function DocumentPreviewScreen() {
   const aheadSkeleton = doc.skeleton;
   const aheadMap = doc.map;
   const aheadLanguage = doc.language;
+  const aheadType = doc.docType;
   useEffect(() => {
-    if (!aheadSkeleton || !aheadMap || deviceStatus !== 'available' || !ON_DEVICE_LANGUAGES.has(aheadLanguage)) return;
+    // Only a document read in parts (a paystub) is prepared ahead; a W-2 is one request.
+    if (!aheadSkeleton || !aheadMap || aheadType !== 'paystub' || deviceStatus !== 'available' || !ON_DEVICE_LANGUAGES.has(aheadLanguage)) return;
     let live = true;
     // After a short pause, so hiding several words in a row starts one reading, not one per word.
     const timer = setTimeout(() => {
       setReadingAhead(true);
-      void prepareDeviceReading(aheadSkeleton, 'paystub', aheadLanguage, readingChecks(aheadSkeleton, aheadMap, aheadLanguage)).finally(() => {
+      void prepareDeviceReading(aheadSkeleton, aheadType, aheadLanguage, readingChecks(aheadSkeleton, aheadMap, aheadLanguage, aheadType)).finally(() => {
         if (live) setReadingAhead(false);
       });
     }, 1200);
@@ -99,8 +103,9 @@ export function DocumentPreviewScreen() {
       // unless "Send" or "Keep" has already taken it over.
       cancelPreparedReading();
     };
-  }, [aheadSkeleton, aheadMap, aheadLanguage, deviceStatus]);
-  const recordedSkeleton = doc.sourceKind === 'sample' && doc.hiddenWords.length === 0 ? doc.skeleton : null;
+  }, [aheadSkeleton, aheadMap, aheadLanguage, aheadType, deviceStatus]);
+  // routing.json recordedSample: the bundled paystub only (the recordings are of its reading), never a W-2.
+  const recordedSkeleton = doc.sourceKind === 'sample' && doc.docType === 'paystub' && doc.hiddenWords.length === 0 ? doc.skeleton : null;
   useEffect(() => {
     if (!recordedSkeleton || deviceStatus === null || deviceStatus === 'available') {
       setRecorded(null);
@@ -171,7 +176,7 @@ export function DocumentPreviewScreen() {
   }
   const { skeleton, map } = doc;
   // The deterministic check of a pointer answer: one that fails it is a failed attempt, never values to confirm.
-  const { validate: checkAnswer, checkParts } = readingChecks(skeleton, map, doc.language);
+  const { validate: checkAnswer, checkParts } = readingChecks(skeleton, map, doc.language, doc.docType);
   const counts = placeholderCounts(skeleton);
   const rawText = doc.text;
 
@@ -199,7 +204,7 @@ export function DocumentPreviewScreen() {
     update({ error: null });
     try {
       // Re-check right before sending, so the sentence above matched what happens.
-      const status = await pointerDeviceStatus('paystub', doc.language);
+      const status = await pointerDeviceStatus(doc.docType, doc.language);
       setDeviceStatus(status);
       // A bundled sample with no network and no device model: its answer key, on this device.
       const key = doc.sourceKind === 'sample' && doc.hiddenWords.length === 0 && !navigator.onLine && status !== 'available' ? sampleAnswerKey(skeleton) : null;
@@ -313,6 +318,12 @@ export function DocumentPreviewScreen() {
         </strong>
         <span>{t(offlineSample ? 'reason.sample-answer-key' : 'reason.document-silhouette-only')}</span>
       </p>
+      {/* A W-2 is known by its title, by code: it is read as one. */}
+      {doc.docType === 'w2' && (
+        <p className="small detected-type" data-testid="detected-w2">
+          <strong>{t('doc.detected.w2')}</strong> <span className="muted">{t('doc.type.w2.help')}</span>
+        </p>
+      )}
       {!wide && recordedChoice}
       <div className="preview-pair" data-wide={wide} style={{ '--doc-cols': docCols, '--hide-hint': JSON.stringify(t('preview.hideToo')) } as CSSProperties}>
       <div className="toggle" role="group" aria-label={t('preview.title')}>
@@ -357,7 +368,8 @@ export function DocumentPreviewScreen() {
       {!wide && <p className="small muted">{t('preview.leadShort')}</p>}
       {/* Without a model here, the on-device half of the story is one press away: the recorded run. */}
       {wide && recordedChoice}
-      {!onDeviceFirst && deviceStatus !== null && !offlineSample && !recorded && (
+      {/* The recordings are of the paystub's reading: a W-2 does not point at them. */}
+      {!onDeviceFirst && deviceStatus !== null && !offlineSample && !recorded && doc.docType === 'paystub' && (
         <a className="text-link recorded-link" href={routeHref({ name: 'device-check' })} data-testid="see-recorded">
           {t('preview.seeRecorded')}
           <ChevronRight />

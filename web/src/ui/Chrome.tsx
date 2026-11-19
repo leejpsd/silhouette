@@ -188,11 +188,11 @@ export function RailSteps({ route }: { route: Route }) {
     },
     {
       key: 'paystub',
-      label: t('results.addDocument'),
+      label: t('results.addDocumentW2'),
       href: routeHref({ name: 'doc' }),
       current: route.name === 'doc' || route.name === 'doc-preview' || route.name === 'doc-review',
-      done: doc.confirmedStubs.length > 0,
-      note: doc.confirmedStubs.length > 0 ? t('rail.done') : '',
+      done: doc.confirmedStubs.length + doc.confirmedW2s.length > 0,
+      note: doc.confirmedStubs.length + doc.confirmedW2s.length > 0 ? t('rail.done') : '',
     },
   ];
   return (
