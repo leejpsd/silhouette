@@ -25,6 +25,16 @@ struct ProgramScreen: View {
                                 NoteText(text: model.t("detail.amount", ["amount": model.money(amount)])).padding(.top, 4)
                             }
                         }
+                        // The most it pays a household like this one, said to be a ceiling (contract v1.43).
+                        if result.estimatedAmount == nil, let ceiling = result.upToAmount, ceiling > 0 {
+                            Card {
+                                Display(text: model.t("results.upTo", ["amount": model.money(ceiling)]), size: 44, maxLines: 2)
+                                NoteText(text: model.t("results.upToNote"), size: 15).padding(.top, 4)
+                                    .accessibilityIdentifier("program.upToNote")
+                            }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityIdentifier("program.upTo")
+                        }
                         // A "Probably not" is a first check, not a decision: said before the reasons.
                         if result.verdict == .unlikely {
                             Text(model.t("detail.unlikelyNote")).sfFont(15).foregroundStyle(theme.ink)

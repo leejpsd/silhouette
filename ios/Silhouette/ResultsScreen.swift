@@ -87,11 +87,14 @@ struct ResultsScreen: View {
 
     @ViewBuilder private var resultsView: some View {
         let results = model.results
-        // Within a verdict, programs with an estimated amount first, the largest first (contract v1.40).
+        // Within a verdict, programs with an estimated amount first, the largest first (contract v1.40); then
+        // those with only an "up to" amount, the largest first (a ceiling is never ranked with estimates).
         let byAmount = { (list: [ProgramVerdict]) in
             list.enumerated().sorted { a, b in
                 let x = a.element.estimatedAmount ?? 0, y = b.element.estimatedAmount ?? 0
-                return x != y ? x > y : a.offset < b.offset
+                if x != y { return x > y }
+                let u = a.element.upToAmount ?? 0, v = b.element.upToAmount ?? 0
+                return u != v ? u > v : a.offset < b.offset
             }.map(\.element)
         }
         let likely = byAmount(results.filter { $0.verdict == .likely })
@@ -174,6 +177,9 @@ extension AppModel {
         }
         if let amount = result.estimatedAmount, amount > 0 {
             out.append(t("results.estimate", ["amount": money(amount)]))
+        } else if let ceiling = result.upToAmount, ceiling > 0 {
+            // A ceiling, never an estimate: its note is on the program's page, one press away.
+            out.append(t("results.upTo", ["amount": money(ceiling)]))
         }
         // A result the paystub changed says what it was (results.docEffect.was).
         if let change = currentDocumentEffect?.change(result.programId), change.after == result.verdict {

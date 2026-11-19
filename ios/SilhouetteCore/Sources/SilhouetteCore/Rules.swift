@@ -289,6 +289,8 @@ public struct RulePack: Sendable {
         public let name: String?
         public let criteria: [Criterion]
         public let amount: JSON?
+        /// The most the program pays a household like this one (SPEC.md section 5), shown as "up to".
+        public var amountUpTo: JSON? = nil
     }
 
     public let jurisdiction: String
@@ -317,7 +319,7 @@ public struct RulePack: Sendable {
                 cs.append(Criterion(id: cid, logic: logic, uncertainIf: c["uncertainIf"],
                                     requires: (c["requires"]?.arrayValue ?? []).compactMap(\.stringValue)))
             }
-            ps.append(Program(id: id, name: p["name"]?.stringValue, criteria: cs, amount: p["amount"]))
+            ps.append(Program(id: id, name: p["name"]?.stringValue, criteria: cs, amount: p["amount"], amountUpTo: p["amountUpTo"]))
         }
         self.jurisdiction = jurisdiction
         self.constants = constants
@@ -349,6 +351,8 @@ public struct ProgramVerdict: Sendable {
     /// Sorted (UTF-16 code unit order), without duplicates.
     public let dependsOn: [String]
     public let estimatedAmount: Double?
+    /// A ceiling, never an estimate: given when the verdict is likely or maybe and there is no estimate.
+    public var upToAmount: Double? = nil
 
     /// The verdict as JSON, keys in the reference order.
     public var json: JSON {
@@ -358,6 +362,7 @@ public struct ProgramVerdict: Sendable {
         o["criteria"] = .array(criteria.map { .object(JSONObject([("id", .string($0.id)), ("state", .string($0.state.rawValue))])) })
         o["dependsOn"] = .array(dependsOn.map(JSON.string))
         if let estimatedAmount { o["estimatedAmount"] = .number(estimatedAmount) }
+        if let upToAmount { o["upToAmount"] = .number(upToAmount) }
         return .object(o)
     }
 }
@@ -490,8 +495,19 @@ extension RulesEngine {
                     default: throw RuleError("amount must return a number")
                     }
                 }
+                // The ceiling (SPEC.md section 5): with the band or the exact income alike, when there is no estimate.
+                var upToAmount: Double?
+                if verdict == .likely || verdict == .maybe, estimatedAmount == nil, let upTo = program.amountUpTo {
+                    var ctx = EvalContext(unavailable: unavailable)
+                    switch try evaluate(upTo, data: baseData, context: &ctx) {
+                    case .unknown: break
+                    case .number(let n) where n.isFinite: upToAmount = n.rounded(.down)
+                    default: throw RuleError("amountUpTo must return a number")
+                    }
+                }
                 out.append(ProgramVerdict(programId: program.id, verdict: verdict, criteria: criteria,
-                                          dependsOn: dependsOn.sorted { $0.utf16Precedes($1) }, estimatedAmount: estimatedAmount))
+                                          dependsOn: dependsOn.sorted { $0.utf16Precedes($1) }, estimatedAmount: estimatedAmount,
+                                          upToAmount: upToAmount))
             }
             return out
         } catch {

@@ -60,4 +60,22 @@ final class AnswersUITests: XCTestCase {
         let status = app.element("leaving.status")
         XCTAssertTrue(status.label.contains("Nothing of yours sent") && status.label.contains("1 check or general question,"), status.label)
     }
+
+    /// CalEITC's amount exists only as the agency's table: the results give the published most for the household
+    /// ("Up to"), and its page says it is a ceiling, never an estimate.
+    func testCalEITCShowsUpToWithItsNote() {
+        let app = XCUIApplication.silhouette(model: "none")
+        app.launch()
+        app.runPreparedHousehold()
+        let caleitc = app.buttons["program.caleitc"]
+        app.scrollIntoView(caleitc)
+        XCTAssertTrue(caleitc.waitForExistence(timeout: 5))
+        XCTAssertTrue(caleitc.label.contains("Up to $2,016"), caleitc.label)
+        XCTAssertFalse(caleitc.label.contains("About"), "never an estimate")
+        caleitc.tap()
+        let upTo = app.element("program.upTo")
+        XCTAssertTrue(upTo.waitForExistence(timeout: 5))
+        XCTAssertTrue(upTo.label.contains("Up to $2,016"), upTo.label)
+        XCTAssertTrue(upTo.label.contains("The most this credit pays a household like this one"), upTo.label)
+    }
 }
