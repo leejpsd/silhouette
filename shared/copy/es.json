@@ -663,5 +663,16 @@
   "error.appCheck.automation": "La verificación de seguridad (reCAPTCHA) consideró que este navegador es un bot, porque un software de automatización lo controla, así que el servicio en la nube rechazó la solicitud. La silueta no se envió. Abre la app en una ventana normal del navegador.",
   "error.appCheck.refused": "La verificación de seguridad (reCAPTCHA) no aceptó esta visita como una visita normal, así que el servicio en la nube rechazó la solicitud. La silueta no se envió. Una VPN, una configuración de privacidad estricta o una extensión del navegador pueden causarlo.",
   "error.appCheck.unreachable": "La app no pudo conectar con la verificación de seguridad (reCAPTCHA) que pide el servicio en la nube, así que la silueta no se envió. Un bloqueador de contenido o una conexión débil pueden impedirlo.",
-  "error.appCheck.typeInstead": "Inténtalo de nuevo o escribe los números."
+  "error.appCheck.typeInstead": "Inténtalo de nuevo o escribe los números.",
+  "tasks.measured.title": "Por qué es híbrido: lo que se midió",
+  "tasks.measured.lead": "De las ejecuciones grabadas en dispositivos reales y de la evaluación en la nube, guardadas con la app. Abre una grabación para ver cada caso.",
+  "tasks.measured.onDevice": "lecturas de talones de pago respondidas en el dispositivo, sin enviar nada",
+  "tasks.measured.fallback": "lecturas que las propias comprobaciones del dispositivo rechazaron, repetidas una vez en la nube con la misma silueta",
+  "tasks.measured.wrong": "lecturas en las que un valor equivocado llegó a la persona",
+  "tasks.measured.cloudTitle": "En la nube, cuando el dispositivo no puede",
+  "tasks.measured.cloudSource": "Evaluación en la nube, {date}: talones de pago inventados con respuestas conocidas, leídos con el propio código de la app.",
+  "tasks.measured.cloudRight": "talones de pago leídos totalmente bien en la nube, en diez formatos",
+  "tasks.measured.leaks": "solicitudes a la nube que contenían un nombre, una fecha o un monto del talón de pago",
+  "tasks.measured.exact": "respuestas que usan tus valores exactos, escritas en el dispositivo en cada ejecución grabada y nunca enviadas",
+  "tasks.measured.why": "Por eso una lectura empieza en el dispositivo, donde nada sale. La nube recibe solo la silueta, y solo cuando la respuesta del dispositivo no pasa las comprobaciones."
 }

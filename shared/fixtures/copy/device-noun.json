@@ -724,6 +724,41 @@
     },
     {
       "language": "en",
+      "platform": "ios",
+      "key": "tasks.measured.onDevice",
+      "text": "paystub readings answered on the device, nothing sent",
+      "shown": "paystub readings answered on the iPhone, nothing sent"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.measured.fallback",
+      "text": "readings the device’s own checks rejected, repeated once in the cloud with the same silhouette",
+      "shown": "readings the iPhone’s own checks rejected, repeated once in the cloud with the same silhouette"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.measured.cloudTitle",
+      "text": "In the cloud, when the device cannot",
+      "shown": "In the cloud, when the iPhone cannot"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.measured.exact",
+      "text": "answers that use your exact values, written on the device in every recorded run and never sent",
+      "shown": "answers that use your exact values, written on the iPhone in every recorded run and never sent"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.measured.why",
+      "text": "So a reading starts on the device, where nothing leaves. The cloud receives only the silhouette, and only when the device’s answer fails the checks.",
+      "shown": "So a reading starts on the iPhone, where nothing leaves. The cloud receives only the silhouette, and only when the iPhone’s answer fails the checks."
+    },
+    {
+      "language": "en",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "On this device",
@@ -1442,6 +1477,41 @@
       "key": "judges.recorded.row",
       "text": "{onDevice} of {total} cases answered on the device · {wrong} of {readings} paystub readings with a wrong value",
       "shown": "{onDevice} of {total} cases answered on the phone · {wrong} of {readings} paystub readings with a wrong value"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.measured.onDevice",
+      "text": "paystub readings answered on the device, nothing sent",
+      "shown": "paystub readings answered on the phone, nothing sent"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.measured.fallback",
+      "text": "readings the device’s own checks rejected, repeated once in the cloud with the same silhouette",
+      "shown": "readings the phone’s own checks rejected, repeated once in the cloud with the same silhouette"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.measured.cloudTitle",
+      "text": "In the cloud, when the device cannot",
+      "shown": "In the cloud, when the phone cannot"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.measured.exact",
+      "text": "answers that use your exact values, written on the device in every recorded run and never sent",
+      "shown": "answers that use your exact values, written on the phone in every recorded run and never sent"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.measured.why",
+      "text": "So a reading starts on the device, where nothing leaves. The cloud receives only the silhouette, and only when the device’s answer fails the checks.",
+      "shown": "So a reading starts on the phone, where nothing leaves. The cloud receives only the silhouette, and only when the phone’s answer fails the checks."
     },
     {
       "language": "es",

@@ -1,5 +1,15 @@
 # Contract changelog
 
+## v1.29 — 2026-11-19
+
+Why hybrid, in measured numbers.
+
+| Change | Why |
+|---|---|
+| `tasks.measured.*` (11 keys): on "Where each task runs", the figures from the recorded on-device runs (per device: readings answered on the device, readings the device's checks rejected and repeated once in the cloud, readings with a wrong value reaching the person; answers that use exact values) and from the cloud evaluation (paystubs read entirely right, requests with a document value), with the conclusion they support | The routing table said where each task runs but not why; the reasons are measured and the files are in the repository |
+
+Platforms: the figures are computed from the run files and the evaluation file, never typed in. Reference tests: 30.
+
 ## v1.28 — 2026-11-19
 
 A refused security check says why.

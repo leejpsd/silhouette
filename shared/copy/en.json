@@ -663,5 +663,16 @@
   "error.appCheck.automation": "The security check (reCAPTCHA) treated this browser as a bot, because automation software is controlling it, so the cloud service refused the request. The silhouette was not sent. Open the app in an ordinary browser window.",
   "error.appCheck.refused": "The security check (reCAPTCHA) did not accept this visit as an ordinary one, so the cloud service refused the request. The silhouette was not sent. A VPN, strict privacy settings or a browser extension can cause this.",
   "error.appCheck.unreachable": "The app could not reach the security check (reCAPTCHA) the cloud service asks for, so the silhouette was not sent. A content blocker or a weak connection can stop it.",
-  "error.appCheck.typeInstead": "Try again, or type the numbers instead."
+  "error.appCheck.typeInstead": "Try again, or type the numbers instead.",
+  "tasks.measured.title": "Why hybrid: what was measured",
+  "tasks.measured.lead": "From the runs recorded on real devices and the cloud evaluation, all kept with the app. Open a recording to see every case.",
+  "tasks.measured.onDevice": "paystub readings answered on the device, nothing sent",
+  "tasks.measured.fallback": "readings the device’s own checks rejected, repeated once in the cloud with the same silhouette",
+  "tasks.measured.wrong": "readings in which a wrong value reached the person",
+  "tasks.measured.cloudTitle": "In the cloud, when the device cannot",
+  "tasks.measured.cloudSource": "Cloud evaluation, {date}: invented paystubs with known answers, read through the app’s own code.",
+  "tasks.measured.cloudRight": "paystubs read entirely right in the cloud, in ten layouts",
+  "tasks.measured.leaks": "cloud requests that contained a name, date or amount from the paystub",
+  "tasks.measured.exact": "answers that use your exact values, written on the device in every recorded run and never sent",
+  "tasks.measured.why": "So a reading starts on the device, where nothing leaves. The cloud receives only the silhouette, and only when the device’s answer fails the checks."
 }
