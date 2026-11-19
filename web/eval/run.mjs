@@ -17,6 +17,7 @@ import { appears, goldStrings } from './leaks.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 // --dataset heldout reads eval/heldout/ (written independently of the prompts, word lists and tuning documents).
+const heldout = process.argv.includes('--dataset') && process.argv[process.argv.indexOf('--dataset') + 1] === 'heldout';
 const DATASET = new URL(process.argv.includes('--dataset') && process.argv[process.argv.indexOf('--dataset') + 1] === 'heldout' ? 'heldout/' : 'dataset/', import.meta.url);
 const RESULTS = new URL('results/', import.meta.url);
 const arg = (name, fallback) => {
@@ -166,7 +167,8 @@ try {
     const leakCheck = { documents: scored.length, requestBodies: scored.reduce((a, d) => a + (d.requests ?? 0), 0), leaks: scored.flatMap((d) => (d.leaks ?? []).map((v) => `${d.id}: ${v}`)) };
     console.log(`  leak check: ${leakCheck.requestBodies} request bodies, ${leakCheck.leaks.length} gold values found`);
     const result = { variant: variantId, spec, date: new Date().toISOString(), set, metrics, cleanUp, leakCheck, targetMet: metrics.enPaystub ? targetMet(metrics.enPaystub) : null, documents: scored };
-    writeFileSync(new URL(`${variantId}.json`, RESULTS), JSON.stringify(result, null, 2) + '\n');
+    // Held-out results go to results/heldout/ (eval/heldout/FROZEN.md); the summary table covers eval/dataset/ only.
+    writeFileSync(new URL(heldout ? `heldout/cloud-${variantId}.json` : `${variantId}.json`, RESULTS), JSON.stringify(result, null, 2) + '\n');
     const en = metrics.enPaystub;
     if (en && TARGET_FIELDS.every((f) => en.fields[f])) {
       console.log(`  en paystubs: all-fields-correct ${(en.allFieldsCorrect * 100).toFixed(1)}%, ` +
