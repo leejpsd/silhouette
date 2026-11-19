@@ -390,12 +390,25 @@ export const W2_MONEY_FIELDS: ReadonlySet<string> = new Set(['wages', 'federalIn
 export function w2PointerProblems(schema: PointerSchema, pointers: unknown, rawMap: Raw<PlaceholderMap>): string[] {
   if (!isObject(pointers)) return ['not-an-object'];
   const map = reveal(rawMap);
-  const problems = coreFieldProblems(schema, pointers, map);
-  // A reference that does not fit stops the checks there.
-  if (problems.length > 0) return problems;
-  for (const field of W2_MONEY_FIELDS) if (notMoney(pointers[field], map)) problems.push(`${field}:not-money`);
-  const v = reveal(rehydrate(schema, pointers, rawMap)) as unknown as W2Values;
+  const problems: string[] = [];
+  const fitting: Record<string, unknown> = {};
+  for (const [name, spec] of Object.entries(schema.properties)) {
+    const value = pointers[name];
+    if (value === undefined || value === null) continue;
+    // A reference that does not fit is reported, and the other boxes are still checked without it.
+    if (!fits(spec['x-kind'], value, map)) {
+      problems.push(`${name}:bad-reference`);
+      continue;
+    }
+    fitting[name] = value;
+    if (W2_MONEY_FIELDS.has(name) && notMoney(value, map)) problems.push(`${name}:not-money`);
+  }
+  const v = reveal(rehydrate(schema, fitting, rawMap)) as unknown as W2Values;
   if (typeof v.wages !== 'number') problems.push('wages:missing');
+  // Federal tax withheld (box 2) is taken out of the wages (box 1): it is less than them. When it is not, two
+  // boxes were mixed up and code cannot tell which (contract v1.38). A box that is not money is not compared.
+  const money = (f: 'wages' | 'federalIncomeTaxWithheld') => typeof v[f] === 'number' && !problems.includes(`${f}:not-money`);
+  if (money('wages') && money('federalIncomeTaxWithheld') && (v.federalIncomeTaxWithheld as number) >= (v.wages as number)) problems.push('wages:below-withheld');
   // The year rule of validation/SPEC.md section 9 (check w2-year): an integer from 2000 to 2100.
   const year = v.taxYear;
   if (typeof year === 'number' && !(Number.isInteger(year) && year >= 2000 && year <= 2100)) problems.push('taxYear:not-a-year');
@@ -403,16 +416,22 @@ export function w2PointerProblems(schema: PointerSchema, pointers: unknown, rawM
 }
 
 /** Why a box of a W-2 answer was left out. */
-export type W2LeftOutProblem = 'not-money' | 'not-a-year';
+export type W2LeftOutProblem = 'not-money' | 'not-a-year' | 'not-consistent';
 
 /**
  * The boxes of a W-2 answer left out as not read, on every answer used, from the device or the cloud
- * (DEVICE_READING.md section 9): a money box that is not money, a tax year that is not a year. Code never
+ * (DEVICE_READING.md section 9): a money box that is not money, a tax year that is not a year, and boxes 1 and 2
+ * both when box 2 is not below box 1. Code never
  * picks another placeholder; the person types the box from the form.
  */
 export function w2LeftOut(schema: PointerSchema, pointers: unknown, rawMap: Raw<PlaceholderMap>): { problems: string[]; fields: { field: string; problem: W2LeftOutProblem }[] } {
-  const problems = w2PointerProblems(schema, pointers, rawMap).filter((p) => p.endsWith(':not-money') || p === 'taxYear:not-a-year');
-  return { problems, fields: problems.map((p) => ({ field: p.split(':')[0] as string, problem: p.split(':')[1] as W2LeftOutProblem })) };
+  const problems = w2PointerProblems(schema, pointers, rawMap).filter((p) => p.endsWith(':not-money') || p === 'taxYear:not-a-year' || p === 'wages:below-withheld');
+  const fields = problems.flatMap((p): { field: string; problem: W2LeftOutProblem }[] =>
+    p === 'wages:below-withheld'
+      ? [{ field: 'wages', problem: 'not-consistent' }, { field: 'federalIncomeTaxWithheld', problem: 'not-consistent' }]
+      : [{ field: p.split(':')[0] as string, problem: p.split(':')[1] as W2LeftOutProblem }],
+  );
+  return { problems, fields };
 }
 
 /** Problems with a whole answer (core and deductions), as one list. */

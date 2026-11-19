@@ -51,7 +51,7 @@ describe('w2PointerProblems', () => {
     const { wages, ...noWages } = key;
     void wages;
     expect(w2PointerProblems(POINTER_SCHEMAS.w2, noWages, map)).toEqual(['wages:missing']);
-    expect(w2PointerProblems(POINTER_SCHEMAS.w2, { ...key, wages: 'W1' }, map)).toEqual(['wages:bad-reference']);
+    expect(w2PointerProblems(POINTER_SCHEMAS.w2, { ...key, wages: 'W1' }, map)).toEqual(['wages:bad-reference', 'wages:missing']);
     // An amount with cents is not a year either (validation/SPEC.md section 9: an integer from 2000 to 2100).
     expect(w2PointerProblems(POINTER_SCHEMAS.w2, { ...key, taxYear: 'N14' }, map)).toEqual(['taxYear:not-a-year']);
   });
@@ -65,6 +65,15 @@ describe('w2PointerProblems', () => {
     expect(used.pointers).not.toHaveProperty('wages');
     expect(used.leftOut).toEqual([{ field: 'wages', problem: 'not-money' }]);
     expect(leaveOutBoxes('w2', key, map)).toEqual({ pointers: key, leftOut: undefined });
+  });
+
+  it('boxes 1 and 2 swapped: tax withheld not below wages, so both are left out (contract v1.38)', () => {
+    const swapped = { ...key, wages: 'N10', federalIncomeTaxWithheld: 'N9' };
+    expect(w2PointerProblems(POINTER_SCHEMAS.w2, swapped, map)).toEqual(['wages:below-withheld']);
+    const used = leaveOutBoxes('w2', swapped, map);
+    expect(used.pointers).not.toHaveProperty('wages');
+    expect(used.pointers).not.toHaveProperty('federalIncomeTaxWithheld');
+    expect(used.leftOut).toEqual([{ field: 'wages', problem: 'not-consistent' }, { field: 'federalIncomeTaxWithheld', problem: 'not-consistent' }]);
   });
 
   it('the offline answer key covers the W-2 sample', () => {

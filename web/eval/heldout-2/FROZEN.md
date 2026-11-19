@@ -9,6 +9,10 @@ This set was added and committed before any document in it was read by the syste
 
 **Commitments.** The results are published as they come, including every miss. No prompt, word list, schema or check is changed because of what this set shows; a change measured on it makes it no longer held out, and this file will say so.
 
+## After measuring
+
+- **2026-11-19, contract v1.38:** the W-2 checks were changed after seeing this set's results (`shared/CHANGELOG.md` v1.38). From then on this set no longer counts as held out. The results measured before the change stay as they are in `../results/heldout/`.
+
 ## Files (SHA-256)
 
 | File | SHA-256 |

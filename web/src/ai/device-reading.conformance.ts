@@ -100,7 +100,7 @@ export function runDeviceReadingFixture(raw: unknown): void {
   }
 
   // Contract v1.37: the checks of a W-2 answer and the boxes left out (DEVICE_READING.md section 9).
-  const w2 = (fixture as unknown as { w2?: { cases: { id: string; document: string; pointers: Record<string, unknown>; expected: { problems: string[]; leftOut: { problems: string[]; fields: string[] } } }[] } }).w2;
+  const w2 = (fixture as unknown as { w2?: { cases: { id: string; document: string; pointers: Record<string, unknown>; expected: { problems: string[]; leftOut: { problems: string[]; fields: { field: string; problem: string }[] } } }[] } }).w2;
   it('has W-2 cases', () => expect(w2?.cases.length ?? 0).toBeGreaterThan(0));
   for (const c of w2?.cases ?? []) {
     it(`W-2 ${c.id}`, () => {
@@ -108,7 +108,7 @@ export function runDeviceReadingFixture(raw: unknown): void {
       expect(w2PointerProblems(POINTER_SCHEMAS.w2, c.pointers, map)).toEqual(c.expected.problems);
       const left = w2LeftOut(POINTER_SCHEMAS.w2, c.pointers, map);
       expect(left.problems).toEqual(c.expected.leftOut.problems);
-      expect(left.fields.map((f) => f.field)).toEqual(c.expected.leftOut.fields);
+      expect(left.fields).toEqual(c.expected.leftOut.fields);
     });
   }
 

@@ -379,7 +379,7 @@ export function DocumentReviewScreen() {
       if (left) {
         return (
           <span className="not-found" data-testid={`left-out-${row.name}`}>
-            {t(left.problem === 'not-a-year' ? 'review.leftOut.notAYear' : 'review.leftOut.notMoney')}
+            {t(left.problem === 'not-a-year' ? 'review.leftOut.notAYear' : left.problem === 'not-consistent' ? 'review.leftOut.notConsistent' : 'review.leftOut.notMoney')}
           </span>
         );
       }
