@@ -1,0 +1,2046 @@
+{
+  "variant": "h37",
+  "spec": {
+    "id": "h37",
+    "tidy": true,
+    "skeletons": "v1.37",
+    "prompt": "v5"
+  },
+  "date": "2026-11-19T07:04:48.056Z",
+  "set": "all",
+  "dataset": "heldout-2",
+  "metrics": {
+    "heldoutW2": {
+      "documents": 12,
+      "errors": 0,
+      "allFieldsCorrect": 0,
+      "fields": {
+        "employerName": {
+          "correct": 2,
+          "missing": 0,
+          "wrong": 10,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 12,
+          "recall": 0.16666666666666666,
+          "precision": 0.16666666666666666,
+          "wrongRate": 0.8333333333333334
+        },
+        "employeeName": {
+          "correct": 4,
+          "missing": 0,
+          "wrong": 8,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 12,
+          "recall": 0.3333333333333333,
+          "precision": 0.3333333333333333,
+          "wrongRate": 0.6666666666666666
+        },
+        "taxYear": {
+          "correct": 9,
+          "missing": 0,
+          "wrong": 3,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 12,
+          "recall": 0.75,
+          "precision": 0.75,
+          "wrongRate": 0.25
+        },
+        "wages": {
+          "correct": 6,
+          "missing": 0,
+          "wrong": 6,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 12,
+          "recall": 0.5,
+          "precision": 0.5,
+          "wrongRate": 0.5
+        },
+        "federalIncomeTaxWithheld": {
+          "correct": 7,
+          "missing": 0,
+          "wrong": 5,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 12,
+          "recall": 0.5833333333333334,
+          "precision": 0.5833333333333334,
+          "wrongRate": 0.4166666666666667
+        },
+        "socialSecurityWages": {
+          "correct": 7,
+          "missing": 0,
+          "wrong": 5,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 12,
+          "recall": 0.5833333333333334,
+          "precision": 0.5833333333333334,
+          "wrongRate": 0.4166666666666667
+        },
+        "medicareWages": {
+          "correct": 7,
+          "missing": 0,
+          "wrong": 5,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 12,
+          "recall": 0.5833333333333334,
+          "precision": 0.5833333333333334,
+          "wrongRate": 0.4166666666666667
+        },
+        "stateWages": {
+          "correct": 8,
+          "missing": 0,
+          "wrong": 4,
+          "spurious": 0,
+          "absent": 0,
+          "invalid": 0,
+          "docs": 12,
+          "recall": 0.6666666666666666,
+          "precision": 0.6666666666666666,
+          "wrongRate": 0.3333333333333333
+        }
+      },
+      "deductions": null,
+      "tokens": {
+        "prompt": 2235,
+        "output": 150,
+        "thoughts": 0
+      },
+      "latencyMs": {
+        "median": 4052,
+        "p90": 5762
+      }
+    }
+  },
+  "cleanUp": {
+    "heldoutW2": {
+      "without": 0,
+      "with": 0
+    }
+  },
+  "leakCheck": {
+    "documents": 12,
+    "requestBodies": 12,
+    "leaks": []
+  },
+  "targetMet": null,
+  "documents": [
+    {
+      "id": "hv-01-1",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-01",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W8",
+          "W9",
+          "W10",
+          "W11",
+          "W12",
+          "W13",
+          "W14"
+        ],
+        "employeeName": [
+          "W27",
+          "W28",
+          "W29"
+        ],
+        "taxYear": "N51",
+        "wages": "N8",
+        "federalIncomeTaxWithheld": "N9",
+        "socialSecurityWages": "N10",
+        "medicareWages": "N16",
+        "stateWages": "N48"
+      },
+      "rehydrated": {
+        "employerName": "c Employer's name address and ZIP code",
+        "employeeName": "d Control number",
+        "taxYear": 2025,
+        "wages": 62003,
+        "federalIncomeTaxWithheld": 6812.44,
+        "socialSecurityWages": 3,
+        "medicareWages": 5,
+        "stateWages": 62003
+      },
+      "rehydratedRaw": {
+        "employerName": "c Employer's name address and ZIP code",
+        "employeeName": "d Control number",
+        "taxYear": 2025,
+        "wages": 62003,
+        "federalIncomeTaxWithheld": 6812.44,
+        "socialSecurityWages": 3,
+        "medicareWages": 5,
+        "stateWages": 62003
+      },
+      "rehydratedTidy": {
+        "employerName": "c Employer's name address and ZIP code",
+        "employeeName": "d Control number",
+        "taxYear": 2025,
+        "wages": 62003,
+        "federalIncomeTaxWithheld": 6812.44,
+        "socialSecurityWages": 3,
+        "medicareWages": 5,
+        "stateWages": 62003
+      },
+      "rehydratedUsed": {
+        "employerName": "c Employer's name address and ZIP code",
+        "employeeName": "d Control number",
+        "taxYear": 2025,
+        "wages": 62003,
+        "federalIncomeTaxWithheld": 6812.44,
+        "stateWages": 62003
+      },
+      "leftOut": [
+        {
+          "field": "socialSecurityWages",
+          "problem": "not-money"
+        },
+        {
+          "field": "medicareWages",
+          "problem": "not-money"
+        }
+      ],
+      "usage": {
+        "promptTokenCount": 1555,
+        "candidatesTokenCount": 163,
+        "totalTokenCount": 1718,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1555
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 5762,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 3935,
+      "promptPreview": "                                  a  ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧        ⟦W5⟧ ⟦W6⟧. ⟦N1⟧-⟦N2⟧\n                                   ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "TAMARACK RIDGE LOGISTICS, INC.",
+        "employeeName": "DELPHINE R OKONKWO-HART",
+        "taxYear": 2025,
+        "wages": 62003,
+        "federalIncomeTaxWithheld": 6812.44,
+        "socialSecurityWages": 66110,
+        "medicareWages": 66110,
+        "stateWages": 62003
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n                                  a  ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧        ⟦W5⟧ ⟦W6⟧. ⟦N1⟧-⟦N2⟧\\n                                     ⟦W7⟧-⟦N3⟧\\nb  Employer identification number (EIN)                     ⟦N4⟧  Wages, tips, other compensation    ⟦N5⟧  Federal income tax withheld\\n   ⟦N6⟧-⟦N7⟧                                                  ⟦N8⟧                              ⟦N9⟧\\n⟦W8⟧  ⟦W9⟧ ⟦W10⟧, ⟦W11⟧, ⟦W12⟧ ⟦W13⟧ ⟦W14⟧                   ⟦N10⟧  Social security wages              ⟦N11⟧  Social security tax withheld\\n   ⟦W15⟧ ⟦W16⟧ ⟦W17⟧, ⟦W18⟧.                              ⟦N12⟧                              ⟦N13⟧\\n   ⟦N14⟧ ⟦W19⟧ ⟦W20⟧ ⟦W21⟧, ⟦W22⟧ ⟦N15⟧                         ⟦N16⟧  Medicare wages and tips            ⟦N17⟧  Medicare tax withheld\\n   ⟦W23⟧, ⟦W24⟧ ⟦N18⟧                                          ⟦N19⟧                              ⟦N20⟧\\n                                                            ⟦N21⟧  Social security tips               ⟦N22⟧  ⟦W25⟧ ⟦W26⟧\\n\\n⟦W27⟧  ⟦W28⟧ ⟦W29⟧                                           ⟦N23⟧                                     ⟦N24⟧  ⟦W30⟧ ⟦W31⟧ ⟦W32⟧\\n   ⟦W33⟧-⟦N25⟧\\n⟦W34⟧  ⟦W35⟧ ⟦W36⟧ ⟦W37⟧ ⟦W38⟧ ⟦W39⟧   ⟦W40⟧ ⟦W41⟧     ⟦W42⟧.  ⟦N26⟧  ⟦W43⟧ ⟦W44⟧                      ⟦N27⟧a  ⟦W45⟧ ⟦W46⟧ ⟦W47⟧ ⟦W48⟧ ⟦N28⟧\\n   ⟦W49⟧ ⟦W50⟧ ⟦W51⟧                                                                              ⟦W52⟧\\n                                                                                                        ⟦W53⟧    ⟦W54⟧    ⟦N29⟧\\n   ⟦N30⟧ ⟦W55⟧ ⟦W56⟧ ⟦W57⟧, ⟦W58⟧ ⟦N31⟧B                                                                       ⟦W59⟧\\n   ⟦W60⟧ ⟦W61⟧, ⟦W62⟧ ⟦N32⟧                                   ⟦N33⟧  ⟦W63⟧     Retirement     ⟦W64⟧  ⟦W65⟧\\n                                                                employee      ⟦W66⟧           sick pay   ⟦N34⟧b\\n                                                                              ⟦W67⟧                         ⟦W68⟧\\n                                                            ⟦N35⟧  Other                                   ⟦W69⟧    ⟦W70⟧   ⟦N36⟧\\n                                                                ⟦W71⟧ ⟦W72⟧  ⟦N37⟧                        ⟦W73⟧\\n⟦W74⟧  ⟦W75⟧ ⟦W76⟧ ⟦W77⟧ ⟦W78⟧ ⟦W79⟧                                                                      ⟦W80⟧\\n                                                                                                        ⟦N38⟧⟦W81⟧\\n                                                                                                        ⟦W82⟧\\n                                                                                                        ⟦W83⟧\\n                                                                                                        ⟦W84⟧\\n                                                                                                        ⟦W85⟧\\n                                                                                                        ⟦N39⟧⟦W86⟧\\n                                                                                                        ⟦W87⟧\\n                                                                                                        ⟦W88⟧\\n                                                                                                        ⟦W89⟧\\n                                                                                                        ⟦W90⟧\\n\\n⟦N40⟧  State   ⟦W91⟧ ⟦W92⟧ ⟦W93⟧ ⟦W94⟧  ⟦N41⟧  State wages, tips, etc.   ⟦N42⟧  State income tax    ⟦N43⟧  Local wages, tips, etc.   ⟦N44⟧  Local income tax    ⟦N45⟧  ⟦W95⟧ ⟦W96⟧\\n    ⟦W97⟧      ⟦N46⟧-⟦N47⟧                      ⟦N48⟧                      ⟦N49⟧\\n\\n\\nForm  W-⟦N50⟧   Wage and Tax Statement                  ⟦N51⟧          ⟦W98⟧ ⟦W99⟧ ⟦W100⟧ ⟦W101⟧ - ⟦W102⟧ ⟦W103⟧ ⟦W104⟧\\nCopy B - To ⟦W105⟧ ⟦W106⟧ ⟦W107⟧ ⟦W108⟧ ⟦W109⟧ ⟦W110⟧ ⟦W111⟧.\\nThis ⟦W112⟧ ⟦W113⟧ ⟦W114⟧ ⟦W115⟧ ⟦W116⟧ ⟦W117⟧ ⟦W118⟧ ⟦W119⟧ ⟦W120⟧.\\n⟦W121⟧. No. ⟦N52⟧⟦W122⟧\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-01-2",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-01",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W7",
+          "W8",
+          "W9",
+          "W10",
+          "W11",
+          "W12",
+          "W13"
+        ],
+        "employeeName": [
+          "W22",
+          "W23",
+          "W24",
+          "W25",
+          "W26",
+          "W27"
+        ],
+        "taxYear": "N28",
+        "wages": "N4",
+        "federalIncomeTaxWithheld": "N5",
+        "socialSecurityWages": "N6",
+        "medicareWages": "N8",
+        "stateWages": "N22"
+      },
+      "rehydrated": {
+        "employerName": "c Employer's name address and ZIP code",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 2,
+        "federalIncomeTaxWithheld": 3,
+        "socialSecurityWages": 4,
+        "medicareWages": 6,
+        "stateWages": 16
+      },
+      "rehydratedRaw": {
+        "employerName": "c Employer's name address and ZIP code",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 2,
+        "federalIncomeTaxWithheld": 3,
+        "socialSecurityWages": 4,
+        "medicareWages": 6,
+        "stateWages": 16
+      },
+      "rehydratedTidy": {
+        "employerName": "c Employer's name address and ZIP code",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 2,
+        "federalIncomeTaxWithheld": 3,
+        "socialSecurityWages": 4,
+        "medicareWages": 6,
+        "stateWages": 16
+      },
+      "rehydratedUsed": {
+        "employerName": "c Employer's name address and ZIP code",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025
+      },
+      "leftOut": [
+        {
+          "field": "wages",
+          "problem": "not-money"
+        },
+        {
+          "field": "federalIncomeTaxWithheld",
+          "problem": "not-money"
+        },
+        {
+          "field": "socialSecurityWages",
+          "problem": "not-money"
+        },
+        {
+          "field": "medicareWages",
+          "problem": "not-money"
+        },
+        {
+          "field": "stateWages",
+          "problem": "not-money"
+        }
+      ],
+      "usage": {
+        "promptTokenCount": 1777,
+        "candidatesTokenCount": 181,
+        "totalTokenCount": 1958,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1777
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 3204,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 3977,
+      "promptPreview": "                                  a  ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧        ⟦W5⟧ ⟦W6⟧. ⟦N1⟧-⟦N2⟧\n\nb  Employer identification number ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "BRIGHTWATER ANALYTIC INSTRUMENTS LLC",
+        "employeeName": "MARCUS T VANDEVENTER JR",
+        "taxYear": 2025,
+        "wages": 184780,
+        "federalIncomeTaxWithheld": 38215.67,
+        "socialSecurityWages": 176100,
+        "medicareWages": 208280,
+        "stateWages": 184780
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n                                  a  ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧        ⟦W5⟧ ⟦W6⟧. ⟦N1⟧-⟦N2⟧\\n\\nb  Employer identification number (EIN)                     ⟦N3⟧  Wages, tips, other compensation    ⟦N4⟧  Federal income tax withheld\\n\\n⟦W7⟧  ⟦W8⟧ ⟦W9⟧, ⟦W10⟧, ⟦W11⟧ ⟦W12⟧ ⟦W13⟧                   ⟦N5⟧  Social security wages              ⟦N6⟧  Social security tax withheld\\n\\n                                                            ⟦N7⟧  Medicare wages and tips            ⟦N8⟧  Medicare tax withheld\\n\\n                                                            ⟦N9⟧  Social security tips               ⟦N10⟧  ⟦W14⟧ ⟦W15⟧\\n\\n⟦W16⟧  ⟦W17⟧ ⟦W18⟧                                           ⟦N11⟧                                     ⟦N12⟧  ⟦W19⟧ ⟦W20⟧ ⟦W21⟧\\n\\n⟦W22⟧  ⟦W23⟧ ⟦W24⟧ ⟦W25⟧ ⟦W26⟧ ⟦W27⟧   ⟦W28⟧ ⟦W29⟧     ⟦W30⟧.  ⟦N13⟧  ⟦W31⟧ ⟦W32⟧                      ⟦N14⟧a  ⟦W33⟧ ⟦W34⟧ ⟦W35⟧ ⟦W36⟧ ⟦N15⟧\\n                                                                                                        ⟦W37⟧\\n                                                                                                        ⟦W38⟧\\n                                                                                                        ⟦W39⟧\\n                                                            ⟦N16⟧  ⟦W40⟧     Retirement     ⟦W41⟧  ⟦W42⟧\\n                                                                employee      ⟦W43⟧           sick pay   ⟦N17⟧b\\n                                                                                                        ⟦W44⟧\\n                                                            ⟦N18⟧  Other                                   ⟦W45⟧\\n⟦W46⟧  ⟦W47⟧ ⟦W48⟧ ⟦W49⟧ ⟦W50⟧ ⟦W51⟧                                                                      ⟦W52⟧\\n                                                                                                        ⟦W53⟧\\n                                                                                                        ⟦N19⟧⟦W54⟧\\n                                                                                                        ⟦W55⟧\\n                                                                                                        ⟦W56⟧\\n                                                                                                        ⟦W57⟧\\n                                                                                                        ⟦W58⟧\\n                                                                                                        ⟦N20⟧⟦W59⟧\\n                                                                                                        ⟦W60⟧\\n                                                                                                        ⟦W61⟧\\n                                                                                                        ⟦W62⟧\\n                                                                                                        ⟦W63⟧\\n\\n⟦N21⟧  State   ⟦W64⟧ ⟦W65⟧ ⟦W66⟧ ⟦W67⟧  ⟦N22⟧  State wages, tips, etc.   ⟦N23⟧  State income tax    ⟦N24⟧  Local wages, tips, etc.   ⟦N25⟧  Local income tax    ⟦N26⟧  ⟦W68⟧ ⟦W69⟧\\n\\n\\n\\nForm  W-⟦N27⟧   Wage and Tax Statement                  ⟦N28⟧          ⟦W70⟧ ⟦W71⟧ ⟦W72⟧ ⟦W73⟧ - ⟦W74⟧ ⟦W75⟧ ⟦W76⟧\\n⟦W77⟧ ⟦W78⟧ - For ⟦W79⟧ ⟦W80⟧ (⟦W81⟧ ⟦W82⟧ ⟦W83⟧ ⟦W84⟧ ⟦W85⟧ ⟦W86⟧ ⟦W87⟧ ⟦W88⟧ ⟦W89⟧ ⟦W90⟧.)\\nThis ⟦W91⟧ ⟦W92⟧ ⟦W93⟧ ⟦W94⟧ ⟦W95⟧ ⟦W96⟧ ⟦W97⟧ ⟦W98⟧ ⟦W99⟧. ⟦W100⟧ ⟦W101⟧ ⟦W102⟧ ⟦W103⟧ ⟦W104⟧ ⟦W105⟧ ⟦W106⟧ ⟦W107⟧ ⟦W108⟧, ⟦W109⟧ ⟦W110⟧ ⟦W111⟧ ⟦W112⟧ ⟦W113⟧ ⟦W114⟧ ⟦W115⟧ ⟦W116⟧ ⟦W117⟧ ⟦W118⟧ ⟦W119⟧ ⟦W120⟧ ⟦W121⟧ ⟦W122⟧ ⟦W123⟧ ⟦W124⟧ ⟦W125⟧ ⟦W126⟧ ⟦W127⟧ ⟦W128⟧ ⟦W129⟧ ⟦W130⟧.\\n\\n⟦W131⟧-⟦N29⟧\\n⟦N30⟧-⟦N31⟧\\n⟦W132⟧ ⟦W133⟧ ⟦W134⟧ ⟦W135⟧\\n⟦N32⟧ ⟦W136⟧ ⟦W137⟧ ⟦W138⟧, ⟦W139⟧ ⟦W140⟧\\n⟦W141⟧, ⟦W142⟧ ⟦N33⟧\\n⟦N34⟧\\n⟦W143⟧ ⟦W144⟧ ⟦W145⟧ ⟦W146⟧\\n⟦N35⟧ ⟦W147⟧ ⟦W148⟧\\n⟦W149⟧, ⟦W150⟧ ⟦N36⟧\\n⟦N37⟧\\n⟦N38⟧\\n⟦N39⟧\\n⟦N40⟧\\n⟦N41⟧\\n⟦N42⟧\\n⟦W151⟧\\n⟦N43⟧\\n⟦W152⟧\\n⟦N44⟧\\n⟦W153⟧\\n⟦N45⟧\\nW\\n⟦N46⟧\\n⟦W154⟧\\n⟦W155⟧\\n⟦N47⟧-⟦N48⟧⟦W156⟧-⟦N49⟧\\n⟦N50⟧\\n⟦N51⟧\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-02-1",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-02",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3",
+          "W4",
+          "W5"
+        ],
+        "employeeName": [
+          "N19",
+          "W77",
+          "W78"
+        ],
+        "taxYear": "N100",
+        "wages": "N28",
+        "federalIncomeTaxWithheld": "N27",
+        "socialSecurityWages": "N35",
+        "medicareWages": "N43",
+        "stateWages": "N85"
+      },
+      "rehydrated": {
+        "employerName": "a Employee's social security no",
+        "employeeName": "64 Bellflower Court",
+        "taxYear": 2025,
+        "wages": 2903.17,
+        "federalIncomeTaxWithheld": 38712.38,
+        "socialSecurityWages": 39968.56,
+        "medicareWages": 39968.56,
+        "stateWages": 38712.38
+      },
+      "rehydratedRaw": {
+        "employerName": "a Employee's social security no",
+        "employeeName": "64 Bellflower Court",
+        "taxYear": 2025,
+        "wages": 2903.17,
+        "federalIncomeTaxWithheld": 38712.38,
+        "socialSecurityWages": 39968.56,
+        "medicareWages": 39968.56,
+        "stateWages": 38712.38
+      },
+      "rehydratedTidy": {
+        "employerName": "a Employee's social security no",
+        "employeeName": "64 Bellflower Court",
+        "taxYear": 2025,
+        "wages": 2903.17,
+        "federalIncomeTaxWithheld": 38712.38,
+        "socialSecurityWages": 39968.56,
+        "medicareWages": 39968.56,
+        "stateWages": 38712.38
+      },
+      "rehydratedUsed": {
+        "employerName": "a Employee's social security no",
+        "employeeName": "64 Bellflower Court",
+        "taxYear": 2025,
+        "wages": 2903.17,
+        "federalIncomeTaxWithheld": 38712.38,
+        "socialSecurityWages": 39968.56,
+        "medicareWages": 39968.56,
+        "stateWages": 38712.38
+      },
+      "leftOut": [],
+      "usage": {
+        "promptTokenCount": 4207,
+        "candidatesTokenCount": 149,
+        "totalTokenCount": 4356,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 4207
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 4661,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 8021,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧.  ⟦W6⟧ ⟦W7⟧. ⟦N1⟧-⟦N2⟧               ⟦W8⟧ ⟦W9⟧ ⟦W10⟧ ⟦W11⟧ ⟦W12⟧.  ⟦W13⟧ ⟦W14⟧. ⟦N3⟧-⟦N4⟧\n  ⟦W1",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Fennimore & Platt Hardware Co.",
+        "employeeName": "Rosalind Achterberg",
+        "taxYear": 2025,
+        "wages": 38712.38,
+        "federalIncomeTaxWithheld": 2903.17,
+        "socialSecurityWages": 39968.56,
+        "medicareWages": 39968.56,
+        "stateWages": 38712.38
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧.  ⟦W6⟧ ⟦W7⟧. ⟦N1⟧-⟦N2⟧               ⟦W8⟧ ⟦W9⟧ ⟦W10⟧ ⟦W11⟧ ⟦W12⟧.  ⟦W13⟧ ⟦W14⟧. ⟦N3⟧-⟦N4⟧\\n  ⟦W15⟧-⟦N5⟧                                                       ⟦W16⟧-⟦N6⟧\\nb Employer ID number (EIN)        ⟦W17⟧ ⟦W18⟧ ⟦W19⟧                b Employer ID number (EIN)        ⟦W20⟧ ⟦W21⟧ ⟦W22⟧\\n  ⟦N7⟧-⟦N8⟧                        ⟦W23⟧ ⟦N9⟧ ⟦N10⟧                   ⟦N11⟧-⟦N12⟧                        ⟦W24⟧ ⟦N13⟧ ⟦N14⟧\\n⟦W25⟧ ⟦W26⟧ ⟦W27⟧, ⟦W28⟧, ⟦W29⟧ ⟦W30⟧ ⟦W31⟧                          ⟦W32⟧ ⟦W33⟧ ⟦W34⟧, ⟦W35⟧, ⟦W36⟧ ⟦W37⟧ ⟦W38⟧\\n  ⟦W39⟧ & ⟦W40⟧ ⟦W41⟧ ⟦W42⟧.                                    ⟦W43⟧ & ⟦W44⟧ ⟦W45⟧ ⟦W46⟧.\\n  ⟦N15⟧ ⟦W47⟧ ⟦W48⟧ ⟦W49⟧                                             ⟦N16⟧ ⟦W50⟧ ⟦W51⟧ ⟦W52⟧\\n  ⟦W53⟧, ⟦W54⟧ ⟦N17⟧                                             ⟦W55⟧, ⟦W56⟧ ⟦N18⟧\\n⟦W57⟧ ⟦W58⟧ ⟦W59⟧   ⟦W60⟧ ⟦W61⟧ ⟦W62⟧ ⟦W63⟧ ⟦W64⟧                  ⟦W65⟧ ⟦W66⟧ ⟦W67⟧   ⟦W68⟧ ⟦W69⟧ ⟦W70⟧ ⟦W71⟧ ⟦W72⟧\\n  ⟦W73⟧ ⟦W74⟧                                               ⟦W75⟧ ⟦W76⟧\\n  ⟦N19⟧ ⟦W77⟧ ⟦W78⟧                                               ⟦N20⟧ ⟦W79⟧ ⟦W80⟧\\n  ⟦W81⟧, ⟦W82⟧ ⟦N21⟧                                                  ⟦W83⟧, ⟦W84⟧ ⟦N22⟧\\n⟦N23⟧ ⟦W85⟧, ⟦W86⟧, ⟦W87⟧ ⟦W88⟧.      ⟦N24⟧ Federal income tax withheld     ⟦N25⟧ ⟦W89⟧, ⟦W90⟧, ⟦W91⟧ ⟦W92⟧.      ⟦N26⟧ Federal income tax withheld\\n  ⟦N27⟧                       ⟦N28⟧                          ⟦N29⟧                       ⟦N30⟧\\n⟦N31⟧ Social security wages         ⟦N32⟧ Social security tax withheld    ⟦N33⟧ Social security wages         ⟦N34⟧ Social security tax withheld\\n  ⟦N35⟧                       ⟦N36⟧                          ⟦N37⟧                       ⟦N38⟧\\n⟦N39⟧ Medicare wages and tips       ⟦N40⟧ Medicare tax withheld           ⟦N41⟧ Medicare wages and tips       ⟦N42⟧ Medicare tax withheld\\n  ⟦N43⟧                       ⟦N44⟧                            ⟦N45⟧                       ⟦N46⟧\\n⟦N47⟧ Social security tips          ⟦N48⟧ ⟦W93⟧ ⟦W94⟧                  ⟦N49⟧ Social security tips          ⟦N50⟧ ⟦W95⟧ ⟦W96⟧\\n\\n⟦N51⟧                               ⟦N52⟧ ⟦W97⟧ ⟦W98⟧ ⟦W99⟧        ⟦N53⟧                               ⟦N54⟧ ⟦W100⟧ ⟦W101⟧ ⟦W102⟧\\n\\n⟦N55⟧ ⟦W103⟧ ⟦W104⟧                 ⟦N56⟧a  ⟦W105⟧  ⟦N57⟧            ⟦N58⟧ ⟦W106⟧ ⟦W107⟧                 ⟦N59⟧a  ⟦W108⟧  ⟦N60⟧\\n                                      ⟦N61⟧b  ⟦W109⟧  ⟦N62⟧                                                 ⟦N63⟧b  ⟦W110⟧  ⟦N64⟧\\n⟦N65⟧ ⟦W111⟧. ⟦W112⟧.  ⟦W113⟧. ⟦W114⟧  ⟦N66⟧⟦W115⟧   ⟦N67⟧⟦W116⟧                         ⟦N68⟧ ⟦W117⟧. ⟦W118⟧.  ⟦W119⟧. ⟦W120⟧  ⟦N69⟧⟦W121⟧   ⟦N70⟧⟦W122⟧\\n   [ ]         [⟦W123⟧]        [ ]         ⟦N71⟧⟦W124⟧                            [ ]         [⟦W125⟧]        [ ]         ⟦N72⟧⟦W126⟧\\n⟦N73⟧ Other                                                          ⟦N74⟧ Other\\n⟦N75⟧ State  ⟦W127⟧ ⟦W128⟧ ⟦W129⟧ ⟦W130⟧.                                 ⟦N76⟧ State  ⟦W131⟧ ⟦W132⟧ ⟦W133⟧ ⟦W134⟧.\\n   ⟦W135⟧     ⟦N77⟧-⟦N78⟧                                                  ⟦W136⟧     ⟦N79⟧-⟦N80⟧\\n⟦N81⟧ State wages, tips, etc.      ⟦N82⟧ State income tax               ⟦N83⟧ State wages, tips, etc.      ⟦N84⟧ State income tax\\n  ⟦N85⟧                       ⟦N86⟧                            ⟦N87⟧                       ⟦N88⟧\\n⟦N89⟧ Local wages, tips, etc.      ⟦N90⟧ Local income tax               ⟦N91⟧ Local wages, tips, etc.      ⟦N92⟧ Local income tax\\n  ⟦N93⟧                       ⟦N94⟧                            ⟦N95⟧                       ⟦N96⟧\\n⟦N97⟧ ⟦W137⟧ ⟦W138⟧  ⟦W139⟧                                     ⟦N98⟧ ⟦W140⟧ ⟦W141⟧  ⟦W142⟧\\nForm W-⟦N99⟧ Wage and Tax Statement   ⟦N100⟧                            Form W-⟦N101⟧ Wage and Tax Statement   ⟦N102⟧\\n⟦W143⟧ ⟦W144⟧ ⟦W145⟧ ⟦W146⟧ ⟦W147⟧ ⟦W148⟧ ⟦W149⟧ ⟦W150⟧ ⟦W151⟧ ⟦W152⟧.            ⟦W153⟧ ⟦W154⟧ ⟦W155⟧ ⟦W156⟧ ⟦W157⟧.\\n\\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\\n\\n⟦W158⟧ ⟦W159⟧ ⟦W160⟧ ⟦W161⟧ ⟦W162⟧.  ⟦W163⟧ ⟦W164⟧. ⟦N103⟧-⟦N104⟧               ⟦W165⟧ ⟦W166⟧ ⟦W167⟧ ⟦W168⟧ ⟦W169⟧.  ⟦W170⟧ ⟦W171⟧. ⟦N105⟧-⟦N106⟧\\n  ⟦W172⟧-⟦N107⟧                                                       ⟦W173⟧-⟦N108⟧\\nb Employer ID number (EIN)        ⟦W174⟧ ⟦W175⟧ ⟦W176⟧                b Employer ID number (EIN)        ⟦W177⟧ ⟦W178⟧ ⟦W179⟧\\n  ⟦N109⟧-⟦N110⟧                        ⟦W180⟧ ⟦N111⟧ ⟦N112⟧                   ⟦N113⟧-⟦N114⟧                        ⟦W181⟧ ⟦N115⟧ ⟦N116⟧\\n⟦W182⟧ ⟦W183⟧ ⟦W184⟧, ⟦W185⟧, ⟦W186⟧ ⟦W187⟧ ⟦W188⟧                          ⟦W189⟧ ⟦W190⟧ ⟦W191⟧, ⟦W192⟧, ⟦W193⟧ ⟦W194⟧ ⟦W195⟧\\n  ⟦W196⟧ & ⟦W197⟧ ⟦W198⟧ ⟦W199⟧.                                    ⟦W200⟧ & ⟦W201⟧ ⟦W202⟧ ⟦W203⟧.\\n  ⟦N117⟧ ⟦W204⟧ ⟦W205⟧ ⟦W206⟧                                             ⟦N118⟧ ⟦W207⟧ ⟦W208⟧ ⟦W209⟧\\n  ⟦W210⟧, ⟦W211⟧ ⟦N119⟧                                             ⟦W212⟧, ⟦W213⟧ ⟦N120⟧\\n⟦W214⟧ ⟦W215⟧ ⟦W216⟧   ⟦W217⟧ ⟦W218⟧ ⟦W219⟧ ⟦W220⟧ ⟦W221⟧                  ⟦W222⟧ ⟦W223⟧ ⟦W224⟧   ⟦W225⟧ ⟦W226⟧ ⟦W227⟧ ⟦W228⟧ ⟦W229⟧\\n  ⟦W230⟧ ⟦W231⟧                                               ⟦W232⟧ ⟦W233⟧\\n  ⟦N121⟧ ⟦W234⟧ ⟦W235⟧                                               ⟦N122⟧ ⟦W236⟧ ⟦W237⟧\\n  ⟦W238⟧, ⟦W239⟧ ⟦N123⟧                                                  ⟦W240⟧, ⟦W241⟧ ⟦N124⟧\\n⟦N125⟧ ⟦W242⟧, ⟦W243⟧, ⟦W244⟧ ⟦W245⟧.      ⟦N126⟧ Federal income tax withheld     ⟦N127⟧ ⟦W246⟧, ⟦W247⟧, ⟦W248⟧ ⟦W249⟧.      ⟦N128⟧ Federal income tax withheld\\n  ⟦N129⟧                       ⟦N130⟧                          ⟦N131⟧                       ⟦N132⟧\\n⟦N133⟧ Social security wages         ⟦N134⟧ Social security tax withheld    ⟦N135⟧ Social security wages         ⟦N136⟧ Social security tax withheld\\n  ⟦N137⟧                       ⟦N138⟧                          ⟦N139⟧                       ⟦N140⟧\\n⟦N141⟧ Medicare wages and tips       ⟦N142⟧ Medicare tax withheld           ⟦N143⟧ Medicare wages and tips       ⟦N144⟧ Medicare tax withheld\\n  ⟦N145⟧                       ⟦N146⟧                            ⟦N147⟧                       ⟦N148⟧\\n⟦N149⟧ Social security tips          ⟦N150⟧ ⟦W250⟧ ⟦W251⟧                  ⟦N151⟧ Social security tips          ⟦N152⟧ ⟦W252⟧ ⟦W253⟧\\n\\n⟦N153⟧                               ⟦N154⟧ ⟦W254⟧ ⟦W255⟧ ⟦W256⟧        ⟦N155⟧                               ⟦N156⟧ ⟦W257⟧ ⟦W258⟧ ⟦W259⟧\\n\\n⟦N157⟧ ⟦W260⟧ ⟦W261⟧                 ⟦N158⟧a  ⟦W262⟧  ⟦N159⟧            ⟦N160⟧ ⟦W263⟧ ⟦W264⟧                 ⟦N161⟧a  ⟦W265⟧  ⟦N162⟧\\n                                      ⟦N163⟧b  ⟦W266⟧  ⟦N164⟧                                                 ⟦N165⟧b  ⟦W267⟧  ⟦N166⟧\\n⟦N167⟧ ⟦W268⟧. ⟦W269⟧.  ⟦W270⟧. ⟦W271⟧  ⟦N168⟧⟦W272⟧   ⟦N169⟧⟦W273⟧                         ⟦N170⟧ ⟦W274⟧. ⟦W275⟧.  ⟦W276⟧. ⟦W277⟧  ⟦N171⟧⟦W278⟧   ⟦N172⟧⟦W279⟧\\n   [ ]         [⟦W280⟧]        [ ]         ⟦N173⟧⟦W281⟧                            [ ]         [⟦W282⟧]        [ ]         ⟦N174⟧⟦W283⟧\\n⟦N175⟧ Other                                                          ⟦N176⟧ Other\\n⟦N177⟧ State  ⟦W284⟧ ⟦W285⟧ ⟦W286⟧ ⟦W287⟧.                                 ⟦N178⟧ State  ⟦W288⟧ ⟦W289⟧ ⟦W290⟧ ⟦W291⟧.\\n   ⟦W292⟧     ⟦N179⟧-⟦N180⟧                                                  ⟦W293⟧     ⟦N181⟧-⟦N182⟧\\n⟦N183⟧ State wages, tips, etc.      ⟦N184⟧ State income tax               ⟦N185⟧ State wages, tips, etc.      ⟦N186⟧ State income tax\\n  ⟦N187⟧                       ⟦N188⟧                            ⟦N189⟧                       ⟦N190⟧\\n⟦N191⟧ Local wages, tips, etc.      ⟦N192⟧ Local income tax               ⟦N193⟧ Local wages, tips, etc.      ⟦N194⟧ Local income tax\\n  ⟦N195⟧                       ⟦N196⟧                            ⟦N197⟧                       ⟦N198⟧\\n⟦N199⟧ ⟦W294⟧ ⟦W295⟧  ⟦W296⟧                                     ⟦N200⟧ ⟦W297⟧ ⟦W298⟧  ⟦W299⟧\\nForm W-⟦N201⟧ Wage and Tax Statement   ⟦N202⟧                            Form W-⟦N203⟧ Wage and Tax Statement   ⟦N204⟧\\nCopy ⟦N205⟧ To ⟦W300⟧ ⟦W301⟧ ⟦W302⟧ ⟦W303⟧ ⟦W304⟧, ⟦W305⟧, ⟦W306⟧ ⟦W307⟧          Copy ⟦N206⟧ To ⟦W308⟧ ⟦W309⟧ ⟦W310⟧ ⟦W311⟧ ⟦W312⟧, ⟦W313⟧, ⟦W314⟧ ⟦W315⟧\\nIncome Tax Return.                                                Income Tax Return.\\n\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-02-2",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-02",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W15",
+          "W16",
+          "W17"
+        ],
+        "employeeName": [
+          "W43",
+          "W44"
+        ],
+        "taxYear": "N3",
+        "wages": "N29",
+        "federalIncomeTaxWithheld": "N34",
+        "socialSecurityWages": "N38",
+        "medicareWages": "N46",
+        "stateWages": "N94"
+      },
+      "rehydrated": {
+        "employerName": "d Control number",
+        "employeeName": "FOUNDRY LANE",
+        "taxYear": 2025,
+        "wages": 1,
+        "federalIncomeTaxWithheld": 31406.88,
+        "socialSecurityWages": 176100,
+        "medicareWages": 195870,
+        "stateWages": 195870
+      },
+      "rehydratedRaw": {
+        "employerName": "d Control number",
+        "employeeName": "FOUNDRY LANE",
+        "taxYear": 2025,
+        "wages": 1,
+        "federalIncomeTaxWithheld": 31406.88,
+        "socialSecurityWages": 176100,
+        "medicareWages": 195870,
+        "stateWages": 195870
+      },
+      "rehydratedTidy": {
+        "employerName": "d Control number",
+        "employeeName": "FOUNDRY LANE",
+        "taxYear": 2025,
+        "wages": 1,
+        "federalIncomeTaxWithheld": 31406.88,
+        "socialSecurityWages": 176100,
+        "medicareWages": 195870,
+        "stateWages": 195870
+      },
+      "rehydratedUsed": {
+        "employerName": "d Control number",
+        "employeeName": "FOUNDRY LANE",
+        "taxYear": 2025,
+        "federalIncomeTaxWithheld": 31406.88,
+        "socialSecurityWages": 176100,
+        "medicareWages": 195870,
+        "stateWages": 195870
+      },
+      "leftOut": [
+        {
+          "field": "wages",
+          "problem": "not-money"
+        }
+      ],
+      "usage": {
+        "promptTokenCount": 4785,
+        "candidatesTokenCount": 131,
+        "totalTokenCount": 4916,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 4785
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 6994,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 8983,
+      "promptPreview": "Copy B  ⟦N1⟧  W-⟦N2⟧ Wage and Tax Statement                          ⟦W1⟧ ⟦W2⟧  ⟦N3⟧  W-⟦N4⟧ Wage and Tax Statement\n⟦W3⟧",
+      "attempts": 1,
+      "gold": {
+        "employerName": "QUILLFEATHER BIOTHERAPEUTICS CORP.",
+        "employeeName": "ANAND P SETHURAMAN",
+        "taxYear": 2025,
+        "wages": 172370,
+        "federalIncomeTaxWithheld": 31406.88,
+        "socialSecurityWages": 176100,
+        "medicareWages": 195870,
+        "stateWages": 195870
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\nCopy B  ⟦N1⟧  W-⟦N2⟧ Wage and Tax Statement                          ⟦W1⟧ ⟦W2⟧  ⟦N3⟧  W-⟦N4⟧ Wage and Tax Statement\\n⟦W3⟧ ⟦W4⟧. ⟦N5⟧-⟦N6⟧                                                 ⟦W5⟧ ⟦W6⟧. ⟦N7⟧-⟦N8⟧\\n⟦W7⟧ ⟦W8⟧ ⟦W9⟧  ⟦W10⟧-⟦N9⟧                                     ⟦W11⟧ ⟦W12⟧ ⟦W13⟧  ⟦W14⟧-⟦N10⟧\\nb Employer ID number (EIN)  ⟦N11⟧-⟦N12⟧                            b Employer ID number (EIN)  ⟦N13⟧-⟦N14⟧\\n⟦W15⟧ ⟦W16⟧ ⟦W17⟧  ⟦W18⟧-⟦N15⟧-⟦N16⟧                                      ⟦W19⟧ ⟦W20⟧ ⟦W21⟧  ⟦W22⟧-⟦N17⟧-⟦N18⟧\\n⟦W23⟧ ⟦W24⟧ ⟦W25⟧, ⟦W26⟧ ⟦W27⟧ ⟦W28⟧ ⟦W29⟧                           ⟦W30⟧ ⟦W31⟧ ⟦W32⟧, ⟦W33⟧ ⟦W34⟧ ⟦W35⟧ ⟦W36⟧\\n  ⟦W37⟧ ⟦W38⟧ ⟦W39⟧.                                ⟦W40⟧ ⟦W41⟧ ⟦W42⟧.\\n  ⟦N19⟧ ⟦W43⟧ ⟦W44⟧, ⟦W45⟧ ⟦N20⟧                                      ⟦N21⟧ ⟦W46⟧ ⟦W47⟧, ⟦W48⟧ ⟦N22⟧\\n  ⟦W49⟧, ⟦W50⟧ ⟦N23⟧                                               ⟦W51⟧, ⟦W52⟧ ⟦N24⟧\\n⟦W53⟧/⟦W54⟧ ⟦W55⟧ ⟦W56⟧, ⟦W57⟧ ⟦W58⟧ ⟦W59⟧ ⟦W60⟧                         ⟦W61⟧/⟦W62⟧ ⟦W63⟧ ⟦W64⟧, ⟦W65⟧ ⟦W66⟧ ⟦W67⟧ ⟦W68⟧\\n  ⟦W69⟧ ⟦W70⟧ ⟦W71⟧                                                ⟦W72⟧ ⟦W73⟧ ⟦W74⟧\\n  ⟦N25⟧ ⟦W75⟧ ⟦W76⟧                                                 ⟦N26⟧ ⟦W77⟧ ⟦W78⟧\\n  ⟦W79⟧, ⟦W80⟧ ⟦N27⟧                                              ⟦W81⟧, ⟦W82⟧ ⟦N28⟧\\n⟦N29⟧ ⟦W83⟧, ⟦W84⟧, ⟦W85⟧ ⟦W86⟧.     ⟦N30⟧                         ⟦N31⟧ ⟦W87⟧, ⟦W88⟧, ⟦W89⟧ ⟦W90⟧.     ⟦N32⟧\\n⟦N33⟧ Federal income tax withheld  ⟦N34⟧                          ⟦N35⟧ Federal income tax withheld  ⟦N36⟧\\n⟦N37⟧ Social security wages        ⟦N38⟧                         ⟦N39⟧ Social security wages        ⟦N40⟧\\n⟦N41⟧ Social security tax withheld ⟦N42⟧                          ⟦N43⟧ Social security tax withheld ⟦N44⟧\\n⟦N45⟧ Medicare wages and tips      ⟦N46⟧                         ⟦N47⟧ Medicare wages and tips      ⟦N48⟧\\n⟦N49⟧ Medicare tax withheld        ⟦N50⟧                           ⟦N51⟧ Medicare tax withheld        ⟦N52⟧\\n⟦N53⟧ Social security tips                                            ⟦N54⟧ Social security tips\\n⟦N55⟧ ⟦W91⟧ ⟦W92⟧                                                  ⟦N56⟧ ⟦W93⟧ ⟦W94⟧\\n⟦N57⟧ ⟦W95⟧ ⟦W96⟧ ⟦W97⟧                                        ⟦N58⟧ ⟦W98⟧ ⟦W99⟧ ⟦W100⟧\\n⟦N59⟧ ⟦W101⟧ ⟦W102⟧                                             ⟦N60⟧ ⟦W103⟧ ⟦W104⟧\\n⟦N61⟧⟦W105⟧ ⟦W106⟧ ⟦W107⟧                     ⟦N62⟧                          ⟦N63⟧⟦W108⟧ ⟦W109⟧ ⟦W110⟧                     ⟦N64⟧\\n⟦N65⟧⟦W111⟧ ⟦W112⟧ ⟦W113⟧                    ⟦N66⟧                          ⟦N67⟧⟦W114⟧ ⟦W115⟧ ⟦W116⟧                    ⟦N68⟧\\n⟦N69⟧⟦W117⟧                                                               ⟦N70⟧⟦W118⟧\\n⟦N71⟧⟦W119⟧                                                               ⟦N72⟧⟦W120⟧\\n⟦N73⟧ ⟦W121⟧ ⟦W122⟧  [⟦W123⟧]   ⟦W124⟧ ⟦W125⟧ [ ]                  ⟦N74⟧ ⟦W126⟧ ⟦W127⟧  [⟦W128⟧]   ⟦W129⟧ ⟦W130⟧ [ ]\\n   ⟦W131⟧ ⟦W132⟧ ⟦W133⟧ [ ]                                          ⟦W134⟧ ⟦W135⟧ ⟦W136⟧ [ ]\\n⟦N75⟧ Other                                                          ⟦N76⟧ Other\\n   ⟦W137⟧ ⟦W138⟧/⟦W139⟧/⟦W140⟧                ⟦N77⟧                                ⟦W141⟧ ⟦W142⟧/⟦W143⟧/⟦W144⟧                ⟦N78⟧\\n   ⟦W145⟧ ⟦W146⟧                      ⟦N79⟧                                ⟦W147⟧ ⟦W148⟧                      ⟦N80⟧\\n   ⟦W149⟧ ⟦W150⟧                      ⟦N81⟧                                ⟦W151⟧ ⟦W152⟧                      ⟦N82⟧\\n⟦N83⟧ ⟦W153⟧ ⟦W154⟧  ⟦W155⟧ ⟦W156⟧ ⟦W157⟧ ⟦N84⟧-⟦N85⟧-⟦N86⟧/⟦N87⟧                  ⟦N88⟧ ⟦W158⟧ ⟦W159⟧  ⟦W160⟧ ⟦W161⟧ ⟦W162⟧ ⟦N89⟧-⟦N90⟧-⟦N91⟧/⟦N92⟧\\n⟦N93⟧ State wages, tips, etc.     ⟦N94⟧                         ⟦N95⟧ State wages, tips, etc.     ⟦N96⟧\\n⟦N97⟧ State income tax            ⟦N98⟧                           ⟦N99⟧ State income tax            ⟦N100⟧\\n⟦N101⟧ Local wages, tips, etc.                                        ⟦N102⟧ Local wages, tips, etc.\\n⟦N103⟧ Local income tax                                               ⟦N104⟧ Local income tax\\n⟦N105⟧ ⟦W163⟧ ⟦W164⟧                                                  ⟦N106⟧ ⟦W165⟧ ⟦W166⟧\\n⟦W167⟧ ⟦W168⟧ ⟦W169⟧ ⟦W170⟧ ⟦W171⟧ ⟦W172⟧ ⟦W173⟧ ⟦W174⟧ ⟦W175⟧ ⟦W176⟧.            ⟦W177⟧ ⟦W178⟧ ⟦W179⟧ ⟦W180⟧ ⟦W181⟧.\\nDept. of the ⟦W182⟧ - ⟦W183⟧ ⟦W184⟧ ⟦W185⟧                  Dept. of the ⟦W186⟧ - ⟦W187⟧ ⟦W188⟧ ⟦W189⟧\\n\\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\\n\\nCopy ⟦N107⟧  ⟦N108⟧  W-⟦N109⟧ Wage and Tax Statement                          Copy ⟦N110⟧  ⟦N111⟧  W-⟦N112⟧ Wage and Tax Statement\\n⟦W190⟧ ⟦W191⟧. ⟦N113⟧-⟦N114⟧                                                 ⟦W192⟧ ⟦W193⟧. ⟦N115⟧-⟦N116⟧\\n⟦W194⟧ ⟦W195⟧ ⟦W196⟧  ⟦W197⟧-⟦N117⟧                                     ⟦W198⟧ ⟦W199⟧ ⟦W200⟧  ⟦W201⟧-⟦N118⟧\\nb Employer ID number (EIN)  ⟦N119⟧-⟦N120⟧                            b Employer ID number (EIN)  ⟦N121⟧-⟦N122⟧\\n⟦W202⟧ ⟦W203⟧ ⟦W204⟧  ⟦W205⟧-⟦N123⟧-⟦N124⟧                                      ⟦W206⟧ ⟦W207⟧ ⟦W208⟧  ⟦W209⟧-⟦N125⟧-⟦N126⟧\\n⟦W210⟧ ⟦W211⟧ ⟦W212⟧, ⟦W213⟧ ⟦W214⟧ ⟦W215⟧ ⟦W216⟧                           ⟦W217⟧ ⟦W218⟧ ⟦W219⟧, ⟦W220⟧ ⟦W221⟧ ⟦W222⟧ ⟦W223⟧\\n  ⟦W224⟧ ⟦W225⟧ ⟦W226⟧.                                ⟦W227⟧ ⟦W228⟧ ⟦W229⟧.\\n  ⟦N127⟧ ⟦W230⟧ ⟦W231⟧, ⟦W232⟧ ⟦N128⟧                                      ⟦N129⟧ ⟦W233⟧ ⟦W234⟧, ⟦W235⟧ ⟦N130⟧\\n  ⟦W236⟧, ⟦W237⟧ ⟦N131⟧                                               ⟦W238⟧, ⟦W239⟧ ⟦N132⟧\\n⟦W240⟧/⟦W241⟧ ⟦W242⟧ ⟦W243⟧, ⟦W244⟧ ⟦W245⟧ ⟦W246⟧ ⟦W247⟧                         ⟦W248⟧/⟦W249⟧ ⟦W250⟧ ⟦W251⟧, ⟦W252⟧ ⟦W253⟧ ⟦W254⟧ ⟦W255⟧\\n  ⟦W256⟧ ⟦W257⟧ ⟦W258⟧                                                ⟦W259⟧ ⟦W260⟧ ⟦W261⟧\\n  ⟦N133⟧ ⟦W262⟧ ⟦W263⟧                                                 ⟦N134⟧ ⟦W264⟧ ⟦W265⟧\\n  ⟦W266⟧, ⟦W267⟧ ⟦N135⟧                                              ⟦W268⟧, ⟦W269⟧ ⟦N136⟧\\n⟦N137⟧ ⟦W270⟧, ⟦W271⟧, ⟦W272⟧ ⟦W273⟧.     ⟦N138⟧                         ⟦N139⟧ ⟦W274⟧, ⟦W275⟧, ⟦W276⟧ ⟦W277⟧.     ⟦N140⟧\\n⟦N141⟧ Federal income tax withheld  ⟦N142⟧                          ⟦N143⟧ Federal income tax withheld  ⟦N144⟧\\n⟦N145⟧ Social security wages        ⟦N146⟧                         ⟦N147⟧ Social security wages        ⟦N148⟧\\n⟦N149⟧ Social security tax withheld ⟦N150⟧                          ⟦N151⟧ Social security tax withheld ⟦N152⟧\\n⟦N153⟧ Medicare wages and tips      ⟦N154⟧                         ⟦N155⟧ Medicare wages and tips      ⟦N156⟧\\n⟦N157⟧ Medicare tax withheld        ⟦N158⟧                           ⟦N159⟧ Medicare tax withheld        ⟦N160⟧\\n⟦N161⟧ Social security tips                                            ⟦N162⟧ Social security tips\\n⟦N163⟧ ⟦W278⟧ ⟦W279⟧                                                  ⟦N164⟧ ⟦W280⟧ ⟦W281⟧\\n⟦N165⟧ ⟦W282⟧ ⟦W283⟧ ⟦W284⟧                                        ⟦N166⟧ ⟦W285⟧ ⟦W286⟧ ⟦W287⟧\\n⟦N167⟧ ⟦W288⟧ ⟦W289⟧                                             ⟦N168⟧ ⟦W290⟧ ⟦W291⟧\\n⟦N169⟧⟦W292⟧ ⟦W293⟧ ⟦W294⟧                     ⟦N170⟧                          ⟦N171⟧⟦W295⟧ ⟦W296⟧ ⟦W297⟧                     ⟦N172⟧\\n⟦N173⟧⟦W298⟧ ⟦W299⟧ ⟦W300⟧                    ⟦N174⟧                          ⟦N175⟧⟦W301⟧ ⟦W302⟧ ⟦W303⟧                    ⟦N176⟧\\n⟦N177⟧⟦W304⟧                                                               ⟦N178⟧⟦W305⟧\\n⟦N179⟧⟦W306⟧                                                               ⟦N180⟧⟦W307⟧\\n⟦N181⟧ ⟦W308⟧ ⟦W309⟧  [⟦W310⟧]   ⟦W311⟧ ⟦W312⟧ [ ]                  ⟦N182⟧ ⟦W313⟧ ⟦W314⟧  [⟦W315⟧]   ⟦W316⟧ ⟦W317⟧ [ ]\\n   ⟦W318⟧ ⟦W319⟧ ⟦W320⟧ [ ]                                          ⟦W321⟧ ⟦W322⟧ ⟦W323⟧ [ ]\\n⟦N183⟧ Other                                                          ⟦N184⟧ Other\\n   ⟦W324⟧ ⟦W325⟧/⟦W326⟧/⟦W327⟧                ⟦N185⟧                                ⟦W328⟧ ⟦W329⟧/⟦W330⟧/⟦W331⟧                ⟦N186⟧\\n   ⟦W332⟧ ⟦W333⟧                      ⟦N187⟧                                ⟦W334⟧ ⟦W335⟧                      ⟦N188⟧\\n   ⟦W336⟧ ⟦W337⟧                      ⟦N189⟧                                ⟦W338⟧ ⟦W339⟧                      ⟦N190⟧\\n⟦N191⟧ ⟦W340⟧ ⟦W341⟧  ⟦W342⟧ ⟦W343⟧ ⟦W344⟧ ⟦N192⟧-⟦N193⟧-⟦N194⟧/⟦N195⟧                  ⟦N196⟧ ⟦W345⟧ ⟦W346⟧  ⟦W347⟧ ⟦W348⟧ ⟦W349⟧ ⟦N197⟧-⟦N198⟧-⟦N199⟧/⟦N200⟧\\n⟦N201⟧ State wages, tips, etc.     ⟦N202⟧                         ⟦N203⟧ State wages, tips, etc.     ⟦N204⟧\\n⟦N205⟧ State income tax            ⟦N206⟧                           ⟦N207⟧ State income tax            ⟦N208⟧\\n⟦N209⟧ Local wages, tips, etc.                                        ⟦N210⟧ Local wages, tips, etc.\\n⟦N211⟧ Local income tax                                               ⟦N212⟧ Local income tax\\n⟦N213⟧ ⟦W350⟧ ⟦W351⟧                                                  ⟦N214⟧ ⟦W352⟧ ⟦W353⟧\\nCopy ⟦N215⟧ To ⟦W354⟧ ⟦W355⟧ ⟦W356⟧ ⟦W357⟧ ⟦W358⟧, ⟦W359⟧, ⟦W360⟧ ⟦W361⟧          Copy ⟦N216⟧ To ⟦W362⟧ ⟦W363⟧ ⟦W364⟧ ⟦W365⟧ ⟦W366⟧, ⟦W367⟧, ⟦W368⟧ ⟦W369⟧\\nIncome Tax Return.                                                Income Tax Return.\\nDept. of the ⟦W370⟧ - ⟦W371⟧ ⟦W372⟧ ⟦W373⟧                  Dept. of the ⟦W374⟧ - ⟦W375⟧ ⟦W376⟧ ⟦W377⟧\\n\\n⟦W378⟧ ⟦W379⟧ ⟦W380⟧ ⟦W381⟧ ⟦W382⟧.   ⟦W383⟧ ⟦W384⟧ ⟦W385⟧ ⟦W386⟧ ⟦W387⟧ ⟦W388⟧.\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-03-1",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-03",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W153",
+          "W156",
+          "W157",
+          "W158",
+          "W159",
+          "W160",
+          "W161"
+        ],
+        "employeeName": [
+          "W162",
+          "W163",
+          "W164"
+        ],
+        "taxYear": "N51",
+        "wages": "N64",
+        "federalIncomeTaxWithheld": "N66",
+        "socialSecurityWages": "N68",
+        "medicareWages": "N72",
+        "stateWages": "N99"
+      },
+      "rehydrated": {
+        "employerName": "c Larkspur Valley Medical Group P C",
+        "employeeName": "Teodora M Villanueva-Brandt",
+        "taxYear": 2025,
+        "wages": 1,
+        "federalIncomeTaxWithheld": 2,
+        "socialSecurityWages": 3,
+        "medicareWages": 5,
+        "stateWages": 81454.4
+      },
+      "rehydratedRaw": {
+        "employerName": "c Larkspur Valley Medical Group P C",
+        "employeeName": "Teodora M Villanueva-Brandt",
+        "taxYear": 2025,
+        "wages": 1,
+        "federalIncomeTaxWithheld": 2,
+        "socialSecurityWages": 3,
+        "medicareWages": 5,
+        "stateWages": 81454.4
+      },
+      "rehydratedTidy": {
+        "employerName": "c Larkspur Valley Medical Group P C",
+        "employeeName": "Teodora M Villanueva-Brandt",
+        "taxYear": 2025,
+        "wages": 1,
+        "federalIncomeTaxWithheld": 2,
+        "socialSecurityWages": 3,
+        "medicareWages": 5,
+        "stateWages": 81454.4
+      },
+      "rehydratedUsed": {
+        "employerName": "c Larkspur Valley Medical Group P C",
+        "employeeName": "Teodora M Villanueva-Brandt",
+        "taxYear": 2025,
+        "stateWages": 81454.4
+      },
+      "leftOut": [
+        {
+          "field": "wages",
+          "problem": "not-money"
+        },
+        {
+          "field": "federalIncomeTaxWithheld",
+          "problem": "not-money"
+        },
+        {
+          "field": "socialSecurityWages",
+          "problem": "not-money"
+        },
+        {
+          "field": "medicareWages",
+          "problem": "not-money"
+        }
+      ],
+      "usage": {
+        "promptTokenCount": 2624,
+        "candidatesTokenCount": 177,
+        "totalTokenCount": 2801,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 2624
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 4952,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 3863,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧, ⟦W5⟧.⟦W6⟧.\n⟦N1⟧ ⟦W7⟧ ⟦W8⟧, ⟦W9⟧ ⟦N2⟧\n⟦W10⟧ ⟦W11⟧, ⟦W12⟧ ⟦N3⟧\nPayroll Department  |  EIN ⟦N4⟧-⟦N5⟧\n\n",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Larkspur Valley Medical Group, P.C.",
+        "employeeName": "Teodora M Villanueva-Brandt",
+        "taxYear": 2025,
+        "wages": 76215.42,
+        "federalIncomeTaxWithheld": 7940.65,
+        "socialSecurityWages": 81454.4,
+        "medicareWages": 81454.4,
+        "stateWages": 81454.4
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "correct",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "correct",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "correct",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧, ⟦W5⟧.⟦W6⟧.\\n⟦N1⟧ ⟦W7⟧ ⟦W8⟧, ⟦W9⟧ ⟦N2⟧\\n⟦W10⟧ ⟦W11⟧, ⟦W12⟧ ⟦N3⟧\\nPayroll Department  |  EIN ⟦N4⟧-⟦N5⟧\\n\\n                      ⟦N6⟧ YEAR-END WAGE AND TAX STATEMENT\\n                    Employee Statement and ⟦W13⟧ ⟦W14⟧\\n\\nEmployee:  ⟦W15⟧ ⟦W16⟧ ⟦W17⟧              SSN: ⟦W18⟧-⟦N7⟧\\n           ⟦N8⟧ ⟦W19⟧ ⟦W20⟧ ⟦W21⟧                  ⟦W22⟧ ⟦W23⟧: ⟦W24⟧-⟦N9⟧\\n           ⟦W25⟧, ⟦W26⟧ ⟦N10⟧                    Pay frequency: Biweekly (⟦N11⟧)\\n\\n⟦W27⟧ ⟦W28⟧ ⟦W29⟧-⟦N12⟧ ⟦W30⟧ ⟦W31⟧ ⟦W32⟧\\n⟦W33⟧ ⟦W34⟧-⟦N13⟧ ⟦W35⟧ ⟦W36⟧ ⟦W37⟧ ⟦W38⟧ ⟦W39⟧ ⟦W40⟧ ⟦W41⟧ ⟦W42⟧ ⟦W43⟧ ⟦W44⟧ ⟦W45⟧ ⟦W46⟧ ⟦W47⟧\\n⟦W48⟧ ⟦W49⟧ ⟦W50⟧ ⟦W51⟧. ⟦W52⟧ ⟦W53⟧ ⟦W54⟧ ⟦W55⟧ ⟦W56⟧ ⟦W57⟧ ⟦W58⟧ ⟦W59⟧ ⟦W60⟧ ⟦W61⟧ ⟦W62⟧ ⟦W63⟧\\nthe ⟦W64⟧ ⟦W65⟧ ⟦W66⟧ ⟦W67⟧ ⟦W68⟧ ⟦W69⟧ ⟦W70⟧.\\n\\n                                                  ⟦W71⟧ ⟦N14⟧          ⟦W72⟧ ⟦N15⟧          ⟦W73⟧ ⟦N16⟧         ⟦W74⟧ ⟦N17⟧\\n                                                Federal  ⟦W75⟧. Security       Medicare     State (⟦W76⟧)\\nGross pay (⟦W77⟧ ⟦N18⟧ ⟦W78⟧)                ⟦N19⟧      ⟦N20⟧      ⟦N21⟧      ⟦N22⟧\\n⟦W79⟧ ⟦N23⟧(⟦W80⟧) ⟦W81⟧ ⟦W82⟧                -⟦N24⟧           ⟦N25⟧           ⟦N26⟧           ⟦N27⟧\\n⟦W83⟧ ⟦W84⟧ ⟦N28⟧ medical/dental/vision        -⟦N29⟧      -⟦N30⟧      -⟦N31⟧      -⟦N32⟧\\n⟦W85⟧ ⟦W86⟧ ⟦W87⟧ ⟦W88⟧                -⟦N33⟧      -⟦N34⟧      -⟦N35⟧      -⟦N36⟧\\n                                          -------------  -------------  -------------  -------------\\n⟦W89⟧ ⟦W90⟧ ⟦W91⟧ ⟦W92⟧ ⟦W93⟧-⟦N37⟧                   ⟦N38⟧      ⟦N39⟧      ⟦N40⟧      ⟦N41⟧\\n\\n* ⟦N42⟧(⟦W94⟧) ⟦W95⟧ ⟦W96⟧ ⟦W97⟧ ⟦W98⟧ ⟦W99⟧ ⟦W100⟧ ⟦W101⟧ ⟦W102⟧ ⟦W103⟧, ⟦W104⟧ ⟦W105⟧ ⟦N43⟧ is ⟦W106⟧ ⟦W107⟧ ⟦W108⟧ ⟦N44⟧.\\n* ⟦W109⟧ ⟦N45⟧ code W (⟦N46⟧) is ⟦W110⟧ ⟦W111⟧ ⟦W112⟧ ⟦W113⟧ ⟦W114⟧ ⟦W115⟧ ⟦W116⟧ ⟦W117⟧ ⟦W118⟧ ⟦N47⟧. The employer ⟦W119⟧ ⟦W120⟧ ⟦W121⟧ ⟦W122⟧ ⟦W123⟧ ⟦W124⟧ ⟦W125⟧.\\n* ⟦W126⟧ ⟦N48⟧ ⟦W127⟧ ⟦W128⟧ (⟦N49⟧(⟦W129⟧)) is ⟦W130⟧ ⟦W131⟧ ⟦W132⟧ ⟦W133⟧; ⟦W134⟧ ⟦W135⟧ ⟦W136⟧ ⟦W137⟧ ⟦W138⟧ ⟦W139⟧ ⟦W140⟧ ⟦W141⟧.\\n\\n----------------------------------------------------------------------------------------------------\\n\\nFORM W-⟦N50⟧ WAGE AND TAX STATEMENT ⟦N51⟧          Copy B / ⟦W142⟧ ⟦W143⟧ / Copy ⟦N52⟧          ⟦W144⟧ ⟦W145⟧. ⟦N53⟧-⟦N54⟧\\na  ⟦W146⟧ ⟦W147⟧  ⟦W148⟧-⟦N55⟧                b  EIN  ⟦N56⟧-⟦N57⟧            ⟦W149⟧  ⟦W150⟧ ⟦W151⟧.  ⟦W152⟧-⟦N58⟧\\n⟦W153⟧  Employer                                   ⟦W154⟧/⟦W155⟧  Employee\\n   ⟦W156⟧ ⟦W157⟧ ⟦W158⟧ ⟦W159⟧, ⟦W160⟧.⟦W161⟧.             ⟦W162⟧ ⟦W163⟧ ⟦W164⟧\\n   ⟦N59⟧ ⟦W165⟧ ⟦W166⟧, ⟦W167⟧ ⟦N60⟧                  ⟦N61⟧ ⟦W168⟧ ⟦W169⟧ ⟦W170⟧\\n   ⟦W171⟧ ⟦W172⟧, ⟦W173⟧ ⟦N62⟧                          ⟦W174⟧, ⟦W175⟧ ⟦N63⟧\\n  ⟦N64⟧  Wages, tips, other compensation         ⟦N65⟧        ⟦N66⟧  Federal income tax withheld              ⟦N67⟧\\n  ⟦N68⟧  Social security wages                   ⟦N69⟧        ⟦N70⟧  Social security tax withheld             ⟦N71⟧\\n  ⟦N72⟧  Medicare wages and tips                 ⟦N73⟧        ⟦N74⟧  Medicare tax withheld                    ⟦N75⟧\\n  ⟦N76⟧  Social security tips                                     ⟦N77⟧  ⟦W176⟧ ⟦W177⟧\\n ⟦N78⟧  ⟦W178⟧ ⟦W179⟧ ⟦W180⟧                                 ⟦N79⟧  ⟦W181⟧ ⟦W182⟧\\n⟦N80⟧a  ⟦W183⟧ ⟦W184⟧                                   ⟦N81⟧      ⟦N82⟧b  ⟦W185⟧ ⟦W186⟧                                  ⟦N83⟧\\n⟦N84⟧⟦W187⟧  Code W                                   ⟦N85⟧      ⟦N86⟧⟦W188⟧\\n ⟦N87⟧  ⟦W189⟧ ⟦W190⟧ [ ]   ⟦W191⟧ ⟦W192⟧ [⟦W193⟧]   ⟦W194⟧ ⟦W195⟧ ⟦W196⟧ [ ]\\n ⟦N88⟧  Other   ⟦W197⟧ ⟦W198⟧ ⟦N89⟧   ⟦W199⟧ ⟦N90⟧\\n ⟦N91⟧  State / ⟦W200⟧ ⟦W201⟧ ⟦W202⟧  ⟦N92⟧  State wages       ⟦N93⟧  State tax     ⟦N94⟧  Local wages     ⟦N95⟧  Local tax     ⟦N96⟧  ⟦W203⟧\\n     ⟦W204⟧  ⟦N97⟧-⟦N98⟧                    ⟦N99⟧             ⟦N100⟧          ⟦N101⟧           ⟦N102⟧            ⟦W205⟧ ⟦W206⟧\\n\\n⟦W207⟧ ⟦W208⟧ ⟦W209⟧ ⟦W210⟧ ⟦W211⟧ ⟦W212⟧ ⟦W213⟧. ⟦W214⟧: ⟦W215⟧ ⟦W216⟧ ⟦W217⟧.\\nThis ⟦W218⟧ ⟦W219⟧ ⟦W220⟧ ⟦W221⟧ ⟦W222⟧ ⟦W223⟧ ⟦W224⟧ ⟦W225⟧ ⟦W226⟧.\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-03-2",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-03",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W39",
+          "W40",
+          "W41",
+          "W42"
+        ],
+        "employeeName": [
+          "W12",
+          "W13",
+          "W14"
+        ],
+        "taxYear": "N5",
+        "wages": "N28",
+        "federalIncomeTaxWithheld": "N30",
+        "socialSecurityWages": "N32",
+        "medicareWages": "N36",
+        "stateWages": "N57"
+      },
+      "rehydrated": {
+        "employerName": "Corvane Aerostructures Holdings LLC",
+        "employeeName": "Bartholomew J Ng-Castellanos",
+        "taxYear": 2025,
+        "wages": 1,
+        "federalIncomeTaxWithheld": 2,
+        "socialSecurityWages": 3,
+        "medicareWages": 5,
+        "stateWages": 16
+      },
+      "rehydratedRaw": {
+        "employerName": "Corvane Aerostructures Holdings LLC",
+        "employeeName": "Bartholomew J Ng-Castellanos",
+        "taxYear": 2025,
+        "wages": 1,
+        "federalIncomeTaxWithheld": 2,
+        "socialSecurityWages": 3,
+        "medicareWages": 5,
+        "stateWages": 16
+      },
+      "rehydratedTidy": {
+        "employerName": "Corvane Aerostructures Holdings LLC",
+        "employeeName": "Bartholomew J Ng-Castellanos",
+        "taxYear": 2025,
+        "wages": 1,
+        "federalIncomeTaxWithheld": 2,
+        "socialSecurityWages": 3,
+        "medicareWages": 5,
+        "stateWages": 16
+      },
+      "rehydratedUsed": {
+        "employerName": "Corvane Aerostructures Holdings LLC",
+        "employeeName": "Bartholomew J Ng-Castellanos",
+        "taxYear": 2025
+      },
+      "leftOut": [
+        {
+          "field": "wages",
+          "problem": "not-money"
+        },
+        {
+          "field": "federalIncomeTaxWithheld",
+          "problem": "not-money"
+        },
+        {
+          "field": "socialSecurityWages",
+          "problem": "not-money"
+        },
+        {
+          "field": "medicareWages",
+          "problem": "not-money"
+        },
+        {
+          "field": "stateWages",
+          "problem": "not-money"
+        }
+      ],
+      "usage": {
+        "promptTokenCount": 3083,
+        "candidatesTokenCount": 145,
+        "totalTokenCount": 3228,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 3083
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 3912,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 4464,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\n⟦N1⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧\n⟦W8⟧, ⟦W9⟧ ⟦N2⟧\nPayroll Department  |  EIN ⟦N3⟧-⟦N4⟧\n\n                      ⟦N5⟧",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Corvane Aerostructures Holdings LLC",
+        "employeeName": "Bartholomew J Ng-Castellanos",
+        "taxYear": 2025,
+        "wages": 211864,
+        "federalIncomeTaxWithheld": 44873.19,
+        "socialSecurityWages": 176100,
+        "medicareWages": 235364,
+        "stateWages": 217164
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧\\n⟦N1⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧\\n⟦W8⟧, ⟦W9⟧ ⟦N2⟧\\nPayroll Department  |  EIN ⟦N3⟧-⟦N4⟧\\n\\n                      ⟦N5⟧ YEAR-END WAGE AND TAX STATEMENT\\n                    Employee Statement and ⟦W10⟧ ⟦W11⟧\\n\\nEmployee:  ⟦W12⟧ ⟦W13⟧ ⟦W14⟧             SSN: ⟦W15⟧-⟦N6⟧\\n           ⟦N7⟧ ⟦W16⟧ ⟦W17⟧, ⟦W18⟧ ⟦N8⟧               ⟦W19⟧ ⟦W20⟧: ⟦W21⟧⟦N9⟧-⟦N10⟧\\n           ⟦W22⟧ ⟦W23⟧, ⟦W24⟧ ⟦N11⟧                  Pay frequency: Biweekly (⟦N12⟧)\\n\\nFORM W-⟦N13⟧ WAGE AND TAX STATEMENT ⟦N14⟧          Copy B / ⟦W25⟧ ⟦W26⟧ / Copy ⟦N15⟧          ⟦W27⟧ ⟦W28⟧. ⟦N16⟧-⟦N17⟧\\na  ⟦W29⟧ ⟦W30⟧  ⟦W31⟧-⟦N18⟧                b  EIN  ⟦N19⟧-⟦N20⟧            ⟦W32⟧  ⟦W33⟧ ⟦W34⟧.  ⟦W35⟧⟦N21⟧-⟦N22⟧\\n⟦W36⟧  Employer                                   ⟦W37⟧/⟦W38⟧  Employee\\n   ⟦W39⟧ ⟦W40⟧ ⟦W41⟧ ⟦W42⟧             ⟦W43⟧ ⟦W44⟧ ⟦W45⟧\\n   ⟦N23⟧ ⟦W46⟧ ⟦W47⟧ ⟦W48⟧                       ⟦N24⟧ ⟦W49⟧ ⟦W50⟧, ⟦W51⟧ ⟦N25⟧\\n   ⟦W52⟧, ⟦W53⟧ ⟦N26⟧                              ⟦W54⟧ ⟦W55⟧, ⟦W56⟧ ⟦N27⟧\\n  ⟦N28⟧  Wages, tips, other compensation        ⟦N29⟧        ⟦N30⟧  Federal income tax withheld             ⟦N31⟧\\n  ⟦N32⟧  Social security wages                  ⟦N33⟧        ⟦N34⟧  Social security tax withheld            ⟦N35⟧\\n  ⟦N36⟧  Medicare wages and tips                ⟦N37⟧        ⟦N38⟧  Medicare tax withheld                    ⟦N39⟧\\n  ⟦N40⟧  Social security tips                                     ⟦N41⟧  ⟦W57⟧ ⟦W58⟧\\n ⟦N42⟧  ⟦W59⟧ ⟦W60⟧ ⟦W61⟧                  ⟦N43⟧       ⟦N44⟧  ⟦W62⟧ ⟦W63⟧\\n⟦N45⟧a  ⟦W64⟧ ⟦W65⟧                                     ⟦N46⟧      ⟦N47⟧b  ⟦W66⟧ ⟦W67⟧                                  ⟦N48⟧\\n⟦N49⟧⟦W68⟧  ⟦W69⟧ ⟦W70⟧                                 ⟦N50⟧      ⟦N51⟧⟦W71⟧  Code W                                   ⟦N52⟧\\n ⟦N53⟧  ⟦W72⟧ ⟦W73⟧ [ ]   ⟦W74⟧ ⟦W75⟧ [⟦W76⟧]   ⟦W77⟧ ⟦W78⟧ ⟦W79⟧ [ ]\\n ⟦N54⟧  Other   ⟦W80⟧ ⟦N55⟧\\n ⟦N56⟧  State / ⟦W81⟧ ⟦W82⟧ ⟦W83⟧  ⟦N57⟧  State wages       ⟦N58⟧  State tax     ⟦N59⟧  Local wages     ⟦N60⟧  Local tax     ⟦N61⟧  ⟦W84⟧\\n     ⟦W85⟧  ⟦N62⟧-⟦N63⟧-⟦N64⟧                   ⟦N65⟧            ⟦N66⟧\\n\\n----------------------------------------------------------------------------------------------------\\n\\n⟦W86⟧ ⟦W87⟧ ⟦W88⟧-⟦N67⟧ ⟦W89⟧ ⟦W90⟧ ⟦W91⟧\\n⟦W92⟧ ⟦W93⟧-⟦N68⟧ ⟦W94⟧ ⟦W95⟧ ⟦W96⟧ ⟦W97⟧ ⟦W98⟧ ⟦W99⟧ ⟦W100⟧ ⟦W101⟧ ⟦W102⟧ ⟦W103⟧ ⟦W104⟧ ⟦W105⟧ ⟦W106⟧\\n⟦W107⟧ ⟦W108⟧ ⟦W109⟧ ⟦W110⟧. ⟦W111⟧ ⟦W112⟧ ⟦W113⟧ ⟦W114⟧ ⟦W115⟧ ⟦W116⟧ ⟦W117⟧ ⟦W118⟧ ⟦W119⟧ ⟦W120⟧ ⟦W121⟧ ⟦W122⟧\\nthe ⟦W123⟧ ⟦W124⟧ ⟦W125⟧ ⟦W126⟧ ⟦W127⟧ ⟦W128⟧ ⟦W129⟧.\\n\\n                                                  ⟦W130⟧ ⟦N69⟧          ⟦W131⟧ ⟦N70⟧          ⟦W132⟧ ⟦N71⟧         ⟦W133⟧ ⟦N72⟧\\n                                                Federal  ⟦W134⟧. Security       Medicare     State (⟦W135⟧)\\nGross pay (⟦W136⟧ ⟦N73⟧ ⟦W137⟧)               ⟦N74⟧     ⟦N75⟧     ⟦N76⟧     ⟦N77⟧\\n⟦W138⟧ ⟦W139⟧ ⟦W140⟧ ⟦W141⟧ $⟦N78⟧                ⟦N79⟧         ⟦N80⟧         ⟦N81⟧         ⟦N82⟧\\n⟦W142⟧ ⟦N83⟧(⟦W143⟧) ⟦W144⟧ ⟦W145⟧               -⟦N84⟧           ⟦N85⟧           ⟦N86⟧     -⟦N87⟧\\n⟦W146⟧ ⟦W147⟧ ⟦N88⟧ medical/dental/vision        -⟦N89⟧      -⟦N90⟧      -⟦N91⟧      -⟦N92⟧\\n⟦W148⟧ ⟦W149⟧ ⟦W150⟧ ⟦W151⟧                -⟦N93⟧      -⟦N94⟧      -⟦N95⟧           ⟦N96⟧\\n⟦W152⟧ ⟦W153⟧ ⟦W154⟧ ⟦W155⟧                       -⟦N97⟧      -⟦N98⟧      -⟦N99⟧      -⟦N100⟧\\n⟦W156⟧ ⟦W157⟧ ⟦W158⟧ ⟦W159⟧                     ⟦N101⟧           ⟦N102⟧           ⟦N103⟧       ⟦N104⟧\\n⟦W160⟧ ⟦W161⟧ ⟦W162⟧ ⟦N105⟧ ⟦W163⟧ ⟦W164⟧ ⟦W165⟧                  ⟦N106⟧     -⟦N107⟧           ⟦N108⟧           ⟦N109⟧\\n                                          -------------  -------------  -------------  -------------\\n⟦W166⟧ ⟦W167⟧ ⟦W168⟧ ⟦W169⟧ ⟦W170⟧-⟦N110⟧                  ⟦N111⟧     ⟦N112⟧     ⟦N113⟧     ⟦N114⟧\\n\\n* ⟦W171⟧ ⟦W172⟧ ⟦W173⟧ ⟦W174⟧ ⟦W175⟧ ⟦W176⟧. ⟦W177⟧ ⟦W178⟧ ⟦W179⟧ ⟦W180⟧ ⟦W181⟧ ⟦W182⟧ ⟦W183⟧ ⟦W184⟧ ⟦W185⟧ ⟦W186⟧ ⟦W187⟧ ⟦W188⟧ ⟦W189⟧ ⟦W190⟧ ⟦N115⟧.\\n* ⟦W191⟧ ⟦N116⟧ code W (⟦N117⟧) is ⟦W192⟧ ⟦W193⟧ ⟦W194⟧ ⟦W195⟧ ⟦W196⟧ ⟦W197⟧ ⟦W198⟧ ⟦W199⟧ ⟦W200⟧ ⟦N118⟧. The employer ⟦W201⟧ ⟦W202⟧ ⟦W203⟧ ⟦W204⟧ ⟦W205⟧ ⟦W206⟧ ⟦W207⟧.\\n* ⟦W208⟧ ⟦W209⟧ ⟦W210⟧ ⟦W211⟧ ⟦W212⟧ ⟦W213⟧ ⟦N119⟧ ⟦W214⟧ ⟦W215⟧ ⟦W216⟧ ⟦N120⟧. ⟦W217⟧ ⟦W218⟧ ⟦W219⟧ ⟦W220⟧ ⟦W221⟧.\\n* ⟦W222⟧ ⟦N121⟧ ⟦W223⟧ ⟦W224⟧ ⟦W225⟧ ⟦W226⟧ ⟦W227⟧ ⟦N122⟧ ⟦W228⟧ ⟦W229⟧ ⟦W230⟧ ⟦W231⟧ ⟦W232⟧ ⟦N123⟧.\\n* ⟦W233⟧ ⟦N124⟧ ⟦W234⟧ ⟦W235⟧ (⟦N125⟧(⟦W236⟧)) is ⟦W237⟧ ⟦W238⟧ ⟦W239⟧ ⟦W240⟧; ⟦W241⟧ ⟦W242⟧ ⟦W243⟧ ⟦W244⟧ ⟦W245⟧ ⟦W246⟧ ⟦W247⟧ ⟦W248⟧.\\n\\n⟦W249⟧ ⟦W250⟧ ⟦W251⟧ ⟦W252⟧ ⟦W253⟧ ⟦W254⟧ ⟦W255⟧. ⟦W256⟧: ⟦W257⟧ ⟦W258⟧ ⟦W259⟧.\\nThis ⟦W260⟧ ⟦W261⟧ ⟦W262⟧ ⟦W263⟧ ⟦W264⟧ ⟦W265⟧ ⟦W266⟧ ⟦W267⟧ ⟦W268⟧.\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-04-1",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-04",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W16",
+          "W17",
+          "W18",
+          "W19",
+          "W20"
+        ],
+        "employeeName": [
+          "W13",
+          "W14",
+          "W15"
+        ],
+        "taxYear": "N58",
+        "wages": "N21",
+        "federalIncomeTaxWithheld": "N23",
+        "socialSecurityWages": "N25",
+        "medicareWages": "N29",
+        "stateWages": "N52"
+      },
+      "rehydrated": {
+        "employerName": "Halvorsen Pine Dental Studio PLLC",
+        "employeeName": "Kiri A Whitlock",
+        "taxYear": 2,
+        "wages": 51320,
+        "federalIncomeTaxWithheld": 4019.31,
+        "socialSecurityWages": 51320,
+        "medicareWages": 51320,
+        "stateWages": 51320
+      },
+      "rehydratedRaw": {
+        "employerName": "Halvorsen Pine Dental Studio PLLC",
+        "employeeName": "Kiri A Whitlock",
+        "taxYear": 2,
+        "wages": 51320,
+        "federalIncomeTaxWithheld": 4019.31,
+        "socialSecurityWages": 51320,
+        "medicareWages": 51320,
+        "stateWages": 51320
+      },
+      "rehydratedTidy": {
+        "employerName": "Halvorsen Pine Dental Studio PLLC",
+        "employeeName": "Kiri A Whitlock",
+        "taxYear": 2,
+        "wages": 51320,
+        "federalIncomeTaxWithheld": 4019.31,
+        "socialSecurityWages": 51320,
+        "medicareWages": 51320,
+        "stateWages": 51320
+      },
+      "rehydratedUsed": {
+        "employerName": "Halvorsen Pine Dental Studio PLLC",
+        "employeeName": "Kiri A Whitlock",
+        "wages": 51320,
+        "federalIncomeTaxWithheld": 4019.31,
+        "socialSecurityWages": 51320,
+        "medicareWages": 51320,
+        "stateWages": 51320
+      },
+      "leftOut": [
+        {
+          "field": "taxYear",
+          "problem": "not-a-year"
+        }
+      ],
+      "usage": {
+        "promptTokenCount": 1504,
+        "candidatesTokenCount": 153,
+        "totalTokenCount": 1657,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1504
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 3950,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 2818,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧ ⟦W3⟧                               ⟦N1⟧ W-⟦N2⟧ AND EARNINGS SUMMARY\n⟦W4⟧ ⟦N3⟧-⟦N4⟧  ⟦W5⟧ ⟦N5⟧-⟦W6⟧-⟦N6⟧       ",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Halvorsen Pine Dental Studio PLLC",
+        "employeeName": "Kiri A Whitlock",
+        "taxYear": 2025,
+        "wages": 51320,
+        "federalIncomeTaxWithheld": 4019.31,
+        "socialSecurityWages": 51320,
+        "medicareWages": 51320,
+        "stateWages": 51320
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "taxYear": "wrong",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "taxYear": "wrong",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "correct",
+          "employeeName": "correct",
+          "taxYear": "wrong",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n⟦W1⟧ ⟦W2⟧ ⟦W3⟧                               ⟦N1⟧ W-⟦N2⟧ AND EARNINGS SUMMARY\\n⟦W4⟧ ⟦N3⟧-⟦N4⟧  ⟦W5⟧ ⟦N5⟧-⟦W6⟧-⟦N6⟧                           Employee ⟦W7⟧: ⟦W8⟧ ⟦W9⟧, ⟦W10⟧ ⟦W11⟧, ⟦W12⟧ ⟦N7⟧\\n\\nEMPLOYEE                                        EMPLOYER\\n⟦W13⟧ ⟦W14⟧ ⟦W15⟧                                 ⟦W16⟧ ⟦W17⟧ ⟦W18⟧ ⟦W19⟧ ⟦W20⟧\\n⟦N8⟧ ⟦W21⟧ ⟦W22⟧ ⟦W23⟧, ⟦W24⟧ ⟦N9⟧                ⟦N10⟧ ⟦W25⟧ ⟦W26⟧\\n⟦W27⟧, ⟦W28⟧ ⟦N11⟧                                ⟦W29⟧, ⟦W30⟧ ⟦N12⟧\\nSSN  ⟦W31⟧-⟦N13⟧                                EIN  ⟦N14⟧-⟦N15⟧\\nEmployee ID  ⟦N16⟧                             ⟦W32⟧ ⟦W33⟧  ⟦W34⟧⟦N17⟧\\n\\nForm W-⟦N18⟧ Wage and Tax Statement ⟦N19⟧                      Dept. of the ⟦W35⟧ - ⟦W36⟧ ⟦W37⟧ ⟦W38⟧\\n\\n⟦W39⟧ | Description                         |         Amount     ⟦W40⟧ | Description                         |         Amount\\n----+-------------------------------------+---------------     ----+-------------------------------------+---------------\\n⟦N20⟧   | Wages, tips, other compensation     |      ⟦N21⟧     ⟦N22⟧   | Federal income tax withheld         |       ⟦N23⟧\\n⟦N24⟧   | Social security wages               |      ⟦N25⟧     ⟦N26⟧   | Social security tax withheld        |       ⟦N27⟧\\n⟦N28⟧   | Medicare wages and tips             |      ⟦N29⟧     ⟦N30⟧   | Medicare tax withheld               |         ⟦N31⟧\\n⟦N32⟧   | Social security tips                |           ⟦N33⟧     ⟦N34⟧   | ⟦W41⟧ ⟦W42⟧                      |           ⟦N35⟧\\n⟦N36⟧  | ⟦W43⟧ ⟦W44⟧ ⟦W45⟧             |           ⟦N37⟧     ⟦N38⟧  | ⟦W46⟧ ⟦W47⟧                  |           ⟦N39⟧\\n⟦N40⟧a | ⟦W48⟧ - ⟦W49⟧ ⟦N41⟧(⟦W50⟧) contributions      |       ⟦N42⟧     ⟦N43⟧b | ⟦W51⟧ - Employer ⟦W52⟧ ⟦W53⟧       |       ⟦N44⟧\\n⟦N45⟧⟦W54⟧ |                                     |                    ⟦N46⟧⟦W55⟧ |                                     |\\n⟦N47⟧  | ⟦W56⟧ ⟦W57⟧                     |              ⟦W58⟧     ⟦N48⟧  | Other                               |\\n⟦N49⟧  | State / ⟦W59⟧ ⟦W60⟧ ⟦W61⟧ ⟦W62⟧.     |     ⟦W63⟧ ⟦N50⟧     ⟦N51⟧  | State wages, tips, etc.             |      ⟦N52⟧\\n⟦N53⟧  | State income tax                    |       ⟦N54⟧     ⟦N55⟧  | Local wages, tips, etc.             |\\n⟦N56⟧  | Local income tax                    |                    ⟦N57⟧  | ⟦W64⟧ ⟦W65⟧                       |\\n----+-------------------------------------+---------------     ----+-------------------------------------+---------------\\n\\nEARNINGS SUMMARY (for ⟦W66⟧ ⟦W67⟧ - ⟦W68⟧ ⟦W69⟧ ⟦W70⟧ ⟦W71⟧ ⟦W72⟧-⟦N58⟧)\\n  Gross pay, year to date                          ⟦N59⟧\\n  ⟦W73⟧ ⟦N60⟧(⟦W74⟧) ⟦W75⟧ (⟦W76⟧ ⟦W77⟧)                 ⟦N61⟧\\n  Pre-tax benefits (⟦W78⟧ ⟦N62⟧)                    ⟦N63⟧\\n  Net pay, year to date                            ⟦N64⟧\\n\\n⟦W79⟧ ⟦W80⟧ ⟦W81⟧ ⟦W82⟧ ⟦W83⟧ ⟦W84⟧ ⟦W85⟧ ⟦W86⟧ ⟦W87⟧ ⟦W88⟧. ⟦W89⟧ ⟦W90⟧ ⟦W91⟧ ⟦W92⟧ ⟦W93⟧ ⟦W94⟧ ⟦W95⟧.\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-04-2",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-04",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W15",
+          "W16",
+          "W17"
+        ],
+        "employeeName": [
+          "W12",
+          "W13",
+          "W14"
+        ],
+        "taxYear": "N70",
+        "wages": "N24",
+        "federalIncomeTaxWithheld": "N26",
+        "socialSecurityWages": "N28",
+        "medicareWages": "N32",
+        "stateWages": "N58"
+      },
+      "rehydrated": {
+        "employerName": "Oxbow Meridian Software",
+        "employeeName": "Lucia F Marchetti-Oyelaran",
+        "taxYear": 2,
+        "wages": 203940,
+        "federalIncomeTaxWithheld": 41118.52,
+        "socialSecurityWages": 176100,
+        "medicareWages": 227440,
+        "stateWages": 203940
+      },
+      "rehydratedRaw": {
+        "employerName": "Oxbow Meridian Software",
+        "employeeName": "Lucia F Marchetti-Oyelaran",
+        "taxYear": 2,
+        "wages": 203940,
+        "federalIncomeTaxWithheld": 41118.52,
+        "socialSecurityWages": 176100,
+        "medicareWages": 227440,
+        "stateWages": 203940
+      },
+      "rehydratedTidy": {
+        "employerName": "Oxbow Meridian Software",
+        "employeeName": "Lucia F Marchetti-Oyelaran",
+        "taxYear": 2,
+        "wages": 203940,
+        "federalIncomeTaxWithheld": 41118.52,
+        "socialSecurityWages": 176100,
+        "medicareWages": 227440,
+        "stateWages": 203940
+      },
+      "rehydratedUsed": {
+        "employerName": "Oxbow Meridian Software",
+        "employeeName": "Lucia F Marchetti-Oyelaran",
+        "wages": 203940,
+        "federalIncomeTaxWithheld": 41118.52,
+        "socialSecurityWages": 176100,
+        "medicareWages": 227440,
+        "stateWages": 203940
+      },
+      "leftOut": [
+        {
+          "field": "taxYear",
+          "problem": "not-a-year"
+        }
+      ],
+      "usage": {
+        "promptTokenCount": 1686,
+        "candidatesTokenCount": 139,
+        "totalTokenCount": 1825,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1686
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 3766,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 3170,
+      "promptPreview": "⟦W1⟧ ⟦W2⟧                                            ⟦N1⟧ W-⟦N2⟧ AND EARNINGS SUMMARY\n⟦W3⟧ ⟦N3⟧-⟦N4⟧  ⟦W4⟧ ⟦N5⟧-⟦W5⟧-⟦N6",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Oxbow Meridian Software, Inc.",
+        "employeeName": "Lucia F Marchetti-Oyelaran",
+        "taxYear": 2025,
+        "wages": 203940,
+        "federalIncomeTaxWithheld": 41118.52,
+        "socialSecurityWages": 176100,
+        "medicareWages": 227440,
+        "stateWages": 203940
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "correct",
+          "taxYear": "wrong",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "correct",
+          "taxYear": "wrong",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "correct",
+          "taxYear": "wrong",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n⟦W1⟧ ⟦W2⟧                                            ⟦N1⟧ W-⟦N2⟧ AND EARNINGS SUMMARY\\n⟦W3⟧ ⟦N3⟧-⟦N4⟧  ⟦W4⟧ ⟦N5⟧-⟦W5⟧-⟦N6⟧                           Employee ⟦W6⟧: ⟦W7⟧ ⟦W8⟧, ⟦W9⟧ ⟦W10⟧, ⟦W11⟧ ⟦N7⟧\\n\\nEMPLOYEE                                        EMPLOYER\\n⟦W12⟧ ⟦W13⟧ ⟦W14⟧                      ⟦W15⟧ ⟦W16⟧ ⟦W17⟧, ⟦W18⟧.\\n⟦N8⟧ ⟦W19⟧ ⟦N9⟧⟦W20⟧ ⟦W21⟧, ⟦W22⟧ ⟦N10⟧⟦W23⟧                    ⟦N11⟧ ⟦W24⟧ ⟦W25⟧, ⟦N12⟧⟦W26⟧ ⟦W27⟧\\n⟦W28⟧ ⟦W29⟧, ⟦W30⟧ ⟦N13⟧                              ⟦W31⟧ ⟦W32⟧, ⟦W33⟧ ⟦N14⟧\\nSSN  ⟦W34⟧-⟦N15⟧                                EIN  ⟦N16⟧-⟦N17⟧\\nEmployee ID  ⟦W35⟧-⟦N18⟧                            ⟦W36⟧ ⟦W37⟧  ⟦W38⟧-⟦N19⟧-⟦N20⟧\\n\\nForm W-⟦N21⟧ Wage and Tax Statement ⟦N22⟧                      Dept. of the ⟦W39⟧ - ⟦W40⟧ ⟦W41⟧ ⟦W42⟧\\n\\n⟦W43⟧ | Description                         |         Amount     ⟦W44⟧ | Description                         |         Amount\\n----+-------------------------------------+---------------     ----+-------------------------------------+---------------\\n⟦N23⟧   | Wages, tips, other compensation     |     ⟦N24⟧     ⟦N25⟧   | Federal income tax withheld         |      ⟦N26⟧\\n⟦N27⟧   | Social security wages               |     ⟦N28⟧     ⟦N29⟧   | Social security tax withheld        |      ⟦N30⟧\\n⟦N31⟧   | Medicare wages and tips             |     ⟦N32⟧     ⟦N33⟧   | Medicare tax withheld               |       ⟦N34⟧\\n⟦N35⟧   | Social security tips                |           ⟦N36⟧     ⟦N37⟧   | ⟦W45⟧ ⟦W46⟧                      |           ⟦N38⟧\\n⟦N39⟧  | ⟦W47⟧ ⟦W48⟧ ⟦W49⟧             |           ⟦N40⟧     ⟦N41⟧  | ⟦W50⟧ ⟦W51⟧                  |           ⟦N42⟧\\n⟦N43⟧a | ⟦W52⟧ - ⟦W53⟧ ⟦W54⟧ ⟦W55⟧ $⟦N44⟧    |         ⟦N45⟧     ⟦N46⟧b | ⟦W56⟧ - ⟦N47⟧(⟦W57⟧) ⟦W58⟧ ⟦W59⟧       |      ⟦N48⟧\\n⟦N49⟧⟦W60⟧ | ⟦W61⟧ - Employer ⟦W62⟧ ⟦W63⟧       |      ⟦N50⟧     ⟦N51⟧⟦W64⟧ |                                     |\\n⟦N52⟧  | ⟦W65⟧ ⟦W66⟧                     |              ⟦W67⟧     ⟦N53⟧  | Other                               |\\n⟦N54⟧  | State / ⟦W68⟧ ⟦W69⟧ ⟦W70⟧ ⟦W71⟧.     |  ⟦W72⟧ ⟦N55⟧-⟦N56⟧     ⟦N57⟧  | State wages, tips, etc.             |     ⟦N58⟧\\n⟦N59⟧  | State income tax                    |      ⟦N60⟧     ⟦N61⟧  | Local wages, tips, etc.             |     ⟦N62⟧\\n⟦N63⟧  | Local income tax                    |       ⟦N64⟧     ⟦N65⟧  | ⟦W73⟧ ⟦W74⟧                       |            ⟦W75⟧\\n    |                                     |                    ⟦N66⟧  | ⟦W76⟧                               |          ⟦N67⟧\\n    |                                     |                    ⟦N68⟧  | ⟦W77⟧                               |         ⟦N69⟧\\n----+-------------------------------------+---------------     ----+-------------------------------------+---------------\\n\\nEARNINGS SUMMARY (for ⟦W78⟧ ⟦W79⟧ - ⟦W80⟧ ⟦W81⟧ ⟦W82⟧ ⟦W83⟧ ⟦W84⟧-⟦N70⟧)\\n  Gross pay, year to date                         ⟦N71⟧\\n  ⟦W85⟧ ⟦W86⟧ - ⟦W87⟧ ⟦W88⟧                    ⟦N72⟧\\n  Pre-tax ⟦N73⟧(⟦W89⟧) ⟦W90⟧                         ⟦N74⟧\\n  Pre-tax benefits (⟦W91⟧ ⟦N75⟧)                    ⟦N76⟧\\n  Net pay, year to date                           ⟦N77⟧\\n\\n⟦W92⟧ ⟦W93⟧ ⟦W94⟧ ⟦W95⟧ ⟦W96⟧ ⟦W97⟧ ⟦W98⟧ ⟦W99⟧ ⟦W100⟧. ⟦W101⟧ ⟦W102⟧ ⟦W103⟧ ⟦W104⟧ ⟦W105⟧ ⟦W106⟧ ⟦W107⟧.\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-05-1",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-05",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W25",
+          "W26",
+          "W27",
+          "W28",
+          "W29"
+        ],
+        "employeeName": [
+          "W42",
+          "W43",
+          "W44",
+          "W45",
+          "W46",
+          "W47"
+        ],
+        "taxYear": "N3",
+        "wages": "N15",
+        "federalIncomeTaxWithheld": "N17",
+        "socialSecurityWages": "N19",
+        "medicareWages": "N23",
+        "stateWages": "N50"
+      },
+      "rehydrated": {
+        "employerName": "a Employee's social security number",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 68575.2,
+        "federalIncomeTaxWithheld": 6388.9,
+        "socialSecurityWages": 71520,
+        "medicareWages": 71520,
+        "stateWages": 40212.6
+      },
+      "rehydratedRaw": {
+        "employerName": "a Employee's social security number",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 68575.2,
+        "federalIncomeTaxWithheld": 6388.9,
+        "socialSecurityWages": 71520,
+        "medicareWages": 71520,
+        "stateWages": 40212.6
+      },
+      "rehydratedTidy": {
+        "employerName": "a Employee's social security number",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 68575.2,
+        "federalIncomeTaxWithheld": 6388.9,
+        "socialSecurityWages": 71520,
+        "medicareWages": 71520,
+        "stateWages": 40212.6
+      },
+      "rehydratedUsed": {
+        "employerName": "a Employee's social security number",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 68575.2,
+        "federalIncomeTaxWithheld": 6388.9,
+        "socialSecurityWages": 71520,
+        "medicareWages": 71520,
+        "stateWages": 40212.6
+      },
+      "leftOut": [],
+      "usage": {
+        "promptTokenCount": 1501,
+        "candidatesTokenCount": 124,
+        "totalTokenCount": 1625,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1501
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 4052,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 2101,
+      "promptPreview": "*** ⟦W1⟧ ⟦W2⟧ ***                                        ⟦W3⟧ ⟦D1⟧\nThis statement ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧-⟦N1⟧ ⟦W8⟧ ⟦D2⟧. ⟦W",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Stonebridge Freight Partners LP",
+        "employeeName": "Gwendolyn P Abernathy-Saito",
+        "taxYear": 2025,
+        "wages": 68575.2,
+        "federalIncomeTaxWithheld": 6388.9,
+        "socialSecurityWages": 71520,
+        "medicareWages": 71520,
+        "stateWages": 40212.6
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n*** ⟦W1⟧ ⟦W2⟧ ***                                        ⟦W3⟧ ⟦D1⟧\\nThis statement ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧-⟦N1⟧ ⟦W8⟧ ⟦D2⟧. ⟦W9⟧ ⟦W10⟧ ⟦W11⟧ ⟦W12⟧ ⟦W13⟧ ⟦W14⟧ ⟦W15⟧.\\n\\nForm W-⟦N2⟧  Wage and Tax Statement  ⟦N3⟧                      ⟦W16⟧ ⟦W17⟧. ⟦N4⟧-⟦N5⟧\\nCopy B - To ⟦W18⟧ ⟦W19⟧ ⟦W20⟧ ⟦W21⟧ ⟦W22⟧ ⟦W23⟧ ⟦W24⟧\\n\\n⟦W25⟧ ⟦W26⟧ ⟦W27⟧ ⟦W28⟧ ⟦W29⟧     b Employer identification number (EIN)    ⟦W30⟧ ⟦W31⟧ ⟦W32⟧\\n  ⟦W33⟧-⟦N6⟧                             ⟦N7⟧-⟦N8⟧                                ⟦W34⟧ ⟦N9⟧\\n\\n⟦W35⟧ ⟦W36⟧ ⟦W37⟧, ⟦W38⟧, ⟦W39⟧ ⟦W40⟧ ⟦W41⟧                ⟦W42⟧ ⟦W43⟧ ⟦W44⟧ ⟦W45⟧ ⟦W46⟧ ⟦W47⟧  ⟦W48⟧ ⟦W49⟧  ⟦W50⟧.\\n  ⟦W51⟧ ⟦W52⟧ ⟦W53⟧ ⟦W54⟧                         ⟦W55⟧ ⟦W56⟧ ⟦W57⟧\\n  ⟦N10⟧ ⟦W58⟧ ⟦W59⟧ ⟦W60⟧                                  ⟦W61⟧ ⟦W62⟧ ⟦W63⟧ ⟦W64⟧ ⟦W65⟧ ⟦W66⟧\\n  ⟦W67⟧, ⟦W68⟧ ⟦N11⟧                                      ⟦N12⟧ ⟦W69⟧ ⟦W70⟧ ⟦W71⟧\\n                                                          ⟦W72⟧, ⟦W73⟧ ⟦N13⟧\\n\\n⟦N14⟧  Wages, tips, other compensation         ⟦N15⟧  ⟦N16⟧  Federal income tax withheld              ⟦N17⟧\\n⟦N18⟧  Social security wages                   ⟦N19⟧  ⟦N20⟧  Social security tax withheld             ⟦N21⟧\\n⟦N22⟧  Medicare wages and tips                 ⟦N23⟧  ⟦N24⟧  Medicare tax withheld                    ⟦N25⟧\\n⟦N26⟧  Social security tips                               ⟦N27⟧  ⟦W74⟧ ⟦W75⟧\\n⟦N28⟧                                                     ⟦N29⟧ ⟦W76⟧ ⟦W77⟧ ⟦W78⟧\\n⟦N30⟧ ⟦W79⟧ ⟦W80⟧\\n⟦N31⟧ ⟦W81⟧ ⟦W82⟧ ⟦W83⟧ ⟦W84⟧ ⟦N32⟧\\n   ⟦N33⟧a  ⟦W85⟧       ⟦N34⟧\\n   ⟦N35⟧b  ⟦W86⟧      ⟦N36⟧\\n   ⟦N37⟧⟦W87⟧  \\n   ⟦N38⟧⟦W88⟧  \\n⟦N39⟧ ⟦W89⟧ ⟦W90⟧ [ ]   ⟦W91⟧ ⟦W92⟧ [⟦W93⟧]   ⟦W94⟧ ⟦W95⟧ ⟦W96⟧ [ ]\\n⟦N40⟧ Other   UNION DUES ⟦N41⟧\\n\\n⟦N42⟧ State  ⟦W97⟧ ⟦W98⟧ ⟦W99⟧ ⟦W100⟧  ⟦N43⟧ State wages, tips, etc.  ⟦N44⟧ State income tax   ⟦N45⟧ Local wages, tips, etc.  ⟦N46⟧ Local income tax   ⟦N47⟧ ⟦W101⟧ ⟦W102⟧\\n   ⟦W103⟧     ⟦N48⟧-⟦N49⟧                      ⟦N50⟧                ⟦N51⟧\\n   ⟦W104⟧     ⟦N52⟧-⟦N53⟧-⟦N54⟧              ⟦N55⟧                ⟦N56⟧\\n\\nDept. of the ⟦W105⟧ - ⟦W106⟧ ⟦W107⟧ ⟦W108⟧   ⟦W109⟧ ⟦W110⟧\\nThis ⟦W111⟧ ⟦W112⟧ ⟦W113⟧ ⟦W114⟧ ⟦W115⟧ ⟦W116⟧ ⟦W117⟧ ⟦W118⟧ ⟦W119⟧.\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-05-2",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-05",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W25",
+          "W26",
+          "W27",
+          "W28",
+          "W29"
+        ],
+        "employeeName": [
+          "W42",
+          "W43",
+          "W44",
+          "W45",
+          "W46",
+          "W47"
+        ],
+        "taxYear": "N3",
+        "wages": "N15",
+        "federalIncomeTaxWithheld": "N17",
+        "socialSecurityWages": "N19",
+        "medicareWages": "N23",
+        "stateWages": "N49"
+      },
+      "rehydrated": {
+        "employerName": "a Employee's social security number",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 174540,
+        "federalIncomeTaxWithheld": 33207.14,
+        "socialSecurityWages": 176100,
+        "medicareWages": 189540,
+        "stateWages": 101780.4
+      },
+      "rehydratedRaw": {
+        "employerName": "a Employee's social security number",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 174540,
+        "federalIncomeTaxWithheld": 33207.14,
+        "socialSecurityWages": 176100,
+        "medicareWages": 189540,
+        "stateWages": 101780.4
+      },
+      "rehydratedTidy": {
+        "employerName": "a Employee's social security number",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 174540,
+        "federalIncomeTaxWithheld": 33207.14,
+        "socialSecurityWages": 176100,
+        "medicareWages": 189540,
+        "stateWages": 101780.4
+      },
+      "rehydratedUsed": {
+        "employerName": "a Employee's social security number",
+        "employeeName": "e Employee's first name and initial",
+        "taxYear": 2025,
+        "wages": 174540,
+        "federalIncomeTaxWithheld": 33207.14,
+        "socialSecurityWages": 176100,
+        "medicareWages": 189540,
+        "stateWages": 101780.4
+      },
+      "leftOut": [],
+      "usage": {
+        "promptTokenCount": 1512,
+        "candidatesTokenCount": 173,
+        "totalTokenCount": 1685,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1512
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 3729,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 2114,
+      "promptPreview": "*** ⟦W1⟧ ⟦W2⟧ ***                                        ⟦W3⟧ ⟦D1⟧\nThis statement ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧-⟦N1⟧ ⟦W8⟧ ⟦D2⟧. ⟦W",
+      "attempts": 1,
+      "gold": {
+        "employerName": "PELLUCID HARBOR MARINE SERVICES CO.",
+        "employeeName": "IGNATIUS W O'ROURKE III",
+        "taxYear": 2025,
+        "wages": 174540,
+        "federalIncomeTaxWithheld": 33207.14,
+        "socialSecurityWages": 176100,
+        "medicareWages": 189540,
+        "stateWages": 101780.4
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "correct"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n*** ⟦W1⟧ ⟦W2⟧ ***                                        ⟦W3⟧ ⟦D1⟧\\nThis statement ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧-⟦N1⟧ ⟦W8⟧ ⟦D2⟧. ⟦W9⟧ ⟦W10⟧ ⟦W11⟧ ⟦W12⟧ ⟦W13⟧ ⟦W14⟧ ⟦W15⟧.\\n\\nForm W-⟦N2⟧  Wage and Tax Statement  ⟦N3⟧                      ⟦W16⟧ ⟦W17⟧. ⟦N4⟧-⟦N5⟧\\nCopy B - To ⟦W18⟧ ⟦W19⟧ ⟦W20⟧ ⟦W21⟧ ⟦W22⟧ ⟦W23⟧ ⟦W24⟧\\n\\n⟦W25⟧ ⟦W26⟧ ⟦W27⟧ ⟦W28⟧ ⟦W29⟧     b Employer identification number (EIN)    ⟦W30⟧ ⟦W31⟧ ⟦W32⟧\\n  ⟦W33⟧-⟦N6⟧                             ⟦N7⟧-⟦N8⟧                                ⟦W34⟧-⟦N9⟧\\n\\n⟦W35⟧ ⟦W36⟧ ⟦W37⟧, ⟦W38⟧, ⟦W39⟧ ⟦W40⟧ ⟦W41⟧                ⟦W42⟧ ⟦W43⟧ ⟦W44⟧ ⟦W45⟧ ⟦W46⟧ ⟦W47⟧  ⟦W48⟧ ⟦W49⟧  ⟦W50⟧.\\n  ⟦W51⟧ ⟦W52⟧ ⟦W53⟧ ⟦W54⟧ ⟦W55⟧.                     ⟦W56⟧ ⟦W57⟧ ⟦W58⟧ ⟦W59⟧\\n  ⟦N10⟧ ⟦W60⟧ ⟦W61⟧ ⟦W62⟧                               ⟦W63⟧ ⟦W64⟧ ⟦W65⟧ ⟦W66⟧ ⟦W67⟧ ⟦W68⟧\\n  ⟦W69⟧, ⟦W70⟧ ⟦N11⟧                                      ⟦N12⟧ ⟦W71⟧ ⟦W72⟧ ⟦W73⟧\\n                                                          ⟦W74⟧, ⟦W75⟧ ⟦N13⟧\\n\\n⟦N14⟧  Wages, tips, other compensation         ⟦N15⟧  ⟦N16⟧  Federal income tax withheld              ⟦N17⟧\\n⟦N18⟧  Social security wages                   ⟦N19⟧  ⟦N20⟧  Social security tax withheld             ⟦N21⟧\\n⟦N22⟧  Medicare wages and tips                 ⟦N23⟧  ⟦N24⟧  Medicare tax withheld                     ⟦N25⟧\\n⟦N26⟧  Social security tips                               ⟦N27⟧  ⟦W76⟧ ⟦W77⟧\\n⟦N28⟧                                                     ⟦N29⟧ ⟦W78⟧ ⟦W79⟧ ⟦W80⟧\\n⟦N30⟧ ⟦W81⟧ ⟦W82⟧\\n⟦N31⟧ ⟦W83⟧ ⟦W84⟧ ⟦W85⟧ ⟦W86⟧ ⟦N32⟧\\n   ⟦N33⟧a  ⟦W87⟧         ⟦N34⟧\\n   ⟦N35⟧b  ⟦W88⟧       ⟦N36⟧\\n   ⟦N37⟧⟦W89⟧  ⟦W90⟧      ⟦N38⟧\\n   ⟦N39⟧⟦W91⟧  \\n⟦N40⟧ ⟦W92⟧ ⟦W93⟧ [ ]   ⟦W94⟧ ⟦W95⟧ [⟦W96⟧]   ⟦W97⟧ ⟦W98⟧ ⟦W99⟧ [ ]\\n⟦N41⟧ Other\\n\\n⟦N42⟧ State  ⟦W100⟧ ⟦W101⟧ ⟦W102⟧ ⟦W103⟧  ⟦N43⟧ State wages, tips, etc.  ⟦N44⟧ State income tax   ⟦N45⟧ Local wages, tips, etc.  ⟦N46⟧ Local income tax   ⟦N47⟧ ⟦W104⟧ ⟦W105⟧\\n   ⟦W106⟧     ⟦N48⟧-⟦W107⟧                     ⟦N49⟧                 ⟦N50⟧\\n   ⟦W108⟧     ⟦N51⟧-⟦N52⟧                     ⟦N53⟧                 ⟦N54⟧\\n\\nDept. of the ⟦W109⟧ - ⟦W110⟧ ⟦W111⟧ ⟦W112⟧   ⟦W113⟧ ⟦W114⟧\\nThis ⟦W115⟧ ⟦W116⟧ ⟦W117⟧ ⟦W118⟧ ⟦W119⟧ ⟦W120⟧ ⟦W121⟧ ⟦W122⟧ ⟦W123⟧.\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-06-1",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-06",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W22",
+          "W23",
+          "W24",
+          "W25"
+        ],
+        "employeeName": [
+          "W50",
+          "W51",
+          "W52",
+          "W53"
+        ],
+        "taxYear": "N2",
+        "wages": "N16",
+        "federalIncomeTaxWithheld": "N18",
+        "socialSecurityWages": "N20",
+        "medicareWages": "N24",
+        "stateWages": "N44"
+      },
+      "rehydrated": {
+        "employerName": "Northeast Alder Street Portland",
+        "employeeName": "SE Brookline Avenue Portland",
+        "taxYear": 2025,
+        "wages": 5206.77,
+        "federalIncomeTaxWithheld": 61692,
+        "socialSecurityWages": 3824.9,
+        "medicareWages": 894.53,
+        "stateWages": 4412.07
+      },
+      "rehydratedRaw": {
+        "employerName": "Northeast Alder Street Portland",
+        "employeeName": "SE Brookline Avenue Portland",
+        "taxYear": 2025,
+        "wages": 5206.77,
+        "federalIncomeTaxWithheld": 61692,
+        "socialSecurityWages": 3824.9,
+        "medicareWages": 894.53,
+        "stateWages": 4412.07
+      },
+      "rehydratedTidy": {
+        "employerName": "Northeast Alder Street Portland",
+        "employeeName": "SE Brookline Avenue Portland",
+        "taxYear": 2025,
+        "wages": 5206.77,
+        "federalIncomeTaxWithheld": 61692,
+        "socialSecurityWages": 3824.9,
+        "medicareWages": 894.53,
+        "stateWages": 4412.07
+      },
+      "rehydratedUsed": {
+        "employerName": "Northeast Alder Street Portland",
+        "employeeName": "SE Brookline Avenue Portland",
+        "taxYear": 2025,
+        "wages": 5206.77,
+        "federalIncomeTaxWithheld": 61692,
+        "socialSecurityWages": 3824.9,
+        "medicareWages": 894.53,
+        "stateWages": 4412.07
+      },
+      "leftOut": [],
+      "usage": {
+        "promptTokenCount": 1336,
+        "candidatesTokenCount": 152,
+        "totalTokenCount": 1488,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1336
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 4143,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 1303,
+      "promptPreview": "Form W-⟦N1⟧ Wage and Tax Statement ⟦N2⟧ ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧ ⟦W8⟧ ⟦W9⟧ ⟦W10⟧ ⟦W11⟧ ⟦W12⟧. ⟦N3⟧-⟦N4⟧ ⟦W13⟧-",
+      "attempts": 1,
+      "gold": {
+        "employerName": "Wexford-Lindqvist Community Clinics",
+        "employeeName": "Priya S Halloran",
+        "taxYear": 2025,
+        "wages": 57901.2,
+        "federalIncomeTaxWithheld": 5206.77,
+        "socialSecurityWages": 61692,
+        "medicareWages": 61692,
+        "stateWages": 57901.2
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "correct",
+          "wages": "wrong",
+          "federalIncomeTaxWithheld": "wrong",
+          "socialSecurityWages": "wrong",
+          "medicareWages": "wrong",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\nForm W-⟦N1⟧ Wage and Tax Statement ⟦N2⟧ ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧ ⟦W6⟧ ⟦W7⟧ ⟦W8⟧ ⟦W9⟧ ⟦W10⟧ ⟦W11⟧ ⟦W12⟧. ⟦N3⟧-⟦N4⟧ ⟦W13⟧-⟦N5⟧ ⟦W14⟧ ⟦W15⟧ ⟦W16⟧ ⟦W17⟧ ⟦W18⟧ ⟦N6⟧-⟦N7⟧ b Employer identification number (EIN) ⟦W19⟧ ⟦W20⟧ ⟦W21⟧ ⟦N8⟧ ⟦W22⟧ ⟦W23⟧ ⟦W24⟧ ⟦W25⟧, ⟦W26⟧ ⟦N9⟧ ⟦W27⟧ ⟦W28⟧ ⟦W29⟧, ⟦W30⟧, ⟦W31⟧ ⟦W32⟧ ⟦W33⟧ ⟦W34⟧ ⟦N10⟧ ⟦N11⟧ ⟦W35⟧ ⟦W36⟧ ⟦W37⟧ ⟦W38⟧ ⟦W39⟧ ⟦W40⟧ ⟦W41⟧ ⟦W42⟧ ⟦W43⟧ ⟦W44⟧ ⟦W45⟧ ⟦W46⟧ ⟦W47⟧ ⟦W48⟧ ⟦W49⟧. ⟦N12⟧ ⟦W50⟧ ⟦W51⟧ ⟦W52⟧ ⟦W53⟧, ⟦W54⟧ ⟦N13⟧ ⟦W55⟧ ⟦W56⟧ ⟦W57⟧ ⟦W58⟧ ⟦W59⟧ ⟦W60⟧\\n⟦N14⟧ ⟦N15⟧ Wages, tips, other compensation ⟦N16⟧ ⟦N17⟧ Federal income tax withheld ⟦N18⟧ ⟦N19⟧ Social security wages ⟦N20⟧ ⟦N21⟧ Social security tax withheld ⟦N22⟧ ⟦N23⟧ Medicare wages and tips ⟦N24⟧ ⟦N25⟧ Medicare tax withheld ⟦N26⟧ Social security tips ⟦N27⟧ ⟦W61⟧ ⟦W62⟧ ⟦N28⟧ ⟦N29⟧ ⟦W63⟧ ⟦W64⟧ ⟦W65⟧ ⟦N30⟧ ⟦W66⟧ ⟦W67⟧ ⟦W68⟧ ⟦N31⟧ ⟦N32⟧⟦W69⟧ ⟦W70⟧ ⟦W71⟧ ⟦W72⟧ ⟦W73⟧ ⟦N33⟧ ⟦W74⟧ ⟦N34⟧ ⟦N35⟧⟦W75⟧ ⟦W76⟧ ⟦W77⟧ ⟦W78⟧ ⟦W79⟧ ⟦W80⟧ ⟦W81⟧ ⟦W82⟧ ⟦W83⟧ ⟦N36⟧ ⟦W84⟧ ⟦W85⟧ ⟦N37⟧ ⟦N38⟧ Other\\nOR ⟦N39⟧-⟦N40⟧ ⟦N41⟧ ⟦W86⟧ ⟦W87⟧ ⟦W88⟧ ⟦W89⟧ ⟦W90⟧ ⟦N42⟧ ⟦N43⟧ State wages, tips, etc. ⟦N44⟧ ⟦N45⟧ State income tax ⟦N46⟧ Local wages, tips, etc. ⟦N47⟧ Local income tax ⟦N48⟧ ⟦W91⟧ ⟦W92⟧ ⟦W93⟧ ⟦W94⟧ ⟦W95⟧ ⟦W96⟧ - ⟦W97⟧ ⟦W98⟧ ⟦W99⟧ ⟦W100⟧ ⟦W101⟧ ⟦W102⟧ ⟦W103⟧ ⟦W104⟧ ⟦W105⟧ ⟦W106⟧ ⟦W107⟧ ⟦W108⟧ ⟦W109⟧. ⟦W110⟧. No. ⟦N49⟧⟦W111⟧\\n\"}]}]}"
+      ],
+      "leaks": []
+    },
+    {
+      "id": "hv-06-2",
+      "docType": "w2",
+      "language": "en",
+      "layout": "hv-06",
+      "heldout": true,
+      "ok": true,
+      "pointers": {
+        "employerName": [
+          "W26",
+          "W27",
+          "W28",
+          "W33",
+          "W34",
+          "W35"
+        ],
+        "employeeName": [
+          "W48",
+          "W49",
+          "W50"
+        ],
+        "taxYear": "N2",
+        "wages": "N17",
+        "federalIncomeTaxWithheld": "N18",
+        "socialSecurityWages": "N19",
+        "medicareWages": "N24",
+        "stateWages": "N40"
+      },
+      "rehydrated": {
+        "employerName": "c Employer's name ASHGROVE TINSMITHS COOPERATIVE",
+        "employeeName": "f Employee's address",
+        "taxYear": 2,
+        "wages": 164975,
+        "federalIncomeTaxWithheld": 28860.07,
+        "socialSecurityWages": 176100,
+        "medicareWages": 184975,
+        "stateWages": 16
+      },
+      "rehydratedRaw": {
+        "employerName": "c Employer's name ASHGROVE TINSMITHS COOPERATIVE",
+        "employeeName": "f Employee's address",
+        "taxYear": 2,
+        "wages": 164975,
+        "federalIncomeTaxWithheld": 28860.07,
+        "socialSecurityWages": 176100,
+        "medicareWages": 184975,
+        "stateWages": 16
+      },
+      "rehydratedTidy": {
+        "employerName": "c Employer's name ASHGROVE TINSMITHS COOPERATIVE",
+        "employeeName": "f Employee's address",
+        "taxYear": 2,
+        "wages": 164975,
+        "federalIncomeTaxWithheld": 28860.07,
+        "socialSecurityWages": 176100,
+        "medicareWages": 184975,
+        "stateWages": 16
+      },
+      "rehydratedUsed": {
+        "employerName": "c Employer's name ASHGROVE TINSMITHS COOPERATIVE",
+        "employeeName": "f Employee's address",
+        "wages": 164975,
+        "federalIncomeTaxWithheld": 28860.07,
+        "socialSecurityWages": 176100,
+        "medicareWages": 184975
+      },
+      "leftOut": [
+        {
+          "field": "stateWages",
+          "problem": "not-money"
+        },
+        {
+          "field": "taxYear",
+          "problem": "not-a-year"
+        }
+      ],
+      "usage": {
+        "promptTokenCount": 1244,
+        "candidatesTokenCount": 114,
+        "totalTokenCount": 1358,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1244
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "latencyMs": 1924,
+      "inferenceSource": "IN_CLOUD",
+      "skeletonChars": 2254,
+      "promptPreview": "⟦N1⟧                                  W-⟦N2⟧   Wage and Tax\n                                            Statement\nCopy ⟦",
+      "attempts": 1,
+      "gold": {
+        "employerName": "ASHGROVE TINSMITHS COOPERATIVE",
+        "employeeName": "OLUWASEUN D FEATHERSTONEHAUGH",
+        "taxYear": 2025,
+        "wages": 164975,
+        "federalIncomeTaxWithheld": 28860.07,
+        "socialSecurityWages": 176100,
+        "medicareWages": 184975,
+        "stateWages": 164975
+      },
+      "score": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "wrong",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreRaw": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "wrong",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "scoreTidy": {
+        "outcomes": {
+          "employerName": "wrong",
+          "employeeName": "wrong",
+          "taxYear": "wrong",
+          "wages": "correct",
+          "federalIncomeTaxWithheld": "correct",
+          "socialSecurityWages": "correct",
+          "medicareWages": "correct",
+          "stateWages": "wrong"
+        },
+        "deductions": null,
+        "invalid": [],
+        "allCorrect": false
+      },
+      "spec": {
+        "id": "h37",
+        "tidy": true,
+        "skeletons": "v1.37",
+        "prompt": "v5"
+      },
+      "requests": 1,
+      "requestBodies": [
+        "{\"generationConfig\":{\"responseMimeType\":\"application/json\",\"responseSchema\":{\"description\":\"Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.\",\"type\":\"object\",\"required\":[\"employerName\",\"employeeName\",\"taxYear\",\"wages\",\"federalIncomeTaxWithheld\",\"socialSecurityWages\",\"medicareWages\",\"stateWages\"],\"properties\":{\"employerName\":{\"description\":\"The employer's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"employeeName\":{\"description\":\"The employee's name.\",\"type\":\"array\",\"items\":{\"type\":\"string\"},\"nullable\":true},\"taxYear\":{\"type\":\"string\",\"description\":\"The tax year printed on the form.\",\"nullable\":true},\"wages\":{\"type\":\"string\",\"description\":\"Box 1: Wages, tips, other compensation.\",\"nullable\":true},\"federalIncomeTaxWithheld\":{\"type\":\"string\",\"description\":\"Box 2: Federal income tax withheld.\",\"nullable\":true},\"socialSecurityWages\":{\"type\":\"string\",\"description\":\"Box 3: Social security wages.\",\"nullable\":true},\"medicareWages\":{\"type\":\"string\",\"description\":\"Box 5: Medicare wages and tips.\",\"nullable\":true},\"stateWages\":{\"type\":\"string\",\"description\":\"Box 16: State wages, tips, etc.\",\"nullable\":true}}},\"maxOutputTokens\":1024},\"safetySettings\":[],\"systemInstruction\":{\"role\":\"system\",\"parts\":[{\"text\":\"You label fields in a document whose private values were replaced by placeholders.\\nPlaceholders look like ⟦N12⟧ (a number), ⟦D3⟧ (a date) or ⟦W5⟧ (a hidden word).\\nYou cannot see the hidden values and must not guess them.\\n\\nFor each field in the schema, answer with the placeholder id that holds that field's value, for example \\\"N12\\\".\\n- Use only ids that appear in the document.\\n- A name that spans several hidden words is a list of ids in reading order, for example [\\\"W4\\\",\\\"W5\\\"].\\n- For fields with a fixed list of options, choose one option from the list.\\n- When a table has \\\"Current\\\" and \\\"YTD\\\" columns, the first number in a row is the current amount and the second is the year-to-date amount, unless the header order says otherwise.\\n- Gross pay is the total of all earnings for the period, on the line labelled Gross Pay, Gross Earnings or Total Gross. It is never a single earnings line such as Regular or Overtime.\\n- Hours worked and hourly rate are those of the Regular (base pay) line, even when other earnings lines such as Overtime or Holiday have hours too. Use null when there is no such line and no total.\\n- Answer every field. Use null when the field is not in the document.\\nReturn JSON only.\"}]},\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Document type: w2\\nDocument:\\n⟦N1⟧                                  W-⟦N2⟧   Wage and Tax\\n                                            Statement\\nCopy ⟦N3⟧ To ⟦W1⟧ ⟦W2⟧ ⟦W3⟧ ⟦W4⟧ ⟦W5⟧, ⟦W6⟧, ⟦W7⟧ ⟦W8⟧ ⟦W9⟧ ⟦W10⟧ ⟦W11⟧       ⟦W12⟧ ⟦W13⟧. ⟦N4⟧-⟦N5⟧\\n\\n⟦W14⟧ ⟦W15⟧ ⟦W16⟧           ⟦W17⟧ ⟦W18⟧ ⟦W19⟧-          ⟦W20⟧ ⟦W21⟧\\n                ⟦W22⟧-⟦N6⟧                    ⟦N7⟧-⟦N8⟧                     ⟦W23⟧-⟦N9⟧\\n  security number               ⟦W24⟧ ⟦W25⟧ (EIN)           number\\n\\n⟦W26⟧ ⟦W27⟧ ⟦W28⟧,                           ⟦W29⟧ ⟦W30⟧ ⟦W31⟧ ⟦W32⟧\\n  ⟦W33⟧ ⟦W34⟧ ⟦W35⟧               ⟦W36⟧ ⟦W37⟧ ⟦W38⟧\\n  ⟦N10⟧ ⟦W39⟧ ⟦W40⟧ ⟦W41⟧                     and ⟦W42⟧, ⟦W43⟧ ⟦W44⟧, ⟦W45⟧.\\n  ⟦W46⟧, ⟦W47⟧ ⟦N11⟧                            ⟦W48⟧ ⟦W49⟧ ⟦W50⟧\\n  address, and ZIP code                        ⟦N12⟧ ⟦W51⟧ ⟦W52⟧ ⟦W53⟧ ⟦W54⟧\\n                                               ⟦W55⟧, ⟦W56⟧ ⟦N13⟧\\n                                               and ZIP code\\n\\n⟦N14⟧ Wages, tips,                ⟦N15⟧ Federal income              ⟦N16⟧ Social security\\n                  ⟦N17⟧                      ⟦N18⟧                     ⟦N19⟧\\n  other compensation            tax withheld                  wages\\n⟦N20⟧ Social security             ⟦N21⟧ Medicare wages              ⟦N22⟧ Medicare tax\\n                   ⟦N23⟧                     ⟦N24⟧                       ⟦N25⟧\\n  tax withheld                  and tips                      withheld\\n⟦N26⟧ Social security             ⟦N27⟧ ⟦W57⟧                   ⟦N28⟧ ⟦W58⟧ ⟦W59⟧\\n\\n  tips                          tips                           benefits\\n⟦N29⟧ ⟦W60⟧               ⟦N30⟧a Code / amount             ⟦N31⟧b Code / amount\\n                                               ⟦W61⟧ ⟦N32⟧                   ⟦W62⟧ ⟦N33⟧\\n   ⟦W63⟧                          ⟦W64⟧ ⟦W65⟧\\n⟦N34⟧ ⟦W66⟧.  ⟦W67⟧-  ⟦N35⟧⟦W68⟧    ⟦N36⟧⟦W69⟧ ⟦W70⟧ / amount             ⟦N37⟧⟦W71⟧ ⟦W72⟧ / amount\\n          ⟦W73⟧\\n   ⟦W74⟧.   ⟦W75⟧     sick pay\\n⟦N38⟧ Other\\n\\n⟦N39⟧ State  ⟦W76⟧      ⟦N40⟧ State wages,       ⟦N41⟧ State          ⟦N42⟧ Local wages,       ⟦N43⟧ Local        ⟦N44⟧ ⟦W77⟧\\n   ⟦W78⟧  ⟦N45⟧-⟦N46⟧                   ⟦N47⟧           ⟦N48⟧\\n   state ID number           tips, etc.            income tax        tips, etc.            income tax      name\\n\\n⟦W79⟧ ⟦W80⟧ ⟦W81⟧ ⟦W82⟧ - ⟦W83⟧ ⟦W84⟧ ⟦W85⟧\\n\"}]}]}"
+      ],
+      "leaks": []
+    }
+  ]
+}
