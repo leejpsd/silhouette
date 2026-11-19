@@ -77,7 +77,7 @@ test('the policy without reCAPTCHA in connect-src is caught: the call is refused
   await expect(refused.first()).toContainText('Not sent: the browser refused it under this site’s security rules');
 });
 
-test('after a failed App Check exchange, "Try again" works without reloading, and the message blames nobody', async ({ page, context, baseURL }) => {
+test('after a failed App Check exchange, "Try again" works without reloading, and the message names the cause', async ({ page, context, baseURL }) => {
   await noOnDeviceModel(context);
   await serveWithPolicy(page, POLICY, new URL(baseURL ?? '').origin);
   const recaptcha = await fakeRecaptcha(context, page, [400, 200]);
@@ -91,7 +91,10 @@ test('after a failed App Check exchange, "Try again" works without reloading, an
   await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
   await expect(page.getByTestId('outbound-list').locator('li[data-channel="ai-cloud"]:not([data-status="blocked"])')).toHaveCount(0);
   await page.getByRole('button', { name: 'Hide details' }).click();
-  await expect(error).toContainText('is nothing you did');
+  // The test browser is driven by automation software: the message says that is why, that nothing was
+  // sent, and what to do (never that the app is not genuine).
+  await expect(error).toContainText('because automation software is controlling it');
+  await expect(error).toContainText('The silhouette was not sent.');
   await expect(error).not.toContainText('genuine');
   // Straight away: the SDK would still be throttling the failed provider; the app starts it again.
   await page.getByTestId('retry').click();

@@ -216,3 +216,24 @@ test.describe('the on-device check', () => {
     if (latest.income && latest.income.notFound > 0) await expect(page.getByTestId('headline-not-found')).toContainText(`${latest.income.notFound} with a value not found`);
   });
 });
+
+test.describe('why hybrid, measured', () => {
+  test('"Where each task runs" shows the measured figures from the bundled runs and the cloud evaluation', async ({ page }) => {
+    await page.goto('/#/tasks');
+    const measured = page.getByTestId('tasks-measured');
+    await expect(measured.getByRole('heading', { name: 'Why hybrid: what was measured' })).toBeVisible();
+    const devices = measured.getByTestId('measured-device');
+    await expect(devices).toHaveCount(2);
+    // The iPhone: the readings its own checks rejected went to the cloud once, and no wrong value reached the person.
+    const iphone = devices.filter({ hasText: 'iPhone 17 Pro' });
+    await expect(iphone.getByTestId('measured-on-device')).toContainText('12 / 15');
+    await expect(iphone.getByTestId('measured-fallback')).toContainText('3 / 15');
+    await expect(iphone.getByTestId('measured-wrong')).toHaveAttribute('data-met', 'true');
+    await expect(measured.getByTestId('measured-cloud-right')).toContainText('30 / 30');
+    await expect(measured.getByTestId('measured-leaks')).toContainText('0 / 39');
+    await expect(measured.getByTestId('measured-why')).toContainText('The cloud receives only the silhouette');
+    // Each device's name opens its recording.
+    await iphone.getByRole('button', { name: /iPhone 17 Pro/ }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on‑device check');
+  });
+});

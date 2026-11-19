@@ -48,6 +48,11 @@ export function recordingLabel(path: string, locale?: string): string {
   return `${machine} · ${when}${time ? ` ${time[1]}:${time[2]} UTC` : ''}`;
 }
 
+/** The machine a recording was made on ("iPhone 17 Pro", "Chrome 157 · Mac"): its label without the date. */
+export function recordingMachine(path: string): string {
+  return recordingLabel(path).split(' · ').filter((part) => !/\d{4}|\bUTC\b/.test(part)).join(' · ');
+}
+
 /** The newest recording of each machine first (file names start with the date). */
 export const recordingPaths = (): string[] =>
   Object.keys(RECORDINGS).sort((a, b) => (b.split('/').pop() ?? '').localeCompare(a.split('/').pop() ?? ''));

@@ -3952,6 +3952,62 @@ main h2.judge-title {
   color: var(--icon);
 }
 
+/* Where each task runs, first: why it is hybrid, in measured figures. One card per recorded device and
+   one for the cloud (dashed, as everything that may leave), side by side when there is room. */
+.measured {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0 var(--space-md);
+}
+
+.measured-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 900px) {
+  .measured-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.measured-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+
+.measured-block[data-testid='measured-cloud'] {
+  border: 1.25px dashed var(--on-redact);
+  background: var(--redact-tint);
+}
+
+.measured-block .device-headline {
+  margin: var(--space-xs) 0;
+}
+
+.measured .device-headline .figure {
+  min-width: 5ch;
+  font-size: 28px;
+}
+
+.measured-source {
+  align-self: flex-start;
+  margin: 0;
+  font-weight: 700;
+}
+
+.measured-why {
+  margin: var(--space-xs) 0 0;
+  font-weight: 600;
+}
+
 /* Where each task runs: four cards by where the task may run. */
 .task-groups {
   display: flex;
