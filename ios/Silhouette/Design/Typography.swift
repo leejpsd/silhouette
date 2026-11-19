@@ -242,8 +242,8 @@ private struct HeadlineLabel: UIViewRepresentable {
     private var lineFactor: CGFloat { korean ? max(leading, DesignFonts.koreanLeading) : leading }
     private func font(_ size: CGFloat) -> UIFont { DesignFonts.uiFont(.display, weight: weight, size: size, korean: korean) }
 
-    func makeUIView(context: Context) -> UILabel {
-        let label = UILabel()
+    func makeUIView(context: Context) -> HeadroomLabel {
+        let label = HeadroomLabel()
         label.numberOfLines = 0
         label.lineBreakMode = .byWordWrapping
         label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
@@ -252,9 +252,19 @@ private struct HeadlineLabel: UIViewRepresentable {
         return label
     }
 
-    func updateUIView(_ label: UILabel, context: Context) {
+    func updateUIView(_ label: HeadroomLabel, context: Context) {
         let width = label.bounds.width
-        label.attributedText = attributed(size: width > 0 ? chosenSize(width: width) : designSize)
+        let size = width > 0 ? chosenSize(width: width) : designSize
+        label.attributedText = attributed(size: size)
+        label.headroom = headroom(size)
+    }
+
+    /// The tight line box is shorter than the face's ascender plus descender: TextKit keeps the descender
+    /// and lets the first line's tops rise above the box, where a label's layer would cut them off. This is
+    /// the room they need above it (the leading between lines stays tight).
+    private func headroom(_ size: CGFloat) -> CGFloat {
+        let f = font(size)
+        return max(0, ceil(f.ascender - (size * lineFactor - abs(f.descender))))
     }
 
     private func attributed(size: CGFloat) -> NSAttributedString {
@@ -293,7 +303,7 @@ private struct HeadlineLabel: UIViewRepresentable {
         return max(size, minimum)
     }
 
-    func sizeThatFits(_ offered: ProposedViewSize, uiView label: UILabel, context: Context) -> CGSize? {
+    func sizeThatFits(_ offered: ProposedViewSize, uiView label: HeadroomLabel, context: Context) -> CGSize? {
         // Without a width (ideal size), the text on one line at its design size.
         let ideal = ceil(attributed(size: designSize).boundingRect(
             with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude),
@@ -302,9 +312,24 @@ private struct HeadlineLabel: UIViewRepresentable {
         let size = chosenSize(width: width)
         label.attributedText = attributed(size: size)
         label.preferredMaxLayoutWidth = width
+        label.headroom = headroom(size)
         let rect = label.attributedText!.boundingRect(with: CGSize(width: width, height: .greatestFiniteMagnitude),
                                                       options: [.usesLineFragmentOrigin], context: nil)
         // Darker Grotesque's descenders reach below the tight line box (tokens size.displayDescenderPad).
-        return CGSize(width: width, height: ceil(rect.height) + (korean ? 0 : size * 0.1))
+        return CGSize(width: width, height: label.headroom + ceil(rect.height) + (korean ? 0 : size * 0.1))
+    }
+}
+
+/// A label that draws its text `headroom` points below its top, top-aligned, so the first line's tops are
+/// inside its bounds (a display face's caps rise above a tight line box).
+final class HeadroomLabel: UILabel {
+    var headroom: CGFloat = 0 {
+        didSet { if headroom != oldValue { invalidateIntrinsicContentSize(); setNeedsDisplay() } }
+    }
+
+    override func drawText(in rect: CGRect) {
+        let text = super.textRect(forBounds: CGRect(x: rect.minX, y: 0, width: rect.width, height: .greatestFiniteMagnitude),
+                                  limitedToNumberOfLines: numberOfLines)
+        super.drawText(in: CGRect(x: rect.minX, y: headroom, width: rect.width, height: min(text.height, rect.height - headroom)))
     }
 }

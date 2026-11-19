@@ -46,6 +46,8 @@ enum SnapshotRunner {
         var wait: Double = 0.25
         /// Captured only when the (scripted) on-device model is available.
         var needsDevice = false
+        /// Captured from the top of its scroll view (what opens in it may have scrolled it).
+        var fromTop = false
         let setUp: (AppModel) async -> Void
     }
 
@@ -125,6 +127,12 @@ enum SnapshotRunner {
                 m.startAbout(first, long: false)
                 m.send(m.aboutKey(first, long: false))
                 try? await Task.sleep(for: .seconds(0.8))
+                m.sheet = .record
+            },
+            // The count headline at the top of the record ("0 SENT, 1 KEPT." on its highlight).
+            Scene(name: "record-headline", wait: 1.0, fromTop: true) { m in
+                m.openSamplePreview()
+                await m.useRecordedCloud()
                 m.sheet = .record
             },
             Scene(name: "record-deleted") { m in
@@ -220,6 +228,11 @@ enum SnapshotRunner {
                 try? await Task.sleep(for: .seconds(0.05))
                 await scene.setUp(model)
                 try? await Task.sleep(for: .seconds(scene.wait))
+                if scene.fromTop, let window = UIApplication.shared.connectedScenes.compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first,
+                   let scroll = mainScrollView(in: window) {
+                    scroll.setContentOffset(CGPoint(x: 0, y: -scroll.adjustedContentInset.top), animated: false)
+                    try? await Task.sleep(for: .seconds(0.2))
+                }
                 count += capture(name: "\(config.name)-\(scene.name)", pages: scene.pages, folder: options.folder)
             }
         }
