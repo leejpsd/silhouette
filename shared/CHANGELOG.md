@@ -1,5 +1,16 @@
 # Contract changelog
 
+## v1.42 — 2026-11-19
+
+The cloud half of the reading can be seen without sending anything.
+
+| Change | Why |
+|---|---|
+| `routing.json` `recordedCloud`, reason `recorded-in-cloud`: the bundled sample can be read from a real cloud reading of its silhouette, recorded with the exact request body and the response (`web/eval/results/cloud-recording/`, `web/eval/record-cloud.mjs`). The values are put back on this device; nothing is sent now; the record lists it as kept and shows the request exactly as it was sent when recorded, with the answer it got | Reviewers who did not press Send (and anyone who would rather not) saw only the on-device half of the hybrid |
+| Copy: `badge.recordedCloud`, `reason.recorded-in-cloud`, `preview.useRecordedCloud`, `review.pointer.recordedCloud`, `results.incomeFrom.RECORDED_CLOUD`, `record.recordedCloud.*` | The words for it |
+
+Platforms: the same choice beside the recorded on-device reading, with the same recording file. Reference tests: 30.
+
 ## v1.41 — 2026-11-19
 
 The sample household is said to be a sample, wherever its results are shown.

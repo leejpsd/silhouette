@@ -893,6 +893,20 @@
     {
       "language": "en",
       "platform": "ios",
+      "key": "review.pointer.recordedCloud",
+      "text": "Firebase AI Logic in the cloud answered only {ref} on {date} (a recording: it received the silhouette and nothing else). This device put {value} back just now, from your paystub.",
+      "shown": "Firebase AI Logic in the cloud answered only {ref} on {date} (a recording: it received the silhouette and nothing else). This iPhone put {value} back just now, from your paystub."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "record.recordedCloud.note",
+      "text": "The cloud's answer to this silhouette, recorded on {date}. This device put the values back; nothing was sent now.",
+      "shown": "The cloud's answer to this silhouette, recorded on {date}. This iPhone put the values back; nothing was sent now."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
       "key": "results.sharpenHelpCloud",
       "text": "Read as a silhouette in the cloud. Your values stay on this device.",
       "shown": "Read as a silhouette in the cloud. Your values stay on this iPhone."
@@ -1824,6 +1838,20 @@
     {
       "language": "en",
       "platform": "android",
+      "key": "review.pointer.recordedCloud",
+      "text": "Firebase AI Logic in the cloud answered only {ref} on {date} (a recording: it received the silhouette and nothing else). This device put {value} back just now, from your paystub.",
+      "shown": "Firebase AI Logic in the cloud answered only {ref} on {date} (a recording: it received the silhouette and nothing else). This phone put {value} back just now, from your paystub."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "record.recordedCloud.note",
+      "text": "The cloud's answer to this silhouette, recorded on {date}. This device put the values back; nothing was sent now.",
+      "shown": "The cloud's answer to this silhouette, recorded on {date}. This phone put the values back; nothing was sent now."
+    },
+    {
+      "language": "en",
+      "platform": "android",
       "key": "results.sharpenHelpCloud",
       "text": "Read as a silhouette in the cloud. Your values stay on this device.",
       "shown": "Read as a silhouette in the cloud. Your values stay on this phone."
@@ -2664,6 +2692,20 @@
     {
       "language": "es",
       "platform": "ios",
+      "key": "review.pointer.recordedCloud",
+      "text": "Firebase AI Logic en la nube respondió solo {ref} el {date} (una grabación: recibió la silueta y nada más). Este dispositivo devolvió {value} ahora mismo, desde tu talón de pago.",
+      "shown": "Firebase AI Logic en la nube respondió solo {ref} el {date} (una grabación: recibió la silueta y nada más). Este iPhone devolvió {value} ahora mismo, desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "record.recordedCloud.note",
+      "text": "La respuesta de la nube a esta silueta, grabada el {date}. Este dispositivo devolvió los valores; no se envió nada ahora.",
+      "shown": "La respuesta de la nube a esta silueta, grabada el {date}. Este iPhone devolvió los valores; no se envió nada ahora."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
       "key": "results.sharpenHelpCloud",
       "text": "Se lee como silueta en la nube. Tus valores se quedan en este dispositivo.",
       "shown": "Se lee como silueta en la nube. Tus valores se quedan en este iPhone."
@@ -3500,6 +3542,20 @@
       "key": "results.incomeFrom.ON_DEVICE",
       "text": "por el modelo de este dispositivo",
       "shown": "por el modelo de este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.pointer.recordedCloud",
+      "text": "Firebase AI Logic en la nube respondió solo {ref} el {date} (una grabación: recibió la silueta y nada más). Este dispositivo devolvió {value} ahora mismo, desde tu talón de pago.",
+      "shown": "Firebase AI Logic en la nube respondió solo {ref} el {date} (una grabación: recibió la silueta y nada más). Este teléfono devolvió {value} ahora mismo, desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "record.recordedCloud.note",
+      "text": "La respuesta de la nube a esta silueta, grabada el {date}. Este dispositivo devolvió los valores; no se envió nada ahora.",
+      "shown": "La respuesta de la nube a esta silueta, grabada el {date}. Este teléfono devolvió los valores; no se envió nada ahora."
     },
     {
       "language": "es",
