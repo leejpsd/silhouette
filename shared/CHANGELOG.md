@@ -9,6 +9,8 @@ What the document did, first on the results.
 | `results.docEffect.*`: a card first on the results, "What your paystub changed" (or W-2): how it was read, the yearly income, the questions it answered, how many results it changed; each changed row says what it was (`results.docEffect.was`); how the income was worked out behind a disclosure (`results.docEffect.how`) | Reviewers: the model's part was buried under the arithmetic and an 11-value review; the payoff (results that changed, with amounts) was not shown as the document's doing |
 | `results.whoDecided.{paystub,w2}`: the rules decided each result; the AI only found where the values are, without seeing them | Why the AI does not decide eligibility, said where the result is |
 | A paystub or W-2 used for the yearly income also answers "money from work" with yes when it was not already | Wages on a paystub or W-2 are earned income: one document, two answers |
+| Review: `review.confirmLeadCount` ("Confirm the {count} values that decide the result"), `review.pendingLead`; `review.moreValues` and `review.moreValues.notFound` now say "Other values, not used for the result". The other values start folded; found values that do not decide the result still feed the reading's checks (net pay against the deductions, hours times rate), and a check that flags one brings it up to be confirmed | Reviewers: eleven values to confirm, when four decide the result |
+| Results: within a verdict, programs with an estimated amount first, the largest first | The results looked alike; the amount is the point |
 
 Platforms: the same card and answers. Reference tests: 30.
 
