@@ -1,0 +1,35 @@
+*** REISSUED STATEMENT ***                                        REISSUED 03/04/2026
+This statement replaces the Form W-2 issued 01/29/2026. Use this statement to file your return.
+
+Form W-2  Wage and Tax Statement  2025                      OMB No. 1545-0008
+Copy B - To Be Filed With Employee's FEDERAL Tax Return
+
+a Employee's social security number     b Employer identification number (EIN)    d Control number
+  XXX-XX-4720                             36-4128890                                SFP 0918
+
+c Employer's name, address, and ZIP code                e Employee's first name and initial  Last name  Suff.
+  Stonebridge Freight Partners LP                         Gwendolyn P Abernathy-Saito
+  2600 Rail Yard Drive                                  f Employee's address and ZIP code
+  Rockford, IL 61109                                      718 Lake Shore Pass
+                                                          Beloit, WI 53511
+
+1  Wages, tips, other compensation         68,575.20  2  Federal income tax withheld              6,388.90
+3  Social security wages                   71,520.00  4  Social security tax withheld             4,434.24
+5  Medicare wages and tips                 71,520.00  6  Medicare tax withheld                    1,037.04
+7  Social security tips                               8  Allocated tips
+9                                                     10 Dependent care benefits
+11 Nonqualified plans
+12 See instructions for box 12
+   12a  D       2,944.80
+   12b  DD      7,440.00
+   12c  
+   12d  
+13 Statutory employee [ ]   Retirement plan [X]   Third-party sick pay [ ]
+14 Other   UNION DUES 612.00
+
+15 State  Employer's state ID number  16 State wages, tips, etc.  17 State income tax   18 Local wages, tips, etc.  19 Local income tax   20 Locality name
+   IL     4127-0581                      40,212.60                1,990.52
+   WI     036-1092847566-02              28,362.60                1,335.88
+
+Dept. of the Treasury - Internal Revenue Service   REISSUED STATEMENT
+This information is being furnished to the Internal Revenue Service.

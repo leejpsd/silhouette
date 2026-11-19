@@ -1,0 +1,35 @@
+*** REISSUED STATEMENT ***                                        REISSUED 02/18/2026
+This statement replaces the Form W-2 issued 01/30/2026. Use this statement to file your return.
+
+Form W-2  Wage and Tax Statement  2025                      OMB No. 1545-0008
+Copy B - To Be Filed With Employee's FEDERAL Tax Return
+
+a Employee's social security number     b Employer identification number (EIN)    d Control number
+  XXX-XX-6619                             58-3390176                                PHMS-1187
+
+c Employer's name, address, and ZIP code                e Employee's first name and initial  Last name  Suff.
+  PELLUCID HARBOR MARINE SERVICES CO.                     IGNATIUS W O'ROURKE III
+  41 TIDEWATER WHARF ROAD                               f Employee's address and ZIP code
+  SAVANNAH, GA 31401                                      9 MARSH HEN ROW
+                                                          WILMINGTON, NC 28403
+
+1  Wages, tips, other compensation         174540.00  2  Federal income tax withheld              33207.14
+3  Social security wages                   176100.00  4  Social security tax withheld             10918.20
+5  Medicare wages and tips                 189540.00  6  Medicare tax withheld                     2748.33
+7  Social security tips                               8  Allocated tips
+9                                                     10 Dependent care benefits
+11 Nonqualified plans
+12 See instructions for box 12
+   12a  C         198.00
+   12b  D       15000.00
+   12c  DD      12840.00
+   12d  
+13 Statutory employee [ ]   Retirement plan [X]   Third-party sick pay [ ]
+14 Other
+
+15 State  Employer's state ID number  16 State wages, tips, etc.  17 State income tax   18 Local wages, tips, etc.  19 Local income tax   20 Locality name
+   GA     2264019-KP                     101780.40                 5282.40
+   NC     600-4471829                     72759.60                 3092.28
+
+Dept. of the Treasury - Internal Revenue Service   REISSUED STATEMENT
+This information is being furnished to the Internal Revenue Service.

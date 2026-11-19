@@ -1,0 +1,41 @@
+                                  a  Employee's social security number        OMB No. 1545-0008
+                                     XXX-XX-4417
+b  Employer identification number (EIN)                     1  Wages, tips, other compensation    2  Federal income tax withheld
+   84-3920517                                                  62003.00                              6812.44
+c  Employer's name, address, and ZIP code                   3  Social security wages              4  Social security tax withheld
+   TAMARACK RIDGE LOGISTICS, INC.                              66110.00                              4098.82
+   4410 QUARRY BEND ROAD, SUITE 210                         5  Medicare wages and tips            6  Medicare tax withheld
+   LOVELAND, CO 80538                                          66110.00                              958.60
+                                                            7  Social security tips               8  Allocated tips
+
+d  Control number                                           9                                     10  Dependent care benefits
+   TRL-000417
+e  Employee's first name and initial   Last name     Suff.  11  Nonqualified plans                      12a  See instructions for box 12
+   DELPHINE R OKONKWO-HART                                                                              C
+                                                                                                        o    D    4107.00
+   2718 SABLE CREEK DRIVE, APT 4B                                                                       d
+   FORT COLLINS, CO 80525                                   13  Statutory     Retirement     Third-party  e
+                                                                employee      plan           sick pay   12b
+                                                                              X                         C
+                                                            14  Other                                   o    DD   7822.16
+                                                                CO FAMLI  297.50                        d
+f  Employee's address and ZIP code                                                                      e
+                                                                                                        12c
+                                                                                                        C
+                                                                                                        o
+                                                                                                        d
+                                                                                                        e
+                                                                                                        12d
+                                                                                                        C
+                                                                                                        o
+                                                                                                        d
+                                                                                                        e
+
+15  State   Employer's state ID number  16  State wages, tips, etc.   17  State income tax    18  Local wages, tips, etc.   19  Local income tax    20  Locality name
+    CO      31029-4471                      62003.00                      2728.13
+
+
+Form  W-2   Wage and Tax Statement                  2025          Department of the Treasury - Internal Revenue Service
+Copy B - To Be Filed With Employee's FEDERAL Tax Return.
+This information is being furnished to the Internal Revenue Service.
+Cat. No. 10134D

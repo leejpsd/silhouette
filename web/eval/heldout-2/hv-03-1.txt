@@ -1,0 +1,52 @@
+Larkspur Valley Medical Group, P.C.
+1720 Kestrel Avenue, Suite 300
+West Chester, PA 19380
+Payroll Department  |  EIN 23-9015542
+
+                      2025 YEAR-END WAGE AND TAX STATEMENT
+                    Employee Statement and Wage Reconciliation
+
+Employee:  Teodora M Villanueva-Brandt              SSN: XXX-XX-5106
+           312 Orchard Hollow Lane                  Control number: LVMG-04471
+           Downingtown, PA 19335                    Pay frequency: Biweekly (26)
+
+HOW YOUR W-2 WAGES WERE FIGURED
+Your W-2 wage boxes are usually lower than your total gross pay because some deductions
+are taken before tax. Each column starts from your gross pay for the year and removes
+the deductions that the box does not tax.
+
+                                                  Box 1          Box 3          Box 5         Box 16
+                                                Federal  Soc. Security       Medicare     State (PA)
+Gross pay (all 2025 paychecks)                87,316.40      87,316.40      87,316.40      87,316.40
+Less 401(k) elective deferrals                -5,238.98           0.00           0.00           0.00
+Less Section 125 medical/dental/vision        -3,462.00      -3,462.00      -3,462.00      -3,462.00
+Less HSA payroll contributions                -2,400.00      -2,400.00      -2,400.00      -2,400.00
+                                          -------------  -------------  -------------  -------------
+Amount reported on Form W-2                   76,215.42      81,454.40      81,454.40      81,454.40
+
+* 401(k) elective deferrals are not excluded from PA taxable compensation, so box 16 is higher than box 1.
+* Box 12 code W (3,000.00) is your HSA payroll contributions plus the employer contribution of 600.00. The employer contribution was never part of gross pay.
+* Box 12 code D (401(k)) is shown for information only; it is not added to any wage box.
+
+----------------------------------------------------------------------------------------------------
+
+FORM W-2 WAGE AND TAX STATEMENT 2025          Copy B / Copy C / Copy 2          OMB No. 1545-0008
+a  Employee's SSN  XXX-XX-5106                b  EIN  23-9015542            d  Control no.  LVMG-04471
+c  Employer                                   e/f  Employee
+   Larkspur Valley Medical Group, P.C.             Teodora M Villanueva-Brandt
+   1720 Kestrel Avenue, Suite 300                  312 Orchard Hollow Lane
+   West Chester, PA 19380                          Downingtown, PA 19335
+  1  Wages, tips, other compensation         76,215.42        2  Federal income tax withheld              7,940.65
+  3  Social security wages                   81,454.40        4  Social security tax withheld             5,050.17
+  5  Medicare wages and tips                 81,454.40        6  Medicare tax withheld                    1,181.09
+  7  Social security tips                                     8  Allocated tips
+ 10  Dependent care benefits                                 11  Nonqualified plans
+12a  Code D                                   5,238.98      12b  Code DD                                  8,904.12
+12c  Code W                                   3,000.00      12d
+ 13  Statutory employee [ ]   Retirement plan [X]   Third-party sick pay [ ]
+ 14  Other   PA SUI 57.02   LST 52.00
+ 15  State / Employer's state ID  16  State wages       17  State tax     18  Local wages     19  Local tax     20  Locality
+     PA  8841-2290                    81,454.40             2,500.65          81,454.40           896.00            DOWNINGTOWN BORO
+
+Keep this statement with your tax records. Questions: contact Payroll Department.
+This information is being furnished to the Internal Revenue Service.

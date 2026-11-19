@@ -1,0 +1,58 @@
+Corvane Aerostructures Holdings LLC
+5500 Mesa Ridge Boulevard
+Torrance, CA 90501
+Payroll Department  |  EIN 95-4410278
+
+                      2025 YEAR-END WAGE AND TAX STATEMENT
+                    Employee Statement and Wage Reconciliation
+
+Employee:  Bartholomew J Ng-Castellanos             SSN: XXX-XX-8843
+           2209 Calle Serena, Unit 12               Control number: CAH25-118204
+           Redondo Beach, CA 90277                  Pay frequency: Biweekly (26)
+
+FORM W-2 WAGE AND TAX STATEMENT 2025          Copy B / Copy C / Copy 2          OMB No. 1545-0008
+a  Employee's SSN  XXX-XX-8843                b  EIN  95-4410278            d  Control no.  CAH25-118204
+c  Employer                                   e/f  Employee
+   Corvane Aerostructures Holdings LLC             Bartholomew J Ng-Castellanos
+   5500 Mesa Ridge Boulevard                       2209 Calle Serena, Unit 12
+   Torrance, CA 90501                              Redondo Beach, CA 90277
+  1  Wages, tips, other compensation        211,864.00        2  Federal income tax withheld             44,873.19
+  3  Social security wages                  176,100.00        4  Social security tax withheld            10,918.20
+  5  Medicare wages and tips                235,364.00        6  Medicare tax withheld                    3,731.06
+  7  Social security tips                                     8  Allocated tips
+ 10  Dependent care benefits                  5,000.00       11  Nonqualified plans
+12a  Code C                                     286.20      12b  Code D                                  23,500.00
+12c  Code DD                                 18,904.44      12d  Code W                                   5,300.00
+ 13  Statutory employee [ ]   Retirement plan [X]   Third-party sick pay [ ]
+ 14  Other   CASDI 2,824.37
+ 15  State / Employer's state ID  16  State wages       17  State tax     18  Local wages     19  Local tax     20  Locality
+     CA  418-7720-5                   217,164.00            17,937.75
+
+----------------------------------------------------------------------------------------------------
+
+HOW YOUR W-2 WAGES WERE FIGURED
+Your W-2 wage boxes are usually lower than your total gross pay because some deductions
+are taken before tax. Each column starts from your gross pay for the year and removes
+the deductions that the box does not tax.
+
+                                                  Box 1          Box 3          Box 5         Box 16
+                                                Federal  Soc. Security       Medicare     State (CA)
+Gross pay (all 2025 paychecks)               248,613.80     248,613.80     248,613.80     248,613.80
+Plus group-term life over $50,000                286.20         286.20         286.20         286.20
+Less 401(k) elective deferrals               -23,500.00           0.00           0.00     -23,500.00
+Less Section 125 medical/dental/vision        -4,236.00      -4,236.00      -4,236.00      -4,236.00
+Less HSA payroll contributions                -4,300.00      -4,300.00      -4,300.00           0.00
+Less dependent care FSA                       -5,000.00      -5,000.00      -5,000.00      -5,000.00
+Plus employer HSA contribution                     0.00           0.00           0.00       1,000.00
+Less wages over 2025 SS wage base                  0.00     -59,264.00           0.00           0.00
+                                          -------------  -------------  -------------  -------------
+Amount reported on Form W-2                  211,864.00     176,100.00     235,364.00     217,164.00
+
+* CA does not exclude HSA contributions. Your HSA payroll contributions and the employer HSA contribution are added back for box 16.
+* Box 12 code W (5,300.00) is your HSA payroll contributions plus the employer contribution of 1,000.00. The employer contribution was never part of gross pay.
+* Social security wages stop at the 2025 wage base of 176,100.00. Medicare wages have no limit.
+* Box 6 includes Additional Medicare Tax of 318.28 withheld on Medicare wages over 200,000.00.
+* Box 12 code D (401(k)) is shown for information only; it is not added to any wage box.
+
+Keep this statement with your tax records. Questions: contact Payroll Department.
+This information is being furnished to the Internal Revenue Service.

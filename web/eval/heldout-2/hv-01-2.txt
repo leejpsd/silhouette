@@ -1,0 +1,69 @@
+                                  a  Employee's social security number        OMB No. 1545-0008
+
+b  Employer identification number (EIN)                     1  Wages, tips, other compensation    2  Federal income tax withheld
+
+c  Employer's name, address, and ZIP code                   3  Social security wages              4  Social security tax withheld
+
+                                                            5  Medicare wages and tips            6  Medicare tax withheld
+
+                                                            7  Social security tips               8  Allocated tips
+
+d  Control number                                           9                                     10  Dependent care benefits
+
+e  Employee's first name and initial   Last name     Suff.  11  Nonqualified plans                      12a  See instructions for box 12
+                                                                                                        C
+                                                                                                        o
+                                                                                                        d
+                                                            13  Statutory     Retirement     Third-party  e
+                                                                employee      plan           sick pay   12b
+                                                                                                        C
+                                                            14  Other                                   o
+f  Employee's address and ZIP code                                                                      d
+                                                                                                        e
+                                                                                                        12c
+                                                                                                        C
+                                                                                                        o
+                                                                                                        d
+                                                                                                        e
+                                                                                                        12d
+                                                                                                        C
+                                                                                                        o
+                                                                                                        d
+                                                                                                        e
+
+15  State   Employer's state ID number  16  State wages, tips, etc.   17  State income tax    18  Local wages, tips, etc.   19  Local income tax    20  Locality name
+
+
+
+Form  W-2   Wage and Tax Statement                  2025          Department of the Treasury - Internal Revenue Service
+Copy C - For EMPLOYEE'S RECORDS (See Notice to Employee on the back of Copy B.)
+This information is being furnished to the Internal Revenue Service. If you are required to file a tax return, a negligence penalty or other sanction may be imposed on you if this income is taxable and you fail to report it.
+
+XXX-XX-6082
+54-2871096
+BRIGHTWATER ANALYTIC INSTRUMENTS LLC
+900 HALYARD POINT PARKWAY, BLDG C
+RESTON, VA 20190
+0000192837
+MARCUS T VANDEVENTER JR
+15 LARCHMONT MEWS
+HERNDON, VA 20170
+184780.00
+38215.67
+176100.00
+10918.20
+208280.00
+3094.58
+C
+412.50
+D
+23500.00
+DD
+14206.80
+W
+1800.00
+X
+VA
+10-548812736F-000
+184780.00
+10125.94

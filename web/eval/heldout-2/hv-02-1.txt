@@ -1,0 +1,77 @@
+a Employee's social security no.  OMB No. 1545-0008               a Employee's social security no.  OMB No. 1545-0008
+  XXX-XX-2291                                                       XXX-XX-2291
+b Employer ID number (EIN)        d Control number                b Employer ID number (EIN)        d Control number
+  31-7782046                        FPH 2025 0117                   31-7782046                        FPH 2025 0117
+c Employer's name, address, and ZIP code                          c Employer's name, address, and ZIP code
+  Fennimore & Platt Hardware Co.                                    Fennimore & Platt Hardware Co.
+  1186 Old Canal Street                                             1186 Old Canal Street
+  Westerville, OH 43081                                             Westerville, OH 43081
+e Employee's name   f Employee's address and ZIP                  e Employee's name   f Employee's address and ZIP
+  Rosalind Achterberg                                               Rosalind Achterberg
+  64 Bellflower Court                                               64 Bellflower Court
+  Galena, OH 43021                                                  Galena, OH 43021
+1 Wages, tips, other comp.      2 Federal income tax withheld     1 Wages, tips, other comp.      2 Federal income tax withheld
+  38,712.38                       2,903.17                          38,712.38                       2,903.17
+3 Social security wages         4 Social security tax withheld    3 Social security wages         4 Social security tax withheld
+  39,968.56                       2,478.05                          39,968.56                       2,478.05
+5 Medicare wages and tips       6 Medicare tax withheld           5 Medicare wages and tips       6 Medicare tax withheld
+  39,968.56                       579.54                            39,968.56                       579.54
+7 Social security tips          8 Allocated tips                  7 Social security tips          8 Allocated tips
+
+9                               10 Dependent care benefits        9                               10 Dependent care benefits
+
+11 Nonqualified plans                 12a  D  1,256.18            11 Nonqualified plans                 12a  D  1,256.18
+                                      12b  DD  6,114.72                                                 12b  DD  6,114.72
+13 Stat. emp.  Ret. plan  3rd-party   12c                         13 Stat. emp.  Ret. plan  3rd-party   12c
+   [ ]         [X]        [ ]         12d                            [ ]         [X]        [ ]         12d
+14 Other                                                          14 Other
+15 State  Employer's state ID no.                                 15 State  Employer's state ID no.
+   OH     51-336204                                                  OH     51-336204
+16 State wages, tips, etc.      17 State income tax               16 State wages, tips, etc.      17 State income tax
+  38,712.38                       812.96                            38,712.38                       812.96
+18 Local wages, tips, etc.      19 Local income tax               18 Local wages, tips, etc.      19 Local income tax
+  39,968.56                       799.37                            39,968.56                       799.37
+20 Locality name  WESTERVILLE                                     20 Locality name  WESTERVILLE
+Form W-2 Wage and Tax Statement   2025                            Form W-2 Wage and Tax Statement   2025
+Copy B To Be Filed With Employee's FEDERAL Tax Return.            Copy C For EMPLOYEE'S RECORDS.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+a Employee's social security no.  OMB No. 1545-0008               a Employee's social security no.  OMB No. 1545-0008
+  XXX-XX-2291                                                       XXX-XX-2291
+b Employer ID number (EIN)        d Control number                b Employer ID number (EIN)        d Control number
+  31-7782046                        FPH 2025 0117                   31-7782046                        FPH 2025 0117
+c Employer's name, address, and ZIP code                          c Employer's name, address, and ZIP code
+  Fennimore & Platt Hardware Co.                                    Fennimore & Platt Hardware Co.
+  1186 Old Canal Street                                             1186 Old Canal Street
+  Westerville, OH 43081                                             Westerville, OH 43081
+e Employee's name   f Employee's address and ZIP                  e Employee's name   f Employee's address and ZIP
+  Rosalind Achterberg                                               Rosalind Achterberg
+  64 Bellflower Court                                               64 Bellflower Court
+  Galena, OH 43021                                                  Galena, OH 43021
+1 Wages, tips, other comp.      2 Federal income tax withheld     1 Wages, tips, other comp.      2 Federal income tax withheld
+  38,712.38                       2,903.17                          38,712.38                       2,903.17
+3 Social security wages         4 Social security tax withheld    3 Social security wages         4 Social security tax withheld
+  39,968.56                       2,478.05                          39,968.56                       2,478.05
+5 Medicare wages and tips       6 Medicare tax withheld           5 Medicare wages and tips       6 Medicare tax withheld
+  39,968.56                       579.54                            39,968.56                       579.54
+7 Social security tips          8 Allocated tips                  7 Social security tips          8 Allocated tips
+
+9                               10 Dependent care benefits        9                               10 Dependent care benefits
+
+11 Nonqualified plans                 12a  D  1,256.18            11 Nonqualified plans                 12a  D  1,256.18
+                                      12b  DD  6,114.72                                                 12b  DD  6,114.72
+13 Stat. emp.  Ret. plan  3rd-party   12c                         13 Stat. emp.  Ret. plan  3rd-party   12c
+   [ ]         [X]        [ ]         12d                            [ ]         [X]        [ ]         12d
+14 Other                                                          14 Other
+15 State  Employer's state ID no.                                 15 State  Employer's state ID no.
+   OH     51-336204                                                  OH     51-336204
+16 State wages, tips, etc.      17 State income tax               16 State wages, tips, etc.      17 State income tax
+  38,712.38                       812.96                            38,712.38                       812.96
+18 Local wages, tips, etc.      19 Local income tax               18 Local wages, tips, etc.      19 Local income tax
+  39,968.56                       799.37                            39,968.56                       799.37
+20 Locality name  WESTERVILLE                                     20 Locality name  WESTERVILLE
+Form W-2 Wage and Tax Statement   2025                            Form W-2 Wage and Tax Statement   2025
+Copy 2 To Be Filed With Employee's State, City, or Local          Copy 2 To Be Filed With Employee's State, City, or Local
+Income Tax Return.                                                Income Tax Return.
+

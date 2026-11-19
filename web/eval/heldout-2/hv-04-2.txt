@@ -1,0 +1,37 @@
+Cobaltgate HCM                                            2025 W-2 AND EARNINGS SUMMARY
+Client 13-381  Batch 2025-YE-04                           Employee copies: Copy B, Copy C, Copy 2
+
+EMPLOYEE                                        EMPLOYER
+Lucia F Marchetti-Oyelaran                      Oxbow Meridian Software, Inc.
+418 West 87th Street, Apt 6C                    1 Pierhead Plaza, 22nd Floor
+New York, NY 10024                              New York, NY 10004
+SSN  XXX-XX-3378                                EIN  13-5582047
+Employee ID  E-03381                            Control number  OMS-2025-03381
+
+Form W-2 Wage and Tax Statement 2025                      Dept. of the Treasury - Internal Revenue Service
+
+Box | Description                         |         Amount     Box | Description                         |         Amount
+----+-------------------------------------+---------------     ----+-------------------------------------+---------------
+1   | Wages, tips, other compensation     |     203,940.00     2   | Federal income tax withheld         |      41,118.52
+3   | Social security wages               |     176,100.00     4   | Social security tax withheld        |      10,918.20
+5   | Medicare wages and tips             |     227,440.00     6   | Medicare tax withheld               |       3,544.84
+7   | Social security tips                |           0.00     8   | Allocated tips                      |           0.00
+10  | Dependent care benefits             |           0.00     11  | Nonqualified plans                  |           0.00
+12a | C - Group-term life over $50,000    |         540.00     12b | D - 401(k) elective deferrals       |      23,500.00
+12c | DD - Employer health coverage       |      16,224.00     12d |                                     |
+13  | Retirement plan                     |              X     14  | Other                               |
+15  | State / Employer's state ID no.     |  NY 13-5582047     16  | State wages, tips, etc.             |     203,940.00
+17  | State income tax                    |      12,664.67     18  | Local wages, tips, etc.             |     203,940.00
+19  | Local income tax                    |       7,545.78     20  | Locality name                       |            NYC
+    |                                     |                    14  | NYSDI                               |          31.20
+    |                                     |                    14  | NYPFL                               |         354.53
+----+-------------------------------------+---------------     ----+-------------------------------------+---------------
+
+EARNINGS SUMMARY (for your information - not part of Form W-2)
+  Gross pay, year to date                         230,500.00
+  Imputed income - group-term life                    540.00
+  Pre-tax 401(k) deferrals                         23,500.00
+  Pre-tax benefits (Section 125)                    3,600.00
+  Net pay, year to date                           127,222.26
+
+Prepared by Cobaltgate HCM on behalf of the employer. Report errors to your employer's payroll office.
