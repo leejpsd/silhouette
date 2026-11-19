@@ -8,18 +8,18 @@ Web, Android and iOS, built on one shared contract. Firebase AI Logic runs each 
 
 <p>
   <img src="docs/images/start.png" width="210" alt="Start screen: Find public benefits you may qualify for. An example shows a paystub on this device next to what could leave: placeholders W1, W2 and N12.">
-  <img src="docs/images/results.png" width="210" alt="Results from the rules on this device: three programs you may qualify for, two possible, one depending on a skipped answer, one probably not. Leaving your device: 0.">
-  <img src="docs/images/silhouette-first-screen.png" width="210" alt="This is what could leave your device: the paystub with every name, number and date replaced by an orange token chip.">
+  <img src="docs/images/results.png" width="210" alt="Results of the invented sample household: a note that it is a sample, not you; what the paystub changed (its yearly income, the results it changed); then the programs, each with its status and estimate. Leaving your device: 0.">
+  <img src="docs/images/silhouette-first-screen.png" width="210" alt="This is what could leave your device: the paystub with every name, number and date replaced by an orange token chip, and the ways on: read it from a recording on a device or in the cloud, or send the silhouette.">
 </p>
 
 <p>
   <img src="docs/images/ios-start.png" width="210" alt="The iOS app's start screen: the same headline and example in a native SwiftUI layout, with the privacy pill 'Nothing has left this iPhone' above the tab bar.">
-  <img src="docs/images/ios-results.png" width="210" alt="iOS results: You may qualify for 3 programs, checked on this iPhone, no AI used, then one card per program.">
-  <img src="docs/images/ios-silhouette.png" width="210" alt="iOS: What could leave. The sample paystub as token chips, with Send the silhouette and Keep everything on this iPhone.">
-  <img src="docs/images/ios-review.png" width="210" alt="iOS review: the values read from the paystub, each to confirm, and the yearly income worked out on this iPhone.">
+  <img src="docs/images/ios-results.png" width="210" alt="iOS on a real iPhone 17 Pro: You may qualify for 5 programs, checked on this iPhone, Rules + paystub; the sample household named as such; what the paystub changed, read by the model on this iPhone.">
+  <img src="docs/images/ios-silhouette.png" width="210" alt="iOS on a real iPhone 17 Pro: what could leave, the sample paystub as token chips, with Read on this iPhone and Keep everything on this iPhone.">
+  <img src="docs/images/ios-review.png" width="210" alt="iOS on a real iPhone 17 Pro: the iPhone's own model answered grossPay N12 and the iPhone put back 1,271.88; the line as the model saw it and the same line on this iPhone; confirm the 4 values that decide the result.">
 </p>
 
-The same flow as a native SwiftUI app (simulator captures; the recorded runs on a real iPhone 17 Pro are under [Evidence](#evidence)).
+The same flow as a native SwiftUI app. The start screen is a simulator capture; the other three are from a real iPhone 17 Pro, read by Apple's on-device model through Firebase AI Logic (recorded runs under [Evidence](#evidence)).
 
 ### Try it
 
@@ -93,7 +93,7 @@ Every limit and amount was read from the agencies' own publications on 2026-11-1
 
 **5. Review, confirm, sharper results.** The review opens with the reading's own answer: the model answered `"grossPay": "N12"`, and this device put back `1,271.88`. Each value found is shown next to the line it came from, to confirm or change. A badge says where it was read ("Cloud · document silhouette only" here, in a browser without an on-device model). Deterministic checks and annualization turn the confirmed document into a yearly income, and the results update: they say "Rules + paystub" (or W-2), how the document was read, and how the yearly income was worked out, with a link to change it.
 
-<p><img src="docs/images/review.png" width="250" alt="Check what was found: gross pay, year to date and pay date, each next to its source line, with Confirm and Change."></p>
+<p><img src="docs/images/review.png" width="250" alt="Check what was found: the model answered grossPay N12 and this device put back 1,271.88; the same line as the model saw it (placeholders) and on this device (the value); the four values that decide the result to confirm."></p>
 
 **6. "Leaving your device".** Before a request that may leave, the app lists what it carries and shows the exact request body. Afterwards the record lists every request that left, with its body, and every answer written on the device as "kept".
 
