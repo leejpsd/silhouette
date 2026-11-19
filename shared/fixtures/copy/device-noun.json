@@ -858,6 +858,13 @@
     {
       "language": "en",
       "platform": "ios",
+      "key": "why.leadSample",
+      "text": "These reasons come from the rules on this device, using the sample household's answers.",
+      "shown": "These reasons come from the rules on this iPhone, using the sample household's answers."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
       "key": "results.whoDecided.paystub",
       "text": "The rules on this device decided each result, from official sources. The AI only found where each value is on your paystub, without seeing it; this device put the values back.",
       "shown": "The rules on this iPhone decided each result, from official sources. The AI only found where each value is on your paystub, without seeing it; this iPhone put the values back."
@@ -1775,6 +1782,13 @@
     {
       "language": "en",
       "platform": "android",
+      "key": "why.leadSample",
+      "text": "These reasons come from the rules on this device, using the sample household's answers.",
+      "shown": "These reasons come from the rules on this phone, using the sample household's answers."
+    },
+    {
+      "language": "en",
+      "platform": "android",
       "key": "results.whoDecided.paystub",
       "text": "The rules on this device decided each result, from official sources. The AI only found where each value is on your paystub, without seeing it; this device put the values back.",
       "shown": "The rules on this phone decided each result, from official sources. The AI only found where each value is on your paystub, without seeing it; this phone put the values back."
@@ -2601,6 +2615,13 @@
     {
       "language": "es",
       "platform": "ios",
+      "key": "why.leadSample",
+      "text": "Estas razones vienen de las reglas de este dispositivo, con las respuestas del hogar de ejemplo.",
+      "shown": "Estas razones vienen de las reglas de este iPhone, con las respuestas del hogar de ejemplo."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
       "key": "results.whoDecided.paystub",
       "text": "Las reglas de este dispositivo decidieron cada resultado, con fuentes oficiales. La IA solo encontró dónde está cada valor en tu talón de pago, sin verlo; este dispositivo devolvió los valores.",
       "shown": "Las reglas de este iPhone decidieron cada resultado, con fuentes oficiales. La IA solo encontró dónde está cada valor en tu talón de pago, sin verlo; este iPhone devolvió los valores."
@@ -3423,6 +3444,13 @@
       "key": "review.pointer.recorded",
       "text": "El modelo en {machine} respondió solo {ref} (una lectura grabada). Este dispositivo devolvió {value} ahora mismo, desde tu talón de pago.",
       "shown": "El modelo en {machine} respondió solo {ref} (una lectura grabada). Este teléfono devolvió {value} ahora mismo, desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "why.leadSample",
+      "text": "Estas razones vienen de las reglas de este dispositivo, con las respuestas del hogar de ejemplo.",
+      "shown": "Estas razones vienen de las reglas de este teléfono, con las respuestas del hogar de ejemplo."
     },
     {
       "language": "es",
