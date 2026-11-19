@@ -1032,6 +1032,8 @@ main h3.small {
   width: var(--size-counter);
   height: var(--size-counter);
   border-radius: 50%;
+  /* The digit ticks up from below: only inside the circle. */
+  overflow: hidden;
   font-family: var(--font-display);
   font-size: var(--type-count-size);
   font-weight: 900;
@@ -4731,14 +4733,13 @@ main h2.judge-title {
   animation: fade-in var(--duration-medium) var(--ease-fade) both;
 }
 
+/* It never grows past its own size: an overshoot painted outside the circle, and the browser left that
+   edge on screen (bottom right) until something else repainted the dock. */
 @keyframes count-fill {
   from {
     background-color: transparent;
     box-shadow: inset 0 0 0 var(--size-counter-ring) var(--on-ink-ring);
     transform: scale(0.82);
-  }
-  60% {
-    transform: scale(1.06);
   }
 }
 
