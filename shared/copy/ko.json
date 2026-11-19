@@ -691,7 +691,7 @@
   "tasks.heldout.lead": "12개 양식의 급여명세서 {paystubs}장과 W-2 {w2s}장. 프롬프트·단어 목록·튜닝 문서와 무관하게 따로 작성했고, 읽기 전에 커밋해 고정했습니다({date}).",
   "tasks.heldout.paystubCloud": "처음 보는 급여명세서 중 틀린 연 소득 값이 사용자에게 간 문서 (클라우드에서 읽음)",
   "tasks.heldout.paystubDevice": "같은 급여명세서를 기기에서 먼저 읽은 경우 (Chrome 157, 클라우드 재시도 포함)",
-  "tasks.heldout.caught": "기기의 첫 답은 {total}장 중 {caught}장에서 연 소득 값이 틀렸습니다. 검사가 모두 거부했고, {retried}장은 같은 실루엣으로 클라우드에서 다시 읽었습니다.",
+  "tasks.heldout.caught": "기기의 첫 답은 {total}장 중 {caught}장에서 연 소득 값이 틀렸습니다. 검사가 보여 주기 전에 모두 잡았습니다. 같은 실루엣을 클라우드에서 다시 읽거나, 의심스러운 값을 비워 사용자가 입력하게 했습니다. 모두 합쳐 {total}장 중 {retried}장을 클라우드에서 다시 읽었습니다.",
   "tasks.heldout.w2": "W-2는 더 약했습니다. 클라우드에서 1번 칸을 첫 세트 {total}장 중 {wrong}장에서 칸 번호나 번지로, 둘째 세트 {total2}장 중 {wrong2}장에서 옆 칸 값으로 읽었습니다. 각 세트를 본 뒤 검사를 바꿨습니다(계약 v1.37, v1.38). 같은 답을 다시 검사하면 1번 칸은 {all}장 중 {right}장 맞음, {left}장은 비워 두어 사용자가 입력, {after}장 틀림입니다. 이 마지막 수치는 세트를 본 뒤의 결과입니다.",
   "tasks.heldout.recount": "처음 보는 문서 세트를 파일에서 다시 세기",
   "tasks.heldout.recountPaystubs": "틀린 연 소득 값이 보인 급여명세서: 클라우드 {cloud}장, 기기 {device}장 ({total}장 중)",

@@ -775,8 +775,8 @@
       "language": "en",
       "platform": "ios",
       "key": "tasks.heldout.caught",
-      "text": "The device's first answer had a wrong yearly-income value on {caught} of {total}; the checks rejected every one, and {retried} were read again in the cloud from the same silhouette.",
-      "shown": "The iPhone's first answer had a wrong yearly-income value on {caught} of {total}; the checks rejected every one, and {retried} were read again in the cloud from the same silhouette."
+      "text": "The device's first answer had a wrong yearly-income value on {caught} of {total}. The checks caught every one before it was shown: the silhouette was read again in the cloud, or the doubtful value was left out for the person to type. In all, {retried} of {total} were read again in the cloud.",
+      "shown": "The iPhone's first answer had a wrong yearly-income value on {caught} of {total}. The checks caught every one before it was shown: the silhouette was read again in the cloud, or the doubtful value was left out for the person to type. In all, {retried} of {total} were read again in the cloud."
     },
     {
       "language": "en",
@@ -1678,8 +1678,8 @@
       "language": "en",
       "platform": "android",
       "key": "tasks.heldout.caught",
-      "text": "The device's first answer had a wrong yearly-income value on {caught} of {total}; the checks rejected every one, and {retried} were read again in the cloud from the same silhouette.",
-      "shown": "The phone's first answer had a wrong yearly-income value on {caught} of {total}; the checks rejected every one, and {retried} were read again in the cloud from the same silhouette."
+      "text": "The device's first answer had a wrong yearly-income value on {caught} of {total}. The checks caught every one before it was shown: the silhouette was read again in the cloud, or the doubtful value was left out for the person to type. In all, {retried} of {total} were read again in the cloud.",
+      "shown": "The phone's first answer had a wrong yearly-income value on {caught} of {total}. The checks caught every one before it was shown: the silhouette was read again in the cloud, or the doubtful value was left out for the person to type. In all, {retried} of {total} were read again in the cloud."
     },
     {
       "language": "en",

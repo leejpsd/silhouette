@@ -175,7 +175,7 @@ The prompt measured is v4. The cloud prompt in use (v5) is v4's text word for wo
 |---|---|---|
 | 24 paystubs in 12 layouts: a wrong yearly-income value reached the person | **0 of 24** | **0 of 24** |
 | Same paystubs: every yearly-income input right (the others left for the person to type) | 22 of 24 | 17 of 24 |
-| The device's first answer had a wrong yearly-income input | | 12 of 24, all rejected by the checks; 11 read again in the cloud |
+| The device's first answer had a wrong yearly-income input | | 12 of 24, every one caught before it was shown (read again in the cloud, or the value left out to type); 11 of 24 read again in the cloud |
 | Form W-2, first set of 6: box 1 wrong | 2 of 6 | 3 of 6 |
 | Form W-2, second set of 12, after the first change (v1.37): box 1 wrong | 2 of 12 | 1 of 12 |
 | Request bodies containing a name, date or amount of their document | 0 of 42 | |

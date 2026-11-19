@@ -691,7 +691,7 @@
   "tasks.heldout.lead": "{paystubs} paystubs in 12 layouts and {w2s} Form W-2s, written independently of the prompts, word lists and tuning documents, and committed before they were read ({date}).",
   "tasks.heldout.paystubCloud": "never-seen paystubs on which a wrong yearly-income value reached the person, read in the cloud",
   "tasks.heldout.paystubDevice": "the same paystubs read on the device first (Chrome 157), with the cloud retry",
-  "tasks.heldout.caught": "The device's first answer had a wrong yearly-income value on {caught} of {total}; the checks rejected every one, and {retried} were read again in the cloud from the same silhouette.",
+  "tasks.heldout.caught": "The device's first answer had a wrong yearly-income value on {caught} of {total}. The checks caught every one before it was shown: the silhouette was read again in the cloud, or the doubtful value was left out for the person to type. In all, {retried} of {total} were read again in the cloud.",
   "tasks.heldout.w2": "Form W-2 was weaker. In the cloud, box 1 was read from a box or street number on {wrong} of {total} forms of the first set, and from a neighbouring box on {wrong2} of {total2} of the second. The checks were changed after seeing each set (contract v1.37 and v1.38). The same answers checked again: box 1 right on {right} of {all}, left out for the person to type on {left}, wrong on {after}. Those last figures come after seeing the sets.",
   "tasks.heldout.recount": "Recount the never-seen sets from their files",
   "tasks.heldout.recountPaystubs": "paystubs with a wrong yearly-income value shown: {cloud} in the cloud, {device} on the device, of {total}",
