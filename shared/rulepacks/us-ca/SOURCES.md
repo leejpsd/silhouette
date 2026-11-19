@@ -1,6 +1,8 @@
-# us-ca rule pack: source audit (draft, not yet confirmed by a person)
+# us-ca rule pack: source audit
 
-Draft, prepared 2026-11-12 by automated reading of the official publications. Nothing here has been confirmed by a person yet. This file is the checklist for the reviewer. Each row is meant to be checked on its own: open the URL, find the quote, and compare the number.
+Prepared 2026-11-12 by reading the official publications. **Checked 2026-11-19:** every source below was opened again in a browser (PDFs converted to text) and each row's value and quote were compared with it. All 84 constants in `pack.json` and every rate, age and rule quoted here match their source. One rule was corrected: married filing separately with a qualifying child is now "Possible" for the three tax credits (section 8c). The 2025 figure in the FTB board slide ("$3,576") is a typo of the FTB table's $3,756, which the 2025 FTB 3514 booklet's table also gives. The proposed PRWORA rule (S6) was still a proposed rule in the Federal Register on 2026-11-19.
+
+Each row is meant to be checked on its own: open the URL, find the quote, and compare the number.
 
 **How the rows were collected.** Every number was read from the agency's own file. Pages were downloaded with `curl`. PDFs were converted with `pdftotext`, and HTML was stripped to text. The quotes are copied from that extracted text. Each key table was then read a second time by a separate path:
 
@@ -485,7 +487,7 @@ The caveat text is in `copy/{en,es,ko}.json` under `caveat.{key}`.
 ### 8c. Criterion notes (formerly `draftNote` on criteria)
 
 - **federal-eitc / income-limit.** "Completed phaseout amount" means the AGI (or, if greater, earned income) at or above which no credit is allowed (S1). Hence the strict `<`. `annualIncome` stands in for both values.
-- **federal-eitc / filing-status, caleitc / filing-status, yctc / filing-status.** Married filing separately always fails. The separated-spouse exception (F13, C8) is not modelled.
+- **federal-eitc / filing-status, caleitc / filing-status, yctc / filing-status.** Married filing separately fails without a qualifying child (a child under 6 for YCTC). With one, the criterion is `mixed` through `uncertainIf`, so the program is "Possible": the separated-spouse exception (F13, C8) depends on living apart for the last 6 months of the year or a legal separation, which the app does not ask. The why line uses `exception.{programId}.filing-status`.
 - **caleitc / income-limit.** Earned income not more than $32,900 (C1) and AGI less than $32,901 (C1b). Both are expressed as `annualIncome ≤ 32,900`.
 - **yctc / income-limit.** YCTC has had no earned-income requirement since TY2022. A filer with zero or negative earnings must have wages and total net loss each no more than $35,640 (Y6), which is not modelled.
 - **yctc / investment-income.** YCTC requires that the filer be allowed CalEITC (or would be allowed it except for zero earnings), and CalEITC includes the investment income test (C2).

@@ -64,20 +64,18 @@ CARE lists "NSLP – Free Lunch". LifeLine lists "National School Lunch Program 
 
 FTB 3514 line 28 says "round to the nearest whole dollar". The draft rounds half up, so 50 cents goes up. Confirm. It affects at most $1, on rare incomes.
 
-### O10. Unreachable sources the reviewer should open manually
+### O10. Sources an automated fetch could not reach (status 2026-11-19)
 
-
-
-| Source | Problem |
+| Source | Status on 2026-11-19 |
 |---|---|
-| FTB 2026 draft 3514 and booklet | HTTP 403 |
-| USDA FNS FY 2027 SNAP COLA page | HTTP 403. Cross-check the CalFresh table |
-| CDSS "Eligibility and Issuance Requirements" | Redirects to login |
-| uscode.house.gov §32 | HTTP 404. govinfo's 2024 edition was used; confirm that H.R. 1 did not change §32(b)(1) |
-| californialifeline.com/en/qualify | HTTP 403 |
-| PG&E CARE eligibility page | Read only through a summary |
-| FTB CalEITC eligibility page | The second-path fetch returned 403, so it was read once |
-| Federal Register 2026-20790 (hearing cancellation) | Seen only as a search result. Also check whether a final PRWORA rule has been published since 2026-11-12 |
+| FTB 2026 draft 3514 and booklet | Draft forms are listed but given out only by email, and FTB says not to rely on them. The 2025 figures stay until the final 2026 form (O1) |
+| USDA FNS FY 2027 SNAP COLA page | Still HTTP 403 in a browser. The CDSS FFY 2027 chart is the state's own publication of the same limits, and its gross column is exactly twice its net column (200% and 100% FPL) |
+| CDSS "Eligibility and Issuance Requirements" | Still behind a login. MCE at 200% FPL is what the FFY 2027 chart's gross column applies |
+| uscode.house.gov §32 | Still 404. The rates in the 2024 edition (34/40/45/7.65 and 15.98/21.06/21.06/7.65) reproduce every 2026 maximum credit and completed phaseout amount in Rev. Proc. 2025-32 (for example 0.34 × $13,020 = $4,427; $31,160 + $4,427 / 0.1598 = $58,863), so they are the rates in force for tax year 2026 |
+| californialifeline.com/en/qualify | Still HTTP 403. The CPUC page and the CPUC administrative letter, which this site follows, give the same limits |
+| PG&E CARE eligibility page | Opened in a browser. Account-holder and household requirements stay a caveat (`energy-account-rules`) |
+| FTB CalEITC eligibility page | Opened in a browser; the 2025 table matches the pack and the 2025 FTB 3514 booklet |
+| Federal Register 2026-20790 and the PRWORA rule | Federal Register search on 2026-11-19: 2026-16985 (proposed rule) and 2026-20790 (hearing notice) only; no final rule. The caveat stays |
 
 ### O11. Source oddities (no action needed beyond awareness)
 

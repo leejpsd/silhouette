@@ -260,16 +260,16 @@
     "hasChildUnder6": "yes",
     "filingStatus": "married-separate"
    },
-   "handCalc": "All three tax credits fail filing-status (separated-spouse exception not modelled). CalFresh hs2 43296, LifeLine hs2 33300, CARE 43280.",
+   "handCalc": "The three tax credits are Possible, not Probably not: married filing separately still qualifies with a qualifying child when the spouses lived apart for the last 6 months of the year or are legally separated, which is not asked (IRS EITC page, FTB CalEITC page and 2025 FTB 3514 booklet). CalFresh hs2 43296, LifeLine hs2 33300, CARE 43280.",
    "expected": {
     "federal-eitc": {
-     "verdict": "unlikely"
+     "verdict": "maybe"
     },
     "caleitc": {
-     "verdict": "unlikely"
+     "verdict": "maybe"
     },
     "yctc": {
-     "verdict": "unlikely"
+     "verdict": "maybe"
     },
     "calfresh": {
      "verdict": "likely"

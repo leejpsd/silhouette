@@ -1,5 +1,18 @@
 # Contract changelog
 
+## v1.27 — 2026-11-19
+
+The California rules are checked against their sources, and one rule is corrected.
+
+| Change | Why |
+|---|---|
+| `rulepacks/us-ca/pack.json` version 2: `verifiedOn: "2026-11-19"`, no `status`, every `sources[].checkedAt` set. Every source was opened again and each number compared: all 84 constants, the rates and the ages match | The apps said "Draft rules" on every screen because no one had compared the numbers with their sources |
+| Married filing separately with a qualifying child (a child under 6 for YCTC): the `filing-status` criterion of `federal-eitc`, `caleitc` and `yctc` gains `uncertainIf`, so these programs are "Possible", not "Probably not". Case `married-filing-separately` in `cases.json` now expects `maybe` for the three credits | The IRS EITC page and the FTB CalEITC page allow it when the spouses lived apart for the last 6 months of the year or are legally separated, which the app does not ask |
+| Pack copy `exception.{programId}.{criterionId}` (`rulepacks/SPEC.md` section 5): what a criterion made `mixed` by `uncertainIf` depends on, in words, in place of `why.exception` | "Over this limit, but still possible because of: filing status" is wrong for a criterion that is not a limit |
+| `pack.checked.short`, `pack.checked.title`, `pack.checked.body` (`rulepacks/SPEC.md` section 2), and `rail.checkedRules` for the link to that sheet on wide screens | A checked pack says so where a draft pack said "Draft rules" |
+
+Platforms: show `pack.checked.*` for a pack with `verifiedOn` and no `status`; use the `exception.*` key where it exists. Reference tests: 30.
+
 ## v1.26 — 2026-11-19
 
 Words for a result that is not a "may qualify", and for the recorded runs.

@@ -1,12 +1,11 @@
 {
   "jurisdiction": "us-ca",
-  "version": 1,
-  "verifiedOn": null,
-  "status": "draft",
+  "version": 2,
+  "verifiedOn": "2026-11-19",
   "sourcesReadOn": "2026-11-12",
   "currency": "USD",
   "numberFormat": "en-US",
-  "note": "Draft. Every number was read from the agency's own publication on 2026-11-12, with the URL and a verbatim quote recorded in SOURCES.md. A number counts as confirmed only when a person has compared it with the source; sources[].checkedAt is null until then. CalEITC and the Young Child Tax Credit use tax year 2025 figures because the 2026 figures are not final.",
+  "note": "Every number was read from the agency's own publication on 2026-11-12 and compared again with that publication, opened afresh, on 2026-11-19 (sources[].checkedAt): all limits, amounts, rates and ages match. CalEITC and the Young Child Tax Credit use tax year 2025 figures because the 2026 figures are not final. Married filing separately with a qualifying child is 'Possible' for the three tax credits: the separated-spouse exception depends on facts the app does not ask.",
   "constants": {
     "eitc": {
       "earnedIncomeAmount": {
@@ -386,7 +385,8 @@
         {
           "id": "filing-status",
           "requires": [
-            "filingStatus"
+            "filingStatus",
+            "numQualifyingChildren"
           ],
           "logic": {
             "!=": [
@@ -394,6 +394,26 @@
                 "var": "filingStatus"
               },
               "married-separate"
+            ]
+          },
+          "uncertainIf": {
+            "and": [
+              {
+                "==": [
+                  {
+                    "var": "filingStatus"
+                  },
+                  "married-separate"
+                ]
+              },
+              {
+                ">=": [
+                  {
+                    "var": "numQualifyingChildren"
+                  },
+                  1
+                ]
+              }
             ]
           }
         },
@@ -547,44 +567,44 @@
         {
           "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
           "title": "Rev. Proc. 2025-32, section 4.06 Earned Income Credit (tax year 2026)",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.irs.gov/pub/irs-prior/n797--2026.pdf",
           "title": "IRS Notice 797 (Rev. December 2026)",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/who-qualifies-for-the-earned-income-tax-credit-eitc",
           "title": "IRS - Who qualifies for the Earned Income Tax Credit (EITC)",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapA-partIV-subpartC-sec32.htm",
           "title": "26 U.S.C. 32 (U.S. Code, 2024 edition) - credit and phaseout percentages",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/how-to-work-with-a-tax-professional-to-claim-the-earned-income-tax-credit-eitc",
           "title": "IRS - How to work with a tax professional to claim the EITC",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.irs.gov/pub/irs-dft/f1040s3a--dft.pdf",
           "title": "IRS draft 2026 Schedule 3-A (Form 1040), Federal Public Benefit",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.federalregister.gov/d/2026-16985",
           "title": "Federal Register 2026-16985 - proposed rule REG-119882-25 (PRWORA and refundable credits)",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         }
       ]
     },
@@ -663,7 +683,8 @@
         {
           "id": "filing-status",
           "requires": [
-            "filingStatus"
+            "filingStatus",
+            "numQualifyingChildren"
           ],
           "logic": {
             "!=": [
@@ -671,6 +692,26 @@
                 "var": "filingStatus"
               },
               "married-separate"
+            ]
+          },
+          "uncertainIf": {
+            "and": [
+              {
+                "==": [
+                  {
+                    "var": "filingStatus"
+                  },
+                  "married-separate"
+                ]
+              },
+              {
+                ">=": [
+                  {
+                    "var": "numQualifyingChildren"
+                  },
+                  1
+                ]
+              }
             ]
           }
         },
@@ -716,20 +757,20 @@
         {
           "url": "https://www.ftb.ca.gov/file/personal/credits/caleitc/eligibility-and-credit-information.html",
           "title": "FTB - CalEITC eligibility and credit information",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.ftb.ca.gov/forms/2025/2025-3514-booklet.html",
           "title": "FTB - 2025 California Earned Income Tax Credit Booklet",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.ftb.ca.gov/forms/2025/2025-3514.pdf",
           "title": "FTB - 2025 Form FTB 3514",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         }
       ]
     },
@@ -808,7 +849,8 @@
         {
           "id": "filing-status",
           "requires": [
-            "filingStatus"
+            "filingStatus",
+            "hasChildUnder6"
           ],
           "logic": {
             "!=": [
@@ -816,6 +858,26 @@
                 "var": "filingStatus"
               },
               "married-separate"
+            ]
+          },
+          "uncertainIf": {
+            "and": [
+              {
+                "==": [
+                  {
+                    "var": "filingStatus"
+                  },
+                  "married-separate"
+                ]
+              },
+              {
+                "==": [
+                  {
+                    "var": "hasChildUnder6"
+                  },
+                  "yes"
+                ]
+              }
             ]
           }
         }
@@ -1030,26 +1092,26 @@
         {
           "url": "https://www.ftb.ca.gov/file/personal/credits/young-child-tax-credit.html",
           "title": "FTB - Young Child Tax Credit",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.ftb.ca.gov/forms/2025/2025-3514-booklet.html",
           "title": "FTB - 2025 California Earned Income Tax Credit Booklet",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.ftb.ca.gov/forms/2025/2025-3514.pdf",
           "title": "FTB - 2025 Form FTB 3514",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.ftb.ca.gov/file/personal/credits/caleitc/eligibility-and-credit-information.html",
           "title": "FTB - CalEITC eligibility and credit information",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         }
       ]
     },
@@ -1155,32 +1217,32 @@
         {
           "url": "https://cdss.ca.gov/portals/9/calfreshoutreach/220000_English_Income_Inserts_FFY2027.pdf",
           "title": "CDSS - 2026-2027 CalFresh Income & Eligibility Limits",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.cdss.ca.gov/calfreshoutreach/res/pdf/CalFresh_Modified_Categorical_Eligibility_Fact_Sheet.pdf",
           "title": "CDSS - CalFresh Modified Categorical Eligibility (MCE) Fact Sheet",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://cdss.ca.gov/Portals/9/CalFreshResourceCenter/CalFresh%20Noncitizen%20Eligibility%20FAQ_Color.pdf",
           "title": "CDSS - CalFresh Noncitizen Eligibility FAQ",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://cdss.ca.gov/Portals/9/CalFreshOutreach/CalFreshEligibilityBasics_InteractiveSlideDeck.pdf",
           "title": "CDSS - CalFresh Eligibility: Basics (Updated June 2026)",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://cdss.ca.gov/Portals/9/Additional-Resources/Letters-and-Notices/ACLs/2025/25-50.pdf",
           "title": "CDSS - All County Letter 25-50 (H.R. 1 impacts on CalFresh)",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         }
       ]
     },
@@ -1356,14 +1418,14 @@
         {
           "url": "https://www.cpuc.ca.gov/consumer-support/financial-assistance-savings-and-discounts/lifeline/california-lifeline-eligibility",
           "title": "CPUC - California LifeLine Eligibility",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/communications-division/documents/lifeline/notices-for-carriers/income-limits/2026-2027-california-lifeline-income-limits.pdf",
           "title": "CPUC - Administrative Letter 11: LifeLine income limits June 1, 2026 - May 31, 2027",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         }
       ]
     },
@@ -1535,8 +1597,8 @@
         {
           "url": "https://www.cpuc.ca.gov/industries-and-topics/electrical-energy/electric-costs/care-fera-program",
           "title": "CPUC - CARE/FERA Program",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         }
       ]
     },
@@ -1679,14 +1741,14 @@
         {
           "url": "https://www.cpuc.ca.gov/industries-and-topics/electrical-energy/electric-costs/care-fera-program",
           "title": "CPUC - CARE/FERA Program",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         },
         {
           "url": "https://www.pge.com/en/newsroom/currents/energy-savings/more-pg-e-customers-eligible-for-18--electric-discount-under-new.html",
           "title": "PG&E newsroom - FERA open to one- and two-person households (SB 1130)",
-          "checkedAt": null,
-          "checkedBy": null
+          "checkedAt": "2026-11-19",
+          "checkedBy": "project owner"
         }
       ]
     }

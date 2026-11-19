@@ -153,5 +153,8 @@
   "variable.investmentIncome": "Ingresos de inversiones",
   "variable.numQualifyingChildren": "Niños que puedes declarar",
   "variable.taxIdType": "Número de identificación para impuestos",
-  "pack.audience": "Para hogares de California"
+  "pack.audience": "Para hogares de California",
+  "exception.caleitc.filing-status": "Si declaras como casado por separado, aún puedes calificar cuando un niño que declaras vivió contigo más de la mitad del año y viviste separado de tu cónyuge los últimos 6 meses del año, o tienes una separación legal.",
+  "exception.federal-eitc.filing-status": "Si declaras como casado por separado, aún puedes calificar cuando un niño que declaras vivió contigo más de la mitad del año y viviste separado de tu cónyuge los últimos 6 meses del año, o tienes una separación legal.",
+  "exception.yctc.filing-status": "Si declaras como casado por separado, aún puedes calificar cuando un niño que declaras vivió contigo más de la mitad del año y viviste separado de tu cónyuge los últimos 6 meses del año, o tienes una separación legal."
 }

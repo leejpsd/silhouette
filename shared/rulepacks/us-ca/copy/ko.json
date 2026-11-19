@@ -153,5 +153,8 @@
   "variable.investmentIncome": "투자 소득",
   "variable.numQualifyingChildren": "신고 가능한 자녀 수",
   "variable.taxIdType": "납세자 번호",
-  "pack.audience": "For households in California"
+  "pack.audience": "For households in California",
+  "exception.caleitc.filing-status": "부부 개별 신고여도, 공제 대상 자녀가 한 해의 절반 넘게 함께 살았고 연말 6개월 동안 배우자와 따로 살았거나 법적으로 별거 중이면 받을 수 있습니다.",
+  "exception.federal-eitc.filing-status": "부부 개별 신고여도, 공제 대상 자녀가 한 해의 절반 넘게 함께 살았고 연말 6개월 동안 배우자와 따로 살았거나 법적으로 별거 중이면 받을 수 있습니다.",
+  "exception.yctc.filing-status": "부부 개별 신고여도, 공제 대상 자녀가 한 해의 절반 넘게 함께 살았고 연말 6개월 동안 배우자와 따로 살았거나 법적으로 별거 중이면 받을 수 있습니다."
 }

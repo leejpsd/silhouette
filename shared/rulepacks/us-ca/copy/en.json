@@ -153,5 +153,8 @@
   "variable.investmentIncome": "Investment income",
   "variable.numQualifyingChildren": "Children you can claim",
   "variable.taxIdType": "Tax ID number",
-  "pack.audience": "For households in California"
+  "pack.audience": "For households in California",
+  "exception.caleitc.filing-status": "Married filing separately can still qualify when a child you claim lived with you more than half the year and you lived apart from your spouse for the last 6 months of the year, or are legally separated.",
+  "exception.federal-eitc.filing-status": "Married filing separately can still qualify when a child you claim lived with you more than half the year and you lived apart from your spouse for the last 6 months of the year, or are legally separated.",
+  "exception.yctc.filing-status": "Married filing separately can still qualify when a child you claim lived with you more than half the year and you lived apart from your spouse for the last 6 months of the year, or are legally separated."
 }

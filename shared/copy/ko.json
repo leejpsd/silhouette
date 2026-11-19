@@ -655,5 +655,9 @@
   "judges.recorded.title": "Recorded on real devices",
   "judges.recorded.row": "{onDevice} of {total} cases answered on the device · {wrong} of {readings} paystub readings with a wrong value",
   "judges.recorded.note": "These are recordings, made on the machines named, shown exactly as saved. Open one to see every case.",
-  "detail.unlikelyNote": "This is a first check from the answers you gave, not a decision. The agency decides, and you can still apply."
+  "detail.unlikelyNote": "This is a first check from the answers you gave, not a decision. The agency decides, and you can still apply.",
+  "pack.checked.short": "{date}에 공식 출처와 대조한 규칙.",
+  "pack.checked.title": "캘리포니아 규칙, 대조 완료",
+  "pack.checked.body": "These are real California and federal programs. Every limit and amount was compared with the agency’s own publication on {date}, and each program links to that source. Federal figures are for tax year 2026; the California credits use tax year 2025 figures until the 2026 ones are final. Results say “may qualify”, never more: the agency decides.",
+  "rail.checkedRules": "규칙을 확인한 방법"
 }

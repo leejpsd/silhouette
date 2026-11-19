@@ -655,5 +655,9 @@
   "judges.recorded.title": "Grabado en dispositivos reales",
   "judges.recorded.row": "{onDevice} de {total} casos respondidos en el dispositivo · {wrong} de {readings} lecturas de talón con un valor incorrecto",
   "judges.recorded.note": "Son grabaciones, hechas en las máquinas indicadas, mostradas tal como se guardaron. Abre una para ver cada caso.",
-  "detail.unlikelyNote": "Es una primera revisión con las respuestas que diste, no una decisión. La agencia decide, y aun así puedes solicitarlo."
+  "detail.unlikelyNote": "Es una primera revisión con las respuestas que diste, no una decisión. La agencia decide, y aun así puedes solicitarlo.",
+  "pack.checked.short": "Reglas comparadas con fuentes oficiales el {date}.",
+  "pack.checked.title": "Reglas de California, revisadas",
+  "pack.checked.body": "Son programas reales de California y federales. Cada límite y monto se comparó con la publicación de la propia agencia el {date}, y cada programa enlaza a esa fuente. Las cifras federales son del año tributario 2026; los créditos de California usan cifras de 2025 hasta que las de 2026 sean finales. Los resultados dicen “es posible que califiques”, nunca más: la agencia decide.",
+  "rail.checkedRules": "Cómo se revisaron las reglas"
 }
