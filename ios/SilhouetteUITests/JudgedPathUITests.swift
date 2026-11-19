@@ -102,8 +102,9 @@ final class JudgedPathUITests: XCTestCase {
         XCTAssertTrue(row.exists)
         XCTAssertEqual(row.value as? String, "Not from these answers — you can still apply")
         row.tap()
+        // "Why this result" is further down the program's page.
         let lead = app.element("why.lead")
-        app.scrollIntoView(lead)
+        for _ in 0..<12 where !(lead.exists && lead.isHittable) { app.swipeUp() }
         XCTAssertTrue(lead.waitForExistence(timeout: 5))
         XCTAssertTrue(lead.label.contains("using the sample household's answers"), lead.label)
     }
