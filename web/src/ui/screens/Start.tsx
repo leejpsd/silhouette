@@ -79,7 +79,7 @@ export function StartScreen({ notice }: { notice: string | null }) {
         <div className="stack-8">
           {/* Who it is for, from the rule pack in use (the first thing a judge needs to know). */}
           {lookup(locale, 'pack.audience') !== undefined && <p className="eyebrow">{t(dynamicKey('pack.audience'))}</p>}
-          <ScreenHeading size={54} wideSize={104} maxLines={4}>
+          <ScreenHeading size={44} wideSize={104} maxLines={4}>
             {t('start.title')}
           </ScreenHeading>
           <p className="lead">

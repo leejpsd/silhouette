@@ -3341,7 +3341,8 @@ main h2.source-title {
   display: block;
   margin: 0;
   font-family: var(--font-mono);
-  font-size: clamp(9px, calc((100cqi - 38px) / (var(--doc-cols, 40) * 0.6)), 13px);
+  /* The whole line fits a phone: a silhouette that scrolls sideways hides chips (N21 at the edge). */
+  font-size: clamp(7px, calc((100cqi - 38px) / (var(--doc-cols, 40) * 0.6)), 13px);
   line-height: 1.5;
   white-space: pre;
   overflow-x: auto;
@@ -3391,6 +3392,17 @@ main h2.source-title {
 .doc[data-mode='leave'] .tok::first-line {
   font-size: var(--type-placeholder-id-size);
   font-weight: 600;
+}
+
+/* On a phone the chips shrink with the document's type, so a whole line fits and no chip is cut. */
+@media (max-width: 520px) {
+  .doc[data-mode='leave'] .tok {
+    padding: 0 2px;
+  }
+
+  .doc[data-mode='leave'] .tok::first-line {
+    font-size: min(var(--type-placeholder-id-size), 1em);
+  }
 }
 
 .doc[data-mode='leave'] .tok-mine {
