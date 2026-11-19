@@ -1,4 +1,4 @@
-// The California draft pack (shared/rulepacks/us-ca): its 27 hand-worked households (189 expected
+// The California pack (shared/rulepacks/us-ca): its 27 hand-worked households (189 expected
 // results) through the Swift engine, and the authoring checks of shared/reference/lint.mjs ported as
 // tests, so the pack the app ships is checked by the code that runs it.
 
@@ -190,14 +190,15 @@ struct CaliforniaPackTests {
         }
     }
 
-    @Test("a draft pack names the date its sources were read, and every program has a source and an apply link")
-    func draftAndSources() {
+    @Test("the checked pack names the date it was checked, and every program has a checked source and an apply link")
+    func checkedAndSources() {
         let p = Self.packJSON
-        #expect(p["status"]?.stringValue == "draft")
-        #expect(p["sourcesReadOn"]?.stringValue != nil)
+        #expect(p["status"] == nil)
+        #expect(p["verifiedOn"]?.stringValue == "2026-11-19")
         for program in p["programs"]?.arrayValue ?? [] {
             let sources = program["sources"]?.arrayValue ?? []
             #expect(sources.count > 0, "\(program["id"]?.stringValue ?? "")")
+            #expect(sources.allSatisfy { $0["checkedAt"]?.stringValue != nil }, "\(program["id"]?.stringValue ?? "")")
             #expect(program["applyUrl"]?.stringValue != nil)
         }
         for locale in ["en", "es"] {

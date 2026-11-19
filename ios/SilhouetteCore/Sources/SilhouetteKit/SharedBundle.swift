@@ -148,6 +148,9 @@ public struct PackInfo: Sendable {
     public let status: String?
     public let sourcesReadOn: String?
     public var isDraft: Bool { status == "draft" }
+    /// Checked: a person compared every number with its source (`verifiedOn`, no `status`). The app says so
+    /// where a draft pack says "Draft rules" (rulepacks/SPEC.md section 2).
+    public var isChecked: Bool { status == nil && !(verifiedOn ?? "").isEmpty }
     /// ISO 4217 code when the pack names one: amounts, limits and income ranges are money.
     public let currency: String?
     /// BCP 47 tag of the jurisdiction's number conventions (`en-US`): money is written this way in

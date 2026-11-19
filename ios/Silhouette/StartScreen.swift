@@ -154,8 +154,8 @@ struct DraftLine: View {
 
     var body: some View {
         let info = model.bundle.packInfo
-        if info.isDemo || info.isDraft {
-            let notice = info.isDraft ? model.t("pack.draft.short", ["date": model.draftDate]) : model.t("demo.short")
+        if info.isDemo || info.isDraft || info.isChecked {
+            let notice = model.rulesShort
             let more = Text(model.t("demo.more"))
                 .fontWeight(.semibold)
                 .underline(true, color: onHero ? .white.opacity(0.35) : theme.underline)
@@ -171,7 +171,7 @@ struct DraftLine: View {
             }
             .buttonStyle(RowPress())
             .padding(.vertical, -12)
-            .accessibilityLabel("\(info.isDraft ? model.t("pack.draft.title") : model.t("demo.title")). \(notice)")
+            .accessibilityLabel("\(model.rulesTitle). \(notice)")
             .accessibilityHint(model.t("demo.more"))
             .accessibilityIdentifier("demo.more")
             .accessibilityElement(children: .contain)

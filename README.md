@@ -70,7 +70,7 @@ Silhouette answers from rules on the device, asks for a document only when it wo
 - CARE
 - FERA
 
-Every limit and amount was read from the agencies' own publications on 2026-11-12, with a source audit of verbatim quotes ([`shared/rulepacks/us-ca/SOURCES.md`](shared/rulepacks/us-ca/SOURCES.md)). The pack is labelled a **draft** until a person has confirmed every number, so every screen says so, results say "may qualify" and never more, and every program page links its official sources with the date they were read. Silhouette is not a government service, is not affiliated with any agency, and is not legal or tax advice.
+Every limit and amount was read from the agencies' own publications on 2026-11-12, with a source audit of verbatim quotes ([`shared/rulepacks/us-ca/SOURCES.md`](shared/rulepacks/us-ca/SOURCES.md)). On 2026-11-19 every source was opened again and each number compared with it: all 84 limits and amounts, the rates and the ages match, and one rule was corrected (married filing separately with a child is "Possible" for the three tax credits, as the IRS and the FTB allow). Every screen says when the rules were checked, results say "may qualify" and never more, and every program page links its official sources with the date they were checked. Silhouette is not a government service, is not affiliated with any agency, and is not legal or tax advice.
 
 ## How it works
 
@@ -242,8 +242,8 @@ As of 2026-11-19.
 
 | Platform | Contract | Done and verified | Not yet |
 |---|---|---|---|
-| Web | v1.23 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
-| iOS | v1.23 | Native SwiftUI app: California pack, document flow, on-device reading in parts with the shared fixtures, explanations, the on-device check and the two-minute path. Five recorded runs on a real iPhone 17 Pro, including the cloud retry | A build to install without Xcode; the one paystub Apple's model refuses is read in the cloud |
+| Web | v1.27 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
+| iOS | v1.27 | Native SwiftUI app: California pack, document flow, on-device reading in parts with the shared fixtures, explanations, the on-device check and the two-minute path. Five recorded runs on a real iPhone 17 Pro, including the cloud retry | A build to install without Xcode; the one paystub Apple's model refuses is read in the cloud |
 | Android | v1.18 | Native Compose app: California pack, document flow, on-device reading in parts with the shared fixtures, Firebase AI Logic (`firebase-ai` and `firebase-ai-ondevice`), the on-device check and the two-minute path. Verified with a scripted model | The current visual design, and a recorded run on a phone with Gemini Nano |
 
 Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/`](android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
@@ -290,13 +290,13 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 | [`firebase/`](firebase/README.md), [`firebase.json`](firebase.json) | Remote Config template, Firestore rules, hosting headers |
 | [`docs/`](docs/ARCHITECTURE.md) | Architecture and these images |
 
-**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.23. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
+**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.27. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Limits and what is next
 
-- The California pack is a draft: no number has yet been confirmed by a person, and CalEITC and the Young Child Tax Credit use tax year 2025 figures because the 2026 figures are not final.
+- CalEITC and the Young Child Tax Credit use tax year 2025 figures because the 2026 figures are not final. The separated-spouse exception for married filing separately is shown as "Possible", because the app does not ask whether the spouses lived apart.
 - One jurisdiction. Paystubs are the document type in the app flow.
 - Photos are read only by an on-device model; there is no separate text recognition library.
 - The on-device checks have known gaps, listed in [`shared/validation/DEVICE_READING.md`](shared/validation/DEVICE_READING.md) section 9.

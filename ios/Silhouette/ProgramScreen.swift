@@ -152,7 +152,7 @@ struct ProgramScreen: View {
                     }
                     // A draft pack says it is a draft (with the date its sources were read), never both notes.
                     let info = model.bundle.packInfo
-                    NoteText(text: info.verifiedOn.map { model.t("rules.verifiedOn", ["date": $0]) }
+                    NoteText(text: info.verifiedOn.map { model.t("rules.verifiedOn", ["date": model.packDate($0)]) }
                         ?? (info.isDraft ? model.t("pack.draft.notice", ["date": model.draftDate]) : model.t("detail.unverified")))
                 }
             }

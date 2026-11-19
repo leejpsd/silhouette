@@ -300,6 +300,17 @@ final class AppModel {
 
     /// The draft notice line: "Draft rules, read November 12, 2026."
     var draftDate: String { bundle.packInfo.sourcesReadOn.map(packDate) ?? "" }
+    /// The date a checked pack's numbers were compared with their sources.
+    var checkedDate: String { bundle.packInfo.verifiedOn.map(packDate) ?? "" }
+    /// The rules line and its sheet title: checked, draft or demo.
+    var rulesShort: String {
+        let info = bundle.packInfo
+        return info.isChecked ? t("pack.checked.short", ["date": checkedDate]) : info.isDraft ? t("pack.draft.short", ["date": draftDate]) : t("demo.short")
+    }
+    var rulesTitle: String {
+        let info = bundle.packInfo
+        return t(info.isChecked ? "pack.checked.title" : info.isDraft ? "pack.draft.title" : "demo.title")
+    }
 
     /// A document amount as the jurisdiction's paperwork writes it (the pack's number format), with
     /// decimals only when it has them.

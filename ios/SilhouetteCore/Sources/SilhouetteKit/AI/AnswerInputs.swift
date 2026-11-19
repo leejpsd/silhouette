@@ -153,8 +153,9 @@ public enum AnswerInputs {
             }
             if let cap = compared.compactMap(\.capped).first { row.notes.append(copy.text("why.capNote", locale, ["cap": String(cap)])) }
             if let exception = r.exception, !exception.isEmpty {
+                // The pack's own sentence for this criterion when it has one (rulepacks/SPEC.md section 5).
                 let what = exception.map { copy.lookup("variable.\($0)", locale) ?? $0 }.joined(separator: ", ")
-                row.stateText = copy.text("why.exception", locale, ["what": what])
+                row.stateText = copy.lookup("exception.\(programId).\(r.id)", locale) ?? copy.text("why.exception", locale, ["what": what])
             } else {
                 row.stateText = copy.text("state.\(r.state.rawValue)", locale)
             }

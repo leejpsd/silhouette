@@ -367,9 +367,10 @@ private struct DemoSheet: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        let draft = model.bundle.packInfo.isDraft
-        Display(text: model.t(draft ? "pack.draft.title" : "demo.title"), size: 44)
-        Text(draft ? model.t("pack.draft.body", ["date": model.draftDate]) : model.t("demo.body"))
+        let info = model.bundle.packInfo
+        Display(text: model.rulesTitle, size: 44)
+        Text(info.isChecked ? model.t("pack.checked.body", ["date": model.checkedDate])
+             : info.isDraft ? model.t("pack.draft.body", ["date": model.draftDate]) : model.t("demo.body"))
             .type(.lead).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
         // The body already says it is a draft and when it was read; the short notice is not repeated.
         NoteText(text: model.t("promise.line3"), size: 15)

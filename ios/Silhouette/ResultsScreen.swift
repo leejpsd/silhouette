@@ -52,7 +52,7 @@ struct ResultsScreen: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 8) {
                 Spacer(minLength: 0)
-                GlassRound(systemImage: "info.circle", label: model.t(model.bundle.packInfo.isDraft ? "pack.draft.title" : "demo.title"), id: "results.info") { model.sheet = .demo }
+                GlassRound(systemImage: "info.circle", label: model.rulesTitle, id: "results.info") { model.sheet = .demo }
                 LanguageButton()
             }
         }

@@ -1,4 +1,4 @@
-// End-to-end Quick Check flows with the California draft pack (the pack people see). Question order
+// End-to-end Quick Check flows with the California pack (the pack people see). Question order
 // comes from its questionOrder: householdSize, numQualifyingChildren, hasChildUnder6, income,
 // hasEarnedIncome, ageGroup, housing, benefits, energyProvider, hasElderlyOrDisabledMember,
 // filingStatus, taxIdType, investmentIncome, calfreshEligibleMember.
@@ -109,20 +109,20 @@ final class QuickCheckUITests: XCTestCase {
         XCTAssertFalse(app.buttons["depends.calfreshEligibleMember"].exists)
     }
 
-    func testDraftNoticeAndOfficialSources() {
+    func testCheckedNoticeAndOfficialSources() {
         let app = XCUIApplication.silhouette()
         app.launch()
         let banner = app.element("demo.banner")
         XCTAssertTrue(banner.waitForExistence(timeout: 5))
-        // One paragraph that opens the draft-rules sheet: the date is in its label.
-        XCTAssertTrue(app.buttons["demo.more"].label.replacingOccurrences(of: "\u{00A0}", with: " ").contains("Draft rules, read November 12, 2026."),
-                      "the draft notice with the date its sources were read")
+        // One paragraph that opens the rules sheet: the date the rules were checked is in its label.
+        XCTAssertTrue(app.buttons["demo.more"].label.replacingOccurrences(of: "\u{00A0}", with: " ").contains("Rules checked against official sources November 19, 2026."),
+                      "the checked notice with the date the rules were checked")
         app.runPreparedHousehold()
         app.tapButton("program.federal-eitc")
-        let readOn = app.element("official.readOn").firstMatch
-        app.scrollIntoView(readOn)
-        XCTAssertTrue(readOn.waitForExistence(timeout: 5))
-        XCTAssertTrue(readOn.label.replacingOccurrences(of: "\u{00A0}", with: " ").contains("Read from this source on November 12, 2026"), readOn.label)
+        let confirmed = app.element("official.confirmedOn").firstMatch
+        app.scrollIntoView(confirmed)
+        XCTAssertTrue(confirmed.waitForExistence(timeout: 5))
+        XCTAssertTrue(confirmed.label.replacingOccurrences(of: "\u{00A0}", with: " ").contains("Confirmed against this source on November 19, 2026"), confirmed.label)
         XCTAssertTrue(app.element("program.period").label.contains("tax year 2026"), "the period in the reader's language")
     }
 
