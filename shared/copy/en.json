@@ -391,7 +391,7 @@
   "review.moreValues": "Other values, not used for the result ({count})",
   "review.confirmAllCount": "Confirm all {count} values",
   "review.pendingLead": "Only these values decide the result. The other values are not used for it; open them to confirm or change them.",
-  "review.confirmLeadCount.one": "Confirm the value that decides the result",
+  "review.confirmLeadCount.one": "Confirm the {count} value that decides the result",
   "review.confirmLeadCount": "Confirm the {count} values that decide the result",
   "about.leadPublic": "A model explains the program in general. Nothing about you is sent: only the program's name, its public information and the question.",
   "send.linePublic": "Nothing about you. Only the program, its public information and the question.",

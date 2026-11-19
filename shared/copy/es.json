@@ -391,7 +391,7 @@
   "review.moreValues": "Otros valores, no se usan para el resultado ({count})",
   "review.confirmAllCount": "Confirmar los {count} valores",
   "review.pendingLead": "Solo estos valores deciden el resultado. Los demás no se usan para él; ábrelos para confirmarlos o cambiarlos.",
-  "review.confirmLeadCount.one": "Confirmar el valor que decide el resultado",
+  "review.confirmLeadCount.one": "Confirmar {count} valor que decide el resultado",
   "review.confirmLeadCount": "Confirmar los {count} valores que deciden el resultado",
   "about.leadPublic": "Un modelo explica el programa en general. No se envía nada sobre ti: solo el nombre del programa, su información pública y la pregunta.",
   "send.linePublic": "Nada sobre ti. Solo el programa, su información pública y la pregunta.",

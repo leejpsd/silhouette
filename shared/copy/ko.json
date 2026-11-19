@@ -391,7 +391,7 @@
   "review.moreValues": "결과에 쓰이지 않는 다른 값 ({count})",
   "review.confirmAllCount": "값 {count}개 모두 확인",
   "review.pendingLead": "결과는 이 값들로만 정해집니다. 다른 값은 결과에 쓰이지 않습니다. 펼쳐서 확인하거나 고칠 수 있습니다.",
-  "review.confirmLeadCount.one": "결과를 정하는 값 확인",
+  "review.confirmLeadCount.one": "결과를 정하는 값 {count}개 확인",
   "review.confirmLeadCount": "결과를 정하는 값 {count}개 확인",
   "about.leadPublic": "모델이 제도를 일반적으로 설명합니다. 나에 대한 정보는 보내지 않습니다. 제도 이름, 공개 정보, 질문만 보냅니다.",
   "send.linePublic": "나에 대한 정보는 없습니다. 제도, 공개 정보, 질문뿐입니다.",

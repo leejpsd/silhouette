@@ -140,7 +140,7 @@ export async function openDeleteEverything(page: Page, from: 'record' | 'demo' =
  * as not used for it), or every value once they are opened.
  */
 export async function confirmAllValues(page: Page): Promise<void> {
-  const confirmAll = page.getByRole('button', { name: /^Confirm (all \d+ values|\d+ value|the \d+ values that decide the result|the value that decides the result)$/ });
+  const confirmAll = page.getByRole('button', { name: /^Confirm (all \d+ values|\d+ value|the \d+ values that decide the result|the 1 value that decides the result)$/ });
   await expect(confirmAll).toBeVisible();
   await confirmAll.click();
   await expect(confirmAll).toHaveCount(0);
