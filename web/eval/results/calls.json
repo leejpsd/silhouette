@@ -1,5 +1,5 @@
 {
-  "total": 1007,
+  "total": 1037,
   "runs": [
     {
       "date": "2026-11-12T04:33:56.749Z",
@@ -289,6 +289,15 @@
       "task": "on-device check in Chrome 157, two-part reading: one extraction case repeated in the cloud after the on-device core failed the check",
       "documents": 1,
       "calls": 1
+    },
+    {
+      "date": "2026-11-19T06:28:07.744Z",
+      "variants": [
+        "h36"
+      ],
+      "set": "all",
+      "documents": 30,
+      "calls": 30
     }
   ]
 }

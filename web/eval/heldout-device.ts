@@ -34,6 +34,9 @@ const DOCS: readonly Doc[] = Object.keys(texts)
   });
 
 const statusOf = (statuses: Record<string, FieldStatus>) => statuses;
+/** The values the person would be shown, field by field (synthetic documents only), for scoring offline. */
+const valuesOf = (review: ReturnType<typeof buildReview>) =>
+  Object.fromEntries(review.map((f) => [f.name, f.kind === 'list' ? f.items.map((i) => i.value) : f.value]));
 
 async function readOne(doc: Doc) {
   const started = performance.now();
@@ -59,10 +62,11 @@ async function readOne(doc: Doc) {
       retried: result.reason === 'on-device-failed',
       latencyMs: Math.round(performance.now() - started),
       device: attempt
-        ? { answered: first !== undefined, problems: attempt.problems, statuses: first ? statusOf(fieldStatuses(review(first), doc.gold)) : null, fields: first ? scoreFields(review(first), doc.gold) : null }
+        ? { answered: first !== undefined, problems: attempt.problems, statuses: first ? statusOf(fieldStatuses(review(first), doc.gold)) : null, fields: first ? scoreFields(review(first), doc.gold) : null, values: first ? valuesOf(review(first)) : null }
         : null,
       final: {
         statuses: statusOf(finalStatuses),
+        values: valuesOf(review(result.value)),
         fields: scoreFields(review(result.value), doc.gold),
         wrongFields: wrongFields(finalStatuses),
         notRead: result.notRead ?? [],

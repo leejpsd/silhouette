@@ -186,6 +186,8 @@ try {
 const rows = readdirSync(RESULTS)
   .filter((f) => /^[a-z0-9-]+\.json$/.test(f) && f !== 'calls.json')
   .map((f) => JSON.parse(readFileSync(new URL(f, RESULTS), 'utf8')))
+  // Variant results on eval/dataset/ only: the answers files and the held-out results have their own reports.
+  .filter((r) => typeof r.variant === 'string' && r.metrics?.enPaystub)
   .sort((a, b) => a.variant.localeCompare(b.variant, 'en', { numeric: true }));
 const pctOf = (x) => (x === null || x === undefined ? '–' : `${(x * 100).toFixed(1)}%`);
 const lines = [
