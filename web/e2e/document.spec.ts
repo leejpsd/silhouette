@@ -365,3 +365,23 @@ async function expectOnlyModelAndSettings(page: import('@playwright/test').Page,
   const channels = await list.locator('li').evaluateAll((items) => items.map((li) => li.getAttribute('data-channel')));
   expect(channels.filter((c) => c !== 'ai-cloud' && c !== 'remote-config')).toEqual([]);
 }
+
+test('the folded values are counted as the button above counts them, with fields not found named apart', async ({ page, context }) => {
+  await noOnDeviceModel(context);
+  // A reading that found everything but the hours and the rate.
+  const pointers = { ...fixturePointers('paystub-en-01-correct'), hoursWorked: null, hourlyRate: null } as Record<string, unknown>;
+  await fakeCloudModel(page, { pointers });
+  await page.goto('/#/doc');
+  await page.getByRole('button', { name: 'English paystub (text)' }).click();
+  await page.getByRole('button', { name: /^(Send|Read on this device)$/ }).click();
+  const seeAll = page.getByRole('button', { name: /^See all \d+ values$/ });
+  const total = Number((await seeAll.innerText()).match(/\d+/)?.[0]);
+  const shown = await page.getByTestId('lead-fields').locator(':scope > li').count();
+  expect(shown).toBeGreaterThan(0);
+  const more = await page.getByTestId('more-values').innerText();
+  const m = more.match(/\((\d+) found · (\d+) not found\)/);
+  expect(m).not.toBeNull();
+  expect(Number(m?.[2])).toBe(2);
+  // What is shown plus what is folded, found, makes the number on the button.
+  expect(shown + Number(m?.[1])).toBe(total);
+});

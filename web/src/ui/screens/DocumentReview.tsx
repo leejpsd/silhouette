@@ -297,6 +297,8 @@ export function DocumentReviewScreen() {
   const leadNames = new Set<string>(leadOrder);
   const leadRows = [...new Set(leadOrder)].flatMap((n) => rows.filter((r) => r.name === n));
   const restRows = rows.filter((r) => !leadNames.has(r.name));
+  // Fields a reading did not find (typing the numbers looked for nothing, so nothing is "not found").
+  const restMissing = manual ? 0 : restRows.filter((r) => r.status === 'empty').length;
   const [moreOpen, setMoreOpen] = useState(false);
   const [moreSeen, setMoreSeen] = useState(false);
   const moreButton = useRef<HTMLButtonElement>(null);
@@ -652,7 +654,10 @@ export function DocumentReviewScreen() {
               setMoreSeen(true);
             }}
           >
-            {t('review.moreValues', { count: restRows.length + deductions.length })}
+            {/* Counted as the button above counts: values found; fields not found are named apart. */}
+            {restMissing > 0
+              ? t('review.moreValues.notFound', { count: restRows.length - restMissing + deductions.length, missing: restMissing })
+              : t('review.moreValues', { count: restRows.length + deductions.length })}
             <ChevronRight />
           </button>
           <div id={moreId} hidden={!moreOpen}>
