@@ -1,83 +1,32 @@
-// Renders the PNG app icons (same shape as public/icon.svg) without image dependencies.
-// Run once: node scripts/make-icons.mjs. Output is committed in public/.
-import { writeFileSync } from 'node:fs';
-import { deflateSync } from 'node:zlib';
+// Renders the PNG app icons from one drawing: an ink square, a white silhouette and an orange chip (the
+// colour of everything that may leave the device). public/icon.svg is the favicon; the PNGs are the
+// installed-app icons. Run once after changing the drawing: node scripts/make-icons.mjs (needs
+// rsvg-convert, from librsvg). Output is committed in public/.
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-const BG = [0x0b, 0x6b, 0x42];
-const FG = [0xf6, 0xee, 0xc6];
+const INK = '#0E0E0E';
+const GLYPH = `<g fill="#FFFFFF"><circle cx="20" cy="17" r="7"/><path d="M6 40c0-8.3 6.3-13 14-13s14 4.7 14 13z"/></g><rect x="27" y="29" width="15" height="10" rx="3.5" fill="#FF5B1F" stroke="${INK}" stroke-width="2" paint-order="stroke"/>`;
+const svg = (body) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">${body}</svg>`;
 
-function crc32(buf) {
-  let c = ~0;
-  for (const b of buf) {
-    c ^= b;
-    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
-  }
-  return ~c >>> 0;
-}
-function chunk(type, data) {
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length);
-  const body = Buffer.concat([Buffer.from(type), data]);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(crc32(body));
-  return Buffer.concat([len, body, crc]);
-}
+// The favicon and the regular icons: rounded. The maskable icon fills the square and keeps the glyph in
+// the safe zone; the Apple touch icon is square (the system rounds it).
+const rounded = svg(`<rect width="48" height="48" rx="11" fill="${INK}"/>${GLYPH}`);
+const maskable = svg(`<rect width="48" height="48" fill="${INK}"/><g transform="translate(9.6 9.6) scale(0.6)">${GLYPH}</g>`);
+const square = svg(`<rect width="48" height="48" fill="${INK}"/>${GLYPH}`);
 
-// Shape in a 48-unit box: head circle (24,14.5) r 8.5; shoulders = top half of an ellipse
-// centred (24,42) rx 17 ry 15. `scale` shrinks the glyph for the maskable safe zone.
-function inside(x, y, size, { rounded, scale }) {
-  const u = (v) => (v / size) * 48;
-  const [X, Y] = [u(x), u(y)];
-  if (rounded) {
-    const r = 11;
-    const cx = Math.min(Math.max(X, r), 48 - r);
-    const cy = Math.min(Math.max(Y, r), 48 - r);
-    if ((X - cx) ** 2 + (Y - cy) ** 2 > r * r) return 'none';
-  }
-  const gx = 24 + (X - 24) / scale;
-  const gy = 24 + (Y - 24) / scale;
-  const head = (gx - 24) ** 2 + (gy - 14.5) ** 2 <= 8.5 ** 2;
-  const body = gy <= 42 && ((gx - 24) / 17) ** 2 + ((gy - 42) / 15) ** 2 <= 1;
-  return head || body ? 'fg' : 'bg';
-}
-
-function render(size, opts) {
-  const ss = 4;
-  const rows = [];
-  for (let y = 0; y < size; y++) {
-    const row = Buffer.alloc(1 + size * 4);
-    for (let x = 0; x < size; x++) {
-      let fg = 0, bg = 0;
-      for (let sy = 0; sy < ss; sy++) for (let sx = 0; sx < ss; sx++) {
-        const hit = inside(x + (sx + 0.5) / ss, y + (sy + 0.5) / ss, size, opts);
-        if (hit === 'fg') fg++;
-        else if (hit === 'bg') bg++;
-      }
-      const n = ss * ss;
-      const alpha = (fg + bg) / n;
-      const mix = fg + bg === 0 ? 0 : fg / (fg + bg);
-      const o = 1 + x * 4;
-      for (let i = 0; i < 3; i++) row[o + i] = Math.round(BG[i] * (1 - mix) + FG[i] * mix);
-      row[o + 3] = Math.round(alpha * 255);
-    }
-    rows.push(row);
-  }
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
-  ihdr[8] = 8;
-  ihdr[9] = 6;
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk('IHDR', ihdr),
-    chunk('IDAT', deflateSync(Buffer.concat(rows))),
-    chunk('IEND', Buffer.alloc(0)),
-  ]);
-}
-
-const out = new URL('../public/', import.meta.url);
-writeFileSync(new URL('icon-192.png', out), render(192, { rounded: true, scale: 0.7 }));
-writeFileSync(new URL('icon-512.png', out), render(512, { rounded: true, scale: 0.7 }));
-writeFileSync(new URL('icon-512-maskable.png', out), render(512, { rounded: false, scale: 0.55 }));
-writeFileSync(new URL('apple-touch-icon.png', out), render(180, { rounded: false, scale: 0.7 }));
-console.log('icons written');
+const pub = new URL('../public/', import.meta.url).pathname;
+writeFileSync(join(pub, 'icon.svg'), `${rounded}\n`);
+const dir = mkdtempSync(join(tmpdir(), 'icons-'));
+const render = (source, size, out) => {
+  const file = join(dir, `${out}.svg`);
+  writeFileSync(file, source);
+  execFileSync('rsvg-convert', ['-w', String(size), '-h', String(size), file, '-o', join(pub, out)]);
+};
+render(rounded, 192, 'icon-192.png');
+render(rounded, 512, 'icon-512.png');
+render(maskable, 512, 'icon-512-maskable.png');
+render(square, 180, 'apple-touch-icon.png');
+console.log('icons written to public/');
