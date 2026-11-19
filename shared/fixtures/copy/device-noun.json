@@ -815,6 +815,41 @@
     },
     {
       "language": "en",
+      "platform": "ios",
+      "key": "tasks.enforce.onlyOnDevice",
+      "text": "Exact values only on this device. In a browser without Chrome’s on-device model (Safari, Firefox, Chrome without it), the Firebase AI Logic SDK would send even an ONLY_ON_DEVICE request to the cloud. So before every such call this app asks the browser for the model, and stops when it is not there.",
+      "shown": "Exact values only on this iPhone. In a browser without Chrome’s on-device model (Safari, Firefox, Chrome without it), the Firebase AI Logic SDK would send even an ONLY_ON_DEVICE request to the cloud. So before every such call this app asks the browser for the model, and stops when it is not there."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.enforce.monitor",
+      "text": "A network check lets a request to Firebase AI Logic leave only when a cloud task registered it a moment before; anything else is blocked and listed in “Leaving your device”.",
+      "shown": "A network check lets a request to Firebase AI Logic leave only when a cloud task registered it a moment before; anything else is blocked and listed in “Leaving your iPhone”."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "tasks.config.route_short_text_max_words",
+      "text": "Explanations up to this many words run on this device first",
+      "shown": "Explanations up to this many words run on this iPhone first"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "review.pointer.cloudW2",
+      "text": "The model in the cloud saw only {ref}, never {value}. This device put the value back from your W-2.",
+      "shown": "The model in the cloud saw only {ref}, never {value}. This iPhone put the value back from your W-2."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "review.pointer.deviceW2",
+      "text": "Even the model on this device answers only {ref}. This device puts {value} back from your W-2.",
+      "shown": "Even the model on this iPhone answers only {ref}. This iPhone puts {value} back from your W-2."
+    },
+    {
+      "language": "en",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "On this device",
@@ -1626,6 +1661,41 @@
       "shown": "Read as a silhouette in the cloud. Your values stay on this phone."
     },
     {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.enforce.onlyOnDevice",
+      "text": "Exact values only on this device. In a browser without Chrome’s on-device model (Safari, Firefox, Chrome without it), the Firebase AI Logic SDK would send even an ONLY_ON_DEVICE request to the cloud. So before every such call this app asks the browser for the model, and stops when it is not there.",
+      "shown": "Exact values only on this phone. In a browser without Chrome’s on-device model (Safari, Firefox, Chrome without it), the Firebase AI Logic SDK would send even an ONLY_ON_DEVICE request to the cloud. So before every such call this app asks the browser for the model, and stops when it is not there."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.enforce.monitor",
+      "text": "A network check lets a request to Firebase AI Logic leave only when a cloud task registered it a moment before; anything else is blocked and listed in “Leaving your device”.",
+      "shown": "A network check lets a request to Firebase AI Logic leave only when a cloud task registered it a moment before; anything else is blocked and listed in “Leaving your phone”."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "tasks.config.route_short_text_max_words",
+      "text": "Explanations up to this many words run on this device first",
+      "shown": "Explanations up to this many words run on this phone first"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "review.pointer.cloudW2",
+      "text": "The model in the cloud saw only {ref}, never {value}. This device put the value back from your W-2.",
+      "shown": "The model in the cloud saw only {ref}, never {value}. This phone put the value back from your W-2."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "review.pointer.deviceW2",
+      "text": "Even the model on this device answers only {ref}. This device puts {value} back from your W-2.",
+      "shown": "Even the model on this phone answers only {ref}. This phone puts {value} back from your W-2."
+    },
+    {
       "language": "es",
       "platform": "ios",
       "key": "badge.onDevice",
@@ -2369,6 +2439,41 @@
     },
     {
       "language": "es",
+      "platform": "ios",
+      "key": "tasks.enforce.onlyOnDevice",
+      "text": "Los valores exactos solo en este dispositivo. En un navegador sin el modelo del dispositivo de Chrome (Safari, Firefox, Chrome sin él), el SDK de Firebase AI Logic enviaría a la nube incluso una solicitud ONLY_ON_DEVICE. Por eso, antes de cada llamada así, esta app pregunta al navegador por el modelo y se detiene si no está.",
+      "shown": "Los valores exactos solo en este iPhone. En un navegador sin el modelo del dispositivo de Chrome (Safari, Firefox, Chrome sin él), el SDK de Firebase AI Logic enviaría a la nube incluso una solicitud ONLY_ON_DEVICE. Por eso, antes de cada llamada así, esta app pregunta al navegador por el modelo y se detiene si no está."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "tasks.enforce.monitor",
+      "text": "Una comprobación de red deja salir una solicitud a Firebase AI Logic solo si una tarea de la nube la registró un momento antes; cualquier otra se bloquea y aparece en “Lo que sale de tu dispositivo”.",
+      "shown": "Una comprobación de red deja salir una solicitud a Firebase AI Logic solo si una tarea de la nube la registró un momento antes; cualquier otra se bloquea y aparece en “Lo que sale de tu iPhone”."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "tasks.config.route_short_text_max_words",
+      "text": "Las explicaciones de hasta estas palabras se ejecutan primero en este dispositivo",
+      "shown": "Las explicaciones de hasta estas palabras se ejecutan primero en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "review.pointer.cloudW2",
+      "text": "El modelo en la nube solo vio {ref}, nunca {value}. Este dispositivo devolvió el valor desde tu W-2.",
+      "shown": "El modelo en la nube solo vio {ref}, nunca {value}. Este iPhone devolvió el valor desde tu W-2."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "review.pointer.deviceW2",
+      "text": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu W-2.",
+      "shown": "Incluso el modelo de este iPhone responde solo {ref}. Este iPhone devuelve {value} desde tu W-2."
+    },
+    {
+      "language": "es",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "En este dispositivo",
@@ -3108,6 +3213,41 @@
       "key": "results.sharpenHelpCloud",
       "text": "Se lee como silueta en la nube. Tus valores se quedan en este dispositivo.",
       "shown": "Se lee como silueta en la nube. Tus valores se quedan en este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "tasks.enforce.onlyOnDevice",
+      "text": "Los valores exactos solo en este dispositivo. En un navegador sin el modelo del dispositivo de Chrome (Safari, Firefox, Chrome sin él), el SDK de Firebase AI Logic enviaría a la nube incluso una solicitud ONLY_ON_DEVICE. Por eso, antes de cada llamada así, esta app pregunta al navegador por el modelo y se detiene si no está.",
+      "shown": "Los valores exactos solo en este teléfono. En un navegador sin el modelo del dispositivo de Chrome (Safari, Firefox, Chrome sin él), el SDK de Firebase AI Logic enviaría a la nube incluso una solicitud ONLY_ON_DEVICE. Por eso, antes de cada llamada así, esta app pregunta al navegador por el modelo y se detiene si no está."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "tasks.enforce.monitor",
+      "text": "Una comprobación de red deja salir una solicitud a Firebase AI Logic solo si una tarea de la nube la registró un momento antes; cualquier otra se bloquea y aparece en “Lo que sale de tu dispositivo”.",
+      "shown": "Una comprobación de red deja salir una solicitud a Firebase AI Logic solo si una tarea de la nube la registró un momento antes; cualquier otra se bloquea y aparece en “Lo que sale de tu teléfono”."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "tasks.config.route_short_text_max_words",
+      "text": "Las explicaciones de hasta estas palabras se ejecutan primero en este dispositivo",
+      "shown": "Las explicaciones de hasta estas palabras se ejecutan primero en este teléfono"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.pointer.cloudW2",
+      "text": "El modelo en la nube solo vio {ref}, nunca {value}. Este dispositivo devolvió el valor desde tu W-2.",
+      "shown": "El modelo en la nube solo vio {ref}, nunca {value}. Este teléfono devolvió el valor desde tu W-2."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.pointer.deviceW2",
+      "text": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu W-2.",
+      "shown": "Incluso el modelo de este teléfono responde solo {ref}. Este teléfono devuelve {value} desde tu W-2."
     }
   ]
 }

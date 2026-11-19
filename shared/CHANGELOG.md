@@ -1,5 +1,18 @@
 # Contract changelog
 
+## v1.35 — 2026-11-19
+
+"Where each task runs" shows how the routing is enforced and the Remote Config values in use.
+
+| Change | Why |
+|---|---|
+| `tasks.enforce.*`: the guard before every `ONLY_ON_DEVICE` call (the SDK sends such a request to the cloud in a browser without the on-device model), this browser's model status, the network check that lets an AI Logic request leave only when a cloud task registered it, and the `Raw` type that a cloud-capable call does not accept | A reviewer asked how `ONLY_ON_DEVICE` holds in Safari or Firefox; the answer was in the code only |
+| `tasks.config.*`: the Remote Config values in use (`route_short_text_max_words`, `route_ondevice_locales_{platform}`, prompt versions, feature flags), and whether they are the built-in defaults or fetched | Remote Config drives the routing thresholds and prompt versions, and was not visible anywhere |
+
+| W-2 screens: `review.addAnotherW2`, `review.pointer.cloudW2`, `review.pointer.deviceW2`, `results.incomeFromW2.lead`, `badge.rulesAndW2`, and the wording for a W-2 without a tax year (`review.basis.w2NoYear`, `review.basis.w2ManyNoYear`, `results.incomeBasis.w2NoYear`, `results.incomeBasis.w2ManyNoYear`, `results.incomeBasis.w2NoteNoYear`) | The W-2's own words on the review and the results (v1.34 named only the paystub's), and no empty year when the form has none |
+
+Platforms: the same section on their "Where each task runs" screen, with their own guard and their own `route_ondevice_locales_{platform}`. Reference tests: 30.
+
 ## v1.34 — 2026-11-19
 
 A second document: Form W-2.
