@@ -19,6 +19,8 @@ struct JudgesScreen: View {
                 DraftLine()
                 Display(text: model.t("judges.title"), size: 54)
                     .accessibilityIdentifier("judges.title")
+                // The whole path in one press (contract v1.43); the three steps stay below, one at a time.
+                runAll
                 ListCard {
                     step(1, "judges.step1", id: "judges.sample") { model.startJudgesSample() }
                     RowDivider(inset: 60)
@@ -91,6 +93,33 @@ struct JudgesScreen: View {
         }
     }
 
+    /// One press: the sample paystub read (on this iPhone when it has the model, otherwise the recorded
+    /// cloud reading; never a cloud request without Send), its values confirmed, the results opened.
+    private var runAll: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(model.t("judges.runAll.body")).sfFont(15).foregroundStyle(theme.onHeroMuted)
+                .fixedSize(horizontal: false, vertical: true)
+            Button { Task { await model.runJudgesPath() } } label: {
+                HStack(spacing: 8) {
+                    if model.runningJudgesPath { ProgressView().tint(Color(red: 0.055, green: 0.055, blue: 0.055)).accessibilityHidden(true) }
+                    Text(model.t("judges.runAll.button")).sfFont(17, weight: .semibold)
+                    Image(systemName: "arrow.right").sfFont(15, weight: .semibold).accessibilityHidden(true)
+                }
+                .foregroundStyle(Color(red: 0.055, green: 0.055, blue: 0.055))
+                .frame(maxWidth: .infinity, minHeight: 52)
+                .background(Capsule().fill(.white))
+                .contentShape(Capsule())
+            }
+            .buttonStyle(PressScale())
+            .allowsHitTesting(!model.runningJudgesPath)
+            .accessibilityIdentifier("judges.runAll")
+        }
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 24).fill(theme.hero))
+        .environment(\.colorScheme, .dark)
+        .accessibilityElement(children: .contain)
+    }
+
     private var runButton: some View {
         // It does what it says: opens the check and starts the run (when this iPhone has the model;
         // otherwise the page says why it cannot run and offers the recording).
@@ -160,6 +189,33 @@ extension AppModel {
         onJudgesPath = true
         fillPreparedHousehold()
         showResults()
+    }
+
+    /// The judges' path in one press (contract v1.43): the prepared household, the sample paystub's silhouette
+    /// read on this iPhone when it has the model (kept on this iPhone: nothing is sent without Send), else the
+    /// recorded cloud reading (nothing sent now); the values that decide the result confirmed, the yearly income
+    /// used, and the results opened with what the paystub changed. A reading that fails stays on the silhouette
+    /// screen with its notice.
+    func runJudgesPath() async {
+        guard !runningJudgesPath else { return }
+        runningJudgesPath = true
+        defer { runningJudgesPath = false }
+        startJudgesSample()
+        // The silhouette is seen for a moment before it goes.
+        if !MotionSwitch.off { try? await Task.sleep(for: .milliseconds(600)) }
+        var read = false
+        if deviceModelAvailable { read = await readDocument(keepOnDevice: true, review: false) }
+        if !read, recordedCloudReading != nil {
+            documentError = nil
+            read = await useRecordedCloud(review: false)
+        }
+        if !read, !deviceModelAvailable, !isOnline { read = await readDocument(review: false) }
+        guard read else { readingShow = nil; return }
+        editDocument { $0.confirmAll() }
+        guard let annualization = documentValidation?.annualization else { readingShow = nil; return }
+        useIncome(annualization)
+        try? await Task.sleep(for: .milliseconds(450))
+        readingShow = nil
     }
 
     /// The bundled English sample paystub, opened at its silhouette.

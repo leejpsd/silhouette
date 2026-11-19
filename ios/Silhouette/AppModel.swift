@@ -97,6 +97,8 @@ final class AppModel {
     var questionDrafts: [String: QuestionDraft] = [:]
     /// The judges' path is under way (their Quick Check ran): each screen names the next step.
     var onJudgesPath = false
+    /// The judges' path in one press is running (the silhouette screen offers no actions meanwhile).
+    var runningJudgesPath = false
     /// The paystub in progress. Raw inside; saved only encrypted.
     private(set) var document: DocumentSession
     /// Verdicts that changed when the yearly income from a paystub was used.

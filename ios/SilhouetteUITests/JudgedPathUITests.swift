@@ -109,3 +109,41 @@ final class JudgedPathUITests: XCTestCase {
         XCTAssertTrue(lead.label.contains("using the sample household's answers"), lead.label)
     }
 }
+
+final class JudgesRunAllUITests: XCTestCase {
+    override func setUp() {
+        continueAfterFailure = false
+    }
+
+    /// One press on the judges' page: without a model on this iPhone, the recorded cloud reading of the sample
+    /// paystub is shown as it happens, its values are used, and the results open with what the paystub changed.
+    /// Nothing is sent.
+    func testRunAllWithoutAModelUsesTheRecordedReading() {
+        let app = XCUIApplication.silhouette(model: "none")
+        app.launch()
+        app.openJudges()
+        let run = app.buttons["judges.runAll"]
+        XCTAssertTrue(run.waitForExistence(timeout: 5))
+        XCTAssertEqual(run.label, "Run all three steps")
+        run.tap()
+        XCTAssertTrue(app.element("reading.show").waitForExistence(timeout: 8), "the reading is shown")
+        XCTAssertEqual(app.element("reading.route").label, "Recorded in the cloud")
+        XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 20), "the results open with what the paystub changed")
+        XCTAssertTrue(app.element("results.sample").exists)
+        XCTAssertTrue(app.element("results.incomeFrom").label.contains("from a recorded cloud reading of the silhouette"))
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
+    }
+
+    /// With the model on this iPhone, the one press reads it here; nothing leaves.
+    func testRunAllWithTheModelReadsOnThisIPhone() {
+        let app = XCUIApplication.silhouette(model: "device")
+        app.launch()
+        app.openJudges()
+        app.tapButton("judges.runAll")
+        XCTAssertTrue(app.element("reading.show").waitForExistence(timeout: 8))
+        XCTAssertEqual(app.element("reading.route").label, "Stays on this iPhone")
+        XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 30))
+        XCTAssertTrue(app.element("results.badge").label.contains("Rules + paystub"))
+        XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
+    }
+}

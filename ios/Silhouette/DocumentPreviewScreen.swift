@@ -57,7 +57,7 @@ struct DocumentPreviewScreen: View {
                         NoteText(text: model.t("preview.missing"), size: 15)
                     }
                     if model.silhouette != nil { decisionInfo.padding(.top, 4) }
-                    if model.recordedCloudReading != nil && !reading { recordedCloudChoice }
+                    if model.recordedCloudReading != nil && !reading && !model.runningJudgesPath { recordedCloudChoice }
                     if model.silhouette != nil && !pinsActions {
                         VStack(spacing: 2) { decisionActions }
                     }
@@ -208,7 +208,7 @@ struct DocumentPreviewScreen: View {
     @ViewBuilder private var decisionActions: some View {
         switch extractorKind {
         case 0:
-            if reading {
+            if reading || model.runningJudgesPath {
                 // Which step the device is on (DEVICE_READING.md section 7).
                 SpinnerLine(text: model.t(model.readingStage?.copyKey ?? "preview.sending"))
                     .frame(maxWidth: .infinity, minHeight: 52)
@@ -231,7 +231,7 @@ struct DocumentPreviewScreen: View {
                 }
             }
         case 1:
-            PrimaryButton(label: model.t("preview.sampleButton"), id: "preview.sampleButton", busy: reading) {
+            PrimaryButton(label: model.t("preview.sampleButton"), id: "preview.sampleButton", busy: reading || model.runningJudgesPath) {
                 reading = true
                 Task { await model.readDocument(); reading = false }
             }
