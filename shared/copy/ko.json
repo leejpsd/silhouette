@@ -722,6 +722,8 @@
   "preview.useRecorded": "No on-device model in this browser. Continue with this paystub as read on {machine}",
   "preview.useRecordedNote": "A recording of the on-device model’s answer, made {date}. This device puts the values back now; nothing is sent.",
   "review.pointer.recorded": "The model on {machine} answered only {ref} (a recorded reading). This device put {value} back just now, from your paystub.",
+  "review.pointer.modelLine": "모델이 본 줄",
+  "review.pointer.deviceLine": "같은 줄, 이 기기에서",
   "results.docEffect.titlePaystub": "급여명세서가 바꾼 것",
   "results.docEffect.titleW2": "W-2가 바꾼 것",
   "results.docEffect.year": "연간",

@@ -858,6 +858,13 @@
     {
       "language": "en",
       "platform": "ios",
+      "key": "review.pointer.deviceLine",
+      "text": "The same line, on this device",
+      "shown": "The same line, on this iPhone"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
       "key": "why.leadSample",
       "text": "These reasons come from the rules on this device, using the sample household's answers.",
       "shown": "These reasons come from the rules on this iPhone, using the sample household's answers."
@@ -1782,6 +1789,13 @@
     {
       "language": "en",
       "platform": "android",
+      "key": "review.pointer.deviceLine",
+      "text": "The same line, on this device",
+      "shown": "The same line, on this phone"
+    },
+    {
+      "language": "en",
+      "platform": "android",
       "key": "why.leadSample",
       "text": "These reasons come from the rules on this device, using the sample household's answers.",
       "shown": "These reasons come from the rules on this phone, using the sample household's answers."
@@ -2615,6 +2629,13 @@
     {
       "language": "es",
       "platform": "ios",
+      "key": "review.pointer.deviceLine",
+      "text": "La misma línea, en este dispositivo",
+      "shown": "La misma línea, en este iPhone"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
       "key": "why.leadSample",
       "text": "Estas razones vienen de las reglas de este dispositivo, con las respuestas del hogar de ejemplo.",
       "shown": "Estas razones vienen de las reglas de este iPhone, con las respuestas del hogar de ejemplo."
@@ -3444,6 +3465,13 @@
       "key": "review.pointer.recorded",
       "text": "El modelo en {machine} respondió solo {ref} (una lectura grabada). Este dispositivo devolvió {value} ahora mismo, desde tu talón de pago.",
       "shown": "El modelo en {machine} respondió solo {ref} (una lectura grabada). Este teléfono devolvió {value} ahora mismo, desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.pointer.deviceLine",
+      "text": "La misma línea, en este dispositivo",
+      "shown": "La misma línea, en este teléfono"
     },
     {
       "language": "es",

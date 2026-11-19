@@ -9,6 +9,7 @@ The sample household is said to be a sample, wherever its results are shown.
 | `results.sample.*`: when the answers are the prepared household's (judges' path, "Try with a sample paystub"), the results open with "Sample household, not you", a way to see or change its answers and a way to use one's own; `why.leadSample` says the reasons use the sample household's answers | Five reviewers: the sample path said "using your exact answers" and "It answered 1 of your questions" for an invented household the visitor never saw |
 | `results.docEffect.filled` no longer says "your questions" (and has a `.one` form) | The same |
 | The reasons' badge says "Rules + paystub" (or W-2) when the yearly income came from a document, as the results' badge does | A reviewer: "Rules only" beside "Rules + paystub" |
+| `review.pointer.modelLine`, `review.pointer.deviceLine`: the pointer card shows the value's line twice, as the model saw it (placeholders) and as this device shows it (the value put back marked) | The point of the product in one picture: the model never sees the value |
 
 Platforms: the same note wherever the prepared household's results are shown. Reference tests: 30.
 

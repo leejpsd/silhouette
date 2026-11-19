@@ -722,6 +722,8 @@
   "preview.useRecorded": "No on-device model in this browser. Continue with this paystub as read on {machine}",
   "preview.useRecordedNote": "A recording of the on-device model’s answer, made {date}. This device puts the values back now; nothing is sent.",
   "review.pointer.recorded": "The model on {machine} answered only {ref} (a recorded reading). This device put {value} back just now, from your paystub.",
+  "review.pointer.modelLine": "The line, as the model saw it",
+  "review.pointer.deviceLine": "The same line, on this device",
   "results.docEffect.titlePaystub": "What your paystub changed",
   "results.docEffect.titleW2": "What your W-2 changed",
   "results.docEffect.year": "a year",

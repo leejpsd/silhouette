@@ -722,6 +722,8 @@
   "preview.useRecorded": "Este navegador no tiene el modelo del dispositivo. Continúa con este talón leído en {machine}",
   "preview.useRecordedNote": "Una grabación de la respuesta del modelo del dispositivo, hecha el {date}. Este dispositivo devuelve los valores ahora; no se envía nada.",
   "review.pointer.recorded": "El modelo en {machine} respondió solo {ref} (una lectura grabada). Este dispositivo devolvió {value} ahora mismo, desde tu talón de pago.",
+  "review.pointer.modelLine": "La línea, como la vio el modelo",
+  "review.pointer.deviceLine": "La misma línea, en este dispositivo",
   "results.docEffect.titlePaystub": "Lo que cambió tu talón de pago",
   "results.docEffect.titleW2": "Lo que cambió tu W-2",
   "results.docEffect.year": "al año",
