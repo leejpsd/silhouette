@@ -54,7 +54,7 @@ test.describe('for judges: try it in two minutes', () => {
     await page.goto('/#/device-check');
     await chooseLanguage(page, 'es');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Comprobación en el dispositivo');
-    await page.getByRole('button', { name: `Mostrar la grabación ${latestRecording().label}`, exact: true }).click();
+    await page.locator(`[data-recording="${latestRecording().label}"]`).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Comprobación en el dispositivo grabada');
     await expect(page.getByTestId('headline-on-device')).toContainText('casos respondidos en el dispositivo que hizo esta grabación');
     const text = await page.locator('main').innerText();
@@ -177,7 +177,7 @@ test.describe('the on-device check', () => {
     await noOnDeviceModel(context);
     await page.goto('/#/device-check');
     const baseline = baselineRecording();
-    await page.getByRole('button', { name: `Show the recording of ${baseline.label}`, exact: true }).click();
+    await page.locator(`[data-recording="${baseline.label}"]`).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Recorded on\u2011device check');
     await expect(page.getByTestId('device-summary')).toContainText(`${baseline.onDevice} of ${baseline.total} on this device`);
     await expect(page.getByTestId('device-summary-first')).toContainText('37 of 60 fields correct');
@@ -186,9 +186,9 @@ test.describe('the on-device check', () => {
   test('the version 2 run from the history folder still opens with "Open a run file"', async ({ page, context }) => {
     await noOnDeviceModel(context);
     await page.goto('/#/device-check');
-    // Only the baseline and the latest run are bundled; earlier runs are kept in history/.
+    // Bundled: the baseline and the latest run in Chrome, and the two runs on an iPhone; earlier runs are kept in history/.
     await expect(page.locator('.recordings .chip-button')).toHaveCount(bundledRecordingCount());
-    expect(bundledRecordingCount()).toBe(2);
+    expect(bundledRecordingCount()).toBe(4);
     const file = new URL('../eval/results/on-device/history/device-check-2026-11-16T1744-chrome157-macos.json', import.meta.url);
     await page.locator('input[type="file"]').setInputFiles({ name: 'device-check-2026-11-16T1744-chrome157-macos.json', mimeType: 'application/json', buffer: readFileSync(file) });
     await expect(page.getByTestId('device-summary')).toContainText('9 of 14 on this device; 5 in the cloud after a failed on-device attempt; 0 in the cloud; 0 did not run.');
@@ -202,7 +202,7 @@ test.describe('the on-device check', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/#/device-check');
     const latest = latestRecording();
-    await page.getByRole('button', { name: `Show the recording of ${latest.label}`, exact: true }).click();
+    await page.locator(`[data-recording="${latest.label}"]`).click();
     const expected: [string, string][] = [['headline-on-device', `${latest.onDevice} / ${latest.total}`]];
     if (latest.income) expected.push(['headline-income-right', `${latest.income.allRight} / ${latest.readings}`]);
     if (latest.wrongReachedPerson !== null) expected.push(['headline-wrong', `${latest.wrongReachedPerson} / ${latest.readings}`]);

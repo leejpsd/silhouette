@@ -4,6 +4,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 
 const DIR = new URL('../eval/results/on-device/', import.meta.url);
+// The runs recorded on an iPhone are bundled too (ios/eval/on-device/*.json); they only add to the count.
+const IOS_DIR = new URL('../../ios/eval/on-device/', import.meta.url);
 
 interface RunCase {
   task: string;
@@ -17,7 +19,7 @@ interface RunFile {
 }
 
 export interface Recording {
-  /** The file name without `.json`: the label of its "Show the recording of …" button. */
+  /** The file name without `.json`: its button carries it as data-recording (the label shown is the machine and the day). */
   readonly label: string;
   readonly onDevice: number;
   readonly total: number;
@@ -54,7 +56,7 @@ function bundled(): { name: string; file: RunFile }[] {
     .sort((a, b) => (a.file.date < b.file.date ? -1 : 1));
 }
 
-export const bundledRecordingCount = (): number => bundled().length;
+export const bundledRecordingCount = (): number => bundled().length + readdirSync(IOS_DIR).filter((f) => f.endsWith('.json')).length;
 export const baselineRecording = (): Recording => {
   const first = bundled()[0];
   if (!first) throw new Error('no bundled recording');

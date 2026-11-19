@@ -1,6 +1,8 @@
 // "For judges: try it in two minutes" (#/judges): three steps, one button each, with invented data
 // only. It works in any browser: without an on-device model the sample's silhouette goes to the cloud
 // (offline, the bundled answer key is used), and the page says which steps run on this device.
+import { openRecordingNext, recordingLabel, recordingPaths, RECORDINGS } from './DeviceCheck';
+import { countedCases, isRunFile, summarize } from '../device-check/run';
 import { useCallback, useEffect, useState } from 'react';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
 import { ModelStatus } from '../doc/ModelStatus';
@@ -91,6 +93,7 @@ export function JudgesScreen() {
       </p>
       {/* The model can be downloaded here, with its progress: then step 2 runs on this device. */}
       {device === 'downloadable' && <ModelStatus language="en" onStatus={onStatus} />}
+      <RecordedRuns />
       <ul className="link-card">
         <li>
           <a href={routeHref({ name: 'tasks' })}>
@@ -127,3 +130,64 @@ export function JudgesScreen() {
     </div>
   );
 }
+
+/**
+ * The on-device half, for a judge whose device has no model: the latest run recorded on a real iPhone
+ * and the latest recorded in Chrome, with their three numbers, each one press from the full recording.
+ */
+function RecordedRuns() {
+  const { t, locale } = useApp();
+  const [rows, setRows] = useState<{ path: string; label: string; onDevice: number; total: number; wrong: number; readings: number }[]>([]);
+  useEffect(() => {
+    let live = true;
+    void (async () => {
+      const paths = recordingPaths();
+      const latest = [paths.find((p) => /ios/.test(p)), paths.find((p) => /chrome/.test(p))].filter((p): p is string => p !== undefined);
+      const found = [];
+      for (const path of latest) {
+        const value = await RECORDINGS[path]?.();
+        if (!isRunFile(value)) continue;
+        const s = summarize(countedCases(value), value.version);
+        if (s.wrongReachedPerson === null) continue;
+        found.push({ path, label: recordingLabel(path, locale), onDevice: s.onDevice, total: s.total, wrong: s.wrongReachedPerson, readings: s.extractionCases });
+      }
+      if (live) setRows(found);
+    })();
+    return () => {
+      live = false;
+    };
+  }, [locale]);
+  if (rows.length === 0) return null;
+  return (
+    <section className="recorded-runs" aria-labelledby="recorded-title" data-testid="recorded-runs">
+      <h2 id="recorded-title" className="section-heading">
+        {t('judges.recorded.title')}
+      </h2>
+      <ul className="link-card">
+        {rows.map((r) => (
+          <li key={r.path}>
+            <button
+              type="button"
+              className="recorded-row"
+              onClick={() => {
+                openRecordingNext(r.path);
+                navigate({ name: 'device-check' });
+              }}
+            >
+              <span className="source-icon" aria-hidden="true">
+                <Phone size={16} />
+              </span>
+              <span className="source-text">
+                <span className="source-title">{r.label}</span>
+                <span className="small muted">{t('judges.recorded.row', { onDevice: r.onDevice, total: r.total, wrong: r.wrong, readings: r.readings })}</span>
+              </span>
+              <ChevronRight />
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p className="small muted">{t('judges.recorded.note')}</p>
+    </section>
+  );
+}
+

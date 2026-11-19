@@ -603,6 +603,16 @@ export function summarize(cases: readonly CaseResult[], version: number = RUN_FI
 }
 
 /** Whether a parsed JSON value is a run file this page can show. */
+/**
+ * The cases the headline figures count: every case but one the recording platform cannot run at all
+ * (reading a photo on iOS, where the on-device model takes text only). That case stays in the file as
+ * `not-run` with its note, and in the table; the iOS app leaves it out of its figures the same way.
+ */
+export function countedCases(file: RunFile): readonly CaseResult[] {
+  const ios = (file.device as { platform?: string } | undefined)?.platform === 'ios' || file.platform.startsWith('iOS');
+  return ios ? file.cases.filter((c) => !(c.task === 'document.photo.read' && finalRan(c, file.version) === 'not-run')) : file.cases;
+}
+
 export function isRunFile(value: unknown): value is RunFile {
   // Versions 1 to 3 open alike (shared/schemas/device-check-run.v3.json accepts all three); version 1
   // has no per-field diagnosis or final result, version 2 no parts.

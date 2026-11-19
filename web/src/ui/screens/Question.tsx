@@ -275,7 +275,9 @@ export function QuestionScreen({ route }: { route: QuestionRoute }) {
         ))}
       </div>
       <div className="stack-10" ref={answerArea}>
-        <ScreenHeading id={headingId} size={short ? 38 : 50} wideSize={84} maxLines={4}>
+        {/* On a phone the question leaves room for its answers: a headline of four lines at the full display
+            size took half the screen. */}
+        <ScreenHeading id={headingId} size={short ? 36 : 42} wideSize={84} maxLines={4}>
           {t(dynamicKey(`question.${step.id}.label`))}
         </ScreenHeading>
         {hasHelp && (

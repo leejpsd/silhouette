@@ -57,7 +57,7 @@ test.describe('Quick Check to first result', () => {
     });
     const food = verdictOf(page, 'food-help');
     await expect(food).toHaveAttribute('data-verdict', 'depends');
-    await expect(food).toContainText('Depends on: Residency');
+    await expect(food).toContainText('Needs an answer: Residency');
 
     await food.getByRole('link').click();
     const card = page.getByTestId('verdict-card');
@@ -81,7 +81,7 @@ test.describe('Quick Check to first result', () => {
     await page.goto('/#/q/benefits?then=results');
     await page.getByRole('button', { name: 'None of these' }).click(); // nothing ticked: the action says what it records
     await expect(verdictOf(page, 'phone-discount')).toHaveAttribute('data-verdict', 'depends');
-    await expect(verdictOf(page, 'phone-discount')).toContainText('Depends on: Yearly income');
+    await expect(verdictOf(page, 'phone-discount')).toContainText('Needs an answer: Yearly income');
     await expect(verdictOf(page, 'phone-discount')).not.toContainText('Benefits you receive');
 
     await page.goto('/#/q/benefits?then=results');

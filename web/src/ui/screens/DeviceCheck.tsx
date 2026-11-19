@@ -26,16 +26,46 @@ import {
   type CaseResult,
   type DeviceDiagnosis,
   type RunFile,
+  countedCases,
 } from '../device-check/run';
 import { PACK } from '../pack';
 
 /** Recordings kept with the app (eval/results/on-device/*.json), loaded only when asked for. */
-const RECORDINGS = import.meta.glob<unknown>('../../../eval/results/on-device/*.json', { import: 'default' });
+export const RECORDINGS = {
+  ...import.meta.glob<unknown>('../../../eval/results/on-device/*.json', { import: 'default' }),
+  // The runs recorded on a real iPhone, in the same file format (shared/schemas/device-check-run).
+  ...import.meta.glob<unknown>('../../../../ios/eval/on-device/*.json', { import: 'default' }),
+};
+
+/** A recording's label from its file name: the machine it was made on and the day, never the raw file name. */
+export function recordingLabel(path: string, locale?: string): string {
+  const name = (path.split('/').pop() ?? path).replace(/\.json$/, '');
+  const day = /(\d{4})-(\d{2})-(\d{2})/.exec(name);
+  const date = day ? new Date(Date.UTC(Number(day[1]), Number(day[2]) - 1, Number(day[3]))) : null;
+  const when = date ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(date) : name;
+  const time = /T(\d{2})(\d{2})/.exec(name);
+  const machine = /ios/.test(name) ? 'iPhone 17 Pro' : /chrome(\d+)/.test(name) ? `Chrome ${/chrome(\d+)/.exec(name)?.[1]} · Mac` : name;
+  return `${machine} · ${when}${time ? ` ${time[1]}:${time[2]} UTC` : ''}`;
+}
+
+/** The newest recording of each machine first (file names start with the date). */
+export const recordingPaths = (): string[] =>
+  Object.keys(RECORDINGS).sort((a, b) => (b.split('/').pop() ?? '').localeCompare(a.split('/').pop() ?? ''));
+
+/** A recording to open when the page is reached from a link to it (the judges' page). */
+const OPEN_KEY = 'silhouette.open-recording';
+export function openRecordingNext(path: string): void {
+  try {
+    sessionStorage.setItem(OPEN_KEY, path);
+  } catch {
+    // Without storage the page opens on its list.
+  }
+}
 
 type View = { kind: 'live'; file: RunFile; running: number | null } | { kind: 'recording'; file: RunFile; name: string } | null;
 
 export function DeviceCheckScreen() {
-  const { t } = useApp();
+  const { t, locale } = useApp();
   const [hasModel, setHasModel] = useState<boolean | null>(null);
   const [view, setView] = useState<View>(null);
   const [badFile, setBadFile] = useState(false);
@@ -90,6 +120,19 @@ export function DeviceCheckScreen() {
     const value = loader ? await loader() : null;
     if (isRunFile(value)) setView({ kind: 'recording', file: value, name: path.split('/').pop() ?? path });
   };
+  // Reached from a link to one recording: it opens at once.
+  useEffect(() => {
+    try {
+      const path = sessionStorage.getItem(OPEN_KEY);
+      if (path) {
+        sessionStorage.removeItem(OPEN_KEY);
+        void showRecording(path);
+      }
+    } catch {
+      // The list is there.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openFile = async (file: File) => {
     try {
@@ -150,15 +193,13 @@ export function DeviceCheckScreen() {
           <p className="small muted">{t('deviceCheck.noRecording')}</p>
         ) : (
           <ul className="chip-list">
-            {Object.keys(RECORDINGS)
-              .sort()
-              .map((path) => (
-                <li key={path}>
-                  <button type="button" className="chip-button" onClick={() => void showRecording(path)}>
-                    {t('deviceCheck.showRecording', { date: (path.split('/').pop() ?? path).replace(/\.json$/, '') })}
-                  </button>
-                </li>
-              ))}
+            {recordingPaths().map((path) => (
+              <li key={path}>
+                <button type="button" className="chip-button" data-recording={(path.split('/').pop() ?? path).replace(/\.json$/, '')} onClick={() => void showRecording(path)}>
+                  {recordingLabel(path, locale)}
+                </button>
+              </li>
+            ))}
           </ul>
         )}
         <label className="outline-button file-button">
@@ -198,7 +239,7 @@ export function DeviceCheckScreen() {
  */
 function Headline({ file, recording = false }: { file: RunFile; recording?: boolean }) {
   const { t } = useApp();
-  const s = summarize(file.cases, file.version);
+  const s = summarize(countedCases(file), file.version);
   const incomeRight = s.income?.allRight ?? s.incomeInputsCorrect;
   const wrong = s.wrongReachedPerson;
   return (

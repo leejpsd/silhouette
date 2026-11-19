@@ -148,6 +148,8 @@ test.describe('the person\'s result, and the program explained in general', () =
     await completeQuickCheck(page, { resident: 'No' });
     await openProgram(page, 'food-help');
     await expect(page.getByTestId('verdict-card')).toHaveAttribute('data-verdict', 'unlikely');
+    // A "Probably not" is a first check, not a decision: the page says so, and that the person can still apply.
+    await expect(page.getByTestId('unlikely-note')).toHaveText('This is a first check from the answers you gave, not a decision. The agency decides, and you can still apply.');
     const why = page.getByTestId('why-section');
     await expect(why.getByTestId('why-income-limit').getByTestId('why-limit')).toContainText(/Limit\s*\$34,000\s*You\s*\$30,524/);
     await expect(why.getByTestId('why-residency')).toHaveAttribute('data-state', 'fail');

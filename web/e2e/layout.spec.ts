@@ -47,7 +47,10 @@ test.describe('layout', () => {
     await page.getByTestId('language-button').click();
     const sheet = await box(page, 'language-sheet');
     expect(sheet.width).toBeLessThanOrEqual(520);
-    expect(Math.abs(sheet.x + sheet.width / 2 - 720)).toBeLessThanOrEqual(1);
+    // Centred on the page's own width: where scroll bars take room (a mouse on a Mac, Windows), the
+    // page keeps a gutter for them and the modal is centred with the content, not with the window.
+    const app = (await page.locator('.app').boundingBox())!;
+    expect(Math.abs(sheet.x + sheet.width / 2 - (app.x + app.width / 2))).toBeLessThanOrEqual(1);
     expect(Math.abs(sheet.y + sheet.height / 2 - 450)).toBeLessThanOrEqual(1);
   });
 
@@ -238,5 +241,6 @@ test('at 768 px the column is centred and the block floats, not a full-width bar
   await page.goto('/');
   const block = (await page.getByTestId('bottom-block').boundingBox())!;
   expect(block.width).toBeLessThanOrEqual(640);
-  expect(Math.round(block.x)).toBe(Math.round((768 - block.width) / 2));
+  const app = (await page.locator('.app').boundingBox())!;
+  expect(Math.abs(block.x - (app.x + (app.width - block.width) / 2))).toBeLessThanOrEqual(1);
 });

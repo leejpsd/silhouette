@@ -48,6 +48,13 @@ export function ProgramScreen({ id }: { id: string }) {
         </ScreenHeading>
       </div>
 
+      {/* "Probably not" is a first check, not a decision: said before the reasons, so nobody stops here who
+          should apply. */}
+      {result.verdict === 'unlikely' && (
+        <p className="dashed-note" data-testid="unlikely-note">
+          {t('detail.unlikelyNote')}
+        </p>
+      )}
       <Suspense fallback={null}>
         <ProgramWhy program={program} verdict={result.verdict} />
       </Suspense>

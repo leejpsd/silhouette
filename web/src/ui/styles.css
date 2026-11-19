@@ -4994,6 +4994,25 @@ main h2.judge-title {
   margin-top: 1px;
 }
 
+/* Judges: the recorded runs, as rows that open the full recording. */
+.recorded-runs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.recorded-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
 /* Sheets and modals: the sheet rises while the page dims; both leave faster than they arrive. The page
    behind does not scroll while one is open. On touch the sheet follows a drag on its handle. */
 html {
