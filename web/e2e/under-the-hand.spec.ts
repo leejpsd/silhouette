@@ -195,7 +195,8 @@ test('the judges’ path stays on rails: the step is pressable as a whole, and t
   await page.getByTestId('judge-quick-check').getByRole('heading').click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your results');
   await expect(page.getByTestId('judge-next-2')).toBeVisible();
-  await page.getByTestId('judge-primary').click();
+  // One way to the next step on every width: the card (on a phone the pinned button does the same).
+  await page.getByTestId('judge-next-2').click();
   await expect(page.getByTestId('skeleton-preview')).toHaveAttribute('data-mode', 'leave');
 });
 

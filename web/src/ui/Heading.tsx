@@ -14,6 +14,7 @@ export function ScreenHeading({
   wideSize = 64,
   maxLines = 4,
   leading = 'normal',
+  level = 1,
 }: {
   children: ReactNode;
   id?: string;
@@ -24,20 +25,25 @@ export function ScreenHeading({
   wideSize?: number;
   maxLines?: number;
   leading?: 'normal' | 'tight';
+  /** 2: a page shown inside another screen (a program beside the results list), whose own title is the h1. */
+  level?: 1 | 2;
 }) {
   const own = useRef<HTMLHeadingElement>(null);
   const ref = headingRef ?? own;
   useFit(ref, size, { maxLines, wideDesign: wideSize }, [children]);
   useEffect(() => {
+    // Only the screen's own title takes focus on arrival.
+    if (level !== 1) return;
     if (firstScreen) {
       firstScreen = false;
       return;
     }
     ref.current?.focus();
-  }, [ref]);
+  }, [ref, level]);
+  const Tag = level === 1 ? 'h1' : 'h2';
   return (
-    <h1 ref={ref} tabIndex={-1} id={id} className={`display${leading === 'tight' ? ' tight' : ''}`}>
+    <Tag ref={ref} tabIndex={-1} id={id} className={`display${leading === 'tight' ? ' tight' : ''}`}>
       {children}
-    </h1>
+    </Tag>
   );
 }

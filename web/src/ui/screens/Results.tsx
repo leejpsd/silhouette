@@ -1,5 +1,6 @@
 // Results: the programs as one list card, each marked by how full its circle is, with its status, and
-// linking to its detail. On wide screens the list also stands beside the program page.
+// linking to its detail. On wide screens the results are two panes: the list (with the paystub card)
+// beside a program page, the first program's when none is chosen yet.
 import { JudgeNext, onJudgesPath, openSamplePaystub } from '../judges/next';
 import { useDocument } from '../doc/state';
 import { useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
@@ -13,7 +14,8 @@ import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { MoreHelpLinks } from '../answers/MoreHelpLinks';
 import { programCopy } from '../answers/facts';
-import { BlockActions } from '../design/block';
+import { BlockActions, useTwoColumns } from '../design/block';
+import { ProgramScreen } from './Program';
 import { ArrowRight, ChevronRight, Doc } from '../design/icons';
 import { Marker, ActionLabel } from '../design/parts';
 import { useOnline } from '../design/online';
@@ -27,6 +29,25 @@ const lastShown = new Map<string, ProgramVerdict['verdict']>();
 export function forgetResultsShown(): void {
   arrived = false;
   lastShown.clear();
+}
+
+/**
+ * #/results. Wide (two columns) and answered: the list beside the first program in the list, as on a
+ * program's own page; otherwise the list alone.
+ */
+export function ResultsRoute() {
+  const { answers, results } = useApp();
+  const twoColumns = useTwoColumns();
+  const first = groupByVerdict(results)[0]?.programs[0]?.programId;
+  if (twoColumns && Object.keys(answers).length > 0 && first) {
+    return (
+      <div className="split" data-testid="results-split">
+        <ResultsAside current={first} isPage />
+        <ProgramScreen key={first} id={first} inPane />
+      </div>
+    );
+  }
+  return <ResultsScreen />;
 }
 
 export function ResultsScreen() {
@@ -182,13 +203,50 @@ export function ResultGroups({ current }: { current?: string }) {
   );
 }
 
-/** The results list beside a program on wide screens. */
-export function ResultsAside({ current }: { current: string }) {
-  const { t } = useApp();
+/**
+ * The results pane beside a program on wide screens: the title, where the results come from, the list,
+ * one paystub card (the judges' next step on their path, otherwise why a paystub helps) and the way back
+ * to the answers.
+ */
+export function ResultsAside({ current, isPage = false }: { current: string; /** On #/results: its title is the page's h1. */ isPage?: boolean }) {
+  const { t, steps } = useApp();
+  const sentSomething = useSyncExternalStore(subscribeOutbound, () => leftDevice(outboundState().entries).length > 0, () => false);
+  const [judges] = useState(onJudgesPath);
   return (
     <aside className="results-aside" aria-label={t('results.title')}>
-      <p className="aside-title">{t('results.title')}</p>
+      {isPage ? (
+        <ScreenHeading size={54} wideSize={64} maxLines={2} leading="tight">
+          {t('results.title')}
+        </ScreenHeading>
+      ) : (
+        <p className="aside-title">{t('results.title')}</p>
+      )}
+      <div className="badge-line">
+        <strong className="badge badge-none">{t('badge.rulesOnly')}</strong>
+        <p className="small muted" data-testid="results-lead">
+          {sentSomething ? t('results.leadAfterSend') : t('results.lead')}
+        </p>
+      </div>
       <ResultGroups current={current} />
+      {judges ? (
+        <JudgeNext step={2} />
+      ) : (
+        <a className="sharpen-card" href={routeHref({ name: 'doc' })} data-testid="sharpen-card">
+          <span className="sharpen-icon" aria-hidden="true">
+            <Doc />
+          </span>
+          <span className="sharpen-text">
+            <strong>{t('results.sharpen')}</strong>
+            <span>{t('results.sharpenHelp')}</span>
+          </span>
+          <span className="sharpen-button">{t('results.addDocument')}</span>
+        </a>
+      )}
+      <div className="results-actions">
+        <button type="button" className="text-link" onClick={() => navigate({ name: 'question', id: steps[0]?.id ?? 'income', then: null })}>
+          {t('results.edit')}
+        </button>
+      </div>
     </aside>
   );
 }

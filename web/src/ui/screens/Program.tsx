@@ -17,7 +17,7 @@ import { FitText, Marker } from '../design/parts';
 const ProgramWhy = lazy(() => import('../answers/ProgramAnswers').then((m) => ({ default: m.ProgramWhy })));
 const ProgramAnswers = lazy(() => import('../answers/ProgramAnswers').then((m) => ({ default: m.ProgramAnswers })));
 
-export function ProgramScreen({ id }: { id: string }) {
+export function ProgramScreen({ id, inPane = false }: { id: string; /** Shown beside the results list on #/results: its name is an h2 under that page's h1. */ inPane?: boolean }) {
   const { t, locale, results } = useApp();
   const program = PACK.programs.find((p) => p.id === id);
   const result = results.find((r) => r.programId === id);
@@ -43,7 +43,7 @@ export function ProgramScreen({ id }: { id: string }) {
       <p className="verdict-line">{t(dynamicKey(`verdict.${result.verdict}`))}</p>
       <div className="program-title">
         <Marker verdict={result.verdict} />
-        <ScreenHeading size={50} wideSize={64} maxLines={2}>
+        <ScreenHeading size={50} wideSize={64} maxLines={2} level={inPane ? 2 : 1}>
           {programName(locale, program)}
         </ScreenHeading>
       </div>

@@ -5901,6 +5901,42 @@ dialog.sheet[open][data-closing='true']::backdrop {
     font-size: var(--type-control-size);
   }
 
+  /* The paystub card under the list beside a program: why a paystub helps, and a small button. */
+  .sharpen-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 14px 14px 16px;
+    border: 1px dashed rgb(from var(--ink) r g b / 30%);
+    border-radius: var(--radius-panel);
+    background: transparent;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .sharpen-card .sharpen-icon,
+  .sharpen-card .sharpen-text {
+    display: flex;
+  }
+
+  .sharpen-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-compact-action);
+    padding: 0 16px;
+    border-radius: var(--radius-input);
+    background: var(--ink);
+    color: var(--paper);
+    font-size: var(--type-control-size);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .sharpen-card:hover .sharpen-button {
+    background: rgb(from var(--ink) r g b / 85%);
+  }
+
   .split {
     display: grid;
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);

@@ -11,7 +11,7 @@ import { DemoBanner, Header, LeavingBar, RailSteps } from './Chrome';
 import { BlockProvider, BottomBlock, useWide, useTwoColumns } from './design/block';
 import { StartScreen } from './screens/Start';
 import { QuestionScreen } from './screens/Question';
-import { ResultsAside, ResultsScreen } from './screens/Results';
+import { ResultsAside, ResultsRoute } from './screens/Results';
 import { ProgramScreen } from './screens/Program';
 import { DocumentContext, emptyDocument, type DocumentContextValue, type DocumentState } from './doc/state';
 import { clearOutbound } from '../data/outbound';
@@ -156,7 +156,7 @@ export function App() {
   let screen = null;
   if (loaded) {
     if (route.name === 'question') screen = <QuestionScreen key={route.id} route={route} />;
-    else if (route.name === 'results') screen = <ResultsScreen />;
+    else if (route.name === 'results') screen = <ResultsRoute />;
     else if (route.name === 'program')
       // One tree at every width: crossing the two-column width must not start the program page again
       // (an open step before sending, an answer in progress). The list is added beside it, or not.
