@@ -148,7 +148,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     await completeQuickCheck(page, { resident: 'No' });
     await openProgram(page, 'food-help');
     await expect(page.getByTestId('verdict-card')).toHaveAttribute('data-verdict', 'unlikely');
-    // A "Probably not" is a first check, not a decision: the page says so, and that the person can still apply.
+    // A "Not from these answers" is a first check, not a decision: the page says so, and that the person can still apply.
     await expect(page.getByTestId('unlikely-note')).toHaveText('This is a first check from the answers you gave, not a decision. The agency decides, and you can still apply.');
     const why = page.getByTestId('why-section');
     await expect(why.getByTestId('why-income-limit').getByTestId('why-limit')).toContainText(/Limit\s*\$34,000\s*You\s*\$30,524/);
@@ -170,7 +170,7 @@ test.describe('the person\'s result, and the program explained in general', () =
   });
 
   test('with a device model, the person\'s own result is explained on this device only', async ({ page, context }) => {
-    await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Result from the rules: Probably not': 'The rules say probably not: the residency rule is not met.' } });
+    await fakeOnDeviceModel(context, { availability: 'available', replies: { 'Result from the rules: Not from these answers': 'The rules say probably not: the residency rule is not met.' } });
     const cloud = await fakeAnswerModels(page);
     await page.goto('/');
     await completeQuickCheck(page, { resident: 'No' });

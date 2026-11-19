@@ -2391,7 +2391,7 @@ main h2.group-label {
   display: none;
 }
 
-/* Probably not: the whole row dims to note grey (the word still says it). */
+/* Not from these answers (unlikely): the whole row dims to note grey (the word still says it). */
 [data-verdict='unlikely'] > .program-link {
   color: var(--note);
 }

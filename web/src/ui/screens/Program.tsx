@@ -48,7 +48,7 @@ export function ProgramScreen({ id, inPane = false }: { id: string; /** Shown be
         </ScreenHeading>
       </div>
 
-      {/* "Probably not" is a first check, not a decision: said before the reasons, so nobody stops here who
+      {/* "Not from these answers" is a first check, not a decision: said before the reasons, so nobody stops here who
           should apply. */}
       {result.verdict === 'unlikely' && (
         <p className="dashed-note" data-testid="unlikely-note">
