@@ -4447,5 +4447,431 @@
         }
       }
     }
+  ],
+  "w2Cases": [
+    {
+      "id": "w2-sample",
+      "forms": [
+        {
+          "taxYear": 2025,
+          "wages": 27640.18,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 28880.18,
+          "stateWages": 27640.18
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ]
+        ],
+        "failure": null,
+        "annualization": {
+          "annualIncome": 27640,
+          "method": "w2",
+          "basis": {
+            "wagesCents": 2764018,
+            "taxYear": 2025,
+            "formsUsed": [
+              0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-rounds-to-whole-units",
+      "forms": [
+        {
+          "taxYear": 2025,
+          "wages": 27640.5,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 27640.5,
+          "stateWages": 27640.18
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ]
+        ],
+        "failure": null,
+        "annualization": {
+          "annualIncome": 27641,
+          "method": "w2",
+          "basis": {
+            "wagesCents": 2764050,
+            "taxYear": 2025,
+            "formsUsed": [
+              0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-two-employers-same-year-summed",
+      "forms": [
+        {
+          "taxYear": 2025,
+          "wages": 27640.18,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 28880.18,
+          "stateWages": 27640.18
+        },
+        {
+          "taxYear": 2025,
+          "wages": 4210.75,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 4210.75,
+          "medicareWages": 4210.75,
+          "stateWages": 4210.75
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ],
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ]
+        ],
+        "failure": null,
+        "annualization": {
+          "annualIncome": 31851,
+          "method": "w2",
+          "basis": {
+            "wagesCents": 3185093,
+            "taxYear": 2025,
+            "formsUsed": [
+              0,
+              1
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-latest-year-only",
+      "forms": [
+        {
+          "taxYear": 2024,
+          "wages": 25000,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 28880.18,
+          "stateWages": 27640.18
+        },
+        {
+          "taxYear": 2025,
+          "wages": 27640.18,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 28880.18,
+          "stateWages": 27640.18
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ],
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ]
+        ],
+        "failure": null,
+        "annualization": {
+          "annualIncome": 27640,
+          "method": "w2",
+          "basis": {
+            "wagesCents": 2764018,
+            "taxYear": 2025,
+            "formsUsed": [
+              1
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-year-missing-counts-with-latest",
+      "forms": [
+        {
+          "taxYear": 2025,
+          "wages": 27640.18,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 28880.18,
+          "stateWages": 27640.18
+        },
+        {
+          "taxYear": null,
+          "wages": 1000,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 1000,
+          "stateWages": 27640.18
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ],
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "skipped"
+            }
+          ]
+        ],
+        "failure": null,
+        "annualization": {
+          "annualIncome": 28640,
+          "method": "w2",
+          "basis": {
+            "wagesCents": 2864018,
+            "taxYear": 2025,
+            "formsUsed": [
+              0,
+              1
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-medicare-below-wages-warn",
+      "forms": [
+        {
+          "taxYear": 2025,
+          "wages": 27640.18,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 20000,
+          "stateWages": 27640.18
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "warn"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ]
+        ],
+        "failure": null,
+        "annualization": {
+          "annualIncome": 27640,
+          "method": "w2",
+          "basis": {
+            "wagesCents": 2764018,
+            "taxYear": 2025,
+            "formsUsed": [
+              0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-medicare-missing-skipped",
+      "forms": [
+        {
+          "taxYear": 2025,
+          "wages": 27640.18,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": null,
+          "stateWages": 27640.18
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "skipped"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ]
+        ],
+        "failure": null,
+        "annualization": {
+          "annualIncome": 27640,
+          "method": "w2",
+          "basis": {
+            "wagesCents": 2764018,
+            "taxYear": 2025,
+            "formsUsed": [
+              0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-odd-year-warn",
+      "forms": [
+        {
+          "taxYear": 1925,
+          "wages": 27640.18,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 28880.18,
+          "stateWages": 27640.18
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "warn"
+            }
+          ]
+        ],
+        "failure": null,
+        "annualization": {
+          "annualIncome": 27640,
+          "method": "w2",
+          "basis": {
+            "wagesCents": 2764018,
+            "taxYear": 1925,
+            "formsUsed": [
+              0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-no-wages",
+      "forms": [
+        {
+          "taxYear": 2025,
+          "wages": null,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 28880.18,
+          "stateWages": 27640.18
+        },
+        {
+          "taxYear": 2025,
+          "wages": 0,
+          "federalIncomeTaxWithheld": 1402,
+          "socialSecurityWages": 28880.18,
+          "medicareWages": 28880.18,
+          "stateWages": 27640.18
+        }
+      ],
+      "expected": {
+        "checks": [
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "skipped"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ],
+          [
+            {
+              "id": "w2-medicare-wages",
+              "status": "ok"
+            },
+            {
+              "id": "w2-year",
+              "status": "ok"
+            }
+          ]
+        ],
+        "failure": "no-wages",
+        "annualization": null
+      }
+    },
+    {
+      "id": "w2-empty",
+      "forms": [],
+      "expected": {
+        "checks": [],
+        "failure": "no-wages",
+        "annualization": null
+      }
+    }
   ]
 }

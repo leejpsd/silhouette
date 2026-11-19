@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 const shared = (rel) => JSON.parse(readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
 const paystub = shared('schemas/pointer.paystub.json');
 const lease = shared('schemas/pointer.lease.json');
+const w2 = shared('schemas/pointer.w2.json');
 
 export const cases = [
   { id: 'paystub-default', schema: paystub, options: {} },
@@ -11,6 +12,8 @@ export const cases = [
   { id: 'paystub-required-nullable-jsonschema', schema: paystub, options: { requiredNullable: true, dialect: 'jsonschema' } },
   { id: 'lease-default', schema: lease, options: {} },
   { id: 'lease-required-nullable-jsonschema', schema: lease, options: { requiredNullable: true, dialect: 'jsonschema' } },
+  { id: 'w2-required-nullable-openapi', schema: w2, options: { requiredNullable: true, dialect: 'openapi' } },
+  { id: 'w2-required-nullable-jsonschema', schema: w2, options: { requiredNullable: true, dialect: 'jsonschema' } },
   {
     id: 'ref-chain-and-sibling-keys',
     schema: {

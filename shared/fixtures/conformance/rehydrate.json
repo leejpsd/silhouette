@@ -258,6 +258,71 @@
   ],
   "cases": [
     {
+      "id": "w2-en-01-correct",
+      "schema": "pointer.w2.json",
+      "map": {
+        "N1": "2",
+        "N2": "2025",
+        "D1": "000-12-3456",
+        "N3": "00",
+        "N4": "1234567",
+        "W1": "NORTHWIND",
+        "W2": "STAFFING",
+        "W3": "LLC",
+        "N5": "88",
+        "W4": "Harbor",
+        "W5": "Blvd",
+        "W6": "Oakland",
+        "W7": "CA",
+        "N6": "94607",
+        "W8": "Maria",
+        "W9": "Lopez",
+        "N7": "1420",
+        "W10": "Juniper",
+        "W11": "Ave",
+        "W12": "Los",
+        "W13": "Angeles",
+        "W14": "CA",
+        "N8": "90011",
+        "N9": "27,640.18",
+        "N10": "1,402.00",
+        "N11": "28,880.18",
+        "N12": "1,790.57",
+        "N13": "28,880.18",
+        "N14": "418.76",
+        "W15": "CA",
+        "N15": "27,640.18",
+        "N16": "212.30"
+      },
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W8",
+          "W9"
+        ],
+        "taxYear": "N2",
+        "wages": "N9",
+        "federalIncomeTaxWithheld": "N10",
+        "socialSecurityWages": "N11",
+        "medicareWages": "N13",
+        "stateWages": "N15"
+      },
+      "expected": {
+        "employerName": "NORTHWIND STAFFING LLC",
+        "employeeName": "Maria Lopez",
+        "taxYear": 2025,
+        "wages": 27640.18,
+        "federalIncomeTaxWithheld": 1402,
+        "socialSecurityWages": 28880.18,
+        "medicareWages": 28880.18,
+        "stateWages": 27640.18
+      }
+    },
+    {
       "id": "paystub-en-01-correct",
       "schema": "pointer.paystub.json",
       "map": {

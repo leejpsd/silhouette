@@ -1,4 +1,4 @@
-# Validation and annualization specification (v1)
+# Validation and annualization specification (v1, section 9 since contract v1.34)
 
 Validation checks confirmed paystub values for internal consistency. Annualization turns them into the exact `annualIncome` that the verdict engine uses (`rulepacks/SPEC.md` section 4). Both are deterministic, so Web, Android and iOS must produce identical results.
 
@@ -146,6 +146,23 @@ If no remaining paystub has a gross, the result is `no-gross`. This includes an 
 - `average`: `averageGrossCents`, `periodsPerYear`, `frequency`, `stubsUsed`.
 
 The app shows the basis, and the user confirms it before the value becomes `annualIncome`.
+
+## 9. Form W-2
+
+A Form W-2 (`schemas/pointer.w2.json`) states a year's wages: box 1, `wages`, is the earned income that employer paid in `taxYear`. Nothing is projected. Reference: `reference/validate.mjs` `validateW2s`; cases: `fixtures/conformance/validate.json` `w2Cases`.
+
+**Input.** One object per form: `wages`, `federalIncomeTaxWithheld`, `socialSecurityWages`, `medicareWages`, `stateWages` as money (section 2: finite, non-negative, else `ValidationInputError`), `taxYear` an integer or null.
+
+**Checks**, per form, in this order:
+
+| Id | Status |
+|---|---|
+| `w2-medicare-wages` | `skipped` without wages or Medicare wages; `ok` when Medicare wages (box 5) ≥ wages (box 1), since box 5 adds back pre-tax deductions; else `warn` |
+| `w2-year` | `skipped` without a year; `ok` for 2000 to 2100; else `warn` |
+
+**Annualization.** The forms with wages above 0 count. Of those, the latest `taxYear` is the year; the forms of that year and the forms without a year are summed (one form per employer). `annualIncome = roundRatio(Σ wagesCents, 100)`, `method: "w2"`, `basis: { wagesCents, taxYear, formsUsed }`. No form with wages: `failure: "no-wages"`, `annualization: null`.
+
+The app shows the basis with the tax year: a W-2 is a past year's income, and a credit for a later year counts that year's income.
 
 ## 8. Known limits
 

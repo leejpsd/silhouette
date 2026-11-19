@@ -1,6 +1,27 @@
 {
   "note": "Pointers for the silhouette of each bundled sample with an empty hide set. Used for the offline sample (routing.json offlineSample) and for tests.",
   "samples": {
+    "w2-en-01.txt": {
+      "locale": "en",
+      "schema": "pointer.w2.json",
+      "pointers": {
+        "employerName": [
+          "W1",
+          "W2",
+          "W3"
+        ],
+        "employeeName": [
+          "W8",
+          "W9"
+        ],
+        "taxYear": "N2",
+        "wages": "N9",
+        "federalIncomeTaxWithheld": "N10",
+        "socialSecurityWages": "N11",
+        "medicareWages": "N13",
+        "stateWages": "N15"
+      }
+    },
     "paystub-en-01.txt": {
       "locale": "en",
       "schema": "pointer.paystub.json",

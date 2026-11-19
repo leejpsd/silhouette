@@ -1,5 +1,19 @@
 # Contract changelog
 
+## v1.34 — 2026-11-19
+
+A second document: Form W-2.
+
+| Change | Why |
+|---|---|
+| `schemas/pointer.w2.json` (employer, employee, tax year, wages in box 1, boxes 2, 3, 5 and 16), with model-schema cases `w2-required-nullable-openapi` and `w2-required-nullable-jsonschema` | One paystub projects a year from year-to-date pay; a W-2 states the year's wages. The annual tax credits count the whole year |
+| `validation/SPEC.md` section 9: checks `w2-medicare-wages` and `w2-year`; annualization `method: "w2"` (box 1 as it is; the forms of the latest year summed, one per employer); `failure: "no-wages"`. Cases in `validate.json` under `w2Cases` | A second job is a second W-2: the forms of a year are added together |
+| Sample `samples/w2-en-01.txt` (tax year 2025, the paystub's invented employee), its answer key in `answers.json`, skeleton case `w2-en-01`, rehydrate case `w2-en-01-correct` | A W-2 to try without a real one |
+| English allowlist version 4 adds `b`, `code`, `compensation`, `copy`, `etc`, `filed`, `form`, `identification`, `return`, `w`, `withheld`, `zip`. No existing skeleton case changes: the paystub sample's silhouette and placeholder ids are the same, so its answer key and the on-device recordings stay valid | The labels of a W-2 stay readable: "Wages, tips, other compensation", "Federal income tax withheld" |
+| Copy: `doc.title` "Add a paystub or W-2"; `doc.type.*`, `doc.sample.w2Text`, `doc.detected.w2`, `field.w2.*`, `check.w2-*`, `review.failure.no-wages`, `review.basis.w2`, `review.basis.w2Many`, `results.incomeBasis.w2`, `results.incomeBasis.w2Many`, `results.incomeBasis.w2Note`, `results.addDocumentW2` | The screens for a W-2 |
+
+Platforms: read a W-2 like a paystub (one request on the device, since it has no list field); validate and annualize with section 9; show the tax year with the income. Reference tests: 30.
+
 ## v1.33 — 2026-11-19
 
 The results say how the yearly income was worked out.

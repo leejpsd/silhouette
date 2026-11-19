@@ -1,0 +1,71 @@
+{
+ "$id": "pointer.w2.v1",
+ "description": "Model output for pointer extraction on a Form W-2 (Wage and Tax Statement) skeleton. Values are placeholder references, never document text. x-kind tells the Rehydrator how to read each field.",
+ "$comment": "v1: every property is present in the model output, and null means the field is not in the document. wages is box 1 (wages, tips, other compensation): the year's earned income from this employer. taxYear is the year printed on the form.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "employerName",
+  "employeeName",
+  "taxYear",
+  "wages",
+  "federalIncomeTaxWithheld",
+  "socialSecurityWages",
+  "medicareWages",
+  "stateWages"
+ ],
+ "properties": {
+  "employerName": {
+   "description": "The employer's name.",
+   "x-kind": "text",
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/ref"
+   }
+  },
+  "employeeName": {
+   "description": "The employee's name.",
+   "x-kind": "text",
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/ref"
+   }
+  },
+  "taxYear": {
+   "description": "The tax year printed on the form.",
+   "x-kind": "number",
+   "$ref": "#/$defs/ref"
+  },
+  "wages": {
+   "description": "Box 1: Wages, tips, other compensation.",
+   "x-kind": "number",
+   "$ref": "#/$defs/ref"
+  },
+  "federalIncomeTaxWithheld": {
+   "description": "Box 2: Federal income tax withheld.",
+   "x-kind": "number",
+   "$ref": "#/$defs/ref"
+  },
+  "socialSecurityWages": {
+   "description": "Box 3: Social security wages.",
+   "x-kind": "number",
+   "$ref": "#/$defs/ref"
+  },
+  "medicareWages": {
+   "description": "Box 5: Medicare wages and tips.",
+   "x-kind": "number",
+   "$ref": "#/$defs/ref"
+  },
+  "stateWages": {
+   "description": "Box 16: State wages, tips, etc.",
+   "x-kind": "number",
+   "$ref": "#/$defs/ref"
+  }
+ },
+ "$defs": {
+  "ref": {
+   "type": "string",
+   "pattern": "^[NDW][0-9]+$"
+  }
+ }
+}

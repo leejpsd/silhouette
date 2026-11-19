@@ -15,6 +15,7 @@ export const introducers = (locale) =>
 export const skeletonCases = [
   { id: 'paystub-en-01', locale: 'en', text: read('../samples/paystub-en-01.txt') },
   { id: 'payslip-ko-01', locale: 'ko', text: read('../samples/payslip-ko-01.txt') },
+  { id: 'w2-en-01', locale: 'en', text: read('../samples/w2-en-01.txt') },
   { id: 'paystub-canary-01', locale: 'en', text: read('../fixtures/canary/paystub-canary-01.txt') },
   { id: 'edge-hyphen-apostrophe', locale: 'en',
     text: "Year-to-Date Gross: $3,400.00 (O'Brien & Smith-Jones) Pre-Tax 401k W-2 12.5%" },
@@ -59,6 +60,11 @@ export const skeletonCases = [
 ];
 
 export const rehydrateCases = [
+  { id: 'w2-en-01-correct', skeletonCase: 'w2-en-01', schema: 'pointer.w2.json',
+    pointers: {
+      employerName: ['W1', 'W2', 'W3'], employeeName: ['W8', 'W9'], taxYear: 'N2', wages: 'N9', federalIncomeTaxWithheld: 'N10',
+      socialSecurityWages: 'N11', medicareWages: 'N13', stateWages: 'N15',
+    } },
   { id: 'paystub-en-01-correct', skeletonCase: 'paystub-en-01', schema: 'pointer.paystub.json',
     pointers: {
       employerName: ['W1', 'W2', 'W3'], employeeName: ['W4', 'W5'],

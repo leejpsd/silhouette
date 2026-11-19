@@ -274,3 +274,45 @@ export function validatePaystubs(values, jurisdiction) {
     },
   };
 }
+
+// ---------- 9. Form W-2 ----------
+
+const W2_MONEY = ['wages', 'federalIncomeTaxWithheld', 'socialSecurityWages', 'medicareWages', 'stateWages'];
+
+/**
+ * validation/SPEC.md section 9. A W-2's box 1 (wages) is the year's earned income from that employer:
+ * nothing is projected. The forms of the latest tax year are summed (one per employer); a form without
+ * a year counts with them.
+ * @param {object[]} values confirmed W-2 values: wages, taxYear, and optionally the other boxes
+ */
+export function validateW2s(values) {
+  const forms = values.map((v, index) => {
+    if (typeof v !== 'object' || v === null) throw new ValidationInputError('each form must be an object');
+    const out = { index };
+    for (const key of W2_MONEY) out[key] = v[key] === undefined || v[key] === null ? null : toCents(v[key]);
+    const year = v.taxYear;
+    if (year !== undefined && year !== null && (typeof year !== 'number' || !Number.isInteger(year))) throw new ValidationInputError('taxYear must be an integer');
+    out.taxYear = year ?? null;
+    return out;
+  });
+  const checks = forms.map((f) => [
+    // Box 5 (Medicare wages) is box 1 plus pre-tax deductions: it is not less than box 1.
+    { id: 'w2-medicare-wages', status: f.wages === null || f.medicareWages === null ? 'skipped' : f.medicareWages >= f.wages ? 'ok' : 'warn' },
+    { id: 'w2-year', status: f.taxYear === null ? 'skipped' : f.taxYear >= 2000 && f.taxYear <= 2100 ? 'ok' : 'warn' },
+  ]);
+  const withWages = forms.filter((f) => f.wages !== null && f.wages > 0);
+  if (withWages.length === 0) return { checks, failure: 'no-wages', annualization: null };
+  const years = withWages.map((f) => f.taxYear).filter((y) => y !== null);
+  const taxYear = years.length > 0 ? Math.max(...years) : null;
+  const used = withWages.filter((f) => f.taxYear === null || f.taxYear === taxYear);
+  const wagesCents = used.reduce((a, f) => a + f.wages, 0);
+  return {
+    checks,
+    failure: null,
+    annualization: {
+      annualIncome: roundRatio(BigInt(wagesCents), 100n),
+      method: 'w2',
+      basis: { wagesCents, taxYear, formsUsed: used.map((f) => f.index) },
+    },
+  };
+}

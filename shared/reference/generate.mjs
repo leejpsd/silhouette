@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import * as s from './silhouette.mjs';
 import * as c from './cases.mjs';
-import { cases as validateCases } from './validate.cases.mjs';
-import { ValidationInputError, validatePaystubs } from './validate.mjs';
+import { cases as validateCases, w2Cases } from './validate.cases.mjs';
+import { ValidationInputError, validatePaystubs, validateW2s } from './validate.mjs';
 import { cases as modelSchemaCases, errorCases as modelSchemaErrorCases } from './model-schema.cases.mjs';
 import { toModelSchema } from './model-schema.mjs';
 import { buildDeviceReading } from './device-reading.generate.mjs';
@@ -67,6 +67,8 @@ export function build() {
           return { id: k.id, jurisdiction: k.jurisdiction, stubs: k.stubs, expectedError: 'ValidationInputError' };
         }
       }),
+      // Section 9: Form W-2.
+      w2Cases: w2Cases.map((k) => ({ id: k.id, forms: k.forms, expected: validateW2s(k.forms) })),
     },
     'model-schema.json': {
       spec: 'schemas/MODEL_SCHEMA.md v1',

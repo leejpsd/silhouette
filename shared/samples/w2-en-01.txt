@@ -1,0 +1,19 @@
+Form W-2 Wage and Tax Statement                              2025
+Copy B - To Be Filed With Federal Tax Return
+
+Employee social security number           000-12-3456
+Employer identification number (EIN)       00-1234567
+Employer name, address, and ZIP code       NORTHWIND STAFFING LLC
+                                           88 Harbor Blvd, Oakland, CA 94607
+Employee name                              Maria Lopez
+Employee address and ZIP code              1420 Juniper Ave, Los Angeles, CA 90011
+
+Wages, tips, other compensation            27,640.18
+Federal income tax withheld                1,402.00
+Social security wages                      28,880.18
+Social security tax withheld               1,790.57
+Medicare wages and tips                    28,880.18
+Medicare tax withheld                      418.76
+State                                      CA
+State wages, tips, etc.                    27,640.18
+State income tax                           212.30

@@ -157,3 +157,18 @@ export const cases = [
   { id: 'date-month-name-invalid-day', jurisdiction: 'us-ca', stubs: [stub({ payDate: 'February 30, 2026' })] },
   { id: 'date-month-name-in-kr', jurisdiction: 'kr', stubs: [stub({ payDate: 'October 20, 2026', periodStart: '2026-10-01', periodEnd: '2026-10-15' })] },
 ];
+
+// Form W-2 (validation/SPEC.md section 9).
+const w2 = (extra = {}) => ({ taxYear: 2025, wages: 27640.18, federalIncomeTaxWithheld: 1402, socialSecurityWages: 28880.18, medicareWages: 28880.18, stateWages: 27640.18, ...extra });
+export const w2Cases = [
+  { id: 'w2-sample', forms: [w2()] },
+  { id: 'w2-rounds-to-whole-units', forms: [w2({ wages: 27640.5, medicareWages: 27640.5 })] },
+  { id: 'w2-two-employers-same-year-summed', forms: [w2(), w2({ wages: 4210.75, medicareWages: 4210.75, socialSecurityWages: 4210.75, stateWages: 4210.75 })] },
+  { id: 'w2-latest-year-only', forms: [w2({ taxYear: 2024, wages: 25000 }), w2()] },
+  { id: 'w2-year-missing-counts-with-latest', forms: [w2(), w2({ taxYear: null, wages: 1000, medicareWages: 1000 })] },
+  { id: 'w2-medicare-below-wages-warn', forms: [w2({ medicareWages: 20000 })] },
+  { id: 'w2-medicare-missing-skipped', forms: [w2({ medicareWages: null })] },
+  { id: 'w2-odd-year-warn', forms: [w2({ taxYear: 1925 })] },
+  { id: 'w2-no-wages', forms: [w2({ wages: null }), w2({ wages: 0 })] },
+  { id: 'w2-empty', forms: [] },
+];
