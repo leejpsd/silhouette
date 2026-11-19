@@ -674,5 +674,9 @@
   "tasks.measured.cloudRight": "talones de pago leídos totalmente bien en la nube, en diez formatos",
   "tasks.measured.leaks": "solicitudes a la nube que contenían un nombre, una fecha o un monto del talón de pago",
   "tasks.measured.exact": "respuestas que usan tus valores exactos, escritas en el dispositivo en cada ejecución grabada y nunca enviadas",
-  "tasks.measured.why": "Por eso una lectura empieza en el dispositivo, donde nada sale. La nube recibe solo la silueta, y solo cuando la respuesta del dispositivo no pasa las comprobaciones."
+  "tasks.measured.why": "Por eso una lectura empieza en el dispositivo, donde nada sale. La nube recibe solo la silueta, y solo cuando la respuesta del dispositivo no pasa las comprobaciones.",
+  "review.pointer.said": "El modelo respondió",
+  "review.pointer.put": "Este dispositivo devolvió",
+  "review.pointer.cloud": "El modelo en la nube solo vio {ref}, nunca {value}. Este dispositivo devolvió el valor desde tu talón de pago.",
+  "review.pointer.device": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu talón de pago."
 }

@@ -1,5 +1,15 @@
 # Contract changelog
 
+## v1.30 — 2026-11-19
+
+The pointer, shown with the reading's own answer.
+
+| Change | Why |
+|---|---|
+| `review.pointer.said`, `review.pointer.put`, `review.pointer.cloud`, `review.pointer.device`: at the top of the values found, the model's own answer for one field (`"grossPay": "N12"`) next to the value this device put back (`1,271.88`), and what the model saw | What is new in Silhouette is that the model points and never sees or writes a value; the screen where a reading comes back now shows it with that reading's answer, not only the first screen's example |
+
+Platforms: show it for a reading by a model (on the device or in the cloud), not for the bundled sample's answer key or typed numbers; with reduced motion it is shown without movement. Reference tests: 30.
+
 ## v1.29 — 2026-11-19
 
 Why hybrid, in measured numbers.

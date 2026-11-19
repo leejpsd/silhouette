@@ -759,6 +759,27 @@
     },
     {
       "language": "en",
+      "platform": "ios",
+      "key": "review.pointer.put",
+      "text": "This device put back",
+      "shown": "This iPhone put back"
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "review.pointer.cloud",
+      "text": "The model in the cloud saw only {ref}, never {value}. This device put the value back from your paystub.",
+      "shown": "The model in the cloud saw only {ref}, never {value}. This iPhone put the value back from your paystub."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "review.pointer.device",
+      "text": "Even the model on this device answers only {ref}. This device puts {value} back from your paystub.",
+      "shown": "Even the model on this iPhone answers only {ref}. This iPhone puts {value} back from your paystub."
+    },
+    {
+      "language": "en",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "On this device",
@@ -1514,6 +1535,27 @@
       "shown": "So a reading starts on the phone, where nothing leaves. The cloud receives only the silhouette, and only when the phone’s answer fails the checks."
     },
     {
+      "language": "en",
+      "platform": "android",
+      "key": "review.pointer.put",
+      "text": "This device put back",
+      "shown": "This phone put back"
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "review.pointer.cloud",
+      "text": "The model in the cloud saw only {ref}, never {value}. This device put the value back from your paystub.",
+      "shown": "The model in the cloud saw only {ref}, never {value}. This phone put the value back from your paystub."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "review.pointer.device",
+      "text": "Even the model on this device answers only {ref}. This device puts {value} back from your paystub.",
+      "shown": "Even the model on this phone answers only {ref}. This phone puts {value} back from your paystub."
+    },
+    {
       "language": "es",
       "platform": "ios",
       "key": "badge.onDevice",
@@ -2201,6 +2243,27 @@
     },
     {
       "language": "es",
+      "platform": "ios",
+      "key": "review.pointer.put",
+      "text": "Este dispositivo devolvió",
+      "shown": "Este iPhone devolvió"
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "review.pointer.cloud",
+      "text": "El modelo en la nube solo vio {ref}, nunca {value}. Este dispositivo devolvió el valor desde tu talón de pago.",
+      "shown": "El modelo en la nube solo vio {ref}, nunca {value}. Este iPhone devolvió el valor desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "review.pointer.device",
+      "text": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu talón de pago.",
+      "shown": "Incluso el modelo de este iPhone responde solo {ref}. Este iPhone devuelve {value} desde tu talón de pago."
+    },
+    {
+      "language": "es",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "En este dispositivo",
@@ -2884,6 +2947,27 @@
       "key": "start.pointer",
       "text": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este dispositivo vuelve a poner el valor.",
       "shown": "El modelo responde «el pago bruto es N12». Nunca ve 1,271.88: este teléfono vuelve a poner el valor."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.pointer.put",
+      "text": "Este dispositivo devolvió",
+      "shown": "Este teléfono devolvió"
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.pointer.cloud",
+      "text": "El modelo en la nube solo vio {ref}, nunca {value}. Este dispositivo devolvió el valor desde tu talón de pago.",
+      "shown": "El modelo en la nube solo vio {ref}, nunca {value}. Este teléfono devolvió el valor desde tu talón de pago."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.pointer.device",
+      "text": "Incluso el modelo de este dispositivo responde solo {ref}. Este dispositivo devuelve {value} desde tu talón de pago.",
+      "shown": "Incluso el modelo de este teléfono responde solo {ref}. Este teléfono devuelve {value} desde tu talón de pago."
     }
   ]
 }

@@ -674,5 +674,9 @@
   "tasks.measured.cloudRight": "paystubs read entirely right in the cloud, in ten layouts",
   "tasks.measured.leaks": "cloud requests that contained a name, date or amount from the paystub",
   "tasks.measured.exact": "answers that use your exact values, written on the device in every recorded run and never sent",
-  "tasks.measured.why": "So a reading starts on the device, where nothing leaves. The cloud receives only the silhouette, and only when the device’s answer fails the checks."
+  "tasks.measured.why": "So a reading starts on the device, where nothing leaves. The cloud receives only the silhouette, and only when the device’s answer fails the checks.",
+  "review.pointer.said": "The model answered",
+  "review.pointer.put": "This device put back",
+  "review.pointer.cloud": "The model in the cloud saw only {ref}, never {value}. This device put the value back from your paystub.",
+  "review.pointer.device": "Even the model on this device answers only {ref}. This device puts {value} back from your paystub."
 }

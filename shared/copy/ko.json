@@ -674,5 +674,9 @@
   "tasks.measured.cloudRight": "클라우드에서 모든 값을 맞게 읽은 급여명세서, 10가지 양식",
   "tasks.measured.leaks": "급여명세서의 이름·날짜·금액이 들어 있던 클라우드 요청",
   "tasks.measured.exact": "정확한 값을 쓰는 답변, 녹화된 모든 실행에서 기기에서 작성되었고 보내지 않음",
-  "tasks.measured.why": "그래서 읽기는 아무것도 나가지 않는 기기에서 시작합니다. 클라우드는 기기의 답이 검사를 통과하지 못할 때만, 실루엣만 받습니다."
+  "tasks.measured.why": "그래서 읽기는 아무것도 나가지 않는 기기에서 시작합니다. 클라우드는 기기의 답이 검사를 통과하지 못할 때만, 실루엣만 받습니다.",
+  "review.pointer.said": "모델의 답",
+  "review.pointer.put": "이 기기가 되돌려 넣은 값",
+  "review.pointer.cloud": "클라우드의 모델은 {ref}만 보았고 {value}는 보지 못했습니다. 이 기기가 급여명세서에서 값을 되돌려 넣었습니다.",
+  "review.pointer.device": "이 기기의 모델도 {ref}로만 답합니다. 이 기기가 급여명세서에서 {value}를 되돌려 넣습니다."
 }
