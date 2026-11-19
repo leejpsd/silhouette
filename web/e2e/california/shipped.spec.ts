@@ -1,5 +1,5 @@
-// The build people get: the California draft pack. The notice on every screen, the official sources
-// with their read date, the judges' path from a prepared household to a sharper result after the
+// The build people get: the California pack, checked against its sources. The line on every screen,
+// the official sources with the date they were checked, the judges' path from a prepared household to a sharper result after the
 // sample paystub, money as the pack writes it, layouts at phone, tablet and laptop widths, and axe.
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
@@ -19,24 +19,26 @@ async function prepared(page: Page) {
 
 const verdictOf = (page: Page, id: string) => page.getByTestId(`program-${id}`);
 
-test.describe('the California draft pack', () => {
-  test('every screen says these are real programs read from official sources on a date, as a draft', async ({ page }) => {
+test.describe('the California pack', () => {
+  test('every screen says the rules were checked against official sources, and on what date', async ({ page }) => {
     await page.goto('/');
     const notice = page.getByTestId('demo-banner');
-    await expect(notice).toHaveAttribute('data-pack', 'draft');
-    await expect(notice).toContainText('Draft rules, read November 12, 2026.');
+    await expect(notice).toHaveAttribute('data-pack', 'checked');
+    await expect(notice).toContainText('Rules checked against official sources November 19, 2026.');
+    await expect(notice).not.toContainText('Draft');
     await expect(page.getByText('Demo rules')).toHaveCount(0);
     await notice.getByRole('button', { name: 'More' }).click();
-    await expect(page.getByTestId('draft-body')).toContainText('These are real California and federal programs');
-    await expect(page.getByTestId('draft-body')).toContainText('“may qualify”');
+    await expect(page.getByTestId('checked-body')).toContainText('These are real California and federal programs');
+    await expect(page.getByTestId('checked-body')).toContainText('compared with the agency’s own publication on November 19, 2026');
+    await expect(page.getByTestId('checked-body')).toContainText('“may qualify”');
     await page.keyboard.press('Escape');
     for (const path of ['/#/q/householdSize', '/#/results', '/#/doc', '/#/judges']) {
       await page.goto(path);
-      await expect(page.getByTestId('demo-banner')).toContainText('Draft rules, read November 12, 2026.');
+      await expect(page.getByTestId('demo-banner')).toContainText('Rules checked against official sources November 19, 2026.');
     }
   });
 
-  test('every program page links its official sources with the date they were read', async ({ page }) => {
+  test('every program page links its official sources with the date they were checked', async ({ page }) => {
     await prepared(page);
     for (const program of pack.programs) {
       await page.goto(`/#/program/${program.id}`);
@@ -44,8 +46,8 @@ test.describe('the California draft pack', () => {
       const sources = page.getByTestId('official-sources');
       await expect(sources.getByRole('link')).toHaveCount(program.sources.length);
       for (const s of program.sources) await expect(sources.locator(`a[href="${s.url}"]`)).toBeVisible();
-      await expect(sources.getByTestId('source-read-on').first()).toHaveText('Read from this source on November 12, 2026');
-      await expect(page.getByTestId('rules-status')).toContainText('Draft rules: read from official sources on November 12, 2026');
+      await expect(sources.getByText('Confirmed against this source on November 19, 2026')).toHaveCount(program.sources.length);
+      await expect(page.getByTestId('rules-status')).toHaveText('Rules verified on November 19, 2026');
       await expect(page.getByTestId('rules-status')).not.toContainText('for testing');
     }
   });
@@ -74,12 +76,24 @@ test.describe('the California draft pack', () => {
     await expect(verdictOf(page, 'federal-eitc')).toContainText('$3,573');
   });
 
+  test('married filing separately with a child is "Possible", and the reason says when it can still qualify', async ({ page }) => {
+    await prepared(page);
+    await page.goto('/#/q/filingStatus');
+    await page.getByRole('radio', { name: 'Married, filing separately' }).check();
+    await page.getByRole('button', { name: 'Next' }).click();
+    await page.goto('/#/results');
+    for (const id of ['federal-eitc', 'caleitc', 'yctc']) await expect(verdictOf(page, id)).toHaveAttribute('data-verdict', 'maybe');
+    await page.goto('/#/program/federal-eitc');
+    await expect(page.getByTestId('why-section')).toContainText('Married filing separately can still qualify when a child you claim lived with you more than half the year');
+    await expect(page.getByTestId('why-section')).not.toContainText('Over this limit');
+  });
+
   test('money is written as the pack says, in Spanish too', async ({ page }) => {
     await prepared(page);
     await chooseLanguage(page, 'es');
     await page.goto('/#/program/caleitc');
     await expect(page.getByTestId('why-section')).toContainText('$32,900');
-    await expect(page.getByTestId('demo-banner')).toContainText('Reglas en borrador, leídas el 12 de noviembre de 2026.');
+    await expect(page.getByTestId('demo-banner')).toContainText('Reglas comparadas con fuentes oficiales el 19 de noviembre de 2026.');
     await page.goto('/#/q/income');
     await expect(page.getByRole('radio').first()).toHaveAccessibleName(/\$15,000/);
   });

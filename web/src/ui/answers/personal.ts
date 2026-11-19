@@ -60,9 +60,12 @@ export function whyRows(t: Translate, locale: Locale, program: Program, reasons:
     if (r.metBy) notes.push(t('why.metBy', { way: answerLabel(locale, r.metBy.variable, r.metBy.value) }));
     const cap = shown.find((c) => c.capped !== undefined)?.capped;
     if (cap !== undefined) notes.push(t('why.capNote', { cap }));
+    // What an exception depends on: the pack's own sentence for this criterion when it has one
+    // (rulepacks/SPEC.md section 5), else the generic line naming the answers it reads.
+    const exceptionText = r.exception && r.exception.length > 0 ? lookup(locale, `exception.${program.id}.${r.id}`) : undefined;
     const stateText =
       r.exception && r.exception.length > 0
-        ? t('why.exception', { what: r.exception.map((v) => lookup(locale, `variable.${v}`) ?? v).join(', ') })
+        ? (exceptionText ?? t('why.exception', { what: r.exception.map((v) => lookup(locale, `variable.${v}`) ?? v).join(', ') }))
         : t(dynamicKey(`state.${r.state}`));
     return {
       id: r.id,

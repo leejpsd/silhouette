@@ -109,7 +109,7 @@ export function ProgramScreen({ id }: { id: string }) {
         )}
         <p className="small" data-testid="rules-status">
           {PACK.verifiedOn
-            ? t('rules.verifiedOn', { date: PACK.verifiedOn })
+            ? t('rules.verifiedOn', { date: packDate(locale, PACK.verifiedOn) })
             : isDraftPack() && SOURCES_READ_ON
               ? t('pack.draft.notice', { date: packDate(locale, SOURCES_READ_ON) })
               : t('detail.unverified')}

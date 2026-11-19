@@ -1,7 +1,8 @@
 // The active rule pack, bands and pack copy, imported from ../shared at build time (never copied).
 // `@pack` and `@bands` resolve to the California pack in every build people get; the invented zz-test
 // pack is used only by the unit tests and the end-to-end suite built with `build:demo-pack`
-// (vite.config.ts, packFor()). A draft pack shows its notice on every screen; the demo pack its banner.
+// (vite.config.ts, packFor()). A draft pack shows its notice on every screen, a checked pack the date it was
+// checked, the demo pack its banner.
 
 import packJson from '@pack/pack.json';
 import bandsJson from '@bands';
@@ -33,3 +34,5 @@ export const PACK_STATUS: string | undefined = (packJson as { status?: string })
 /** When the draft pack's numbers were read from their sources. */
 export const SOURCES_READ_ON: string | undefined = (packJson as { sourcesReadOn?: string }).sourcesReadOn;
 export const isDraftPack = (): boolean => PACK_STATUS === 'draft';
+/** A pack whose numbers a person compared with their sources (`verifiedOn`, no `status`): it says so where a draft says "Draft rules". */
+export const isCheckedPack = (): boolean => PACK_STATUS === undefined && typeof PACK.verifiedOn === 'string' && PACK.verifiedOn !== '';

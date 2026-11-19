@@ -4,7 +4,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { deleteEverything, loadRecord, saveRecord, PREF_PREFIX } from '../data/store';
 import { isLocale, translator, type Locale } from './i18n';
 import { AppContext, type AppState } from './context';
-import { BANDS, PACK, isDemoPack, isDraftPack } from './pack';
+import { BANDS, PACK, isCheckedPack, isDemoPack, isDraftPack } from './pack';
 import { buildSteps, computeVerdicts, sanitizeAnswers, type AnswerValue, type QuickCheckAnswers } from './quickcheck';
 import { navigate, useRoute } from './router';
 import { DemoBanner, Header, LeavingBar, RailSteps } from './Chrome';
@@ -192,11 +192,11 @@ export function App() {
             <Header onLocale={changeLocale} />
             {/* Narrow: the notice under the wordmark; wide: the rail carries a short link and the notice
                 stands at the top of the content. */}
-            {!wide && (isDemoPack(PACK) || isDraftPack()) && <DemoBanner onDelete={onDelete} />}
+            {!wide && (isDemoPack(PACK) || isDraftPack() || isCheckedPack()) && <DemoBanner onDelete={onDelete} />}
             <RailSteps route={route} />
           </div>
           <main id="main" tabIndex={-1} aria-busy={!loaded}>
-            {wide && (isDemoPack(PACK) || isDraftPack()) && <DemoBanner onDelete={onDelete} />}
+            {wide && (isDemoPack(PACK) || isDraftPack() || isCheckedPack()) && <DemoBanner onDelete={onDelete} />}
             <Suspense fallback={null}>{screen}</Suspense>
           </main>
           <BottomBlock label={t('leaving.title')} count={<LeavingBar onDelete={onDelete} />} />

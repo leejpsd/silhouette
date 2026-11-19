@@ -6,7 +6,7 @@ import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from
 import { NO_APP_CHECK_TOKEN, REFUSED_BY_BROWSER } from '../data/net-monitor';
 import { LOCALES, LOCALE_NAMES, dynamicKey, lookup, packDate, type CopyKey, type Locale } from './i18n';
 import { useApp } from './context';
-import { PACK, SOURCES_READ_ON, isDemoPack, isDraftPack } from './pack';
+import { PACK, SOURCES_READ_ON, isCheckedPack, isDemoPack, isDraftPack } from './pack';
 import { routeHref, type Route } from './router';
 import { firstOpenStep } from './quickcheck';
 import { useDocument } from './doc/state';
@@ -84,17 +84,18 @@ export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
   const more = useRef<HTMLButtonElement>(null);
   const headline = useId();
   const draft = !isDemoPack(PACK) && isDraftPack();
+  const checked = !isDemoPack(PACK) && isCheckedPack();
   useEffect(() => {
     const show = () => setOpen(true);
     window.addEventListener(OPEN_RULES_EVENT, show);
     return () => window.removeEventListener(OPEN_RULES_EVENT, show);
   }, []);
-  const date = SOURCES_READ_ON ? packDate(locale, SOURCES_READ_ON) : '';
-  const title = draft ? t('pack.draft.title') : t('demo.title');
+  const date = checked && PACK.verifiedOn ? packDate(locale, PACK.verifiedOn) : SOURCES_READ_ON ? packDate(locale, SOURCES_READ_ON) : '';
+  const title = checked ? t('pack.checked.title') : draft ? t('pack.draft.title') : t('demo.title');
   return (
-    <aside className="demo-line" aria-label={title} data-testid="demo-banner" data-pack={draft ? 'draft' : 'demo'} data-compact="true">
+    <aside className="demo-line" aria-label={title} data-testid="demo-banner" data-pack={checked ? 'checked' : draft ? 'draft' : 'demo'} data-compact="true">
       <p>
-        {draft ? t('pack.draft.short', { date }) : t('demo.short')}{' '}
+        {checked ? t('pack.checked.short', { date }) : draft ? t('pack.draft.short', { date }) : t('demo.short')}{' '}
         <button ref={more} type="button" className="text-link inline" aria-haspopup="dialog" onClick={() => setOpen(true)}>
           {t('demo.more')}
         </button>
@@ -117,7 +118,11 @@ export function DemoBanner({ onDelete }: { onDelete: () => Promise<void> }) {
         <h2 id={headline} className="sheet-headline">
           {title}
         </h2>
-        {draft ? (
+        {checked ? (
+          <p className="sheet-text" data-testid="checked-body">
+            {t('pack.checked.body', { date })}
+          </p>
+        ) : draft ? (
           <>
             <p className="sheet-text" data-testid="draft-body">
               {t('pack.draft.body', { date })}
@@ -196,9 +201,9 @@ export function RailSteps({ route }: { route: Route }) {
         <a className="text-link inline" href={routeHref({ name: 'judges' })}>
           {t('rail.judges')}
         </a>
-        {(isDemoPack(PACK) || isDraftPack()) && (
+        {(isDemoPack(PACK) || isDraftPack() || isCheckedPack()) && (
           <button type="button" className="text-link inline" aria-haspopup="dialog" onClick={() => window.dispatchEvent(new Event(OPEN_RULES_EVENT))}>
-            {isDemoPack(PACK) ? t('rail.demoRules') : t('rail.draftRules')}
+            {isDemoPack(PACK) ? t('rail.demoRules') : isCheckedPack() ? t('rail.checkedRules') : t('rail.draftRules')}
           </button>
         )}
       </p>
