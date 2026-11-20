@@ -6914,6 +6914,70 @@ dialog.sheet[open][data-closing='true']::backdrop {
   color: var(--note);
 }
 
+/* What the paystub changed, as amounts: the results without and with it, side by side, then the yearly sum. */
+.doc-payoff {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0 4px;
+  border-top: 1px solid var(--line);
+}
+
+.doc-compare {
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-compare-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.doc-compare-row + .doc-compare-row {
+  border-top: 1px solid var(--line);
+}
+
+.doc-compare-head {
+  padding-top: 0;
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.doc-compare-row > [role='rowheader'] {
+  font-size: var(--type-small-size);
+}
+
+.doc-compare-was,
+.doc-compare-now {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.doc-compare-was {
+  color: var(--note);
+}
+
+.doc-compare-now[data-up='true'] {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+}
+
+.badge-line .doc-effect p.doc-total {
+  margin-top: 4px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .doc-effect .income-basis summary {
   cursor: pointer;
   padding: 4px 0;

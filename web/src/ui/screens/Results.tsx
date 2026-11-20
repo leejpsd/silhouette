@@ -10,8 +10,9 @@ import { leftDevice, outboundState, subscribeOutbound } from '../../data/outboun
 import type { ProgramVerdict } from '../../core/rules';
 import { useApp } from '../context';
 import { dynamicKey, formatMoney, programName } from '../i18n';
-import { PACK } from '../pack';
-import { groupByVerdict, isIncomeAnswer, type IncomeAnswer } from '../quickcheck';
+import { BANDS, PACK } from '../pack';
+import { payoff } from '../doc-payoff';
+import { answersWithoutDocument, computeVerdicts, groupByVerdict, isIncomeAnswer, type IncomeAnswer } from '../quickcheck';
 import { incomeBasisLine } from '../income-basis';
 import { OPEN_RECORD_EVENT } from '../Chrome';
 import { navigate, routeHref } from '../router';
@@ -140,6 +141,7 @@ function DocumentEffect({ amount, from }: { amount: number; from: NonNullable<Re
       <p className="doc-effect-amount" data-testid="doc-effect-amount">
         {formatMoney(locale, amount)} <span className="small">{t('results.docEffect.year')}</span>
       </p>
+      <DocumentPayoff filled={filled} />
       <p className="small" data-testid="doc-filled">
         {t('results.docEffect.filled', { count: filled.length, list: filled.map((v) => t(dynamicKey(`variable.${v}`))).join(', ') })}
       </p>
@@ -173,6 +175,57 @@ function DocumentEffect({ amount, from }: { amount: number; from: NonNullable<Re
         {t(w2 ? 'results.whoDecided.w2' : 'results.whoDecided.paystub')}
       </p>
     </section>
+  );
+}
+
+/**
+ * What the document changed, as amounts (contract v1.44): the results without and with it, both worked out
+ * by the rules on this device (without: the answers it replaced put back), then the yearly sums now. Shown
+ * only when the answers it replaced were kept with it; nothing is assumed about a "without" not computed.
+ */
+function DocumentPayoff({ filled }: { filled: readonly string[] }) {
+  const { t, locale, steps, answers, results } = useApp();
+  const income = answers['income'] as Extract<IncomeAnswer, { kind: 'exact' }>;
+  const before = income.from?.before;
+  if (!before) return null;
+  const without = payoff(computeVerdicts(PACK, BANDS, steps, answersWithoutDocument(answers, filled, before)), PACK);
+  const now = payoff(results, PACK);
+  return (
+    <div className="doc-payoff" data-testid="doc-payoff">
+      <div className="doc-compare" role="table" aria-label={t('results.docEffect.titlePaystub')}>
+        <div className="doc-compare-row doc-compare-head" role="row">
+          <span role="columnheader" />
+          <span role="columnheader">{t('results.docEffect.withoutLabel')}</span>
+          <span role="columnheader">{t('results.docEffect.withLabel')}</span>
+        </div>
+        {(
+          [
+            ['may', 'results.docEffect.rowMay', without.may, now.may],
+            ['amount', 'results.docEffect.rowAmount', without.withAmount, now.withAmount],
+          ] as const
+        ).map(([id, key, a, b]) => (
+          <div key={id} className="doc-compare-row" role="row" data-testid={`doc-compare-${id}`} data-without={a} data-with={b}>
+            <span role="rowheader">{t(key)}</span>
+            <span role="cell" className="doc-compare-was">
+              {a}
+            </span>
+            <span role="cell" className="doc-compare-now" data-up={b > a}>
+              {b}
+            </span>
+          </div>
+        ))}
+      </div>
+      {now.total > 0 && (
+        <>
+          <p className="doc-total" data-testid="doc-total" data-total={now.total} data-up-to={now.upTo}>
+            {now.upTo > 0
+              ? t('results.docEffect.totalUpTo', { amount: formatMoney(locale, now.total), upTo: formatMoney(locale, now.upTo) })
+              : t('results.docEffect.total', { amount: formatMoney(locale, now.total) })}
+          </p>
+          <p className="small muted">{t('results.docEffect.totalNote')}</p>
+        </>
+      )}
+    </div>
   );
 }
 

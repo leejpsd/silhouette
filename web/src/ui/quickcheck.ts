@@ -30,6 +30,12 @@ export type IncomeAnswer =
             readonly filled?: readonly string[] | undefined;
             /** The results the document changed, as they were when it was used. */
             readonly changed?: readonly DocumentChange[] | undefined;
+            /**
+             * The answers the document replaced, by step id, as they were before it (absent: not answered then),
+             * so the results can be worked out by the rules without the document too. Kept without their own
+             * document's details.
+             */
+            readonly before?: Readonly<Record<string, AnswerValue | null>> | undefined;
           }
         | undefined;
     };
@@ -193,3 +199,29 @@ export function exactProfile(
  * (such as investment income). Asked as an amount and shown as money.
  */
 export const isMoneyVariable = (variable: string): boolean => variable === 'annualIncome' || /^(?!has).*income$/i.test(variable);
+
+/**
+ * The answers as they were before a document answered `filled` (rule variables), from the answers kept with
+ * it (`before`): a step it answered is put back as it was, or removed when it was not answered then.
+ */
+export function answersWithoutDocument(answers: QuickCheckAnswers, filled: readonly string[], before: Readonly<Record<string, AnswerValue | null>>): QuickCheckAnswers {
+  const out: Record<string, AnswerValue | null> = { ...answers };
+  for (const variable of filled) {
+    const id = stepForVariable(variable);
+    if (Object.hasOwn(before, id)) out[id] = before[id] ?? null;
+    else delete out[id];
+  }
+  return out;
+}
+
+/** What a document's answers are kept as (`before`): the prior answers of the steps it fills, without nested document details. */
+export function answersBefore(answers: QuickCheckAnswers, filled: readonly string[]): Record<string, AnswerValue | null> {
+  const out: Record<string, AnswerValue | null> = {};
+  for (const variable of filled) {
+    const id = stepForVariable(variable);
+    if (!Object.hasOwn(answers, id)) continue;
+    const value = answers[id] ?? null;
+    out[id] = isIncomeAnswer(value) && value.kind === 'exact' ? { kind: 'exact', amount: value.amount } : value;
+  }
+  return out;
+}

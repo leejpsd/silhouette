@@ -34,7 +34,7 @@ import { BlockActions } from '../design/block';
 import { Alert, ArrowRight, Check, ChevronLeft, ChevronRight } from '../design/icons';
 import { Marker, Paper, ActionLabel } from '../design/parts';
 import type { Skeleton } from '../../core/types';
-import { computeVerdicts, type DocumentChange, type IncomeBasis, type QuickCheckAnswers } from '../quickcheck';
+import { answersBefore, computeVerdicts, type DocumentChange, type IncomeBasis, type QuickCheckAnswers } from '../quickcheck';
 import { BANDS } from '../pack';
 
 type Kind = ReviewField['kind'];
@@ -935,7 +935,7 @@ export function DocumentReviewScreen() {
                 setAnswer(
                   'income',
                   doc.extraction
-                    ? { kind: 'exact', amount: annual.annualIncome, from: { paystub: doc.extraction.inferenceSource, basis: incomeBasis(annual), filled, changed: documentChanges } }
+                    ? { kind: 'exact', amount: annual.annualIncome, from: { paystub: doc.extraction.inferenceSource, basis: incomeBasis(annual), filled, changed: documentChanges, before: answersBefore(answers, filled) } }
                     : { kind: 'exact', amount: annual.annualIncome },
                 );
                 reset(false);
