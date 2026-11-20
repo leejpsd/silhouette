@@ -326,13 +326,13 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   // Wide screens: the record fills the content area, with the open request beside the list.
   const wide = useWide();
   const [shown, setShown] = useState<string | null>(null);
-  // Wide: opening the record shows the latest request that carried a body beside the list.
+  // Opening the record shows the latest request that carried a body (wide: beside the list; phone: open in it).
   useEffect(() => {
-    if (!open || !wide) return;
+    if (!open) return;
     const latest = [...entries].reverse().find((e) => e.body !== undefined);
     setShown((current) => current ?? latest?.id ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, wide]);
+  }, [open]);
   useEffect(() => {
     const show = () => setOpen(true);
     window.addEventListener(OPEN_RECORD_EVENT, show);
@@ -395,7 +395,8 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
                   title={e.fields.map(fieldName).join(', ')}
                   status={statusLine(e)}
                   at={time(locale, e.at)}
-                  {...(wide ? { open: shown === e.id, onToggle: () => setShown(e.id) } : {})}
+                  open={shown === e.id}
+                  onToggle={() => setShown((current) => (current === e.id && !wide ? null : e.id))}
                 />
               ))}
             </ol>

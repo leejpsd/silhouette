@@ -167,13 +167,7 @@ export function pointerModelParams(docType: DocType, language: string, options: 
   const system = systemText(config, docType, part);
   // A part of a two-part reading runs only on this device; only the cloud-capable form is described.
   if (!devicePart) describeAiRequests(system, ['document-silhouette']);
-  const generationConfig: Record<string, unknown> = {
-    responseMimeType: 'application/json',
-    [config.schemaField]: cloudSchema,
-    maxOutputTokens: config.maxOutputTokens,
-  };
-  if (config.temperature !== undefined) generationConfig['temperature'] = config.temperature;
-  if (config.thinkingLevel) generationConfig['thinkingConfig'] = { thinkingLevel: config.thinkingLevel.toUpperCase() };
+  const generationConfig = pointerGenerationConfig(config, cloudSchema);
   return {
     mode: options.forceCloud ? InferenceMode.ONLY_IN_CLOUD : options.deviceOnly || devicePart ? InferenceMode.ONLY_ON_DEVICE : InferenceMode.PREFER_ON_DEVICE,
     inCloudParams: { model: config.cloudModel, systemInstruction: systemText(config, docType), generationConfig: generationConfig as never },
@@ -187,6 +181,40 @@ export function pointerModelParams(docType: DocType, language: string, options: 
       } as never,
       promptOptions: { responseConstraint: deviceSchema },
     },
+  };
+}
+
+function pointerGenerationConfig(config: PointerConfig, cloudSchema: unknown): Record<string, unknown> {
+  const generationConfig: Record<string, unknown> = {
+    responseMimeType: 'application/json',
+    [config.schemaField]: cloudSchema,
+    maxOutputTokens: config.maxOutputTokens,
+  };
+  if (config.temperature !== undefined) generationConfig['temperature'] = config.temperature;
+  if (config.thinkingLevel) generationConfig['thinkingConfig'] = { thinkingLevel: config.thinkingLevel.toUpperCase() };
+  return generationConfig;
+}
+
+/**
+ * The reading request as it goes to the cloud (the body of generateContent, built as `requestBody`
+ * builds every other request), shown beside the button that sends it before anything is sent. Its only
+ * document content is the silhouette.
+ */
+export function pointerRequest(skeleton: Skeleton, docType: DocType): { readonly model: string; readonly body: string } {
+  const config = activePointerConfig();
+  const cloudSchema = toModelSchema(config.schemas[docType] as unknown as Record<string, unknown>, config.schemaOptions);
+  return {
+    model: config.cloudModel,
+    body: requestBody({
+      taskId: 'document.pointer.extract',
+      mode: POINTER_TASK.mode as RoutingMode,
+      reason: POINTER_TASK.reason as RoutingReason,
+      model: config.cloudModel,
+      systemInstruction: systemText(config, docType),
+      prompt: fill(config.prompt.user, { docType, skeleton: presentSkeleton(skeleton, config) }),
+      generationConfig: pointerGenerationConfig(config, cloudSchema),
+      fields: ['document-silhouette'],
+    }),
   };
 }
 

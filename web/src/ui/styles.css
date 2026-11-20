@@ -7161,3 +7161,18 @@ dialog.sheet[open][data-closing='true']::backdrop {
 .rs-reason::first-letter {
   text-transform: uppercase;
 }
+
+/* Where a request goes, beside the button that sends it (contract v1.43). */
+.preview-destination {
+  margin: 0 0 8px;
+}
+.destination-line {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+.exact-request {
+  margin-block: 12px;
+}
+.exact-request .payload-slip {
+  margin-top: 8px;
+}

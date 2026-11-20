@@ -1,8 +1,8 @@
 // Skeleton preview: exactly what could leave the device, before anything is sent.
 import { bringIntoView } from '../design/motion';
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { placeholderCounts, buildReview, type SourceSegment } from '../../core/review';
-import { cancelPreparedReading, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
+import { cancelPreparedReading, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, pointerRequest, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
 import { leaveOutBoxes, readingChecks } from '../doc/reading-checks';
@@ -25,9 +25,9 @@ import { phoneLines } from '../doc/phone-view';
 import { rememberReading } from '../doc/last-reading';
 import { recordRecordedReading } from '../../data/outbound';
 import { BlockActions, useTwoColumns } from '../design/block';
-import { ArrowRight, ChevronLeft, ChevronRight, LeaveGlyph } from '../design/icons';
+import { ArrowRight, Caret, ChevronLeft, ChevronRight, LeaveGlyph } from '../design/icons';
 import { useOnline } from '../design/online';
-import { ActionLabel, Spinner } from '../design/parts';
+import { ActionLabel, Paper, Spinner } from '../design/parts';
 import { Loading } from '../answers/parts';
 import { ReadingShow, showPairs, useReadingShow, type ShowRoute } from '../doc/ReadingShow';
 
@@ -512,12 +512,20 @@ export function DocumentPreviewScreen() {
           </div>
         </>
       )}
+      {!offlineSample && <ExactRequest skeleton={skeleton} docType={doc.docType} />}
       <a className="text-link back-link" href={routeHref({ name: 'doc' })}>
         <ChevronLeft />
         {t('q.back')}
       </a>
       <BlockActions mode="decision">
         <p className="preview-counts">{t('preview.counts', { numbers: counts.N, dates: counts.D, words: counts.W })}</p>
+        {/* Where the reading goes, beside the button that starts it. */}
+        {!offlineSample && deviceStatus !== null && (
+          <p className="routing-line preview-destination" data-testid="preview-destination" data-destination={onDeviceFirst ? 'device' : 'cloud'}>
+            <strong className={`badge ${onDeviceFirst ? 'badge-device' : 'badge-cloud'}`}>{onDeviceFirst ? t('badge.onDevice') : t('badge.cloud')}</strong>
+            <span>{t(onDeviceFirst ? 'send.destination.device' : 'send.destination.cloud')}</span>
+          </p>
+        )}
         <div className="decision decision-send">
           <button
             type="button"
@@ -559,6 +567,33 @@ export function DocumentPreviewScreen() {
           )}
         </div>
       </BlockActions>
+    </div>
+  );
+}
+
+/**
+ * "Show the exact request" before anything is sent: the reading request as it would go to the cloud
+ * (on a device with a model, only if this device cannot read it). Its only document content is the silhouette.
+ */
+function ExactRequest({ skeleton, docType }: { skeleton: Skeleton; docType: Parameters<typeof pointerRequest>[1] }) {
+  const { t } = useApp();
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const request = open ? pointerRequest(skeleton, docType) : null;
+  return (
+    <div className="exact-request" data-testid="preview-exact-request">
+      <button type="button" className="disclosure" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>
+        <Caret open={open} />
+        {t('send.showJson')}
+      </button>
+      {request && (
+        <Paper className="payload-slip" id={id}>
+          <p className="small muted">{t('outbound.model', { model: request.model })}</p>
+          <pre className="payload" data-testid="preview-payload" tabIndex={0} aria-label={t('send.showJson')}>
+            {request.body}
+          </pre>
+        </Paper>
+      )}
     </div>
   );
 }

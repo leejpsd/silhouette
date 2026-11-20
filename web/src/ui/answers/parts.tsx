@@ -286,6 +286,11 @@ export function SendPanel({
               <span>{cloud && destinationOf(plan) !== 'cloud' ? `${t(dynamicKey(`reason.${plan.reason}`))} (${t(notDownloaded ? 'reason.detail.notDownloaded' : 'reason.detail.noDeviceModel')})` : cloud ? t(dynamicKey(`reason.${plan.reason}`)) : t('tasks.first')}</span>
             </p>
           )}
+          {deviceReady !== null && (
+            <p className="small destination-line" data-testid="send-destination" data-destination={cloud ? 'cloud' : 'device'}>
+              {t(cloud ? 'send.destination.cloud' : 'send.destination.device')}
+            </p>
+          )}
           {!online && (
             <p className="dashed-note" role="status" data-testid="send-offline">
               {t('state.offlineSend')}
