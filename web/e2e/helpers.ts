@@ -146,12 +146,25 @@ export async function confirmAllValues(page: Page): Promise<void> {
   await expect(confirmAll).toHaveCount(0);
 }
 
-/** Opens "Show exactly what was sent" in the record unless it is open already (the latest request opens by itself). */
+/**
+ * Opens a request in the record unless it is open already (the latest request opens by itself): it opens on
+ * what left in plain words; the exact request under "For developers" is opened too.
+ */
 export async function openPayload(scope: import('@playwright/test').Page | import('@playwright/test').Locator): Promise<void> {
-  const button = scope.getByRole('button', { name: 'Show exactly what was sent' }).first();
+  const button = scope.getByRole('button', { name: /^(Show exactly what was sent|What left this device|What went to the cloud when it was recorded)$/ }).first();
   // The record opens the latest request as it opens: wait for that before pressing, so a press never closes it.
   const opened = await expect(button)
     .toHaveAttribute('aria-expanded', 'true', { timeout: 1500 })
     .then(() => true, () => false);
   if (!opened) await button.click();
+  await openTechnical(scope);
+}
+
+/** Opens "For developers: the request as sent" in the open request(s), where it is closed. */
+export async function openTechnical(scope: import('@playwright/test').Page | import('@playwright/test').Locator): Promise<void> {
+  const technical = scope.getByTestId('record-technical');
+  await expect(technical.first()).toBeAttached();
+  for (const details of await technical.all()) {
+    if ((await details.getAttribute('open')) === null) await details.locator('summary').click();
+  }
 }

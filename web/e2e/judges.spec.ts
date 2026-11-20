@@ -1,7 +1,7 @@
 // The judges' path and the on-device check, in browsers with and without the on-device model.
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { chooseLanguage, confirmAllValues } from './helpers';
+import { chooseLanguage, confirmAllValues, openPayload } from './helpers';
 import { baselineRecording, bundledRecordingCount, latestRecording } from './recordings';
 import { fakeAnswerModels, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel } from './model-fakes';
 
@@ -353,9 +353,10 @@ test.describe('the recorded cloud reading (routing.json recordedCloud)', () => {
     await page.getByRole('button', { name: 'Details' }).first().click();
     const row = page.locator('li').filter({ hasText: 'Recorded cloud reading of the sample paystub' }).first();
     await expect(row).toContainText('Nothing sent now');
-    const toggle = row.getByRole('button', { name: /exactly|request/i }).first();
-    if ((await row.getByTestId('outbound-payload').count()) === 0) await toggle.click();
-    const payload = page.getByTestId('outbound-payload').first();
+    // It opens on what went, in plain words (the silhouette, as chips); the exact request is under "For developers".
+    await openPayload(row);
+    await expect(row.getByTestId('what-left-doc')).toContainText('Gross Pay');
+    const payload = row.getByTestId('outbound-payload');
     await expect(payload).toContainText('⟦N12⟧');
     for (const value of ['1,271.88', '23,103.25', 'NORTHWIND', 'Juniper']) await expect(payload).not.toContainText(value);
     expect(toModel).toHaveLength(0);

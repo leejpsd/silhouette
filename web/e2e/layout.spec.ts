@@ -174,7 +174,8 @@ test.describe('documents', () => {
     await expect(bar).toHaveAttribute('data-kept-count', '1');
     await expect(bar.locator('.count-row')).toContainText('Nothing has left this device.');
     await bar.getByRole('button', { name: 'Details' }).click();
-    await expect(page.getByTestId('record-headline')).toHaveText('0 sent, 1 kept.');
+    await expect(page.getByTestId('record-headline')).toHaveText('Nothing has left this device');
+    await expect(page.getByTestId('record-sub')).toHaveText('1 answered on this device');
     const kept = bar.locator('li[data-status="answered"]');
     await expect(kept).toHaveCount(1);
     await expect(kept).toContainText('Answered on this device');

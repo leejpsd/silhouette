@@ -1485,6 +1485,114 @@ dialog.sheet .option-word {
   margin-top: 6px;
 }
 
+/* The record's headline in plain words ("Nothing has left this device", "1 request left this device"), the
+   promise under it, and the counts of answers kept here and recordings shown. */
+.record-headline .leave-mark {
+  display: inline;
+  padding: 2px 8px 0;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.record-only {
+  margin: 0;
+  font-weight: 700;
+}
+
+.record-sub {
+  margin: 0;
+  color: var(--on-block-muted);
+  font-size: var(--type-caption-size);
+}
+
+/* An opened request: what left as a person reads it first, the silhouette's chips as in the preview. */
+.what-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.what-left-title {
+  font-size: var(--type-small-size);
+}
+
+.what-left-doc {
+  margin: 0;
+  max-height: 40vh;
+  overflow: auto;
+  padding: 12px;
+  border-radius: var(--radius-control);
+  background: var(--paper);
+  color: var(--on-paper);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.75;
+  white-space: pre;
+}
+
+.what-left-doc[data-kind='text'] {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.what-left-doc .tok {
+  display: inline;
+  padding: 1px 4px;
+  margin: 0;
+  border-radius: var(--radius-token);
+  background: var(--redact);
+  color: var(--on-redact);
+  font-weight: 600;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+.what-stayed {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+}
+
+.payload-meta {
+  margin: 0;
+  color: var(--on-block-muted);
+  font-family: var(--font-mono);
+  font-size: var(--type-caption-size);
+  overflow-wrap: anywhere;
+}
+
+.technical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.technical > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--size-min-tap-target);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--on-ink-underline);
+  text-underline-offset: 4px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.technical > summary::-webkit-details-marker {
+  display: none;
+}
+
+.technical[open] > summary .caret {
+  transform: none;
+}
+
+.technical > :not(summary) + :not(summary) {
+  margin-top: 8px;
+}
+
 .payload-head {
   display: flex;
   align-items: flex-start;
@@ -4109,114 +4217,6 @@ main h2.judge-title {
   }
 }
 
-/* Where each task runs, last: how the routing is held to, and the Remote Config values in use. */
-.enforced,
-.config {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  margin-top: var(--space-md);
-}
-
-.enforced-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.enforced-list li {
-  padding: 12px 16px;
-  border: 1px solid var(--ink-border);
-  border-radius: var(--radius-card);
-  background: var(--card);
-}
-
-.enforced-list p {
-  margin: 0;
-}
-
-.enforced-list p + p {
-  margin-top: 6px;
-}
-
-.config-table {
-  width: 100%;
-  border-collapse: collapse;
-  border-radius: var(--radius-card);
-  overflow: hidden;
-  background: var(--card);
-}
-
-.config-table th,
-.config-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--ground);
-  text-align: left;
-  vertical-align: top;
-  font-size: var(--type-small-size);
-}
-
-.config-table th {
-  font-weight: 500;
-}
-
-.config-table td {
-  font-family: var(--font-mono);
-  white-space: nowrap;
-}
-
-.config-key {
-  display: block;
-  margin-top: 2px;
-  color: var(--note);
-  font-size: var(--type-caption-size);
-  word-break: break-all;
-}
-
-/* Where each task runs, first: why it is hybrid, in measured figures. One card per recorded device and
-   one for the cloud (dashed, as everything that may leave), side by side when there is room. */
-.measured {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  margin: var(--space-sm) 0 var(--space-md);
-}
-
-.measured-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-
-@media (min-width: 900px) {
-  .measured-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.measured-block {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
-  border: 1px solid var(--ink-border);
-  border-radius: var(--radius-card);
-  background: var(--card);
-}
-
-.measured-block[data-testid='measured-cloud'] {
-  border: 1.25px dashed var(--on-redact);
-  background: var(--redact-tint);
-}
-
-.measured-block .device-headline {
-  margin: var(--space-xs) 0;
-}
-
-.measured .device-headline .figure {
 /* "Read both ways" (review.both.*): the same silhouette read on a device and in the cloud, side by side. Ink
    for the device's half, redact for the cloud's (the chips the model answered with), the values put back on
    this device in mono. A field whose two answers differ is outlined in redact; nothing is hidden. */
@@ -4370,6 +4370,114 @@ main h2.judge-title {
   }
 }
 
+/* Where each task runs, last: how the routing is held to, and the Remote Config values in use. */
+.enforced,
+.config {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+}
+
+.enforced-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.enforced-list li {
+  padding: 12px 16px;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+
+.enforced-list p {
+  margin: 0;
+}
+
+.enforced-list p + p {
+  margin-top: 6px;
+}
+
+.config-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--card);
+}
+
+.config-table th,
+.config-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ground);
+  text-align: left;
+  vertical-align: top;
+  font-size: var(--type-small-size);
+}
+
+.config-table th {
+  font-weight: 500;
+}
+
+.config-table td {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.config-key {
+  display: block;
+  margin-top: 2px;
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  word-break: break-all;
+}
+
+/* Where each task runs, first: why it is hybrid, in measured figures. One card per recorded device and
+   one for the cloud (dashed, as everything that may leave), side by side when there is room. */
+.measured {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0 var(--space-md);
+}
+
+.measured-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 900px) {
+  .measured-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.measured-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+}
+
+.measured-block[data-testid='measured-cloud'] {
+  border: 1.25px dashed var(--on-redact);
+  background: var(--redact-tint);
+}
+
+.measured-block .device-headline {
+  margin: var(--space-xs) 0;
+}
+
+.measured .device-headline .figure {
   min-width: 5ch;
   font-size: 28px;
 }
@@ -5285,6 +5393,16 @@ main h2.judge-title {
   .outbound-time {
     grid-area: time;
     white-space: nowrap;
+  }
+
+  /* The opened request repeats no title: the row's own control already says what it opens on. */
+  .what-left-title {
+    display: none;
+  }
+
+  /* A recording is dated with its own date, which may be long: it wraps rather than run under the status. */
+  .outbound-list li[data-recorded='true'] .outbound-time {
+    white-space: normal;
   }
 
   .outbound-status {
@@ -6610,6 +6728,22 @@ dialog.sheet[open][data-closing='true']::backdrop {
 
   [data-testid='record-sheet'] .outbound-main {
     display: contents;
+  }
+
+  /* A recording's row: dated with the recording's date, under its title rather than in the time column. */
+  [data-testid='record-sheet'] .outbound-list li[data-recorded='true'] .outbound-what {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  [data-testid='record-sheet'] .outbound-list li[data-recorded='true'] .outbound-status {
+    grid-row: 1;
+    grid-column: 3;
+  }
+
+  [data-testid='record-sheet'] .outbound-list li[data-recorded='true'] .outbound-time {
+    grid-row: 2;
+    grid-column: 2 / -1;
   }
 
   [data-testid='record-sheet'] .outbound-main .disclosure {

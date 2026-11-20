@@ -43,6 +43,12 @@ test('the record opens on the latest request, with where it went and what it car
   await page.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(page.getByTestId('inference-badge')).toHaveAttribute('data-source', 'IN_CLOUD');
   await page.getByRole('button', { name: 'Details' }).click();
+  // It opens on what left, in plain words: the silhouette with its chips; the exact request under "For developers".
+  const left = page.getByTestId('what-left-doc').first();
+  await expect(left).toBeVisible();
+  await expect(left.locator('.tok', { hasText: /^N12$/ })).toBeVisible();
+  await expect(left).not.toContainText('1,271.88');
+  await page.getByTestId('record-technical').first().locator('summary').click();
   const payload = page.getByTestId('outbound-payload').first();
   await expect(payload).toBeVisible();
   await expect(payload).toContainText('⟦N12⟧');

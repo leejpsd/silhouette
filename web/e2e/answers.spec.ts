@@ -458,7 +458,7 @@ test.describe('narrow screens and zoom', () => {
     expect(await shortAnswer(page).locator('.chip').evaluate((el) => getComputedStyle(el).display)).not.toMatch(/flex/);
     const bar = page.getByTestId('leaving-bar');
     await bar.getByRole('button', { name: 'Details' }).click();
-    await bar.getByText('Show exactly what was sent').first().click();
+    await openPayload(bar);
     expect(await overflow()).toBeLessThanOrEqual(0);
     const list = bar.getByTestId('outbound-list');
     expect(await list.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);

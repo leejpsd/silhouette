@@ -1,7 +1,7 @@
 // Persistent chrome: the header with the wordmark and the language control, the one-line draft-rules
 // notice, the rail's steps (wide screens), the "Leaving your device" count row with its record, and
 // "Delete everything".
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { leftDevice, outboundState, subscribeOutbound, type OutboundEntry } from '../data/outbound';
 import { NO_APP_CHECK_TOKEN, REFUSED_BY_BROWSER } from '../data/net-monitor';
 import { UI_LOCALES, LOCALE_NAMES, dynamicKey, lookup, packDate, type CopyKey, type Locale } from './i18n';
@@ -14,6 +14,7 @@ import { Count, Paper, Sheet, ActionLabel } from './design/parts';
 import { Caret, Check, CrossCircle, Phone, Trash } from './design/icons';
 import { useWide } from './design/block';
 import { useLastReading } from './doc/last-reading';
+import { chipParts, whatLeft } from './what-left';
 
 const SHORT_NAMES: Record<Locale, string> = { en: 'EN', es: 'ES', ko: '한국어' };
 
@@ -318,7 +319,7 @@ export function SheetCount() {
 /** The count row of the bottom block; "Details" opens the record of everything that left this device. */
 export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   const { t, locale } = useApp();
-  const { entries, clearedAt, left, sent, incomplete, kept } = useLedger();
+  const { entries, clearedAt, left, incomplete, kept } = useLedger();
   const [open, setOpen] = useState(false);
   const details = useRef<HTMLButtonElement>(null);
   const headline = useId();
@@ -342,6 +343,14 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
   const date = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(clearedAt);
   const shortDate = clearedAt === null ? '' : new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(clearedAt);
   const carriesProfile = left.some((e) => e.fields.includes('profile-silhouette') || e.fields.includes('county-area'));
+  // A request that carried a file (a photo) is not only a silhouette: the headline does not say it is.
+  const onlySilhouettes = !left.some((e) => e.fields.includes('inline-file'));
+  // Under the headline: answers written on this device, and recordings shown (nothing sent now).
+  const recordings = entries.filter((e) => e.status === 'answered' && e.recording !== undefined).length;
+  const subParts = [
+    ...(kept - recordings > 0 ? [t('leaving.sub.kept', { count: kept - recordings })] : []),
+    ...(recordings > 0 ? [t('leaving.sub.recorded', { count: recordings })] : []),
+  ];
   const statusLine = (e: OutboundEntry) =>
     e.status === 'answered'
       ? e.recording
@@ -368,16 +377,19 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
     >
       <Sheet open={open} label={t('leaving.title')} labelledBy={headline} onClose={() => setOpen(false)} closeLabel={t('leaving.hide')} returnFocus={details} testId="record-sheet">
         <div className="record">
-          {entries.length > 0 ? (
-            <h2 className="record-headline" id={headline} data-testid="record-headline">
-              {/* Redact marks what left, so it starts at one. */}
-              <span className={sent > 0 ? 'leave-mark' : 'zero-mark'}>{t('leaving.sentCount', { count: sent })}</span> <span className="kept-mark">{t('leaving.keptCount', { count: kept })}</span>
-            </h2>
-          ) : (
-            <h2 className="record-zero" id={headline}>
-              <span aria-hidden="true">0</span>
-              <span className="visually-hidden">{summary}</span>
-            </h2>
+          {/* In plain words first: whether anything left, and that each request carried only a silhouette. */}
+          <h2 className="record-headline" id={headline} data-testid="record-headline" data-left={left.length}>
+            {left.length > 0 ? <span className="leave-mark">{t('leaving.headline.sent', { count: left.length })}</span> : t('leaving.headline.none')}
+          </h2>
+          {left.length > 0 && onlySilhouettes && (
+            <p className="record-only" data-testid="record-only">
+              {t('leaving.headline.only')}
+            </p>
+          )}
+          {subParts.length > 0 && (
+            <p className="record-sub" data-testid="record-sub">
+              {subParts.join(' · ')}
+            </p>
           )}
           {incomplete > 0 && (
             <p className="record-incomplete" data-testid="record-incomplete">
@@ -394,7 +406,7 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
                   entry={e}
                   title={e.fields.map(fieldName).join(', ')}
                   status={statusLine(e)}
-                  at={time(locale, e.at)}
+                  at={e.recording ? t('record.recordedOn', { date: e.recording.date }) : time(locale, e.at)}
                   open={shown === e.id}
                   onToggle={() => setShown((current) => (current === e.id && !wide ? null : e.id))}
                 />
@@ -407,7 +419,7 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
               <span>{t('record.pick')}</span>
             </p>
           )}
-          {left.length > 0 && !carriesProfile && <p className="record-note">{t('leaving.noValues')}</p>}
+          {left.length > 0 && !carriesProfile && !onlySilhouettes && <p className="record-note">{t('leaving.noValues')}</p>}
           {entries.length > 0 && clearedAt !== null && <p className="record-note">{t('leaving.cleared', { date })}</p>}
           <p className="record-note">{t('leaving.network')}</p>
           {entries.some((e) => e.channel === 'recaptcha') && (
@@ -449,8 +461,10 @@ function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: 
   const reading = useLastReading();
   const [copied, setCopied] = useState(false);
   const isReading = e.fields.includes('document-silhouette') && e.status === 'sent';
+  const recorded = e.recording !== undefined;
+  const plain = useMemo(() => (e.body === undefined ? null : whatLeft(e.body)), [e.body]);
   return (
-    <li data-channel={e.channel} data-status={e.status} data-open={show} data-new={Date.now() - e.at < 5000 ? 'true' : undefined}>
+    <li data-channel={e.channel} data-status={e.status} data-open={show} data-recorded={recorded} data-new={Date.now() - e.at < 5000 ? 'true' : undefined}>
       <span className="outbound-time">{at}</span>
       <span className="outbound-what">{title}</span>
       <span className={`outbound-status status-${e.status}`} data-testid="outbound-status">
@@ -467,53 +481,81 @@ function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: 
         <div className="outbound-main">
           <button type="button" className="disclosure" aria-expanded={show} aria-controls={body} onClick={() => setShow(!show)}>
             <Caret open={show} />
-            {e.body !== undefined ? t('outbound.showPayload') : t('send.showRequest')}
+            {/* What the row opens on: what left (or went, for a recording), in plain words; the exact request under it. */}
+            {e.body !== undefined ? t(plain === null ? 'outbound.showPayload' : recorded ? 'record.whatWent' : 'record.whatLeft') : t('send.showRequest')}
           </button>
-          <div className="outbound-details" hidden={!show}>
+          {/* Where it went: with a body, the short line under what left says it. */}
+          <div className="outbound-details" hidden={!show || e.body !== undefined}>
             <span className="outbound-where">{t('outbound.requestTo', { destination: e.destination, path: e.path })}</span>
             {e.model && <span className="outbound-where">{t('outbound.model', { model: e.model })}</span>}
           </div>
           {show && e.body !== undefined && (
             <Paper className="payload-slip" id={body}>
-              <div className="payload-head">
-                <p>
-                  <strong>{e.recording?.place === 'cloud' ? t('record.recordedCloud.exactly', { date: e.recording.date }) : t('record.exactlySent')}</strong>
-                  <span>
-                    {at} · {title} · {t('record.bytes', { count: e.bytes })}
-                  </span>
-                  <span className="payload-where">
-                    {t('outbound.requestTo', { destination: e.destination, path: e.path })}
-                    {e.model ? ` · ${t('outbound.model', { model: e.model })}` : ''}
-                  </span>
-                </p>
-                {e.channel === 'ai-cloud' && <strong className="badge badge-cloud">{t('badge.cloud')}</strong>}
-                <button
-                  type="button"
-                  className="copy-button"
-                  onClick={() => {
-                    void navigator.clipboard?.writeText(e.body ?? '').then(() => setCopied(true), () => undefined);
-                  }}
-                >
-                  {copied ? t('record.copied') : t('record.copy')}
-                </button>
-              </div>
-              <pre className="payload" data-testid="outbound-payload" tabIndex={0} aria-label={t('outbound.showPayload')}>
-                {e.body}
-              </pre>
-              {e.recordedAnswer !== undefined && (
-                <div className="answer-received" data-testid="answer-received">
-                  <strong>{t('record.answerReceived')}</strong>
-                  <code>{e.recordedAnswer}</code>
-                  <span>{t('record.answerNote')}</span>
+              {/* What left, as a person reads it: the silhouette with its placeholder chips, and what stayed here. */}
+              {plain ? (
+                <div className="what-left" data-testid="what-left">
+                  <strong className="what-left-title">{t(recorded ? 'record.whatWent' : 'record.whatLeft')}</strong>
+                  <pre className="what-left-doc" data-testid="what-left-doc" data-kind={plain.kept ? 'silhouette' : 'text'} tabIndex={0} aria-label={t(recorded ? 'record.whatWent' : 'record.whatLeft')}>
+                    {chipParts(plain.text).map((part, i) =>
+                      part.id ? (
+                        <span key={i} className={`tok ph ph-${part.id[0]}`}>
+                          {part.text}
+                        </span>
+                      ) : (
+                        <span key={i}>{part.text}</span>
+                      ),
+                    )}
+                  </pre>
+                  {plain.kept && (
+                    <p className="what-stayed" data-testid="what-stayed">
+                      {t('record.whatStayed', { numbers: plain.kept.numbers, dates: plain.kept.dates, words: plain.kept.words })}
+                    </p>
+                  )}
                 </div>
-              )}
-              {isReading && reading && (
-                <div className="answer-received" data-testid="answer-received">
-                  <strong>{t('record.answerReceived')}</strong>
-                  <code>{JSON.stringify(reading.ids)}</code>
-                  <span>{t('record.answerNote')}</span>
+              ) : null}
+              {/* The model, where it went, its status and when, in one short line. */}
+              <p className="payload-meta" data-testid="payload-meta">
+                {[e.model ? t('outbound.model', { model: e.model }) : null, `${e.destination}${e.path}`, status, at, t('record.bytes', { count: e.bytes })].filter(Boolean).join(' · ')}
+              </p>
+              {/* For developers: the request exactly as sent, and the answer, folded away. Open when there are no plain words for it. */}
+              <details className="technical" data-testid="record-technical" open={plain === null}>
+                <summary>
+                  <Caret open={false} />
+                  {t('record.technical')}
+                </summary>
+                <div className="payload-head">
+                  <p>
+                    <strong>{e.recording?.place === 'cloud' ? t('record.recordedCloud.exactly', { date: e.recording.date }) : t('record.exactlySent')}</strong>
+                  </p>
+                  {e.channel === 'ai-cloud' && <strong className="badge badge-cloud">{t('badge.cloud')}</strong>}
+                  <button
+                    type="button"
+                    className="copy-button"
+                    onClick={() => {
+                      void navigator.clipboard?.writeText(e.body ?? '').then(() => setCopied(true), () => undefined);
+                    }}
+                  >
+                    {copied ? t('record.copied') : t('record.copy')}
+                  </button>
                 </div>
-              )}
+                <pre className="payload" data-testid="outbound-payload" tabIndex={0} aria-label={t('outbound.showPayload')}>
+                  {e.body}
+                </pre>
+                {e.recordedAnswer !== undefined && (
+                  <div className="answer-received" data-testid="answer-received">
+                    <strong>{t('record.answerReceived')}</strong>
+                    <code>{e.recordedAnswer}</code>
+                    <span>{t('record.answerNote')}</span>
+                  </div>
+                )}
+                {isReading && reading && (
+                  <div className="answer-received" data-testid="answer-received">
+                    <strong>{t('record.answerReceived')}</strong>
+                    <code>{JSON.stringify(reading.ids)}</code>
+                    <span>{t('record.answerNote')}</span>
+                  </div>
+                )}
+              </details>
             </Paper>
           )}
         </div>

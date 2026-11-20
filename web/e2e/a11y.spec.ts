@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { completeQuickCheck, confirmAllValues, openDeleteEverything } from './helpers';
+import { completeQuickCheck, confirmAllValues, openDeleteEverything, openPayload } from './helpers';
 import { fakeAnswerModels, fakeCloudModel, fixturePointers, noOnDeviceModel, seedRemoteConfig } from './model-fakes';
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -81,7 +81,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.getByTestId('validation').waitFor();
     await scan('review, checks and yearly income');
     await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
-    await page.getByText('Show exactly what was sent').click();
+    // The request opens on what left in plain words; the exact request under "For developers" is opened too.
+    await openPayload(page);
     await scan('leaving panel with payload');
   });
 }

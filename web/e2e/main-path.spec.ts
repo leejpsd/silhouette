@@ -143,7 +143,10 @@ test.describe('"Compare what left" after the recorded reading', () => {
     await expect(bar).toHaveAttribute('data-outbound-count', '0');
     await expect(bar).toHaveAttribute('data-kept-count', '1');
     const record = await openRecord(page);
-    await expect(record.getByTestId('record-headline')).toContainText('0 sent');
+    await expect(record.getByTestId('record-headline')).toHaveText('Nothing has left this device');
+    await expect(record.getByTestId('record-sub')).toHaveText('1 recording shown, nothing sent now');
+    // Dated when it was recorded, not when it was shown.
+    await expect(record.locator('li[data-recorded="true"] .outbound-time')).toHaveText(/^Recorded .+ UTC$/);
     const item = record.getByTestId('outbound-list').locator('li[data-status="answered"]');
     await expect(item).toHaveCount(1);
     await expect(item).toContainText('Recorded on-device reading of the sample paystub');
