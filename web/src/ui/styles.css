@@ -6784,3 +6784,380 @@ dialog.sheet[open][data-closing='true']::backdrop {
   background: var(--ink);
   color: var(--ground);
 }
+
+/* ---------- The reading shown as it happens (doc/ReadingShow.tsx) ----------
+   On this device: the whole stage is one ink block, the model inside it. To the cloud: the ink block holds
+   the document only; the chips cross its dashed orange edge to Firebase AI Logic, an orange box outside. */
+
+.reading-show {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: var(--space-md);
+  background: var(--scrim-modal);
+  animation: fade-in var(--duration-short) var(--ease-standard) both;
+}
+
+.rs-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 2 * var(--space-md));
+  overflow: auto;
+  padding: 20px;
+  border-radius: var(--radius-modal);
+  background: var(--card);
+  color: var(--ink);
+  outline: none;
+}
+
+.rs-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.rs-sentence {
+  flex: 1 1 260px;
+  animation: fade-in var(--duration-reveal) var(--ease-fade) both;
+}
+
+.rs-stage {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 112px auto;
+  border-radius: var(--radius-card);
+}
+
+.reading-show[data-way='device'] .rs-stage {
+  padding: 44px 16px 16px;
+  background: var(--block);
+  color: var(--on-block);
+}
+
+.rs-model {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-self: center;
+  min-width: min(280px, 100%);
+  padding: 12px 16px;
+  border-radius: var(--radius-control);
+}
+
+.reading-show[data-way='device'] .rs-model {
+  border: 1px solid var(--on-ink-ring);
+}
+
+.reading-show[data-way='cloud'] .rs-model {
+  border: 1.5px dashed var(--redact);
+  background: var(--redact-tint);
+  color: var(--on-redact);
+}
+
+.rs-model-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.reading-show[data-way='device'] .rs-model-icon {
+  background: var(--on-block);
+  color: var(--block);
+}
+
+.reading-show[data-way='cloud'] .rs-model-icon {
+  background: var(--redact);
+  color: var(--on-redact);
+}
+
+/* While the model reads, it breathes. */
+.reading-show[data-phase='out'] .rs-model-icon {
+  animation: breathe 1.2s var(--ease-fade) infinite alternate;
+}
+
+.rs-model-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.rs-model-name {
+  font-weight: 700;
+}
+
+.rs-model-where {
+  font-size: var(--type-small-size);
+  opacity: 0.8;
+}
+
+/* The way between the document and the model: the chips travel along it. */
+.rs-track {
+  position: relative;
+  z-index: 1;
+}
+
+.reading-show[data-way='device'] .rs-track::before {
+  content: '';
+  position: absolute;
+  inset: 8px auto 8px 50%;
+  border-left: 1.5px dotted var(--on-ink-ring);
+}
+
+.rs-packet {
+  position: absolute;
+  top: calc(100% - 22px);
+  left: calc(8% + var(--i) * 14%);
+  height: 22px;
+  padding: 0 6px;
+  border-radius: var(--radius-token);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.reading-show[data-way='device'] .rs-packet {
+  background: var(--on-block);
+  color: var(--block);
+}
+
+.reading-show[data-way='cloud'] .rs-packet {
+  background: var(--redact);
+  color: var(--on-redact);
+}
+
+.reading-show[data-phase='out'] .rs-packet {
+  animation: rs-up 1.1s cubic-bezier(0.4, 0, 0.6, 1) calc(var(--i) * 140ms) infinite both;
+}
+
+.reading-show[data-phase='back'] .rs-packet {
+  animation: rs-down 650ms var(--ease-standard) calc(var(--i) * 110ms) both;
+}
+
+@keyframes rs-up {
+  0% {
+    top: calc(100% - 22px);
+    opacity: 0;
+  }
+
+  15%,
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes rs-down {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+
+  20%,
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    top: calc(100% - 22px);
+    opacity: 0;
+  }
+}
+
+.rs-device {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rs-device-label {
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.reading-show[data-way='device'] .rs-device-label {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+}
+
+/* To the cloud: the ink block starts halfway down the way, its top edge dashed orange. */
+.reading-show[data-way='cloud'] .rs-device {
+  margin-top: -56px;
+  padding: 64px 16px 16px;
+  border-top: 2px dashed var(--redact);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: var(--block);
+  color: var(--on-block);
+}
+
+.reading-show[data-way='cloud'] .rs-device-label {
+  order: -1;
+}
+
+.rs-doc,
+.rs-pairs {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-control);
+  background: var(--paper);
+  color: var(--on-paper);
+  list-style: none;
+}
+
+.rs-doc {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 22px;
+}
+
+.rs-line {
+  overflow: hidden;
+  white-space: pre;
+  text-overflow: ellipsis;
+}
+
+.rs-chip {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: var(--radius-token);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.reading-show[data-way='device'] .rs-chip {
+  background: var(--mine);
+  color: var(--on-mine);
+}
+
+.reading-show[data-way='cloud'] .rs-chip {
+  background: var(--redact);
+  color: var(--on-redact);
+}
+
+.rs-pairs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rs-pair {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+  animation: rs-pair-in var(--duration-reveal) var(--ease-standard) calc(300ms + var(--i) * 120ms) both;
+}
+
+.rs-pair-field {
+  font-size: var(--type-small-size);
+  color: var(--on-paper-muted);
+}
+
+.rs-pair-turn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rs-pair .rs-chip {
+  opacity: 0.55;
+  animation: rs-chip-done var(--duration-short) var(--ease-standard) calc(700ms + var(--i) * 120ms) both;
+}
+
+.rs-arrow {
+  color: var(--on-paper-muted);
+}
+
+.rs-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  animation: rs-value-in var(--duration-medium) var(--ease-standard) calc(700ms + var(--i) * 120ms) both;
+}
+
+@keyframes rs-pair-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes rs-chip-done {
+  from {
+    opacity: 1;
+  }
+}
+
+@keyframes rs-value-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.rs-foot,
+.rs-detail {
+  margin: 0;
+  font-size: var(--type-small-size);
+}
+
+.rs-foot {
+  font-weight: 600;
+}
+
+.rs-detail {
+  color: var(--ink-muted, var(--note));
+}
+
+/* Reduced motion: the same stages as text; nothing travels. */
+@media (prefers-reduced-motion: reduce) {
+  .rs-packet {
+    display: none;
+  }
+}
+
+.rs-reason {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 500;
+  color: var(--ink-muted, var(--note));
+}
+
+.rs-reason::first-letter {
+  text-transform: uppercase;
+}

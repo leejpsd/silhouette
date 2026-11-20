@@ -29,6 +29,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, LeaveGlyph } from '../design/ico
 import { useOnline } from '../design/online';
 import { ActionLabel, Spinner } from '../design/parts';
 import { Loading } from '../answers/parts';
+import { ReadingShow, showPairs, useReadingShow, type ShowRoute } from '../doc/ReadingShow';
 
 const PLACEHOLDER = /(⟦[DNW][0-9]+⟧)/;
 
@@ -51,6 +52,8 @@ export function DocumentPreviewScreen() {
   // The two documents stand side by side only where there is room for both (two columns).
   const wide = useTwoColumns();
   const [sending, setSending] = useState(false);
+  // The reading shown as it happens: the silhouette going to the model, the values coming back.
+  const reading = useReadingShow();
   // Where a reading is: on this device (main values, then deductions), checking, or sending after the device.
   const [stage, setStage] = useState<PointerStage | null>(null);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
@@ -60,6 +63,9 @@ export function DocumentPreviewScreen() {
   // With a ready on-device model, the first part of the reading starts on this device while the person
   // looks at the silhouette (nothing is sent or stored; src/ai/tasks.ts prepareDeviceReading).
   const [readingAhead, setReadingAhead] = useState(false);
+  // Set once a reading has started here (Send, Keep, a recording): the screen now stays up while the reading
+  // is shown, and a reading ahead must not start behind it.
+  const readingStarted = useRef(false);
   const aheadSkeleton = doc.skeleton;
   const aheadMap = doc.map;
   const aheadLanguage = doc.language;
@@ -70,6 +76,7 @@ export function DocumentPreviewScreen() {
     let live = true;
     // After a short pause, so hiding several words in a row starts one reading, not one per word.
     const timer = setTimeout(() => {
+      if (readingStarted.current) return;
       setReadingAhead(true);
       void prepareDeviceReading(aheadSkeleton, aheadType, aheadLanguage, readingChecks(aheadSkeleton, aheadMap, aheadLanguage, aheadType)).finally(() => {
         if (live) setReadingAhead(false);
@@ -184,6 +191,7 @@ export function DocumentPreviewScreen() {
   const onDeviceFirst = ON_DEVICE_LANGUAGES.has(doc.language) && deviceStatus === 'available';
 
   const send = async () => {
+    readingStarted.current = true;
     setSending(true);
     setStage(null);
     update({ error: null });
@@ -199,14 +207,32 @@ export function DocumentPreviewScreen() {
         navigate({ name: 'doc-review' });
         return;
       }
-      const result = await extractPointers(skeleton, doc.docType, doc.language, { validate: checkAnswer, checkParts, onProgress: setStage });
+      // The model on this device first when it has one (the routing line says so), otherwise the cloud.
+      const first: ShowRoute = status === 'available' && ON_DEVICE_LANGUAGES.has(doc.language) ? 'device' : 'cloud';
+      reading.begin(first);
+      const result = await extractPointers(skeleton, doc.docType, doc.language, {
+        validate: checkAnswer,
+        checkParts,
+        onProgress: (s) => {
+          setStage(s);
+          // This device could not read it reliably: the silhouette now goes on to the cloud.
+          if (s === 'sending-after-device') reading.route('cloud-after-device');
+        },
+      });
       // Ids only (the model never sees a value): shown in the record beside the exact request.
       if (result.inferenceSource === 'IN_CLOUD') rememberReading(result.value as Readonly<Record<string, unknown>>);
       const { pointers, leftOut } = leaveOutBoxes(doc.docType, tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language)), map);
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
+      // The way it really went decides what comes back (a reading sent on to the cloud after the device).
+      // The document changes only after it, so nothing on this screen starts again meanwhile (the reading ahead).
+      await reading.back(showPairs(review, doc.docType), result.inferenceSource === 'IN_CLOUD' ? (first === 'device' ? 'cloud-after-device' : 'cloud') : 'device');
       update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, ranInCloudBecause: result.ranInCloudBecause, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead, leftOut } });
       navigate({ name: 'doc-review' });
     } catch (error) {
+      // An error is never delayed by the staging.
+      reading.clear();
+      // A failed reading leaves the screen up: a changed silhouette may be read ahead again.
+      readingStarted.current = false;
       update({ error: classifyError(error) });
     } finally {
       setSending(false);
@@ -229,26 +255,36 @@ export function DocumentPreviewScreen() {
   /** routing.json recordedSample: the on-device model's recorded answer, put back on this device now; nothing is sent. */
   /** routing.json recordedCloud: a recorded cloud reading of this silhouette, put back on this device now; nothing is sent. */
   const recordedCloud = recordedCloudReading(skeleton);
-  const useRecordedCloud = () => {
+  const useRecordedCloud = async () => {
     if (!recordedCloud) return;
+    readingStarted.current = true;
+    setSending(true);
+    reading.begin('recorded-cloud');
     const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], recordedCloud.pointers, map, introducersFor(doc.language));
     const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
     const date = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(recordedCloud.date));
+    await reading.back(showPairs(review, doc.docType));
     update({ error: null, extraction: { review, inferenceSource: 'RECORDED_CLOUD', reason: 'recorded-in-cloud', recording: { machine: 'Firebase AI Logic', date, path: recordedCloud.path } } });
     // The record lists it with the exact request as it was sent when it was recorded; nothing is sent now.
     recordRecordedReading({ machine: 'Firebase AI Logic', date }, Date.now(), recordedCloud);
+    setSending(false);
     navigate({ name: 'doc-review' });
   };
 
-  const useRecorded = () => {
+  const useRecorded = async () => {
     if (!recorded) return;
+    readingStarted.current = true;
+    setSending(true);
+    reading.begin('recorded-device', recorded.machine);
     const pointers = tidyNamePointers(POINTER_SCHEMAS[doc.docType], recorded.pointers, map, introducersFor(doc.language));
     const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
     // The device reads the deductions in a second part; a recorded answer without them says so, like a live one.
     const deductionsNotRead = !Object.hasOwn(recorded.pointers, 'deductions');
+    await reading.back(showPairs(review, doc.docType));
     update({ error: null, extraction: { review, inferenceSource: 'RECORDED', reason: 'recorded-on-device', deductionsNotRead, recording: { machine: recorded.machine, date: recorded.date, path: recorded.path } } });
     // The record says what happened: a recorded reading, values put back here, nothing sent.
     recordRecordedReading({ machine: recorded.machine, date: recorded.date });
+    setSending(false);
     navigate({ name: 'doc-review' });
   };
 
@@ -258,16 +294,22 @@ export function DocumentPreviewScreen() {
    * device could not read it reliably and can send the silhouette or type the numbers.
    */
   const keepOnDevice = async () => {
+    readingStarted.current = true;
     setSending(true);
     setStage(null);
     update({ error: null });
     try {
+      reading.begin('device');
       const result = await extractPointers(skeleton, doc.docType, doc.language, { deviceOnly: true, validate: checkAnswer, checkParts, onProgress: setStage });
       const { pointers, leftOut } = leaveOutBoxes(doc.docType, tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language)), map);
       const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
+      await reading.back(showPairs(review, doc.docType), 'device');
       update({ extraction: { review, inferenceSource: result.inferenceSource, reason: result.reason, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead, leftOut } });
       navigate({ name: 'doc-review' });
     } catch (error) {
+      reading.clear();
+      // A failed reading leaves the screen up: a changed silhouette may be read ahead again.
+      readingStarted.current = false;
       update({ error: classifyError(error) });
     } finally {
       setSending(false);
@@ -305,13 +347,13 @@ export function DocumentPreviewScreen() {
   const recordedChoice =
     !onDeviceFirst && deviceStatus !== null && !offlineSample && recorded ? (
       <div className="recorded-choice" data-testid="use-recorded-card">
-        <button type="button" className="text-link recorded-link" onClick={useRecorded} disabled={sending} data-testid="use-recorded">
+        <button type="button" className="text-link recorded-link" onClick={() => void useRecorded()} disabled={sending} data-testid="use-recorded">
           {t(notDownloaded ? 'preview.useRecorded.notDownloaded' : 'preview.useRecorded', { machine: recorded.machine })}
           <ChevronRight />
         </button>
         <p className="small muted">{t('preview.useRecordedNote', { date: recorded.date })}</p>
         {recordedCloud && (
-          <button type="button" className="text-link recorded-link" onClick={useRecordedCloud} disabled={sending} data-testid="use-recorded-cloud">
+          <button type="button" className="text-link recorded-link" onClick={() => void useRecordedCloud()} disabled={sending} data-testid="use-recorded-cloud">
             {t('preview.useRecordedCloud')}
             <ChevronRight />
           </button>
@@ -431,7 +473,8 @@ export function DocumentPreviewScreen() {
         {!downloadHere && modelStatus}
         <p className="small muted">{t('leaving.network')}</p>
       </details>
-      {sending && <Loading />}
+      {sending && !reading.show && <Loading />}
+      {reading.show && <ReadingShow show={reading.show} skeleton={skeleton} docType={doc.docType} stage={stage} />}
       <div role="status" className="status-line" ref={statusLine}>
         {(sending || readingAhead) && <Spinner />}
         {/* Keyed by the stage: each stage's sentence fades in in place of the last one. */}
@@ -459,7 +502,7 @@ export function DocumentPreviewScreen() {
             )}
             {/* The way on that sends nothing: this paystub as the on-device model read it (a recording). */}
             {recorded && !onDeviceFirst && (
-              <button type="button" className="outline-button" onClick={useRecorded} data-testid="error-use-recorded">
+              <button type="button" className="outline-button" onClick={() => void useRecorded()} data-testid="error-use-recorded">
                 {t('preview.error.useRecorded')}
               </button>
             )}
