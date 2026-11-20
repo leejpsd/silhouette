@@ -23,7 +23,7 @@ The same flow as a native SwiftUI app. The start screen is a simulator capture; 
 
 ### Try it
 
-**Hosted demo: [silhouette-hybrid.web.app](https://silhouette-hybrid.web.app/#/judges)** opens on three steps with one button each: read an invented household's sample paystub (its silhouette, then Firebase AI Logic on this device or in the cloud), see the results it sharpens, and compare what left. In a browser without Chrome's on-device model you can also continue with the same paystub as Chrome's on-device model read it on a Mac, or as Firebase AI Logic read its silhouette in the cloud, with the exact request it received (both recordings, nothing sent). Everything in it is invented. [`#/tasks`](https://silhouette-hybrid.web.app/#/tasks) shows why each task runs where it does, in measured figures, how the routing is enforced, and the Remote Config values in use.
+**Hosted demo: [silhouette-hybrid.web.app](https://silhouette-hybrid.web.app/#/judges)** opens on **Run all three steps**: one press reads an invented household's sample paystub on screen (the silhouette going to the model on this device, or to the cloud, and the values coming back), uses what it found, and opens the results. The three steps are there one at a time too: read an invented household's sample paystub (its silhouette, then Firebase AI Logic on this device or in the cloud), see the results it sharpens, and compare what left. In a browser without Chrome's on-device model you can also continue with the same paystub as Chrome's on-device model read it on a Mac, or as Firebase AI Logic read its silhouette in the cloud, with the exact request it received (both recordings, nothing sent). Everything in it is invented. [`#/tasks`](https://silhouette-hybrid.web.app/#/tasks) shows why each task runs where it does, in measured figures, how the routing is enforced, and the Remote Config values in use.
 
 <!-- VIDEO_URL: replace this comment with the demo video link at release -->
 **Video: added at release.**
@@ -252,12 +252,12 @@ Both are tested ([`web/src/ai/only-on-device.test.ts`](web/src/ai/only-on-device
 
 ## Platform status
 
-As of 2026-11-19.
+As of 2026-11-20.
 
 | Platform | Contract | Done and verified | Not yet |
 |---|---|---|---|
-| Web | v1.42 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
-| iOS | v1.42 | Native SwiftUI app: California pack, the paystub flow, on-device reading in parts with the shared fixtures (Form W-2 checks included), explanations, the on-device check and the two-minute path: the pointer card with the line as the model saw it, what the paystub changed, the sample household named as such, the recorded cloud reading with its exact request. Seven recorded runs on a real iPhone 17 Pro; the latest answered all 23 cases on the phone | Form W-2 as a document on iPhone; a build to install without Xcode |
+| Web | v1.43 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
+| iOS | v1.43 | Native SwiftUI app: California pack, the paystub flow, on-device reading in parts with the shared fixtures (Form W-2 checks included), explanations, the on-device check and the two-minute path: the pointer card with the line as the model saw it, what the paystub changed, the sample household named as such, the recorded cloud reading with its exact request, the reading shown going to the device or the cloud, the two-minute path in one press. Seven recorded runs on a real iPhone 17 Pro; the latest answered all 23 cases on the phone | Form W-2 as a document on iPhone; a build to install without Xcode |
 | Android | v1.18 | Native Compose app: California pack, document flow, on-device reading in parts with the shared fixtures, Firebase AI Logic (`firebase-ai` and `firebase-ai-ondevice`), the on-device check and the two-minute path. Verified with a scripted model | The current visual design, and a recorded run on a phone with Gemini Nano |
 
 Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/`](android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
@@ -304,7 +304,7 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 | [`firebase/`](firebase/README.md), [`firebase.json`](firebase.json) | Remote Config template, Firestore rules, hosting headers |
 | [`docs/`](docs/ARCHITECTURE.md) | Architecture and these images |
 
-**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.42. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
+**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.43. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
