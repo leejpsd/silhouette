@@ -78,7 +78,7 @@ final class DocumentFlowUITests: XCTestCase {
         app.tapButton("leaving.details")
         let headline = app.element("record.headline")
         XCTAssertTrue(headline.waitForExistence(timeout: 5))
-        XCTAssertTrue(headline.label.contains("0 sent") && headline.label.contains("1 kept"), headline.label)
+        XCTAssertTrue(headline.label.contains("Nothing has left this iPhone") && headline.label.contains("1 answered on this iPhone"), headline.label)
     }
 
     /// The device answers a reading that does not pass its checks: nothing is filled in and nothing is

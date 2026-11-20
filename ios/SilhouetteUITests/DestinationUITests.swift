@@ -46,6 +46,8 @@ final class DestinationUITests: XCTestCase {
         XCTAssertEqual(status.label, "Sent, response 200")
         XCTAssertTrue(app.element("record.endpoint").label.hasPrefix("Request to firebasevertexai.googleapis.com"))
         XCTAssertTrue(app.element("record.time").exists)
-        XCTAssertTrue(app.element("record.payload").exists, "with exactly what was sent")
+        XCTAssertTrue(app.element("record.whatLeft").exists, "opens on what left, in plain words")
+        app.tapButton("record.technical")
+        XCTAssertTrue(app.element("record.payload").waitForExistence(timeout: 5), "with exactly what was sent")
     }
 }

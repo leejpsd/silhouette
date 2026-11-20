@@ -164,29 +164,22 @@ private struct RecordSheet: View {
 
     var body: some View {
         let entries = model.outbound
-        if entries.isEmpty {
-            HStack(spacing: 12) {
-                CounterDisc(count: 0, size: 44)
-                Display(text: model.t("leaving.none"), size: 34, maxLines: 3)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("record.headline")
-            if let cleared = model.recordClearedAt {
-                SectionLabel(text: model.t("leaving.recordDeleted", ["date": model.shortDate(cleared)]), large: false)
-                NoteText(text: model.t("leaving.cleared", ["date": model.longDate(cleared)]), size: 15)
-            } else {
-                NoteText(text: model.t("leaving.body"), size: 15)
-            }
+        headline
+        if entries.isEmpty, let cleared = model.recordClearedAt {
+            SectionLabel(text: model.t("leaving.recordDeleted", ["date": model.shortDate(cleared)]), large: false)
+            NoteText(text: model.t("leaving.cleared", ["date": model.longDate(cleared)]), size: 15)
+        } else if model.sentCount == 0 {
+            NoteText(text: model.t("leaving.body"), size: 15)
         } else {
-            headline
             NoteText(text: model.t("leaving.bodySent"), size: 15)
-            if model.sentCount > 0 && !model.outboundCarriesProfile { NoteText(text: model.t("leaving.noValues"), size: 15) }
-            if model.notCompletedCount > 0 {
-                NoteText(text: model.t("leaving.notCompleted", ["count": model.number(Double(model.notCompletedCount))]), size: 15)
-                    .accessibilityIdentifier("leaving.notCompleted")
-            }
+        }
+        if model.notCompletedCount > 0 {
+            NoteText(text: model.t("leaving.notCompleted", ["count": model.number(Double(model.notCompletedCount))]), size: 15)
+                .accessibilityIdentifier("leaving.notCompleted")
+        }
+        if !entries.isEmpty {
             if let cleared = model.recordClearedAt { NoteText(text: model.t("leaving.cleared", ["date": model.longDate(cleared)])) }
-            // The latest request that left is open: what was sent, where, the model and the time.
+            // The latest request opens on what left, in plain words; the exact request is one press further.
             let latestId = entries.max(by: { $0.at < $1.at }).map(\.id)
             ListCard {
                 ForEach(Array(entries.enumerated()), id: \.element.id) { i, entry in
@@ -210,24 +203,35 @@ private struct RecordSheet: View {
         .accessibilityIdentifier("delete.all")
     }
 
-    /// "2 SENT, 1 KEPT.": the sent part ink on a redact block (orange is never text on a light surface).
+    /// The headline in plain words (contract v1.44): "Nothing has left this iPhone", or "1 request left this
+    /// iPhone" (the count on a redact block) with "Each carried only a silhouette" under it; then what was
+    /// answered here and the recordings shown, counted.
     private var headline: some View {
-        let sent = model.t("leaving.sentCount", ["count": model.number(Double(model.sentCount))])
-        let kept = model.t("leaving.keptCount", ["count": model.number(Double(model.keptCount))])
-        return FlowLayout(spacing: 10, lineSpacing: 4) {
-            Display(text: sent, size: 54, maxLines: 2, color: theme.onRedact)
-                .fixedSize()
-                .padding(.horizontal, 6)
-                .padding(.vertical, 6)
-                .background(RoundedRectangle(cornerRadius: 4).fill(theme.redact))
-            Display(text: kept, size: 54, maxLines: 2)
-                .fixedSize()
-                .padding(.vertical, 6)
+        let sent = model.sentCount
+        let title = sent == 0 ? model.t("leaving.headline.none")
+            : model.t("leaving.headline.sent", ["count": model.number(Double(sent))])
+        let answered = model.outbound.filter(\.isAnsweredOnDevice).count
+        let recorded = model.outbound.filter(\.isRecorded).count
+        let sub = [answered > 0 ? model.t("leaving.sub.kept", ["count": model.number(Double(answered))]) : nil,
+                   recorded > 0 ? model.t("leaving.sub.recorded", ["count": model.number(Double(recorded))]) : nil].compactMap { $0 }
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .center, spacing: 12) {
+                CounterDisc(count: sent, size: 44)
+                Display(text: title, size: 40, maxLines: 3)
+            }
+            if sent > 0 {
+                Text(model.t("leaving.headline.only")).sfFont(17, weight: .semibold).foregroundStyle(theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if !sub.isEmpty {
+                Text(sub.joined(separator: " · ")).sfFont(15).foregroundStyle(theme.note)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("record.sub")
+            }
         }
         // The display face's caps rise above its tight line box: room so the scroll view never clips them.
         .padding(.top, 6)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(sent) \(kept)")
+        .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
         .accessibilityIdentifier("record.headline")
     }
@@ -238,28 +242,39 @@ private struct RecordEntry: View {
     @Environment(\.theme) private var theme
     @Environment(\.dynamicTypeSize) private var dynamicType
     let entry: OutboundEntry
-    @State private var showPayload: Bool
+    /// The exact request ("For developers"): closed until asked for.
+    @State private var showPayload = false
     @State private var open: Bool
 
     init(entry: OutboundEntry, latest: Bool) {
         self.entry = entry
         _open = State(initialValue: latest)
-        _showPayload = State(initialValue: latest)
+    }
+
+    private var title: String {
+        if let r = entry.recording { return model.t(r.onDevice ? "record.recorded.title" : "record.recordedCloud.title") }
+        return entry.fields.isEmpty ? model.outboundFieldName("model-request") : entry.fields.map(model.outboundFieldName).joined(separator: ", ")
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             let layout = dynamicType.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6)) : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 12))
-            // One line per row; where it went and the exact request open on tap.
+            // One line per row; what left and where open on tap. A recording is dated when it was recorded.
             Button { withMotion(Motion.reveal) { open.toggle() } } label: {
                 layout {
-                    Text(model.time(entry.at)).monoFont(13, weight: 400).foregroundStyle(theme.note)
-                    Text(entry.isRecorded ? model.t("record.recordedCloud.title")
-                         : entry.fields.isEmpty ? model.outboundFieldName("model-request") : entry.fields.map(model.outboundFieldName).joined(separator: ", "))
+                    if entry.recording == nil {
+                        Text(model.time(entry.at)).monoFont(13, weight: 400).foregroundStyle(theme.note)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
                         // The whole title, on two lines when it needs them (never "Document silhouette, Mo…").
-                        .sfFont(17).foregroundStyle(theme.ink)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Text(title).sfFont(17).foregroundStyle(theme.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let r = entry.recording {
+                            Text(model.t("record.recordedOn", ["date": model.recordedDay(r.date)])).sfFont(13).foregroundStyle(theme.note)
+                                .accessibilityIdentifier("record.recordedOn")
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     status
                 }
                 .contentShape(Rectangle())
@@ -268,45 +283,75 @@ private struct RecordEntry: View {
             if open, let recording = entry.recording {
                 recorded(recording).revealsIntoView().transition(Motion.revealTransition)
             } else if open && !entry.isAnsweredOnDevice {
-              VStack(alignment: .leading, spacing: 10) {
-                // Where it went (the endpoint for a model request), the model, how it was answered and when.
-                NoteText(text: model.t("outbound.requestTo", ["destination": entry.destination,
-                                                              "path": entry.channel == .aiCloud ? entry.model.flatMap(FirebaseServices.modelPath) ?? "" : ""]))
-                    .accessibilityIdentifier("record.endpoint")
-                if let m = entry.model { NoteText(text: model.t("outbound.model", ["model": m])) }
-                NoteText(text: model.statusText(entry)).accessibilityIdentifier("record.status")
-                NoteText(text: model.longDate(entry.at)).accessibilityIdentifier("record.time")
-                if let payload = entry.payload {
-                    Button { withMotion(Motion.reveal) { showPayload.toggle() } } label: {
-                        HStack(spacing: 4) {
-                            Text(model.t("outbound.showPayload")).sfFont(15, weight: .semibold)
-                            Image(systemName: showPayload ? "chevron.up" : "chevron.down").sfFont(12, weight: .semibold)
+                VStack(alignment: .leading, spacing: 10) {
+                    whatLeft(model.t("record.whatLeft"))
+                    // Where it went (the endpoint for a model request), the model, how it was answered and when.
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(model.t("outbound.requestTo", ["destination": entry.destination,
+                                                            "path": entry.channel == .aiCloud ? entry.model.flatMap(FirebaseServices.modelPath) ?? "" : ""]))
+                            .sfFont(12).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("record.endpoint")
+                        FlowLayout(spacing: 0, lineSpacing: 2) {
+                            if let m = entry.model { short(model.t("outbound.model", ["model": m]), dot: true) }
+                            short(model.statusText(entry), dot: true).accessibilityIdentifier("record.status")
+                            short(model.longDate(entry.at), dot: false).accessibilityIdentifier("record.time")
                         }
-                        .foregroundStyle(theme.ink)
-                        .frame(minHeight: 44)
                     }
-                    .buttonStyle(.plain)
-                    if showPayload { MonoBlock(text: payload.text, id: "record.payload").revealsIntoView().transition(Motion.revealTransition) }
+                    if let payload = entry.payload {
+                        technical {
+                            MonoBlock(text: payload.text, id: "record.payload")
+                        }
+                    }
                 }
-              }
-              .revealsIntoView()
-              .transition(Motion.revealTransition)
+                .revealsIntoView()
+                .transition(Motion.revealTransition)
             }
         }
         .padding(16)
         .accessibilityElement(children: .contain)
     }
 
-    /// A recorded cloud reading used now: nothing sent now; the request exactly as it was sent when it was
-    /// recorded, and the answer it got (placeholder ids only).
-    private func recorded(_ r: OutboundEntry.RecordedRequest) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            NoteText(text: model.t("record.recordedCloud.note", ["date": model.recordedDay(r.date)]))
-            NoteText(text: model.t("outbound.requestTo", ["destination": entry.destination, "path": r.endpoint]))
-            if !r.model.isEmpty { NoteText(text: model.t("outbound.model", ["model": r.model])) }
+    /// One piece of the short line ("Model: … · Sent, response 200 · Nov 21, 2026 at 10:42 AM").
+    private func short(_ text: String, dot: Bool) -> some View {
+        Text(dot ? text + " · " : text).sfFont(12).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+            .accessibilityLabel(text)
+    }
+
+    /// What left, as a person reads it: the silhouette's lines with their placeholders as chips, and what stayed
+    /// here, counted. A request without a document says what kinds of things it carried.
+    @ViewBuilder private func whatLeft(_ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
+                .accessibilityAddTraits(.isHeader)
+            if let silhouette = entry.silhouette {
+                SilhouetteLines(text: silhouette).accessibilityIdentifier("record.whatLeft")
+                let kept = DocumentSession.counts(cloudText: silhouette)
+                Text(model.t("record.whatStayed", ["numbers": model.number(Double(kept.numbers)), "dates": model.number(Double(kept.dates)),
+                                                   "words": model.number(Double(kept.words))]))
+                    .sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("record.whatStayed")
+            } else {
+                let fields = entry.fields.isEmpty ? ["model-request"] : entry.fields
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(fields, id: \.self) { f in
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Circle().fill(theme.ink).frame(width: 5, height: 5).alignmentGuide(.firstTextBaseline) { $0[.bottom] + 4 }
+                            Text(model.outboundFieldName(f)).sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("record.whatLeft")
+            }
+        }
+    }
+
+    /// "For developers: the request as sent", closed by default.
+    private func technical<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
             Button { withMotion(Motion.reveal) { showPayload.toggle() } } label: {
                 HStack(spacing: 4) {
-                    Text(model.t("record.recordedCloud.exactly", ["date": model.recordedDay(r.date)])).sfFont(15, weight: .semibold)
+                    Text(model.t("record.technical")).sfFont(15, weight: .semibold)
                         .fixedSize(horizontal: false, vertical: true)
                     Image(systemName: showPayload ? "chevron.up" : "chevron.down").sfFont(12, weight: .semibold)
                 }
@@ -314,12 +359,52 @@ private struct RecordEntry: View {
                 .frame(minHeight: 44)
             }
             .buttonStyle(.plain)
-            .accessibilityIdentifier("record.recordedRequest")
+            .accessibilityIdentifier("record.technical")
             if showPayload {
-                MonoBlock(text: r.body, id: "record.recordedBody").revealsIntoView().transition(Motion.revealTransition)
-                Text(model.t("record.answerReceived")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
-                MonoBlock(text: r.answer, id: "record.recordedAnswer")
-                NoteText(text: model.t("record.answerNote"))
+                VStack(alignment: .leading, spacing: 8) { content() }
+                    .revealsIntoView()
+                    .transition(Motion.revealTransition)
+            }
+        }
+    }
+
+    /// A recording used now: nothing sent now. A cloud recording opens on what went to the cloud when it was
+    /// recorded, then the request exactly as it was sent then and the answer (placeholder ids only), folded. An
+    /// on-device recording says where and when the model answered; its answer is folded.
+    private func recorded(_ r: OutboundEntry.RecordedRequest) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if r.onDevice {
+                NoteText(text: model.t("record.recorded.note", ["machine": r.machine ?? "", "date": model.recordedDay(r.date)]), size: 15)
+                if let silhouette = entry.silhouette {
+                    let kept = DocumentSession.counts(cloudText: silhouette)
+                    Text(model.t("record.whatStayed", ["numbers": model.number(Double(kept.numbers)), "dates": model.number(Double(kept.dates)),
+                                                       "words": model.number(Double(kept.words))]))
+                        .sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("record.whatStayed")
+                }
+                if !r.model.isEmpty { short(model.t("outbound.model", ["model": r.model]), dot: false) }
+                technical {
+                    Text(model.t("record.answerReceived")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
+                    MonoBlock(text: r.answer, id: "record.recordedAnswer")
+                    NoteText(text: model.t("record.answerNote"))
+                }
+            } else {
+                whatLeft(model.t("record.whatWent"))
+                NoteText(text: model.t("record.recordedCloud.note", ["date": model.recordedDay(r.date)]))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(model.t("outbound.requestTo", ["destination": entry.destination, "path": r.endpoint]))
+                        .sfFont(12).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("record.endpoint")
+                    if !r.model.isEmpty { short(model.t("outbound.model", ["model": r.model]), dot: false) }
+                }
+                technical {
+                    Text(model.t("record.recordedCloud.exactly", ["date": model.recordedDay(r.date)])).sfFont(15, weight: .semibold)
+                        .foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                    MonoBlock(text: r.body, id: "record.recordedBody")
+                    Text(model.t("record.answerReceived")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
+                    MonoBlock(text: r.answer, id: "record.recordedAnswer")
+                    NoteText(text: model.t("record.answerNote"))
+                }
             }
         }
     }
@@ -331,11 +416,48 @@ private struct RecordEntry: View {
             case .sent: StatusPill(label: model.t("record.sentShort"), style: .redact, dot: true)
             // One short word on the pill ("On iPhone"); the full status is the row's VoiceOver label.
             case .answeredOnDevice: StatusPill(label: model.t("record.keptShort"), style: .outline)
-            case .recorded: StatusPill(label: model.t("record.recordedCloud.status"), style: .outline)
+            case .recorded: StatusPill(label: model.recordStatus(entry), style: .outline)
             case .failed, .blocked: StatusPill(label: model.recordStatus(entry), style: .muted)
             }
         }
         .accessibilityLabel(model.recordStatus(entry))
+    }
+}
+
+/// A silhouette's lines as they left: words that stay visible, and each number, date and hidden word as its
+/// placeholder chip (N12, D3, W4), never a value. Long lines run on sideways.
+struct SilhouetteLines: View {
+    @Environment(\.theme) private var theme
+    let text: CloudText
+
+    var body: some View {
+        let lines = DocumentCard.lines(DocumentSession.segments(cloudText: text)).filter { !$0.isEmpty }
+        ScrollView(.horizontal, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                    HStack(spacing: 0) {
+                        ForEach(Array(line.enumerated()), id: \.offset) { _, token in tokenView(token) }
+                    }
+                }
+            }
+            .padding(12)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 12).fill(theme.raised))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(lines.map { line in line.map { t -> String in
+            switch t {
+            case .text(let s), .word(let s): s
+            case .value(let id, _, _): id
+            }
+        }.joined() }.joined(separator: "\n"))
+    }
+
+    @ViewBuilder private func tokenView(_ token: DocumentCard.Token) -> some View {
+        switch token {
+        case .text(let s), .word(let s): Text(verbatim: s).monoFont(11, weight: 400).foregroundStyle(theme.ink).fixedSize()
+        case .value(let id, _, _): TokenChip(id: id, size: 10, compact: true).padding(.trailing, 2)
+        }
     }
 }
 
