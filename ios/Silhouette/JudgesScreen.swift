@@ -93,8 +93,8 @@ struct JudgesScreen: View {
         }
     }
 
-    /// One press: the sample paystub read (on this iPhone when it has the model, otherwise the recorded
-    /// cloud reading; never a cloud request without Send), its values confirmed, the results opened.
+    /// One press: the sample paystub read on a device and in the cloud (on this iPhone when it has the model,
+    /// otherwise recordings; never a cloud request without Send), its values confirmed, the results opened.
     private var runAll: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(model.t("judges.runAll.body")).sfFont(15).foregroundStyle(theme.onHeroMuted)
@@ -191,11 +191,14 @@ extension AppModel {
         showResults()
     }
 
-    /// The judges' path in one press (contract v1.43): the prepared household, the sample paystub's silhouette
-    /// read on this iPhone when it has the model (kept on this iPhone: nothing is sent without Send), else the
-    /// recorded cloud reading (nothing sent now); the values that decide the result confirmed, the yearly income
-    /// used, and the results opened with what the paystub changed. A reading that fails stays on the silhouette
-    /// screen with its notice.
+    /// The judges' path in one press (contracts v1.43, v1.44): the prepared household, then the sample paystub's
+    /// silhouette read both ways, one after the other. First on a device: on this iPhone now when it has the
+    /// model (kept on this iPhone: nothing is sent without Send), else the on-device model's recorded answer
+    /// made on an iPhone. Then in the cloud: the recorded cloud reading of the same silhouette (nothing sent
+    /// now). The review shows both answers side by side and uses the device's; the values that decide the
+    /// result are confirmed, the yearly income used, and the results opened with what the paystub changed.
+    /// Without a device answer the recorded cloud reading alone is used, as before. A reading that fails stays
+    /// on the silhouette screen with its notice.
     func runJudgesPath() async {
         guard !runningJudgesPath else { return }
         runningJudgesPath = true
@@ -205,13 +208,27 @@ extension AppModel {
         if !MotionSwitch.off { try? await Task.sleep(for: .milliseconds(600)) }
         var read = false
         if deviceModelAvailable { read = await readDocument(keepOnDevice: true, review: false) }
+        if !read {
+            documentError = nil
+            read = await useRecordedDevice(both: recordedCloudReading != nil)
+        }
         if !read, recordedCloudReading != nil {
             documentError = nil
             read = await useRecordedCloud(review: false)
         }
         if !read, !deviceModelAvailable, !isOnline { read = await readDocument(review: false) }
         guard read else { readingShow = nil; return }
+        // The second half: the cloud's answer to the same silhouette, then both side by side on the review.
+        let both = await playRecordedCloudHalf()
         editDocument { $0.confirmAll() }
+        if both {
+            paystubPath.append(.documentReview)
+            try? await Task.sleep(for: .milliseconds(450))
+            readingShow = nil
+            // Long enough to see the two answers side by side before the results open (the review stays on the
+            // paystub tab).
+            try? await Task.sleep(for: .seconds(MotionSwitch.off ? 0.5 : testModel != nil ? 6 : 3.5))
+        }
         guard let annualization = documentValidation?.annualization else { readingShow = nil; return }
         useIncome(annualization)
         try? await Task.sleep(for: .milliseconds(450))

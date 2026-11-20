@@ -192,7 +192,7 @@ public struct DocumentSession: Sendable {
     private static let placeholderRegex = try! NSRegularExpression(pattern: "\u{27E6}([DNW])([0-9]+)\u{27E7}")
     private static let wordRegex = try! NSRegularExpression(pattern: Skeletonizer.tokenPattern)
 
-    private static func segments(_ text: String, map: PlaceholderMap?) -> [PreviewSegment] {
+    static func segments(_ text: String, map: PlaceholderMap?) -> [PreviewSegment] {
         let ns = text as NSString
         var out: [PreviewSegment] = []
         func appendText(_ s: String) {

@@ -26,6 +26,8 @@ public struct CloudRequest: Sendable {
     let checks: OutputCheck.Scope?
     public let route: ExplainRoute?
     public let locale: AppLocale
+    /// A document reading's silhouette, as it is inside the prompt (for the record's "What left").
+    public var silhouette: CloudText? = nil
 
     /// The request object as this app builds it for Firebase AI Logic. The SDK serializes the HTTP
     /// body itself, so this is the app's rendering of the same request, not the bytes on the wire.

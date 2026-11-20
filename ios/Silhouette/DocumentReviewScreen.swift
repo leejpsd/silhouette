@@ -94,10 +94,13 @@ struct DocumentReviewScreen: View {
                 VStack(alignment: .leading, spacing: 16) {
                     DraftLine()
                     title(model.t("review.title"))
+                    // Read both ways (contract v1.44): the device's answer and the cloud's, side by side, above the values.
+                    if let both = model.currentBothWays { ReadBothWaysCard(both: both) }
                     if let extraction = doc.extraction {
                         ProvenanceBadge(source: extraction.source, reason: extraction.reason)
                         if extraction.reason == .onDeviceFailed { NoteText(text: model.t("answers.retried")) }
-                        PointerCard()
+                        // The card above already shows the placeholders each answered and the values put back.
+                        if model.currentBothWays == nil { PointerCard() }
                     }
                     NoteText(text: model.t(doc.extraction == nil ? "review.manualLead" : "review.lead"), size: 15)
                     if doc.extraction != nil, moreShown ? doc.pendingCount > 0 : leadPending > 0 {

@@ -89,10 +89,12 @@ public enum Planner {
         let cloudSchema = try ModelSchema.derive(pointerSchema, requiredNullable: true, dialect: .openapi)
         let deviceSchema = try ModelSchema.derive(pointerSchema, requiredNullable: true, dialect: .jsonschema)
         let prompt = PromptTemplate.fill(template.user, ["docType": docType, "skeleton": text(skeleton)])
-        return CloudRequest(taskId: "document.pointer.extract", mode: mode, reason: reason, model: cloudModel,
-                            system: CloudText(composed: template.system), prompt: CloudText(composed: prompt), maxOutputTokens: 2048,
-                            responseSchema: cloudSchema, deviceSchema: deviceSchema, fields: ["document-silhouette"], checks: nil,
-                            route: nil, locale: language)
+        var request = CloudRequest(taskId: "document.pointer.extract", mode: mode, reason: reason, model: cloudModel,
+                                   system: CloudText(composed: template.system), prompt: CloudText(composed: prompt), maxOutputTokens: 2048,
+                                   responseSchema: cloudSchema, deviceSchema: deviceSchema, fields: ["document-silhouette"], checks: nil,
+                                   route: nil, locale: language)
+        request.silhouette = skeleton.cloudText
+        return request
     }
 
     /// One part of a paystub read on the device (pointer-extract-device.v1.md): the pointer prompt's

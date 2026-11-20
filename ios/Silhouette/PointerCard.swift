@@ -26,7 +26,7 @@ struct PointerCard: View {
     }
 
     var body: some View {
-        if let extraction = model.document.extraction, [.onDevice, .inCloud, .recordedCloud].contains(extraction.source),
+        if let extraction = model.document.extraction, [.onDevice, .inCloud, .recordedCloud, .recordedDevice].contains(extraction.source),
            let answered, let silhouette = model.silhouette,
            let line = DocumentSession.line(of: silhouette, containing: answered.ref) {
             let value = line.compactMap { seg -> String? in
@@ -64,6 +64,9 @@ struct PointerCard: View {
         switch source {
         case .recordedCloud:
             model.t("review.pointer.recordedCloud", ["date": model.document.recordedDate.map(model.recordedDay) ?? "", "ref": ref, "value": value])
+        case .recordedDevice:
+            model.t("review.pointer.recorded", ["machine": model.deviceRecordings.first { $0.date == model.document.recordedDate }.map(model.machineName) ?? "iPhone",
+                                                "ref": ref, "value": value])
         case .inCloud: model.t("review.pointer.cloud", ["ref": ref, "value": value])
         default: model.t("review.pointer.device", ["ref": ref, "value": value])
         }

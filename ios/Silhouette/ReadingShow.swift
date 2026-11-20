@@ -17,8 +17,18 @@ struct ReadingShow: Equatable {
         case cloud(afterDevice: Bool)
         /// A recorded cloud reading (routing.json `recordedCloud`): nothing is sent now.
         case recordedCloud
+        /// A recorded on-device reading (routing.json `recordedSample`), made on the iPhone named, on `date`
+        /// (ISO day): the device's way, nothing sent.
+        case recordedDevice(machine: String, date: String)
 
-        var isDevice: Bool { self == .device }
+        /// The device's way: everything stays inside the block, the model included.
+        var isDevice: Bool {
+            switch self {
+            case .device, .recordedDevice: true
+            default: false
+            }
+        }
+        var isRecordedDevice: Bool { if case .recordedDevice = self { true } else { false } }
     }
 
     enum Phase: Equatable { case out, back }
@@ -38,15 +48,21 @@ struct ReadingShow: Equatable {
     var since = Date()
     /// Snapshots and UI tests: the moving chips drawn still, at this point of their way (0…1).
     var still: Double? = nil
+    /// One half of the sample read both ways (the judges' path, contract v1.44): headed "On a device" or
+    /// "In the cloud", as the review's card names the two answers.
+    var both = false
 
     /// The fields that decide the yearly income, as the model answered them and as this iPhone fills them
     /// in: at most four, each with a single placeholder.
     static func pairs(_ document: DocumentSession, silhouette: SkeletonResult) -> [Pair] {
+        pairs(document, silhouette: silhouette, order: ["grossPay", "ytdGross", "payDate", "periodEnd", "netPay", "periodStart"], limit: 4)
+    }
+
+    static func pairs(_ document: DocumentSession, silhouette: SkeletonResult, order: [String], limit: Int) -> [Pair] {
         guard let pointers = document.pointers else { return [] }
         let found = Set(document.fieldsForDisplay.filter(\.found).map(\.name))
-        let order = ["grossPay", "ytdGross", "payDate", "periodEnd", "netPay", "periodStart"]
         var out: [Pair] = []
-        for name in order where found.contains(name) && out.count < 4 {
+        for name in order where found.contains(name) && out.count < limit {
             guard let ref = pointers[name]?.stringValue,
                   let value = DocumentSession.line(of: silhouette, containing: ref)?.lazy.compactMap({ seg -> String? in
                       if case .placeholder(let id, _, let original) = seg, id == ref { return original }
@@ -88,7 +104,13 @@ struct ReadingStageView: View {
     private var stageText: String {
         switch show.phase {
         case .back: model.t("preview.stage.pointersBack")
-        case .out: model.t(device ? "preview.stage.toDevice" : "preview.stage.toCloud")
+        case .out:
+            if case .recordedDevice(_, let date) = show.route {
+                // A recording: the device's own answer, made then; nothing goes anywhere now.
+                model.t("preview.useRecordedNote", ["date": model.recordedDay(date)])
+            } else {
+                model.t(device ? "preview.stage.toDevice" : "preview.stage.toCloud")
+            }
         }
     }
 
@@ -100,14 +122,30 @@ struct ReadingStageView: View {
             after ? model.t("reason.on-device-failed")
                 : model.t("reason.document-silhouette-only") + " (" + model.t("reason.detail.noDeviceModel") + ")"
         case .recordedCloud: model.t("reason.recorded-in-cloud")
+        case .recordedDevice: model.t("reason.recorded-on-device")
         }
     }
+
+    /// Where and when a recording was made ("Recorded on iPhone 17 Pro, Nov 19, 2026"), for the recorded ways.
+    private var recordedLine: String? {
+        switch show.route {
+        case .recordedDevice(let machine, let date):
+            return Self.sentenceCase(model.t("review.both.recordedOn", ["machine": machine, "date": model.recordedDay(date)]))
+        case .recordedCloud:
+            guard let r = model.recordedCloudReading else { return nil }
+            return model.t("review.both.recordedCloud", ["model": r.model, "date": model.recordedDay(r.date)])
+        default: return nil
+        }
+    }
+
+    static func sentenceCase(_ s: String) -> String { s.prefix(1).uppercased() + s.dropFirst() }
 
     private var badge: (kind: WhereRan, label: String) {
         switch show.route {
         case .device: (.device, model.t("badge.onDevice"))
         case .cloud: (.cloud, model.t("badge.cloud"))
         case .recordedCloud: (.cloud, model.t("badge.recordedCloud"))
+        case .recordedDevice: (.device, model.t("badge.recorded"))
         }
     }
 
@@ -115,7 +153,8 @@ struct ReadingStageView: View {
         switch show.route {
         case .device: model.t("send.staysHere")
         case .cloud: model.t("send.goesCloud")
-        case .recordedCloud: model.t("badge.recordedCloud")
+        case .recordedCloud: model.t(show.both ? "review.both.cloud" : "badge.recordedCloud")
+        case .recordedDevice: model.t("review.both.device")
         }
     }
 
@@ -155,6 +194,11 @@ struct ReadingStageView: View {
             Text(reasonText).sfFont(13).foregroundStyle(theme.note)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("reading.reason")
+            if let recordedLine {
+                Text(recordedLine).sfFont(13, weight: .semibold).foregroundStyle(theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("reading.recordedOn")
+            }
             // While this iPhone reads, which part it is on (DEVICE_READING.md section 7).
             if device, show.phase == .out, let stage = model.readingStage, stage != .sendingAfterDevice {
                 SpinnerLine(text: model.t(stage.copyKey))
@@ -199,8 +243,8 @@ struct ReadingStageView: View {
     private func phoneBlock(compact: Bool) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "iphone").sfFont(13, weight: .semibold)
-                Text(model.t("preview.onPhone")).sfFont(13, weight: .semibold)
+                Image(systemName: show.route.isRecordedDevice ? "record.circle" : "iphone").sfFont(13, weight: .semibold)
+                Text(phoneLabel).sfFont(13, weight: .semibold)
             }
             .foregroundStyle(theme.onHeroMuted)
             .accessibilityHidden(true)
@@ -222,6 +266,12 @@ struct ReadingStageView: View {
             }
         }
         .environment(\.colorScheme, .dark)
+    }
+
+    /// The block's label: this iPhone; for a recorded on-device reading, the iPhone it was recorded on.
+    private var phoneLabel: String {
+        if case .recordedDevice(let machine, _) = show.route { return machine }
+        return model.t("preview.onPhone")
     }
 
     /// The model on this iPhone, inside the block.

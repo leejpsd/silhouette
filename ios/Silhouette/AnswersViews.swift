@@ -407,15 +407,17 @@ struct ProvenanceBadge: View {
         case .inCloud: model.t("badge.cloud")
         case .sampleAnswerKey: model.t("badge.sampleKey")
         case .recordedCloud: model.t("badge.recordedCloud")
+        case .recordedDevice: model.t("badge.recorded")
         }
         VStack(alignment: .leading, spacing: 4) {
-            WhereBadge(kind: source == .onDevice ? .device : source == .inCloud || source == .recordedCloud ? .cloud : .noModel, label: badge)
+            WhereBadge(kind: source == .onDevice || source == .recordedDevice ? .device : source == .inCloud || source == .recordedCloud ? .cloud : .noModel,
+                       label: badge)
             Text(reasonText).sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(source == .onDevice ? model.t("badge.sentence.device", ["reason": reasonText])
             : source == .inCloud ? model.t("badge.sentence.cloud", ["reason": reasonText]) : "\(badge): \(reasonText).")
-        .accessibilityIdentifier(source == .sampleAnswerKey || source == .recordedCloud ? "source.badge" : "answer.badge")
+        .accessibilityIdentifier(source == .sampleAnswerKey || source == .recordedCloud || source == .recordedDevice ? "source.badge" : "answer.badge")
     }
 }
 

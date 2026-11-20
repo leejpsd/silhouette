@@ -51,6 +51,7 @@
 		DC898B5A1141FAC95FCC4614 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = B991BEDE1B0743F8C3DEDCDA /* FirebaseAppCheck */; };
 		DEA6209211423E1BDCDEE84E /* copy.local.json in Resources */ = {isa = PBXBuildFile; fileRef = C54C17CED25970FF27D7A051 /* copy.local.json */; };
 		E4D10FBEB7603373004036BA /* AnswersViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AFA4A5D9C3304EADDA191C /* AnswersViews.swift */; };
+		E5AFF1B629B6A8B12FDB1D2A /* ReadBothWays.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95B3CFED9CD69BF87453627 /* ReadBothWays.swift */; };
 		ED7CBA771465E63FA1D739C4 /* DocumentPreviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC630FCD20F81BB6EFB60C96 /* DocumentPreviewScreen.swift */; };
 		F2D1A33555AA9D9C4FA29683 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 789AC1A17553EB6C7133E02C /* AppModel.swift */; };
 		F6D59635FFD315C63ED1B381 /* JudgesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACB7D1E26B21B8AC9BE852D /* JudgesScreen.swift */; };
@@ -111,6 +112,7 @@
 		D1861B881CCF20F8BE5DD15A /* TasksScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksScreen.swift; sourceTree = "<group>"; };
 		D55FC50C26D76BB41C698B09 /* IBMPlexMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexMono-Medium.ttf"; sourceTree = "<group>"; };
 		D780D09577350471E8FFE4BA /* Silhouette.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Silhouette.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D95B3CFED9CD69BF87453627 /* ReadBothWays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadBothWays.swift; sourceTree = "<group>"; };
 		DC630FCD20F81BB6EFB60C96 /* DocumentPreviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPreviewScreen.swift; sourceTree = "<group>"; };
 		E2BC90F62FC81000A13CA37E /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		E2F707CD077B6CAE91B65A18 /* Chrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chrome.swift; sourceTree = "<group>"; };
@@ -197,6 +199,7 @@
 				7D87DA4D3E2FD0CA6EAD2946 /* PointerCard.swift */,
 				BC5B563947FD2B0049A34806 /* ProgramScreen.swift */,
 				11479B1A0799AD17FB0F6303 /* QuestionScreen.swift */,
+				D95B3CFED9CD69BF87453627 /* ReadBothWays.swift */,
 				9036DA58B63E9D99CA40D18D /* ReadingShow.swift */,
 				FE947B1D20C99E5B2BEB57AC /* ResultsEffect.swift */,
 				5441F6FD2D4189F34A7C33F7 /* ResultsScreen.swift */,
@@ -430,6 +433,7 @@
 				CE4F67EEF3081322D0AF8B65 /* PointerCard.swift in Sources */,
 				55D5927B8457B2D79B8E32F7 /* ProgramScreen.swift in Sources */,
 				FECC565981A70C7D774237BA /* QuestionScreen.swift in Sources */,
+				E5AFF1B629B6A8B12FDB1D2A /* ReadBothWays.swift in Sources */,
 				3D2FE9403F2E0D7711F091A5 /* ReadingShow.swift in Sources */,
 				75C598C0128C52A18930881E /* ResultsEffect.swift in Sources */,
 				56D1956903B28C2EE5CB4C5A /* ResultsScreen.swift in Sources */,

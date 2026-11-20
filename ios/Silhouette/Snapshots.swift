@@ -169,6 +169,29 @@ enum SnapshotRunner {
             Scene(name: "reading-cloud-out") { m in m.openSamplePreview(); m.stillShow(.cloud(afterDevice: false), .out) },
             Scene(name: "reading-cloud-back") { m in m.openSamplePreview(); m.stillShow(.cloud(afterDevice: false), .back) },
             Scene(name: "reading-recorded-out") { m in m.openSamplePreview(); m.stillShow(.recordedCloud, .out) },
+            // Both halves of the hybrid on the judges' path (contract v1.44), held still: the recorded on-device
+            // reading going out and coming back, the recorded cloud reading coming back; then the review with
+            // both answers side by side, the record of what left, and the results.
+            Scene(name: "both-device-out") { m in m.startJudgesSample(); await m.stillBoth(cloud: false, .out) },
+            Scene(name: "both-device-back") { m in m.startJudgesSample(); await m.stillBoth(cloud: false, .back) },
+            Scene(name: "both-cloud-out") { m in m.startJudgesSample(); await m.stillBoth(cloud: true, .out) },
+            Scene(name: "both-cloud-back") { m in m.startJudgesSample(); await m.stillBoth(cloud: true, .back) },
+            Scene(name: "review-both", pages: 3, wait: 1.0) { m in await m.readBothWaysForSnapshot() },
+            Scene(name: "review-both-live", pages: 2, wait: 1.5, needsDevice: true) { m in await m.readBothWaysForSnapshot() },
+            Scene(name: "record-both", pages: 3, wait: 1.0, fromTop: true) { m in
+                await m.readBothWaysForSnapshot()
+                m.sheet = .record
+            },
+            // With `-UITestModel cloud`: the sample's silhouette sent to be read; the record opens on what left.
+            Scene(name: "record-document-sent", pages: 2, wait: 1.0, fromTop: true) { m in
+                m.openSamplePreview()
+                await m.readDocument()
+                m.sheet = .record
+            },
+            Scene(name: "results-both", pages: 3, wait: 1.0) { m in
+                await m.readBothWaysForSnapshot()
+                if let a = m.documentValidation?.annualization { m.useIncome(a) }
+            },
             Scene(name: "review-type-numbers", pages: 3) { m in
                 m.openDocument()
                 m.typeNumbers()
@@ -289,5 +312,30 @@ extension AppModel {
             pairs = ReadingShow.pairs(document, silhouette: silhouette)
         }
         readingShow = ReadingShow(route: route, phase: phase, pairs: pairs, still: 0.3)
+    }
+
+    /// Snapshots: one half of the sample read both ways, held still. The device's answer is the recorded
+    /// on-device reading; the cloud's, the recorded cloud reading.
+    func stillBoth(cloud: Bool, _ phase: ReadingShow.Phase) async {
+        guard let silhouette, let found = await RecordedDeviceReading.matching(
+            deviceRecordings, silhouette: silhouette, language: document.language, key: sampleKey,
+            schema: bundle.paystubSchema, jurisdiction: bundle.packInfo.jurisdiction) else { return }
+        editDocument { $0.apply(found.result, silhouette: silhouette, schema: bundle.paystubSchema, recordedDate: found.recording.date) }
+        var answer = document
+        if cloud, let recording = recordedCloudReading {
+            answer.apply(recording.result, silhouette: silhouette, schema: bundle.paystubSchema)
+        }
+        let route: ReadingShow.Route = cloud ? .recordedCloud : .recordedDevice(machine: machineName(found.recording), date: found.recording.day)
+        readingShow = ReadingShow(route: route, phase: phase, pairs: phase == .back ? ReadingShow.pairs(answer, silhouette: silhouette) : [],
+                                  still: 0.3, both: true)
+    }
+
+    /// Snapshots: the judges' path read both ways, at the review (the device now when it has the model).
+    func readBothWaysForSnapshot() async {
+        startJudgesSample()
+        if deviceModelAvailable { await readDocument(keepOnDevice: true, review: false) } else { await useRecordedDevice(both: true) }
+        await playRecordedCloudHalf()
+        editDocument { $0.confirmAll() }
+        paystubPath.append(.documentReview)
     }
 }

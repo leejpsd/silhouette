@@ -15,6 +15,9 @@ public enum InferenceSource: String, Sendable {
     /// routing.json `recordedCloud`: a real cloud reading of the bundled sample's silhouette, recorded
     /// with its exact request; the values are put back on this device now and nothing is sent.
     case recordedCloud = "RECORDED_CLOUD"
+    /// routing.json `recordedSample`: the on-device model's own recorded answer to the bundled sample's
+    /// silhouette, made on an iPhone; the values are put back on this device now and nothing is sent.
+    case recordedDevice = "RECORDED"
 }
 
 public struct PointerRequest: Sendable {

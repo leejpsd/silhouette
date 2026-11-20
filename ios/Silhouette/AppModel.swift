@@ -108,6 +108,12 @@ final class AppModel {
     private(set) var documentEffect: DocumentEffect?
     /// The recorded cloud readings bundled with the app (routing.json `recordedCloud`), newest first.
     @ObservationIgnored let cloudRecordings: [RecordedCloudReading]
+    /// The on-device check's runs recorded on an iPhone and bundled with the app (routing.json `recordedSample`),
+    /// newest first.
+    @ObservationIgnored let deviceRecordings: [RecordedDeviceReading]
+    /// The sample read both ways on the judges' path (contract v1.44): the device's answer and the cloud's,
+    /// compared value by value. Memory only.
+    private(set) var bothWays: BothWays?
     /// The sample answer key for the bundled samples (routing.json offlineSample).
     @ObservationIgnored let sampleKey: SampleAnswerKeyExtractor?
     /// Model access through Firebase AI Logic (or the scripted model in UI tests).
@@ -158,6 +164,7 @@ final class AppModel {
             ?? DocumentSession(language: preferred)
         sampleKey = try? SampleAnswerKeyExtractor(bundle: bundle)
         cloudRecordings = RecordedCloudReading.load(directory: bundle.directory.appendingPathComponent("recordings/cloud", isDirectory: true))
+        deviceRecordings = RecordedDeviceReading.load(directory: bundle.directory.appendingPathComponent("recordings", isDirectory: true))
         self.testModel = testModel
         port = testModel.map { mode in
             TestModelPort(mode: mode, answerKeys: ((try? SampleAnswerKeyExtractor(bundle: bundle))?.entries.map { ($0.skeleton.text, $0.pointers) } ?? [])
@@ -359,7 +366,7 @@ final class AppModel {
         case .failed(let reason): t("outbound.status.failed", ["reason": reason])
         case .blocked(let reason): t(reason == "noAppCheck" ? "outbound.status.noAppCheck" : "outbound.status.blocked")
         case .answeredOnDevice: t("outbound.status.answeredOnDevice")
-        case .recorded: t("record.recordedCloud.status")
+        case .recorded: t(entry.recording?.onDevice == true ? "record.recorded.status" : "record.recordedCloud.status")
         }
     }
 
@@ -468,6 +475,7 @@ final class AppModel {
         incomeChange = nil
         documentEffect = nil
         readingShow = nil
+        bothWays = nil
         locale = AppLocale.preferred(from: Locale.preferredLanguages)
         tab = .check
         checkPath = []
@@ -518,6 +526,7 @@ final class AppModel {
     func useDocumentText(_ text: Raw<String>, source: DocumentSourceKind, sample: SampleDocument? = nil) {
         document.setText(text, source: source, sampleId: sample?.id, language: sample?.language)
         incomeChange = nil
+        bothWays = nil
         persistDocument()
         tab = .paystub
         paystubPath = [.documentPreview]
@@ -577,6 +586,7 @@ final class AppModel {
         guard let silhouette, let extractor = documentExtractor ?? (keepOnDevice && deviceModelAvailable ? modelExtractor : nil) else { return false }
         documentError = nil
         readingStage = nil
+        bothWays = nil
         defer { readingStage = nil }
         if !(extractor is ModelPointerExtractor) {
             do {
@@ -666,21 +676,22 @@ final class AppModel {
     private var showOutTime: Double { testModel != nil ? 3 : Self.showOut }
     private var showBackTime: Double { testModel != nil ? 4 : Self.showBack }
 
-    private func beginShow(_ route: ReadingShow.Route) {
+    private func beginShow(_ route: ReadingShow.Route, both: Bool = false) {
         guard !MotionSwitch.off else { return }
         // UI tests: the chips are drawn still (a running animation keeps the app from ever being idle for
         // the test runner, which then sees the staging only after it has gone).
-        readingShow = ReadingShow(route: route, still: testModel != nil ? 0.3 : nil)
+        readingShow = ReadingShow(route: route, still: testModel != nil ? 0.3 : nil, both: both)
     }
 
     /// The answer is in: the silhouette has been seen going out for at least `showOut`, then the placeholders
     /// come back and turn into the values on this device for `showBack`.
-    private func pointersBack(_ silhouette: SkeletonResult) async {
+    private func pointersBack(_ silhouette: SkeletonResult, of answer: DocumentSession? = nil) async {
         guard let show = readingShow else { return }
         let shown = Date().timeIntervalSince(show.since)
         if shown < showOutTime { try? await Task.sleep(for: .seconds(showOutTime - shown)) }
         guard readingShow != nil else { return }
-        readingShow = ReadingShow(route: show.route, phase: .back, pairs: ReadingShow.pairs(document, silhouette: silhouette), still: show.still)
+        readingShow = ReadingShow(route: show.route, phase: .back, pairs: ReadingShow.pairs(answer ?? document, silhouette: silhouette),
+                                  still: show.still, both: show.both)
         try? await Task.sleep(for: .seconds(showBackTime))
     }
 
@@ -708,7 +719,8 @@ final class AppModel {
     /// with yes when it was not already (contract v1.40).
     func useIncome(_ annualization: ValidationResult.Annualization) {
         let amount = annualization.annualIncome
-        let before = Dictionary(uniqueKeysWithValues: results.map { ($0.programId, $0.verdict) })
+        let beforeResults = results
+        let before = Dictionary(uniqueKeysWithValues: beforeResults.map { ($0.programId, $0.verdict) })
         var filled = ["annualIncome"]
         if session.step(Self.earnedIncomeStep) != nil, session.displayAnswer(for: Self.earnedIncomeStep) != .value(.choice("yes")) {
             answer(Self.earnedIncomeStep, .choice("yes"))
@@ -722,7 +734,9 @@ final class AppModel {
         incomeChange = changed
         // Read from the document (not typed): the results say how it was read and what it changed.
         documentEffect = document.extraction.map { e in
-            DocumentEffect(source: e.source, amount: amount, annualization: annualization, filled: filled, changed: changed)
+            DocumentEffect(source: e.source, amount: amount, annualization: annualization, filled: filled, changed: changed,
+                           without: beforeResults, with: results, programPeriods: Dictionary(bundle.packInfo.programs.map { ($0.id, $0.period) },
+                                                                                         uniquingKeysWith: { a, _ in a }))
         }
         showResults()
     }
@@ -762,6 +776,7 @@ final class AppModel {
     func useRecordedCloud(review: Bool = true) async -> Bool {
         guard let silhouette, let recording = recordedCloudReading else { return false }
         documentError = nil
+        bothWays = nil
         // Shown as a cloud reading, labelled as a recording: nothing is sent now.
         beginShow(.recordedCloud)
         document.apply(recording.result, silhouette: silhouette, schema: bundle.paystubSchema, recordedDate: recording.date)
@@ -774,6 +789,69 @@ final class AppModel {
         await pointersBack(silhouette)
         if review { await arriveAtReview() }
         return true
+    }
+
+    // MARK: Recorded on-device reading and both ways
+
+    /// The iPhone a recording was made on ("iPhone 17 Pro").
+    func machineName(_ recording: RecordedDeviceReading) -> String {
+        let names = ["iPhone18,1": "iPhone 17 Pro", "iPhone18,2": "iPhone 17 Pro Max", "iPhone17,1": "iPhone 16 Pro", "iPhone17,2": "iPhone 16 Pro Max"]
+        return recording.deviceId.map { names[$0] ?? $0 } ?? "iPhone"
+    }
+
+    /// routing.json `recordedSample` (contract v1.44, the judges' path without a model here): the on-device
+    /// model's own recorded answer to this silhouette, made on an iPhone, replayed under the reading rules; the
+    /// values are put back on this device and nothing is sent. The record lists it as a recording.
+    @discardableResult
+    func useRecordedDevice(both: Bool = false) async -> Bool {
+        guard let silhouette, let found = await RecordedDeviceReading.matching(
+            deviceRecordings, silhouette: silhouette, language: document.language, key: sampleKey,
+            schema: bundle.paystubSchema, jurisdiction: bundle.packInfo.jurisdiction) else { return false }
+        documentError = nil
+        bothWays = nil
+        let machine = machineName(found.recording)
+        beginShow(.recordedDevice(machine: machine, date: found.recording.day), both: both)
+        document.apply(found.result, silhouette: silhouette, schema: bundle.paystubSchema, recordedDate: found.recording.date)
+        OutboundLog.shared.record(OutboundEntry(
+            channel: .other, destination: "this device", fields: ["document-silhouette"], status: .recorded,
+            model: found.recording.onDeviceModel,
+            recording: .init(date: found.recording.date, endpoint: "", body: "", answer: found.result.pointers.prettyText,
+                             model: found.recording.onDeviceModel ?? "", machine: machine),
+            silhouette: silhouette.skeleton.cloudText))
+        persistDocument()
+        await pointersBack(silhouette)
+        return true
+    }
+
+    /// The second half of the judges' path (contract v1.44): the recorded cloud reading of the same silhouette,
+    /// shown going to the cloud and coming back, compared with the device's answer value by value. The values
+    /// used stay the device's. Nothing is sent now. Returns whether there was a cloud recording to show.
+    @discardableResult
+    func playRecordedCloudHalf() async -> Bool {
+        guard let silhouette, let recording = recordedCloudReading, let deviceAnswer = document.pointers,
+              let source = document.extraction?.source, source == .onDevice || source == .recordedDevice else { return false }
+        var cloud = document
+        cloud.apply(recording.result, silhouette: silhouette, schema: bundle.paystubSchema, recordedDate: recording.date)
+        beginShow(.recordedCloud, both: true)
+        OutboundLog.shared.record(OutboundEntry(
+            channel: .aiCloud, destination: TaskRunner.cloudDestination, fields: ["document-silhouette"], status: .recorded,
+            model: recording.model,
+            recording: .init(date: recording.date, endpoint: recording.endpoint, body: recording.requestBody, answer: recording.answer,
+                             model: recording.model),
+            silhouette: silhouette.skeleton.cloudText))
+        let deviceRecording = deviceRecordings.first { $0.date == document.recordedDate }
+        bothWays = BothWays(deviceLive: source == .onDevice, machine: deviceRecording.map(machineName),
+                            deviceDate: source == .recordedDevice ? document.recordedDate : nil,
+                            cloudModel: recording.model, cloudDate: recording.date,
+                            comparison: BothWaysComparison(device: document, cloud: cloud), devicePointers: deviceAnswer.jsonText)
+        await pointersBack(silhouette, of: cloud)
+        return true
+    }
+
+    /// The comparison while the review still holds the device's answer it was made with.
+    var currentBothWays: BothWays? {
+        guard let both = bothWays, document.pointers?.jsonText == both.devicePointers else { return nil }
+        return both
     }
 
     /// An ISO date-time as a medium date in the UI language ("Nov 19, 2026").

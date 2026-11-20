@@ -232,7 +232,8 @@ struct RoutingReasonTests {
         }
         if let r = routing["onDeviceFailure"]?["reason"]?.stringValue { reasons.insert(r) }
         if let r = routing["offlineSample"]?["reason"]?.stringValue { reasons.insert(r) }
-        // recordedSample (recorded-on-device) is for the web: its recordings are Chrome runs.
+        // recordedSample (recorded-on-device): on iOS the judges' path replays an iPhone run (contract v1.44).
+        if let r = routing["recordedSample"]?["reason"]?.stringValue { reasons.insert(r) }
         if let r = routing["recordedCloud"]?["reason"]?.stringValue { reasons.insert(r) }
         #expect(reasons == Set(RoutingReason.allCases.map(\.rawValue)))
         let copy = try Repo.bundle().copy

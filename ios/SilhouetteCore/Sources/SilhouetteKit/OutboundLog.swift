@@ -39,14 +39,21 @@ public struct OutboundEntry: Sendable, Identifiable {
         public let body: String
         public let answer: String
         public let model: String
+        /// A recording made by the model on a device (`recordedSample`): the device it was made on
+        /// ("iPhone 17 Pro"); nil for a cloud recording.
+        public let machine: String?
 
-        public init(date: String, endpoint: String, body: String, answer: String, model: String) {
+        public init(date: String, endpoint: String, body: String, answer: String, model: String, machine: String? = nil) {
             self.date = date
             self.endpoint = endpoint
             self.body = body
             self.answer = answer
             self.model = model
+            self.machine = machine
         }
+
+        /// A recording of the on-device model's answer (nothing went to the cloud).
+        public var onDevice: Bool { machine != nil }
     }
 
     /// Whether the request left the device (attempted, sent or failed); blocked and answered entries did not.
@@ -71,10 +78,13 @@ public struct OutboundEntry: Sendable, Identifiable {
     public let model: String?
     /// A recorded request used now without sending anything: its exact request and answer.
     public let recording: RecordedRequest?
+    /// For a document reading: the silhouette the request carried (placeholders only), for "What left".
+    public let silhouette: CloudText?
 
     public init(channel: Channel, at: Date = Date(), destination: String, fields: [String], payload: CloudText? = nil,
-                status: Status = .sent(200), model: String? = nil, recording: RecordedRequest? = nil) {
+                status: Status = .sent(200), model: String? = nil, recording: RecordedRequest? = nil, silhouette: CloudText? = nil) {
         self.id = UUID()
+        self.silhouette = silhouette
         self.recording = recording
         self.status = status
         self.model = model

@@ -181,7 +181,7 @@ public final class TaskRunner: Sendable {
         let first = state.takeFirstCloudRequest()
         let entry = OutboundEntry(channel: .aiCloud, destination: Self.cloudDestination,
                                   fields: request.fields + (first ? firstRequestFields : []) + ["model-request"],
-                                  payload: request.rendering, status: .attempted, model: request.model)
+                                  payload: request.rendering, status: .attempted, model: request.model, silhouette: request.silhouette)
         log.record(entry)
         defer { Task { await afterCloudRequest() } }
         do {

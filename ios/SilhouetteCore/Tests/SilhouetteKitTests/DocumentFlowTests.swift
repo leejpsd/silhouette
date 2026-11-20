@@ -93,6 +93,48 @@ struct DocumentFlowTests {
         #expect(JSON.object(JSONObject([("a", .array([.number(1)]))])).prettyText == "{\n  \"a\": [\n    1\n  ]\n}")
     }
 
+    @Test("the recorded on-device reading of the sample (an iPhone run in eval/on-device) replays on this silhouette and compares with the cloud's value by value")
+    func recordedDeviceReading() async throws {
+        let (b, s) = try sample("paystub-en-01")
+        let runs = RecordedDeviceReading.load(directory: Repo.ios.appendingPathComponent("eval/on-device", isDirectory: true))
+        let latest = try #require(runs.first)
+        #expect(latest.deviceId?.hasPrefix("iPhone") == true)
+        var doc = DocumentSession(language: .en)
+        doc.setText(s.text, source: .sample, sampleId: s.id, language: .en)
+        let silhouette = try #require(try doc.silhouette(bundle: b))
+        let key = try SampleAnswerKeyExtractor(bundle: b)
+        let matched = try #require(await RecordedDeviceReading.matching(runs, silhouette: silhouette, language: .en, key: key,
+                                                                        schema: b.paystubSchema, jurisdiction: "us-ca"))
+        #expect(matched.recording.date == latest.date, "the newest run is used")
+        #expect(matched.result.source == .recordedDevice && matched.result.reason == .recordedOnDevice)
+        var device = doc
+        device.apply(matched.result, silhouette: silhouette, schema: b.paystubSchema, recordedDate: matched.recording.date)
+        #expect(device.fieldsForDisplay.first { $0.name == "grossPay" }?.value == .number(1271.88))
+        device.confirmAll()
+        #expect(try device.validation(jurisdiction: "us-ca").annualization?.annualIncome == 29233)
+        // The cloud's recorded answer to the same silhouette, compared value by value.
+        let cloudRuns = RecordedCloudReading.load(directory: Repo.ios.deletingLastPathComponent().appendingPathComponent("web/eval/results/cloud-recording", isDirectory: true))
+        let cloudReading = try #require(RecordedCloudReading.matching(cloudRuns, skeleton: silhouette.skeleton, language: .en, key: key))
+        var cloud = doc
+        cloud.apply(cloudReading.result, silhouette: silhouette, schema: b.paystubSchema)
+        let both = BothWaysComparison(device: device, cloud: cloud)
+        let gross = try #require(both.rows.first { $0.field == "grossPay" })
+        #expect(gross.same && gross.deviceRef == "N12" && gross.cloudRef == "N12")
+        for f in RecordedCloudReading.coreFields { #expect(both.rows.first { $0.field == f }?.same == true, "\(f)") }
+        // Every value the device kept is the cloud's too; what differs is only what the reading rules left out.
+        for row in both.rows where !row.same { #expect(!row.deviceAnswered && row.cloudAnswered, "\(row.field)") }
+        #expect(both.total == both.sameCount + both.differing.count)
+        print("both ways: same \(both.sameCount) of \(both.total); differ \(both.differing)")
+        // Hidden words: not the sample, no recording.
+        doc.hide("gross")
+        let changed = try #require(try doc.silhouette(bundle: b))
+        #expect(await RecordedDeviceReading.matching(runs, silhouette: changed, language: .en, key: key, schema: b.paystubSchema, jurisdiction: "us-ca") == nil)
+        // What left, counted from the silhouette text alone, is what the map holds.
+        let counted = DocumentSession.counts(cloudText: silhouette.skeleton.cloudText)
+        let mapped = DocumentSession.counts(silhouette)
+        #expect(counted.numbers == mapped.numbers && counted.dates == mapped.dates && counted.words == mapped.words)
+    }
+
     @Test("the answer key reads only an unchanged sample in its own language")
     func answerKeyIsStrict() throws {
         let (b, s) = try sample("paystub-en-01")
