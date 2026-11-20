@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { completeQuickCheck } from './helpers';
+import { completeQuickCheck, openPayload } from './helpers';
 import { chooseLanguage } from './helpers';
 import { fakeAnswerModels, fakeOnDeviceModel, noOnDeviceModel, seedRemoteConfig } from './model-fakes';
 
@@ -61,7 +61,7 @@ test.describe('the person\'s result, and the program explained in general', () =
     const bar = page.getByTestId('leaving-bar');
     await bar.getByRole('button', { name: 'Details' }).click();
     const model = bar.locator('li[data-channel="ai-cloud"]');
-    await model.getByText('Show exactly what was sent').click();
+    await openPayload(model);
     expect(await model.getByTestId('outbound-payload').textContent()).toBe(cloud.bodies[0]);
     await expect(bar).toContainText('Program facts');
     await expect(bar).not.toContainText('Profile silhouette');

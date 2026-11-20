@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { makeTextPdf } from '../scripts/text-pdf.mjs';
-import { completeQuickCheck, confirmAllValues, verdictOf } from './helpers';
+import { completeQuickCheck, confirmAllValues, verdictOf, openPayload } from './helpers';
 import { readFileSync } from 'node:fs';
 import { AI_HOST, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel, placeholderFor, recordRequests, sharedText } from './model-fakes';
 
@@ -56,7 +56,7 @@ test.describe('Document silhouette and pointer extraction', () => {
     expect(cloud.bodies[0]).not.toContain('1,271.88');
     await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
     await expectOnlyModelAndSettings(page, 1);
-    await page.getByText('Show exactly what was sent').click();
+    await openPayload(page);
     await expect(page.getByTestId('outbound-payload')).toContainText('Gross Pay');
     await expect(page.getByTestId('outbound-payload')).not.toContainText('1,271.88');
     await page.getByTestId('leaving-bar').getByRole('button', { name: 'Hide details' }).click();

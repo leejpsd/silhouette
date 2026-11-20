@@ -1,6 +1,6 @@
 // Regression tests for problems found by testing the app in a real browser.
 import { expect, test, type Page } from '@playwright/test';
-import { DEFAULT_ANSWERS, answerCurrent, completeQuickCheck, verdictOf } from './helpers';
+import { DEFAULT_ANSWERS, answerCurrent, completeQuickCheck, verdictOf, openPayload } from './helpers';
 import { chooseLanguage, openDeleteEverything } from './helpers';
 import { AI_HOST, fakeCloudModel, fakeOnDeviceModel, fixturePointers, noOnDeviceModel } from './model-fakes';
 
@@ -171,7 +171,7 @@ test.describe('regressions', () => {
     await expect(model.getByTestId('outbound-status')).toHaveText('Sent, response 200');
     await expect(bar).toContainText(`Request to ${AI_HOST}/v1beta/projects/silhouette-hybrid/models/gemini-3.5-flash-lite:generateContent`);
     await expect(bar).toContainText('Model: gemini-3.5-flash-lite');
-    await model.getByText('Show exactly what was sent').click();
+    await openPayload(model);
     const body = (await model.getByTestId('outbound-payload').textContent()) ?? '';
     for (const part of ['"systemInstruction"', '"generationConfig"', '"responseSchema"', '"required"', 'Document type: paystub']) expect(body).toContain(part);
     expect(body).not.toMatch(/AIza[0-9A-Za-z_-]{20,}/); // API key

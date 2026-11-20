@@ -145,3 +145,13 @@ export async function confirmAllValues(page: Page): Promise<void> {
   await confirmAll.click();
   await expect(confirmAll).toHaveCount(0);
 }
+
+/** Opens "Show exactly what was sent" in the record unless it is open already (the latest request opens by itself). */
+export async function openPayload(scope: import('@playwright/test').Page | import('@playwright/test').Locator): Promise<void> {
+  const button = scope.getByRole('button', { name: 'Show exactly what was sent' }).first();
+  // The record opens the latest request as it opens: wait for that before pressing, so a press never closes it.
+  const opened = await expect(button)
+    .toHaveAttribute('aria-expanded', 'true', { timeout: 1500 })
+    .then(() => true, () => false);
+  if (!opened) await button.click();
+}
