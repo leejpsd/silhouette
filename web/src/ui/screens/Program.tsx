@@ -66,6 +66,17 @@ export function ProgramScreen({ id, inPane = false }: { id: string; /** Shown be
           <p className="small">{t('detail.amount', { amount: formatMoney(locale, result.estimatedAmount) })}</p>
         </div>
       )}
+      {(result.estimatedAmount === undefined || result.estimatedAmount <= 0) && result.upToAmount !== undefined && result.upToAmount > 0 && (
+        <div className="amount-block" data-testid="up-to-block">
+          <FitText className="amount" size={44} maxLines={1} step={2} floor={LABEL_FLOOR} aria-hidden="true">
+            {t('results.upTo', { amount: formatMoney(locale, result.upToAmount) })}
+          </FitText>
+          <p className="small">
+            <span className="visually-hidden">{t('results.upTo', { amount: formatMoney(locale, result.upToAmount) })}. </span>
+            {t('results.upToNote')}
+          </p>
+        </div>
+      )}
 
 
       {result.dependsOn.length > 0 && (

@@ -25,6 +25,8 @@ export interface Program {
   readonly name: string;
   readonly criteria: readonly Criterion[];
   readonly amount?: Expression | undefined;
+  /** The most the program pays a household like this one (rulepacks/SPEC.md section 5): a ceiling, never an estimate. */
+  readonly amountUpTo?: Expression | undefined;
   readonly period?: string | undefined;
   readonly caveats?: readonly string[] | undefined;
   readonly docsRequired?: readonly string[] | undefined;
@@ -75,6 +77,8 @@ export interface ProgramVerdict {
   readonly criteria: readonly CriterionResult[];
   readonly dependsOn: readonly string[];
   readonly estimatedAmount?: number;
+  /** The program's published maximum for this household, when there is no estimate: shown as "Up to". */
+  readonly upToAmount?: number;
 }
 
 // ---------- Expression evaluator ----------
@@ -330,6 +334,13 @@ export function verdicts(pack: RulePack, bands: Bands, rawAnswers: Raw<Answers>)
       if (amount !== UNKNOWN) {
         if (!isNumber(amount)) throw new RuleError('amount must return a number');
         return { programId: program.id, verdict, criteria, dependsOn: sortedDependsOn, estimatedAmount: Math.floor(amount) };
+      }
+    }
+    if ((verdict === 'likely' || verdict === 'maybe') && program.amountUpTo !== undefined) {
+      const upTo = evaluate(program.amountUpTo, base, { unavailable });
+      if (upTo !== UNKNOWN) {
+        if (!isNumber(upTo)) throw new RuleError('amountUpTo must return a number');
+        return { programId: program.id, verdict, criteria, dependsOn: sortedDependsOn, upToAmount: Math.floor(upTo) };
       }
     }
     return { programId: program.id, verdict, criteria, dependsOn: sortedDependsOn };

@@ -400,7 +400,14 @@ function ProgramRow({ result: r, name, summary, current = false, order = 0 }: { 
       ? t('results.dependsOn', { list: r.dependsOn.map((v) => t(dynamicKey(`variable.${v}`))).join(', ') })
       : t(dynamicKey(`verdict.${r.verdict}`));
   // The rules' estimate, when there is one, joins the status on the same line.
-  const withAmount = r.estimatedAmount !== undefined && r.estimatedAmount > 0 ? `${verdict} · ${t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}` : verdict;
+  // A program whose exact amount exists only as an agency table gives its published maximum, said as "Up to".
+  const upTo = (r.estimatedAmount === undefined || r.estimatedAmount <= 0) && r.upToAmount !== undefined && r.upToAmount > 0 ? t('results.upTo', { amount: formatMoney(locale, r.upToAmount) }) : null;
+  const withAmount =
+    r.estimatedAmount !== undefined && r.estimatedAmount > 0
+      ? `${verdict} · ${t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}`
+      : upTo
+        ? `${verdict} · ${upTo}`
+        : verdict;
   const was = docChange ? t('results.docEffect.was', { before: t(dynamicKey(`verdict.short.${docChange.before}`)) }) : null;
   const status = was ? `${withAmount} · ${was}` : withAmount;
   return (
@@ -420,6 +427,11 @@ function ProgramRow({ result: r, name, summary, current = false, order = 0 }: { 
           {t(dynamicKey(`verdict.short.${r.verdict}`))}
           {/* The amount is the point of the result: wide rows show it too. */}
           {r.estimatedAmount !== undefined && r.estimatedAmount > 0 && <span className="program-amount program-money">{t('results.estimate', { amount: formatMoney(locale, r.estimatedAmount) })}</span>}
+          {upTo && (
+            <span className="program-amount program-money program-upto" data-testid="up-to">
+              {upTo}
+            </span>
+          )}
           {/* Not a decision: wide rows show only the short word, so the way on is said under it. */}
           {r.verdict === 'unlikely' && <span className="program-amount" data-testid="still-apply">{t('results.stillApply')}</span>}
           {was && (
