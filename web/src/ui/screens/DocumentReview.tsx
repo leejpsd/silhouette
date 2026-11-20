@@ -5,6 +5,7 @@
 import { bringIntoView } from '../design/motion';
 import { moneyOnly } from '../design/inputs';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { pressWhenReady, takeAutoRun } from '../judges/next';
 import { Raw } from '../../core/types';
 import { parseNumber, readTypedAmount, type PointerSchema } from '../../core/skeleton';
 import type { ReviewField, SourceSegment } from '../../core/review';
@@ -326,6 +327,25 @@ export function DocumentReviewScreen() {
   const [rows, setRows] = useState<Row[]>(initial.rows);
   const [deductions, setDeductions] = useState<DeductionRow[]>(initial.deductions);
   const [editing, setEditing] = useState<string | null>(null);
+  // "Run all three steps" (judges.runAll): the values that decide the result are confirmed, checked and
+  // used, one after another on screen, as the person would press them; anything that needs the person stops it.
+  useEffect(() => {
+    if (!takeAutoRun('use')) return;
+    let live = true;
+    const alive = () => live;
+    const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    void (async () => {
+      await pause(600);
+      await pressWhenReady('.doc-review [data-testid="confirm-values"]', 1000, alive);
+      await pause(900);
+      if (!(await pressWhenReady('[data-testid="check-values"]', 2000, alive))) return;
+      await pause(900);
+      await pressWhenReady('[data-testid="use-income"]', 3000, alive);
+    })();
+    return () => {
+      live = false;
+    };
+  }, []);
   // Changing a value: its field comes into view and takes focus, with the old value selected. When the
   // editing ends, focus goes back to the row, not nowhere.
   const wasEditing = useRef<string | null>(null);
@@ -719,6 +739,7 @@ export function DocumentReviewScreen() {
             type="button"
             className="outline-button"
             aria-describedby={pendingId}
+            data-testid="confirm-values"
             onClick={() => {
               // Nothing is confirmed unseen: only the values in view are confirmed.
               setConfirmFirst(false);
@@ -831,6 +852,7 @@ export function DocumentReviewScreen() {
             <button
               type="button"
               className="action"
+              data-testid="use-income"
               onClick={() => {
                 // Read from a paystub or a W-2 (not typed): the results say how it was read, and the basis.
                 // Read from a paystub or a W-2 (not typed): the results say how it was read, the basis, what the
@@ -878,6 +900,7 @@ export function DocumentReviewScreen() {
             ref={checkButton}
             type="button"
             className="action"
+            data-testid="check-values"
             data-ready={leadPending === 0 && !nothingTyped}
             aria-describedby={leadPending > 0 ? pendingId : undefined}
             onClick={() => {

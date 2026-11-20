@@ -134,3 +134,16 @@ test.describe('the California pack', () => {
     });
   }
 });
+
+test('one press from the judges\' page: the results, with CalEITC up to its published maximum and the note that it is a ceiling', async ({ page, context }) => {
+  await context.addInitScript(() => {
+    delete (globalThis as { LanguageModel?: unknown }).LanguageModel;
+  });
+  await page.goto('/#/judges');
+  await page.getByTestId('judges-run-all').getByRole('button', { name: 'Run all three steps' }).click();
+  await expect(page).toHaveURL(/#\/results/, { timeout: 20_000 });
+  await expect(page.getByTestId('program-caleitc')).toContainText('Up to $2,016');
+  await page.goto('/#/program/caleitc');
+  await expect(page.getByTestId('up-to-block')).toContainText('Up to $2,016');
+  await expect(page.getByTestId('up-to-block')).toContainText('the agency');
+});

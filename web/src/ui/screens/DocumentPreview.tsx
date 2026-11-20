@@ -30,6 +30,7 @@ import { useOnline } from '../design/online';
 import { ActionLabel, Paper, Spinner } from '../design/parts';
 import { Loading } from '../answers/parts';
 import { ReadingShow, showPairs, useReadingShow, type ShowRoute } from '../doc/ReadingShow';
+import { setAutoRun, takeAutoRun } from '../judges/next';
 
 const PLACEHOLDER = /(⟦[DNW][0-9]+⟧)/;
 
@@ -155,6 +156,13 @@ export function DocumentPreviewScreen() {
     setFreshFor(doc.skeleton);
     setQuiet(false);
   }
+
+  // "Run all three steps" (judges.runAll): once it is known whether this device has the model, the sample
+  // is read on this device or from a recording; never sent without Send.
+  const autoRead = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    autoRead.current?.();
+  }, [deviceStatus, recorded]);
 
   if (!doc.skeleton || !doc.map) {
     return (
@@ -344,6 +352,17 @@ export function DocumentPreviewScreen() {
 
   // No model here: this paystub as the on-device model read it (a recording). On a wide screen it stands
   // under the documents; on a phone above the document, where the dock does not cover it.
+  // "Run all three steps" (judges.runAll): the sample is read as the person would read it (set below).
+  autoRead.current = () => {
+    if (deviceStatus === null || sending) return;
+    if (deviceStatus !== 'available' && !recorded && !recordedCloud) return;
+    if (!takeAutoRun('read')) return;
+    setAutoRun('use');
+    if (onDeviceFirst) void keepOnDevice();
+    else if (recordedCloud) void useRecordedCloud();
+    else if (recorded) void useRecorded();
+  };
+
   const recordedChoice =
     !onDeviceFirst && deviceStatus !== null && !offlineSample && recorded ? (
       <div className="recorded-choice" data-testid="use-recorded-card">

@@ -6,7 +6,7 @@ import { countedCases, isRunFile, summarize } from '../device-check/run';
 import { useCallback, useEffect, useState } from 'react';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
 import { ModelStatus } from '../doc/ModelStatus';
-import { openSamplePaystub, startJudgesPath } from '../judges/next';
+import { openSamplePaystub, setAutoRun, startJudgesPath } from '../judges/next';
 import { useApp } from '../context';
 import { ScreenHeading } from '../Heading';
 import { useDocument } from '../doc/state';
@@ -51,6 +51,12 @@ export function JudgesScreen() {
 
   const record = () => window.dispatchEvent(new Event(OPEN_RECORD_EVENT));
 
+  // One press: step 1 and step 2 run on their own, on screen, as the person would press them.
+  const runAll = () => {
+    setAutoRun('read');
+    sample();
+  };
+
   const stepsList = [
     { title: t('judges.step1.title'), body: t('judges.step1.body'), button: t('judges.step1.button'), run: sample, id: 'sample' },
     { title: t('judges.step2.title'), body: t('judges.step2.body'), button: t('judges.step2.button'), run: results, id: 'results' },
@@ -75,6 +81,15 @@ export function JudgesScreen() {
           <span>{t('reason.document-silhouette-only')}</span>
         </p>
       )}
+      <div className="judges-run-all" data-testid="judges-run-all">
+        <button type="button" className="action" onClick={runAll}>
+          <ActionLabel>{t('judges.runAll.button')}</ActionLabel>
+          <span className="action-arrow">
+            <Play />
+          </span>
+        </button>
+        <p className="small muted">{t('judges.runAll.body')}</p>
+      </div>
       <ol className="judge-steps">
         {stepsList.map((s, i) => (
           // The whole step is the control (the disc is its mark): a press on the title starts it too.
