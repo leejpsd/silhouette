@@ -12,6 +12,7 @@ Which way the silhouette goes, shown as it happens; a ceiling for the credit who
 | `judges.runAll.button`, `judges.runAll.body`: the judges' path in one press, from the sample paystub to the results | Reviewers: six presses to the payoff |
 | `tasks.appRoutes.ios`: why the iOS app chooses device or cloud itself | Reviewers asked why the SDK's hybrid mode is not used on iOS |
 | `send.destination.*` reworded (same day): the lines that go are above the button, not below; and a reading or answer that starts on this device goes on to the cloud, as the silhouette, when the device cannot answer, so the device line says so | The first wording was not true on every screen |
+| `preview.recordedCloudLink`, `preview.recorded.label`, `preview.recorded.device`, `preview.recorded.cloud` (same day): short labels for the recorded readings on a phone, one line beside "Show the exact request" (iOS) or above the document (web); `preview.useRecorded` and `preview.useRecordedCloud` stay as their full descriptions, read out by screen readers | On a phone the recorded cloud reading sat below a tall dock and was hard to find (iOS), and a card of recordings pushed the silhouette under the dock (web) |
 
 Platforms: the conformance fixtures `verdict.json` and `judges-household.json` now carry `upToAmount`. Reference tests: 30.
 
