@@ -57,7 +57,6 @@ struct DocumentPreviewScreen: View {
                         NoteText(text: model.t("preview.missing"), size: 15)
                     }
                     if model.silhouette != nil { decisionInfo.padding(.top, 4) }
-                    if model.recordedCloudReading != nil && !reading && !model.runningJudgesPath { recordedCloudChoice }
                     if model.silhouette != nil && !pinsActions {
                         VStack(spacing: 2) { decisionActions }
                     }
@@ -162,44 +161,56 @@ struct DocumentPreviewScreen: View {
     }
 
     /// routing.json `recordedCloud`, for the bundled sample only: the cloud half of the reading, seen without
-    /// sending anything (a recording of the exact request and its answer).
-    private var recordedCloudChoice: some View {
+    /// sending anything (a recording of the exact request and its answer). In the dock beside the exact
+    /// request, so the cloud path is one press from the decision without making the dock taller.
+    private var recordedCloudLink: some View {
         Button {
             guard !reading else { return }
             reading = true
             Task { await model.useRecordedCloud(); reading = false }
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(model.t("preview.useRecordedCloud")).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
-                    .underline(color: theme.underline)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "chevron.right").sfFont(13, weight: .semibold).foregroundStyle(theme.icon)
-            }
-            .frame(minHeight: 44)
-            .contentShape(Rectangle())
+            smallLink(model.t("preview.recordedCloudLink"))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(model.t("preview.useRecordedCloud"))
         .accessibilityIdentifier("preview.useRecordedCloud")
     }
 
-    /// Where the reading goes, beside the action (contract v1.43): the badge and the destination, and the
-    /// exact request one press away.
+    private var exactRequestLink: some View {
+        Button { showRequest = true } label: { smallLink(model.t("send.showJson")) }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("preview.showRequest")
+    }
+
+    private func smallLink(_ text: String) -> some View {
+        HStack(spacing: 4) {
+            Text(text).sfFont(13, weight: .semibold).underline(color: theme.underline)
+            Image(systemName: "chevron.right").sfFont(11, weight: .semibold)
+        }
+        .foregroundStyle(theme.ink)
+        .frame(minHeight: 32)
+        .contentShape(Rectangle())
+    }
+
+    /// Where the reading goes, beside the action (contract v1.43): the badge and the destination, the
+    /// exact request one press away, and, for the sample, the recorded cloud reading beside it.
     private var whereLine: some View {
         VStack(alignment: .leading, spacing: 0) {
             DestinationLine(cloud: !model.deviceModelAvailable, id: "preview.where")
-            if model.documentRequestText != nil {
-                Button { showRequest = true } label: {
-                    HStack(spacing: 4) {
-                        Text(model.t("send.showJson")).sfFont(13, weight: .semibold).underline(color: theme.underline)
-                        Image(systemName: "chevron.right").sfFont(11, weight: .semibold)
+            let request = model.documentRequestText != nil
+            let cloud = model.recordedCloudReading != nil
+            if request || cloud {
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 14) {
+                        if request { exactRequestLink }
+                        if cloud { recordedCloudLink }
+                        Spacer(minLength: 0)
                     }
-                    .foregroundStyle(theme.ink)
-                    .frame(minHeight: 32)
-                    .contentShape(Rectangle())
+                    VStack(alignment: .leading, spacing: 0) {
+                        if request { exactRequestLink }
+                        if cloud { recordedCloudLink }
+                    }
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("preview.showRequest")
             }
         }
     }
@@ -236,6 +247,7 @@ struct DocumentPreviewScreen: View {
                 Task { await model.readDocument(); reading = false }
             }
             .disabled(reading)
+            if model.recordedCloudReading != nil && !reading && !model.runningJudgesPath { recordedCloudLink }
         default:
             PrimaryButton(label: model.t("doc.manual"), id: "preview.manual") { model.typeNumbers() }
         }
