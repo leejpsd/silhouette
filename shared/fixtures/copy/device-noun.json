@@ -957,8 +957,8 @@
       "language": "en",
       "platform": "ios",
       "key": "send.destination.device",
-      "text": "Stays on this device: its own model answers",
-      "shown": "Stays on this iPhone: its own model answers"
+      "text": "Read first by the model on this device; only if it can't, the silhouette above goes to the cloud",
+      "shown": "Read first by the model on this iPhone; only if it can't, the silhouette above goes to the cloud"
     },
     {
       "language": "en",
@@ -1930,8 +1930,8 @@
       "language": "en",
       "platform": "android",
       "key": "send.destination.device",
-      "text": "Stays on this device: its own model answers",
-      "shown": "Stays on this phone: its own model answers"
+      "text": "Read first by the model on this device; only if it can't, the silhouette above goes to the cloud",
+      "shown": "Read first by the model on this phone; only if it can't, the silhouette above goes to the cloud"
     },
     {
       "language": "en",
@@ -2812,8 +2812,8 @@
       "language": "es",
       "platform": "ios",
       "key": "send.destination.device",
-      "text": "Se queda en este dispositivo: responde su propio modelo",
-      "shown": "Se queda en este iPhone: responde su propio modelo"
+      "text": "Primero lo lee el modelo de este dispositivo; solo si no puede, la silueta de arriba va a la nube",
+      "shown": "Primero lo lee el modelo de este iPhone; solo si no puede, la silueta de arriba va a la nube"
     },
     {
       "language": "es",
@@ -3694,8 +3694,8 @@
       "language": "es",
       "platform": "android",
       "key": "send.destination.device",
-      "text": "Se queda en este dispositivo: responde su propio modelo",
-      "shown": "Se queda en este teléfono: responde su propio modelo"
+      "text": "Primero lo lee el modelo de este dispositivo; solo si no puede, la silueta de arriba va a la nube",
+      "shown": "Primero lo lee el modelo de este teléfono; solo si no puede, la silueta de arriba va a la nube"
     },
     {
       "language": "es",

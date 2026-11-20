@@ -18,7 +18,7 @@ test('no model here: the preview says the silhouette goes to the cloud, and show
   await openSample(page);
   const line = page.getByTestId('preview-destination');
   await expect(line).toHaveAttribute('data-destination', 'cloud');
-  await expect(line).toContainText('Goes to Firebase AI Logic in the cloud: only the lines below');
+  await expect(line).toContainText('Goes to Firebase AI Logic in the cloud: only the silhouette above');
   await page.getByTestId('preview-exact-request').getByRole('button', { name: 'Show the exact request' }).click();
   const payload = page.getByTestId('preview-payload');
   await expect(payload).toContainText('⟦N12⟧');
@@ -33,7 +33,7 @@ test('a model here: the preview says the reading stays on this device', async ({
   await openSample(page);
   const line = page.getByTestId('preview-destination');
   await expect(line).toHaveAttribute('data-destination', 'device');
-  await expect(line).toContainText('Stays on this device: its own model answers');
+  await expect(line).toContainText("Read first by the model on this device; only if it can't, the silhouette above goes to the cloud");
 });
 
 test('the record opens on the latest request, with where it went and what it carried', async ({ page, context }) => {

@@ -11,6 +11,7 @@ Which way the silhouette goes, shown as it happens; a ceiling for the credit who
 | `send.destination.device`, `send.destination.cloud`: where a request goes, beside the button that sends it | Reviewers: the destination was above the fold, the button below it |
 | `judges.runAll.button`, `judges.runAll.body`: the judges' path in one press, from the sample paystub to the results | Reviewers: six presses to the payoff |
 | `tasks.appRoutes.ios`: why the iOS app chooses device or cloud itself | Reviewers asked why the SDK's hybrid mode is not used on iOS |
+| `send.destination.*` reworded (same day): the lines that go are above the button, not below; and a reading or answer that starts on this device goes on to the cloud, as the silhouette, when the device cannot answer, so the device line says so | The first wording was not true on every screen |
 
 Platforms: the conformance fixtures `verdict.json` and `judges-household.json` now carry `upToAmount`. Reference tests: 30.
 
