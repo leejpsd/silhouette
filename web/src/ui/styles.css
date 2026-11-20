@@ -4217,6 +4217,159 @@ main h2.judge-title {
 }
 
 .measured .device-headline .figure {
+/* "Read both ways" (review.both.*): the same silhouette read on a device and in the cloud, side by side. Ink
+   for the device's half, redact for the cloud's (the chips the model answered with), the values put back on
+   this device in mono. A field whose two answers differ is outlined in redact; nothing is hidden. */
+.both-ways {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: var(--space-sm) 0;
+  padding: 16px;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  animation: rise-in var(--duration-reveal) var(--ease-standard) both;
+}
+
+.both-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.both-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.both-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 14px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.both-head {
+  align-items: start;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.both-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.both-when {
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.both-label {
+  color: var(--note);
+  font-size: var(--type-small-size);
+}
+
+.both-cell {
+  min-width: 0;
+}
+
+.both-answer {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.both-chip {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: var(--radius-token);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.both-answer[data-way='device'] .both-chip {
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.both-answer[data-way='cloud'] .both-chip {
+  background: var(--redact);
+  color: var(--on-redact);
+}
+
+.both-arrow {
+  color: var(--note);
+}
+
+.both-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.both-row[data-differs='true'] .both-cell {
+  outline: 1.5px dashed var(--redact);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.both-compare {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  background: var(--ink);
+  color: var(--ground);
+  font-weight: 700;
+}
+
+.both-compare[data-differs]:not([data-differs='']) {
+  background: var(--redact);
+  color: var(--on-redact);
+}
+
+.both-ways p {
+  margin: 0;
+}
+
+/* A phone: the field's name above its two answers, each answer under its column's head. */
+@media (max-width: 520px) {
+  .both-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .both-label {
+    grid-column: 1 / -1;
+  }
+
+  .both-head .both-label {
+    display: none;
+  }
+
+  .both-title {
+    font-size: 26px;
+  }
+
+  .both-value {
+    font-size: 14px;
+  }
+}
+
   min-width: 5ch;
   font-size: 28px;
 }

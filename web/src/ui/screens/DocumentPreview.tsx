@@ -16,7 +16,8 @@ import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
 import { ModelStatus } from '../doc/ModelStatus';
-import { useDocument } from '../doc/state';
+import { useDocument, type Extraction } from '../doc/state';
+import type { BothReadings } from '../doc/both';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { recordedReading, type RecordedReading } from '../doc/recorded-reading';
@@ -59,7 +60,8 @@ export function DocumentPreviewScreen() {
   const [stage, setStage] = useState<PointerStage | null>(null);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
   // No model here: the bundled sample can still be read, from the on-device model's recorded answer.
-  const [recorded, setRecorded] = useState<RecordedReading | null>(null);
+  // Undefined while it is not yet known whether there is one (the one-press path waits for it).
+  const [recorded, setRecorded] = useState<RecordedReading | null | undefined>(undefined);
   const online = useOnline();
   // With a ready on-device model, the first part of the reading starts on this device while the person
   // looks at the silhouette (nothing is sent or stored; src/ai/tasks.ts prepareDeviceReading).
@@ -96,10 +98,11 @@ export function DocumentPreviewScreen() {
   // routing.json recordedSample: the bundled paystub only (the recordings are of its reading), never a W-2.
   const recordedSkeleton = doc.sourceKind === 'sample' && doc.docType === 'paystub' && doc.hiddenWords.length === 0 ? doc.skeleton : null;
   useEffect(() => {
-    if (!recordedSkeleton || deviceStatus === null || deviceStatus === 'available') {
+    if (!recordedSkeleton || deviceStatus === 'available') {
       setRecorded(null);
       return;
     }
+    if (deviceStatus === null) return;
     let live = true;
     void recordedReading(recordedSkeleton, locale).then((r) => live && setRecorded(r));
     return () => {
@@ -298,6 +301,58 @@ export function DocumentPreviewScreen() {
   };
 
   /**
+   * "Run all three steps" (contract v1.44, judges.runAll): both halves of the hybrid, back to back. The
+   * device's half first: read now on this device when it has the model (`live`), otherwise the recorded
+   * on-device reading; then the cloud's half, the recorded cloud reading of the same silhouette. Nothing is
+   * sent. The review shows the two answers side by side; the values used are the device's.
+   */
+  const readBothWays = async (live: boolean) => {
+    if (!recordedCloud || (!live && !recorded)) return;
+    readingStarted.current = true;
+    setSending(true);
+    setStage(null);
+    update({ error: null });
+    try {
+      let extraction: Extraction;
+      let device: BothReadings['device'];
+      if (live) {
+        reading.begin('device');
+        const result = await extractPointers(skeleton, doc.docType, doc.language, { deviceOnly: true, validate: checkAnswer, checkParts, onProgress: setStage });
+        const { pointers, leftOut } = leaveOutBoxes(doc.docType, tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language)), map);
+        const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
+        await reading.back(showPairs(review, doc.docType), 'device');
+        extraction = { review, inferenceSource: result.inferenceSource, reason: result.reason, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead, leftOut };
+        device = { live: true, review, notRead: [...(result.notRead ?? []), ...(result.deductionsNotRead ? ['deductions'] : [])] };
+      } else {
+        const rec = recorded as RecordedReading;
+        reading.begin('recorded-device', rec.machine);
+        const review = buildReview(POINTER_SCHEMAS[doc.docType], tidyNamePointers(POINTER_SCHEMAS[doc.docType], rec.pointers, map, introducersFor(doc.language)), skeleton, map);
+        const deductionsNotRead = !Object.hasOwn(rec.pointers, 'deductions');
+        await reading.back(showPairs(review, doc.docType));
+        recordRecordedReading({ machine: rec.machine, date: rec.date });
+        extraction = { review, inferenceSource: 'RECORDED', reason: 'recorded-on-device', deductionsNotRead, recording: { machine: rec.machine, date: rec.date, path: rec.path } };
+        device = { live: false, machine: rec.machine, date: rec.date, review, notRead: deductionsNotRead ? ['deductions'] : [] };
+      }
+      // The second half: the same silhouette, as the cloud read it when it was recorded.
+      setStage(null);
+      reading.begin('recorded-cloud');
+      const cloudReview = buildReview(POINTER_SCHEMAS[doc.docType], tidyNamePointers(POINTER_SCHEMAS[doc.docType], recordedCloud.pointers, map, introducersFor(doc.language)), skeleton, map);
+      const cloudDate = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(recordedCloud.date));
+      await reading.back(showPairs(cloudReview, doc.docType));
+      recordRecordedReading({ machine: 'Firebase AI Logic', date: cloudDate }, Date.now(), recordedCloud);
+      update({ extraction: { ...extraction, both: { device, cloud: { model: recordedCloud.model, date: cloudDate, review: cloudReview } } } });
+      navigate({ name: 'doc-review' });
+    } catch (error) {
+      // The device could not read it: the error is shown, and no comparison is made for a reading that did not happen.
+      reading.clear();
+      readingStarted.current = false;
+      update({ error: classifyError(error) });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  /**
    * "Keep everything on this device" with an on-device model: the device reads the silhouette and
    * nothing is sent. A reading that fails the checks is not repeated anywhere; the person is told the
    * device could not read it reliably and can send the silhouette or type the numbers.
@@ -356,10 +411,14 @@ export function DocumentPreviewScreen() {
   // "Run all three steps" (judges.runAll): the sample is read as the person would read it (set below).
   autoRead.current = () => {
     if (deviceStatus === null || sending) return;
+    // Without a model here, wait until it is known whether the sample has a recorded on-device reading.
+    if (deviceStatus !== 'available' && recorded === undefined && recordedSkeleton) return;
     if (deviceStatus !== 'available' && !recorded && !recordedCloud) return;
     if (!takeAutoRun('read')) return;
     setAutoRun('use');
-    if (onDeviceFirst) void keepOnDevice();
+    // Both halves of the hybrid: the device's (now, or its recording), then the cloud's recording.
+    if (onDeviceFirst) void (recordedCloud ? readBothWays(true) : keepOnDevice());
+    else if (recorded && recordedCloud) void readBothWays(false);
     else if (recordedCloud) void useRecordedCloud();
     else if (recorded) void useRecorded();
   };

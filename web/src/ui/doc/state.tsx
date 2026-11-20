@@ -7,6 +7,7 @@ import type { ReviewField } from '../../core/review';
 import type { PaystubValues, W2Values } from '../../core/validate';
 import type { CloudBecause, InferenceSource, RoutingReason, TaskError } from '../../ai/tasks';
 import type { Locale } from '../i18n';
+import type { BothReadings } from './both';
 
 export type SourceKind = 'pdf' | 'paste' | 'photo' | 'sample' | 'manual';
 
@@ -31,6 +32,8 @@ export interface Extraction {
   readonly notRead?: readonly string[] | undefined;
   /** W-2 boxes left out of the answer, from the device or the cloud (DEVICE_READING.md section 9), and why. */
   readonly leftOut?: readonly { readonly field: string; readonly problem: 'not-money' | 'not-a-year' | 'not-consistent' }[] | undefined;
+  /** "Run all three steps": the same silhouette read on a device and in the cloud (review.both.*); the values are the device's. */
+  readonly both?: BothReadings | undefined;
 }
 
 export interface DocumentState {

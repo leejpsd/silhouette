@@ -29,6 +29,7 @@ import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
 import { emptyDocument, useDocument, type FlowDocType } from '../doc/state';
+import { BOTH_ROWS, answerOf, compareReadings, type Answer, type BothReadings } from '../doc/both';
 import { BlockActions } from '../design/block';
 import { Alert, ArrowRight, Check, ChevronLeft, ChevronRight } from '../design/icons';
 import { Marker, Paper, ActionLabel } from '../design/parts';
@@ -154,6 +155,75 @@ function PointerReveal({ review, source, machine, recordedDate, docType, skeleto
             : t(source === 'IN_CLOUD' ? 'review.pointer.cloud' : 'review.pointer.device', { ref, value })}
       </figcaption>
     </figure>
+  );
+}
+
+/** One side of a pair on the "Read both ways" card: the placeholder the model answered, then the value put back here. */
+function BothAnswer({ answer, way }: { answer: Answer | null; way: 'device' | 'cloud' }) {
+  const { t } = useApp();
+  if (!answer) return <span className="both-answer not-found">{t('review.notFound')}</span>;
+  return (
+    <span className="both-answer" data-way={way}>
+      <span className="both-chip">{answer.ref}</span>
+      <span className="both-arrow" aria-hidden="true">
+        →
+      </span>
+      <span className="both-value">{answer.value}</span>
+    </span>
+  );
+}
+
+/**
+ * "Read both ways" (contract v1.44, review.both.*): the same silhouette read on a device and in the cloud,
+ * side by side, and the two answers compared value by value after the values were put back on this device.
+ * The values below are the device's answer; a difference is said, never hidden.
+ */
+function BothWays({ both, docType }: { both: BothReadings; docType: FlowDocType }) {
+  const { t } = useApp();
+  const { device, cloud } = both;
+  const label = (name: string) => t(dynamicKey(`field.${docType}.${name}`));
+  const comparison = compareReadings(device.review, cloud.review, device.notRead);
+  const rows = (BOTH_ROWS[docType] ?? []).filter((name) => answerOf(device.review, name) !== null || answerOf(cloud.review, name) !== null);
+  const differs = new Set(comparison.differs);
+  return (
+    <section className="both-ways" data-testid="both-ways" data-live={device.live} aria-labelledby="both-ways-title">
+      <h2 className="both-title" id="both-ways-title">
+        {t('review.both.title')}
+      </h2>
+      <div className="both-grid" role="table" aria-labelledby="both-ways-title">
+        <div className="both-row both-head" role="row">
+          <span className="both-label" role="columnheader" />
+          <span className="both-side" role="columnheader" data-testid="both-device">
+            <strong className="badge badge-device">{t(device.live ? 'review.both.deviceLive' : 'review.both.device')}</strong>
+            {!device.live && <span className="both-when">{t('review.both.recordedOn', { machine: device.machine ?? '', date: device.date ?? '' })}</span>}
+          </span>
+          <span className="both-side" role="columnheader" data-testid="both-cloud">
+            <strong className="badge badge-cloud">{t('review.both.cloud')}</strong>
+            <span className="both-when">{t('review.both.recordedCloud', { model: cloud.model, date: cloud.date })}</span>
+          </span>
+        </div>
+        {rows.map((name) => (
+          <div key={name} className="both-row" role="row" data-field={name} data-differs={differs.has(name)} data-testid={`both-row-${name}`}>
+            <span className="both-label" role="rowheader">
+              {label(name)}
+            </span>
+            <span className="both-cell" role="cell">
+              <BothAnswer answer={answerOf(device.review, name)} way="device" />
+            </span>
+            <span className="both-cell" role="cell">
+              <BothAnswer answer={answerOf(cloud.review, name)} way="cloud" />
+            </span>
+          </div>
+        ))}
+      </div>
+      <p className="both-compare" data-testid="both-compare" data-same={comparison.same} data-total={comparison.total} data-differs={comparison.differs.join(',')}>
+        {comparison.differs.length === 0
+          ? t('review.both.same', { count: comparison.same, total: comparison.total })
+          : t('review.both.differs', { fields: comparison.differs.map(label).join(', ') })}
+      </p>
+      <p className="small">{t('review.both.uses')}</p>
+      <p className="small muted">{t(device.live ? 'review.both.noteLive' : 'review.both.note')}</p>
+    </section>
   );
 }
 
@@ -334,8 +404,10 @@ export function DocumentReviewScreen() {
     let live = true;
     const alive = () => live;
     const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    // Read both ways: the two answers side by side are the moment to see, so they stay a little longer.
+    const both = doc.extraction?.both !== undefined;
     void (async () => {
-      await pause(600);
+      await pause(both ? 3200 : 600);
       await pressWhenReady('.doc-review [data-testid="confirm-values"]', 1000, alive);
       await pause(900);
       if (!(await pressWhenReady('[data-testid="check-values"]', 2000, alive))) return;
@@ -722,6 +794,7 @@ export function DocumentReviewScreen() {
           <InferenceBadge source={doc.extraction.inferenceSource} reason={doc.extraction.reason} ranInCloudBecause={doc.extraction.ranInCloudBecause} />
         )}
       </div>
+      {doc.extraction?.both && <BothWays both={doc.extraction.both} docType={docType} />}
       {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} machine={doc.extraction.recording?.machine} recordedDate={doc.extraction.recording?.date} docType={docType} skeleton={doc.skeleton} />}
       <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
       {manual && manualHint && nothingTyped && (
