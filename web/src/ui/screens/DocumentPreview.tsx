@@ -67,6 +67,7 @@ export function DocumentPreviewScreen() {
   // Set once a reading has started here (Send, Keep, a recording): the screen now stays up while the reading
   // is shown, and a reading ahead must not start behind it.
   const readingStarted = useRef(false);
+  const recordedLabelId = useId();
   const aheadSkeleton = doc.skeleton;
   const aheadMap = doc.map;
   const aheadLanguage = doc.language;
@@ -380,6 +381,27 @@ export function DocumentPreviewScreen() {
       </div>
     ) : null;
 
+  // On a phone the recordings are one short line above the document, so the silhouette keeps the
+  // first screen (a card there pushed it under the dock, and the dock has no room for another line).
+  const recordedRow =
+    !onDeviceFirst && deviceStatus !== null && !offlineSample && recorded ? (
+      <p className="recorded-row" data-testid="use-recorded-card">
+        <span className="recorded-row-label" id={recordedLabelId}>
+          {t(notDownloaded ? 'preview.recorded.label.notDownloaded' : 'preview.recorded.label')}
+        </span>
+        <button type="button" className="text-link recorded-link" onClick={() => void useRecorded()} disabled={sending} aria-describedby={recordedLabelId} data-testid="use-recorded">
+          {t('preview.recorded.device')}
+          <ChevronRight />
+        </button>
+        {recordedCloud && (
+          <button type="button" className="text-link recorded-link" onClick={() => void useRecordedCloud()} disabled={sending} aria-describedby={recordedLabelId} data-testid="use-recorded-cloud">
+            {t('preview.recorded.cloud')}
+            <ChevronRight />
+          </button>
+        )}
+      </p>
+    ) : null;
+
   return (
     <div className="screen doc-preview">
       <div className="preview-head">
@@ -402,7 +424,7 @@ export function DocumentPreviewScreen() {
           <strong>{t('doc.detected.w2')}</strong> <span className="muted">{t('doc.type.w2.help')}</span>
         </p>
       )}
-      {!wide && recordedChoice}
+      {!wide && recordedRow}
       <div className="preview-pair" data-wide={wide} style={{ '--doc-cols': docCols, '--hide-hint': JSON.stringify(t('preview.hideToo')) } as CSSProperties}>
       <div className="toggle" role="group" aria-label={t('preview.title')}>
         <button type="button" aria-pressed={mode === 'phone'} onClick={() => show('phone')}>

@@ -26,7 +26,7 @@ test.describe('the on-device model, said the same way everywhere', () => {
     await page.getByRole('button', { name: 'Read the sample paystub' }).click();
     await expect(page.getByTestId('skeleton-preview')).toBeVisible();
     // The recorded reading says why it is offered, truly; the download stands beside it, not folded away.
-    await expect(page.getByTestId('use-recorded')).toContainText('Chrome’s on-device model is not downloaded yet. Continue with this paystub as read on');
+    await expect(page.getByTestId('use-recorded-card')).toContainText('Chrome’s on-device model is not downloaded yet.');
     const status = page.getByTestId('model-status');
     await expect(status).toHaveCount(1);
     await expect(status).toHaveAttribute('data-status', 'downloadable');
@@ -61,7 +61,7 @@ test.describe('the on-device model, said the same way everywhere', () => {
     await noOnDeviceModel(context);
     await page.goto('/#/judges');
     await page.getByRole('button', { name: 'Read the sample paystub' }).click();
-    await expect(page.getByTestId('use-recorded')).toContainText('No on-device model in this browser.');
+    await expect(page.getByTestId('use-recorded-card')).toContainText('No on-device model in this browser.');
     await expect(page.getByTestId('model-status')).toHaveAttribute('data-status', 'unavailable');
     await expect(page.getByTestId('model-status').getByRole('button')).toHaveCount(0);
   });

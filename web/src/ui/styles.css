@@ -7176,3 +7176,32 @@ dialog.sheet[open][data-closing='true']::backdrop {
 .exact-request .payload-slip {
   margin-top: 8px;
 }
+
+/* The recordings on a phone: "Recorded: On a device › In the cloud ›", one line above the document. */
+.recorded-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 2px;
+  margin: 0;
+  font-size: var(--type-caption-size);
+}
+.recorded-row .recorded-row-label {
+  color: var(--note);
+}
+.recorded-row .recorded-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 32px;
+  font-size: inherit;
+  font-weight: 600;
+}
+.doc-preview > .recorded-row {
+  min-height: 0;
+  padding: 0;
+}
+.doc-preview > .recorded-row .recorded-link {
+  min-height: 44px;
+}
