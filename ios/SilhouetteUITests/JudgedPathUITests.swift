@@ -38,10 +38,14 @@ final class JudgedPathUITests: XCTestCase {
         app.tapButton("leaving.details")
         let headline = app.element("record.headline")
         XCTAssertTrue(headline.waitForExistence(timeout: 5))
-        XCTAssertTrue(headline.label.contains("0 sent") && headline.label.contains("1 kept"), headline.label)
-        // The latest entry opens with its request shown.
+        XCTAssertTrue(headline.label.contains("Nothing has left this iPhone") && headline.label.contains("1 recording shown, nothing sent now"),
+                      headline.label)
+        // The latest entry opens on what went to the cloud when it was recorded, as chips; the exact request is folded.
+        XCTAssertTrue(app.element("record.whatLeft").waitForExistence(timeout: 5))
+        XCTAssertTrue(app.element("record.recordedOn").firstMatch.label.hasPrefix("Recorded "))
         let body = app.element("record.recordedBody")
-        if !body.waitForExistence(timeout: 3) { app.tapButton("record.recordedRequest") }
+        XCTAssertFalse(body.exists, "the JSON is closed until asked for")
+        app.tapButton("record.technical")
         XCTAssertTrue(body.waitForExistence(timeout: 5))
         XCTAssertTrue(body.label.contains("\"generationConfig\""), "the request as it was sent")
         XCTAssertTrue(app.element("record.recordedAnswer").label.contains("\"grossPay\": \"N12\""))
@@ -138,10 +142,11 @@ final class JudgesRunAllUITests: XCTestCase {
         XCTAssertTrue(routes.label.contains("hybrid mode for Apple platforms needs iOS 27"), routes.label)
     }
 
-    /// One press on the judges' page: without a model on this iPhone, the recorded cloud reading of the sample
-    /// paystub is shown as it happens, its values are used, and the results open with what the paystub changed.
-    /// Nothing is sent.
-    func testRunAllWithoutAModelUsesTheRecordedReading() {
+    /// One press on the judges' page, without a model on this iPhone: both halves of the hybrid, one after the
+    /// other, from recordings: the on-device model's answer recorded on an iPhone, then the cloud's. The review
+    /// shows both answers side by side, value by value, and uses the device's; then the results open with what
+    /// the paystub changed. Nothing is sent.
+    func testRunAllWithoutAModelPlaysBothHalvesThenTheReviewSideBySide() {
         let app = XCUIApplication.silhouette(model: "none")
         app.launch()
         app.openJudges()
@@ -149,24 +154,103 @@ final class JudgesRunAllUITests: XCTestCase {
         XCTAssertTrue(run.waitForExistence(timeout: 5))
         XCTAssertEqual(run.label, "Run all three steps")
         run.tap()
-        XCTAssertTrue(app.element("reading.show").waitForExistence(timeout: 8), "the reading is shown")
-        XCTAssertEqual(app.element("reading.route").label, "Recorded in the cloud")
+        let route = app.element("reading.route")
+        XCTAssertTrue(route.waitForExistence(timeout: 8), "the reading is shown")
+        XCTAssertEqual(route.label, "On a device")
+        XCTAssertTrue(app.element("reading.recordedOn").label.hasPrefix("Recorded on iPhone"), app.element("reading.recordedOn").label)
+        XCTAssertTrue(app.element("reading.badge").label.contains("Recorded on a device"))
+        let cloud = NSPredicate(format: "label == %@", "In the cloud")
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: cloud, object: route)], timeout: 15), .completed,
+                       "then the cloud half")
+        XCTAssertTrue(app.element("reading.cloud").exists)
+        let both = app.element("review.both")
+        XCTAssertTrue(both.waitForExistence(timeout: 15), "the review shows both answers")
+        XCTAssertTrue(app.element("review.both.deviceColumn").label.contains("On a device"))
+        XCTAssertTrue(app.element("review.both.deviceColumn").label.contains("recorded on iPhone"))
+        XCTAssertTrue(app.element("review.both.cloudColumn").label.contains("gemini"))
+        let gross = app.element("review.both.pair.grossPay").label
+        XCTAssertTrue(gross.contains("N12 1,271.88") && gross.components(separatedBy: "1,271.88").count == 3, gross)
+        XCTAssertTrue(app.element("review.both.same").label.hasPrefix("Same value from both:"))
+        XCTAssertTrue(app.element("review.both.uses").label.contains("the iPhone's answer"))
         XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 20), "the results open with what the paystub changed")
         XCTAssertTrue(app.element("results.sample").exists)
-        XCTAssertTrue(app.element("results.incomeFrom").label.contains("from a recorded cloud reading of the silhouette"))
+        XCTAssertTrue(app.element("results.incomeFrom").label.contains("from a recorded on-device reading"))
         XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
+        // The record lists both recordings, nothing sent now.
+        app.tapButton("leaving.details")
+        let headline = app.element("record.headline")
+        XCTAssertTrue(headline.waitForExistence(timeout: 5))
+        XCTAssertTrue(headline.label.contains("2 recordings shown, nothing sent now"), headline.label)
+        XCTAssertTrue(app.staticTexts["Recorded on-device reading of the sample paystub"].exists)
+        XCTAssertTrue(app.staticTexts["Recorded cloud reading of the sample paystub"].exists)
     }
 
-    /// With the model on this iPhone, the one press reads it here; nothing leaves.
-    func testRunAllWithTheModelReadsOnThisIPhone() {
+    /// With the model on this iPhone, the one press reads it here, now; the cloud half is the recording, and the
+    /// review compares the two. Nothing leaves.
+    func testRunAllWithTheModelReadsOnThisIPhoneThenShowsTheCloudRecording() {
         let app = XCUIApplication.silhouette(model: "device")
         app.launch()
         app.openJudges()
         app.tapButton("judges.runAll")
-        XCTAssertTrue(app.element("reading.show").waitForExistence(timeout: 8))
-        XCTAssertEqual(app.element("reading.route").label, "Stays on this iPhone")
+        let route = app.element("reading.route")
+        XCTAssertTrue(route.waitForExistence(timeout: 8))
+        XCTAssertEqual(route.label, "Stays on this iPhone")
+        let cloud = NSPredicate(format: "label == %@", "In the cloud")
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: cloud, object: route)], timeout: 30), .completed)
+        XCTAssertTrue(app.element("review.both").waitForExistence(timeout: 15))
+        XCTAssertTrue(app.element("review.both.deviceColumn").label.contains("On this iPhone, now"))
+        XCTAssertTrue(app.element("review.both.note").label.hasPrefix("Read now on this iPhone"))
         XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 30))
         XCTAssertTrue(app.element("results.badge").label.contains("Rules + paystub"))
+        XCTAssertTrue(app.element("results.incomeFrom").label.contains("by the model on this iPhone"), app.element("results.incomeFrom").label)
         XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
+    }
+
+    /// What the paystub changed, as amounts: the results without and with it, from the rules, and the yearly total.
+    func testResultsShowWithoutAndWithThePaystubAndTheTotal() {
+        let app = XCUIApplication.silhouette(model: "none")
+        app.launch()
+        app.openJudges()
+        app.tapButton("judges.runAll")
+        let compare = app.element("results.docEffect.compare")
+        XCTAssertTrue(compare.waitForExistence(timeout: 40))
+        app.scrollIntoView(compare)
+        let may = app.element("results.docEffect.row.may").label
+        XCTAssertTrue(may.hasPrefix("May qualify: Without the paystub 3, With the paystub 5"), may)
+        let amount = app.element("results.docEffect.row.amount").label
+        XCTAssertTrue(amount.hasPrefix("With an amount: Without the paystub 0, With the paystub 3"), amount)
+        let total = app.element("results.docEffect.total")
+        XCTAssertTrue(total.exists)
+        XCTAssertTrue(total.label.hasPrefix("About $") && total.label.contains("a year, plus up to $2,016"), total.label)
+        // The title counts the same programs.
+        XCTAssertTrue(app.element("results.title").firstMatch.label.contains("5"), app.element("results.title").firstMatch.label)
+    }
+}
+
+/// "Leaving your iPhone" in plain words before any JSON (contract v1.44).
+final class RecordPlainWordsUITests: XCTestCase {
+    override func setUp() {
+        continueAfterFailure = false
+    }
+
+    /// A request that left: the headline counts it and says each carried only a silhouette; the request opens on
+    /// the silhouette lines that left, as chips, and what stayed, counted; the exact request is folded.
+    func testSentRequestOpensOnWhatLeftThenTheJSONForDevelopers() {
+        let app = XCUIApplication.silhouette(model: "cloud")
+        app.launch()
+        app.openSample()
+        app.tapButton("preview.send")
+        XCTAssertTrue(app.element("review.title").waitForExistence(timeout: 15))
+        app.tapButton("leaving.details")
+        let headline = app.element("record.headline")
+        XCTAssertTrue(headline.waitForExistence(timeout: 5))
+        XCTAssertTrue(headline.label.contains("left this iPhone") && headline.label.contains("Each carried only a silhouette"), headline.label)
+        let lines = app.element("record.whatLeft")
+        XCTAssertTrue(lines.waitForExistence(timeout: 5), "the latest request is open on what left")
+        XCTAssertTrue(lines.label.contains("N12") && !lines.label.contains("1,271.88"), "placeholders, never values")
+        XCTAssertTrue(app.element("record.whatStayed").label.hasPrefix("Kept on this iPhone:"), app.element("record.whatStayed").label)
+        XCTAssertFalse(app.element("record.payload").exists, "the JSON is closed until asked for")
+        app.tapButton("record.technical")
+        XCTAssertTrue(app.element("record.payload").waitForExistence(timeout: 5))
     }
 }
