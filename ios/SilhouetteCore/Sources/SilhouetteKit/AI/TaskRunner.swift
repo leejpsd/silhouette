@@ -1,9 +1,17 @@
 // Runs the requests of shared/routing.json through a ModelPort:
-// - PREFER_ON_DEVICE: the device when its model is available; if the device fails, the same
-//   cloud-safe request is repeated once with ONLY_IN_CLOUD (routing.json `onDeviceFailure`,
-//   reason `on-device-failed`). Without a device model it goes to the cloud directly.
-// - PREFER_IN_CLOUD: the cloud; the device only when the cloud cannot be reached.
-// - ONLY_IN_CLOUD: the cloud. ONLY_ON_DEVICE (Raw input): the device, never the cloud.
+// - PREFER_ON_DEVICE and PREFER_IN_CLOUD (cloud-safe input): the SDK's hybrid model chooses. Device
+//   first: Apple's on-device model; when it is not available or its request fails, the SDK hands the
+//   same request to the cloud model. Cloud first: the cloud model; when it fails, the on-device model.
+//   The badge is what the SDK reports (the reply's model version). What the app still does itself:
+//   - a device answer the SDK returns but that fails the app's checks (not a JSON object) is not a
+//     failure to the SDK: the app repeats it once with ONLY_IN_CLOUD (routing.json `onDeviceFailure`,
+//     reason `on-device-failed`);
+//   - App Check and the record at the moment the SDK hands a request to the cloud (`CloudGate`);
+//   - a paystub read on the device in parts (each part ONLY_ON_DEVICE with its own constraint, then
+//     the reading rules), and a document read in one request on a device with a model: the device
+//     needs the schema in its prompt, and a hybrid request has one prompt and one schema for both.
+// - ONLY_IN_CLOUD: the cloud model alone. ONLY_ON_DEVICE (Raw input): the on-device model alone,
+//   never the cloud.
 // Every cloud request is recorded in the outgoing record before it is made, then marked sent or
 // failed. A text that states a result is asked for once more, then refused (OUTPUT_CHECKS.md).
 
@@ -159,44 +167,89 @@ public final class TaskRunner: Sendable {
                   origin: "availability-guard", errorType: "DeviceAvailability.\(availability.rawValue)")
     }
 
+    /// The app's step around one cloud request (`CloudGate`): App Check first (no token, no request),
+    /// then the request in the record as attempted before it leaves; after it, sent or failed.
+    private func cloudGate(_ request: CloudRequest) -> CloudGate {
+        let entryId = EntryBox()
+        return CloudGate(open: { [self] in
+            if Task.isCancelled { throw TaskError(.cancelled, "cancelled by the person") }
+            // No token, no request: the App Check token is obtained first; without one the model request is
+            // recorded as stopped before it left, and not made.
+            if let destination = port.appCheckDestination {
+                let token = OutboundEntry(channel: .appCheck, destination: destination, fields: ["app-check-token-request"], status: .attempted)
+                log.record(token)
+                do {
+                    try await port.confirmAppCheck()
+                    log.update(token.id, status: .sent(200))
+                } catch {
+                    log.update(token.id, status: .failed("App Check"))
+                    log.record(OutboundEntry(channel: .aiCloud, destination: Self.cloudDestination, fields: request.fields + ["model-request"],
+                                             payload: request.rendering, status: .blocked("noAppCheck"), model: request.model))
+                    throw TaskError(.appCheck, "no App Check token: \(String(describing: error).prefix(200))", origin: "app-check-guard",
+                                    errorType: String(reflecting: type(of: error)))
+                }
+                if Task.isCancelled { throw TaskError(.cancelled, "cancelled by the person") }
+            }
+            let first = state.takeFirstCloudRequest()
+            let entry = OutboundEntry(channel: .aiCloud, destination: Self.cloudDestination,
+                                      fields: request.fields + (first ? firstRequestFields : []) + ["model-request"],
+                                      payload: request.rendering, status: .attempted, model: request.model, silhouette: request.silhouette)
+            log.record(entry)
+            entryId.set(entry.id)
+        }, close: { [self] error in
+            guard let id = entryId.value else { return }
+            log.update(id, status: error.map { .failed($0.status.map { "HTTP \($0)" } ?? $0.kind.rawValue) } ?? .sent(200))
+            Task { await afterCloudRequest() }
+        })
+    }
+
+    /// ONLY_IN_CLOUD: the cloud model alone.
     private func inCloud(_ request: CloudRequest) async throws(TaskError) -> ModelReply {
         try checkCancelled()
-        // No token, no request: the App Check token is obtained first; without one the model request is
-        // recorded as stopped before it left, and not made.
-        if let destination = port.appCheckDestination {
-            let token = OutboundEntry(channel: .appCheck, destination: destination, fields: ["app-check-token-request"], status: .attempted)
-            log.record(token)
-            do {
-                try await port.confirmAppCheck()
-                log.update(token.id, status: .sent(200))
-            } catch {
-                log.update(token.id, status: .failed("App Check"))
-                log.record(OutboundEntry(channel: .aiCloud, destination: Self.cloudDestination, fields: request.fields + ["model-request"],
-                                         payload: request.rendering, status: .blocked("noAppCheck"), model: request.model))
-                throw TaskError(.appCheck, "no App Check token: \(String(describing: error).prefix(200))", origin: "app-check-guard",
-                                errorType: String(reflecting: type(of: error)))
-            }
-            try checkCancelled()
-        }
-        let first = state.takeFirstCloudRequest()
-        let entry = OutboundEntry(channel: .aiCloud, destination: Self.cloudDestination,
-                                  fields: request.fields + (first ? firstRequestFields : []) + ["model-request"],
-                                  payload: request.rendering, status: .attempted, model: request.model, silhouette: request.silhouette)
-        log.record(entry)
-        defer { Task { await afterCloudRequest() } }
+        let gate = cloudGate(request)
+        do { try await gate.open() } catch { throw Self.taskError(error) }
         do {
             let reply = try await port.generateInCloud(request)
-            log.update(entry.id, status: .sent(200))
+            gate.close(nil)
             try checkCancelled()
             return reply
         } catch let e as TaskError {
-            log.update(entry.id, status: .failed(e.status.map { "HTTP \($0)" } ?? e.kind.rawValue))
+            gate.close(e)
             throw e
         } catch {
             let e = Task.isCancelled ? TaskError(.cancelled, "cancelled by the person") : TaskError(.unknown, String(describing: type(of: error)))
-            log.update(entry.id, status: .failed(e.kind.rawValue))
+            gate.close(e)
             throw e
         }
+    }
+
+    private static func taskError(_ error: Error) -> TaskError {
+        if let e = error as? TaskError { return e }
+        if error is CancellationError || Task.isCancelled { return TaskError(.cancelled, "cancelled by the person") }
+        return TaskError(.unknown, String(describing: type(of: error)))
+    }
+
+    /// Where a hybrid reply was written, as the SDK reports it: the on-device model's version, or the
+    /// cloud model's name (firebase-ios-sdk 12.19.3: LanguageModelSession+ModelSession.swift sets
+    /// `apple-foundation-models-system-language-model`; a Gemini reply carries the backend's `modelVersion`).
+    static func source(of reply: ModelReply) -> InferenceSource {
+        reply.modelVersion == onDeviceModelVersion ? .onDevice : .inCloud
+    }
+
+    /// A cloud-safe request through the SDK's hybrid model. The SDK chooses; the app records what it chose.
+    private func hybrid(_ request: CloudRequest, order: HybridOrder) async throws(TaskError) -> (ModelReply, InferenceSource) {
+        try checkCancelled()
+        let gate = cloudGate(request)
+        let reply: ModelReply
+        do {
+            reply = try await port.generateHybrid(request, order: order, gate: gate)
+        } catch {
+            throw gate.cloudError ?? Self.taskError(error)
+        }
+        try checkCancelled()
+        let source = Self.source(of: reply)
+        if source == .onDevice { recordKept(Self.keptKind(request.taskId)) }
+        return (reply, source)
     }
 
     // MARK: Routing
@@ -205,32 +258,48 @@ public final class TaskRunner: Sendable {
         -> (ModelReply, InferenceSource, RoutingReason, Bool) {
         switch request.mode {
         case .preferOnDevice:
-            let call = request.deviceCall
-            guard port.deviceAvailability() == .available else {
-                return (try await inCloud(request), .inCloud, request.reason, true)
+            // Whether this device has a model decides the reason shown when the SDK used the cloud: no
+            // model here (the task's own reason), or the device failed (`on-device-failed`). The SDK asks
+            // the same system model for its availability before it starts a device session.
+            let deviceAvailable = port.deviceAvailability() == .available
+            let (reply, source) = try await hybrid(request, order: .deviceFirst)
+            if source == .onDevice {
+                if accept(reply) { return (reply, .onDevice, request.reason, false) }
+                // The device answered but the answer fails the app's checks. The SDK returned it as an
+                // answer, so the retry of routing.json `onDeviceFailure` is the app's: once, ONLY_IN_CLOUD.
+                return (try await inCloud(request), .inCloud, .onDeviceFailed, false)
             }
-            if !Planner.exceedsDeviceLimit(call) {
-                do {
-                    let reply = try await onDevice(call, kept: Self.keptKind(request.taskId))
-                    if accept(reply) { return (reply, .onDevice, request.reason, false) }
-                } catch {
-                    if error.kind == .cancelled { throw error }
-                }
-            }
-            // The device could not answer: the same cloud-safe request, once, in the cloud.
-            return (try await inCloud(request), .inCloud, .onDeviceFailed, false)
+            return (reply, .inCloud, deviceAvailable ? .onDeviceFailed : request.reason, !deviceAvailable)
         case .preferInCloud:
-            do {
-                return (try await inCloud(request), .inCloud, request.reason, false)
-            } catch {
-                guard error.kind == .network, port.deviceAvailability() == .available else { throw error }
-                return (try await onDevice(request.deviceCall, kept: Self.keptKind(request.taskId)), .onDevice, request.reason, false)
-            }
+            // The SDK falls back to the device when the cloud request fails for any reason (no App Check
+            // token, an HTTP error, the network), not only offline; the input is public, so that is safe.
+            let (reply, source) = try await hybrid(request, order: .cloudFirst)
+            return (reply, source, request.reason, false)
         case .onlyInCloud:
             return (try await inCloud(request), .inCloud, request.reason, false)
         case .onlyOnDevice:
             return (try await onDevice(request.deviceCall, kept: Self.keptKind(request.taskId)), .onDevice, request.reason, false)
         }
+    }
+
+    /// A document read in one request on a device that has a model: the app's own device-first step.
+    /// The on-device call carries the schema in its prompt (the device has no parameter for the cloud's
+    /// `responseSchema`), so the device and the cloud get different prompts, which a hybrid request
+    /// cannot do (one prompt and one schema for both; given a schema, the SDK replaces the cloud's
+    /// `responseSchema` with its own conversion of it: GeminiModelSession.swift `buildConfig`).
+    private func deviceThenCloud(_ request: CloudRequest, accept: (ModelReply) -> Bool) async throws(TaskError)
+        -> (ModelReply, InferenceSource, RoutingReason) {
+        let call = request.deviceCall
+        if !Planner.exceedsDeviceLimit(call) {
+            do {
+                let reply = try await onDevice(call, kept: Self.keptKind(request.taskId))
+                if accept(reply) { return (reply, .onDevice, request.reason) }
+            } catch {
+                if error.kind == .cancelled { throw error }
+            }
+        }
+        // The device could not answer: the same cloud-safe request, once, in the cloud.
+        return (try await inCloud(request), .inCloud, .onDeviceFailed)
     }
 
     private func blocked(_ text: String, _ scope: OutputCheck.Scope?, _ locale: AppLocale, verdict: String? = nil) -> Bool {
@@ -287,8 +356,14 @@ public final class TaskRunner: Sendable {
     ///   answer checked (DEVICE_READING.md). A core that does not hold up is a failed on-device attempt:
     ///   repeated once in the cloud (reason `on-device-failed`), or, when the person chose to keep
     ///   everything on the device, nothing is sent and `DeviceReadingFailed` is thrown.
-    /// - Otherwise one request, device first (a reply that is not a JSON object is a device failure).
-    /// - `keepOnDevice`: the cloud is never used.
+    ///   This is the app's own step, not the SDK's hybrid model: each part is ONLY_ON_DEVICE with its own
+    ///   prompt and constraint, and whether the reading holds up is decided by the reading rules, which
+    ///   the SDK cannot see (to the SDK every part that returns is an answer).
+    /// - On a device with a model, otherwise: one request, device first (a reply that is not a JSON object
+    ///   is a device failure), also the app's own step (`deviceThenCloud`).
+    /// - Without a model on this device: one request through the SDK's hybrid model, which hands it to the
+    ///   cloud model; the source is what the SDK reports.
+    /// - `keepOnDevice`: the cloud is never used (the on-device model alone).
     public func extractPointers(_ request: CloudRequest, inParts: ReadingInParts? = nil, keepOnDevice: Bool = false,
                                 progress: @Sendable (ReadingStage) -> Void = { _ in }) async throws -> PointerOutcome {
         let available = port.deviceAvailability() == .available
@@ -326,8 +401,16 @@ public final class TaskRunner: Sendable {
             recordKept("document")
             return PointerOutcome(pointers: pointers, source: .onDevice, reason: request.reason)
         }
-        if available { progress(.deviceReading) }
-        let (reply, source, reason, _) = try await route(request, accept: { Self.parsePointers($0.text) != nil })
+        let isJSON: (ModelReply) -> Bool = { Self.parsePointers($0.text) != nil }
+        let reply: ModelReply, source: InferenceSource, reason: RoutingReason
+        if available {
+            progress(.deviceReading)
+            (reply, source, reason) = try await deviceThenCloud(request, accept: isJSON)
+        } else {
+            // No model on this device: the SDK's hybrid model finds the system model unavailable and hands
+            // the silhouette to the cloud model.
+            (reply, source, reason, _) = try await route(request, accept: isJSON)
+        }
         guard let pointers = Self.parsePointers(reply.text) else { throw TaskError(.badOutput, "the reply is not a JSON object") }
         return PointerOutcome(pointers: pointers, source: source, reason: reason)
     }
@@ -357,6 +440,14 @@ public final class TaskRunner: Sendable {
             }
         }
     }
+}
+
+/// The record entry of one cloud request, set when the request is recorded.
+final class EntryBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var id: UUID?
+    func set(_ value: UUID) { lock.withLock { id = value } }
+    var value: UUID? { lock.withLock { id } }
 }
 
 /// Tracks whether the first cloud request of this run has been made.

@@ -31,7 +31,8 @@
     "deviceCheck.recordingBaseline": "Baseline recording, {date}",
     "deviceCheck.baselineNote": "The first run, kept as the baseline. It was made with an earlier version of the app; the latest recording, listed first, shows the app as it is now.",
     "judges.recordedFigures": "Recorded on an {device}, {date}",
-    "answer.notePersonal": "Written on this iPhone from your answers. Nothing was sent."
+    "answer.notePersonal": "Written on this iPhone from your answers. Nothing was sent.",
+    "tasks.sdkRoutes": "Who picks device or cloud: for tasks whose input is already safe to send, Firebase AI Logic's hybrid model tries Apple's on-device model first and uses the cloud model only when the iPhone cannot answer. Each answer says which one wrote it. The app adds two steps of its own: nothing goes to the cloud without an App Check token, and a paystub read on this iPhone is checked here, then sent to the cloud once only if the reading does not hold up."
   },
   "es": {
     "deviceCheck.saved": "Guardado en este iPhone: Archivos, En mi iPhone, Silhouette, {file}.",
@@ -64,7 +65,8 @@
     "deviceCheck.recordingBaseline": "Grabación de referencia, {date}",
     "deviceCheck.baselineNote": "La primera ejecución, conservada como referencia. Se hizo con una versión anterior de la app; la grabación más reciente, la primera de la lista, muestra la app tal como es ahora.",
     "judges.recordedFigures": "Grabado en un {device}, {date}",
-    "answer.notePersonal": "Escrito en este iPhone a partir de tus respuestas. No se envió nada."
+    "answer.notePersonal": "Escrito en este iPhone a partir de tus respuestas. No se envió nada.",
+    "tasks.sdkRoutes": "Quién elige dispositivo o nube: en las tareas cuya entrada ya se puede enviar, el modelo híbrido de Firebase AI Logic prueba primero el modelo de Apple en el dispositivo y usa el modelo en la nube solo cuando el dispositivo no puede responder. Cada respuesta dice cuál la escribió. La app añade dos pasos propios: nada va a la nube sin un token de App Check, y un recibo de sueldo leído en este iPhone se comprueba aquí y se envía a la nube una sola vez solo si la lectura no se sostiene."
   },
   "ko": {}
 }

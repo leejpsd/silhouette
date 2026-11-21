@@ -62,11 +62,23 @@ public struct DeviceCall: Sendable {
     }
 }
 
+/// Which model of a hybrid request the SDK tries first (routing.json PREFER_ON_DEVICE, PREFER_IN_CLOUD).
+public enum HybridOrder: String, Sendable {
+    case deviceFirst
+    case cloudFirst
+}
+
 public protocol ModelPort: Sendable {
     /// Whether the on-device model can run now (Apple Intelligence on, model downloaded).
     func deviceAvailability() -> DeviceAvailability
+    /// The on-device model alone: ONLY_ON_DEVICE requests (Raw input, the parts of a reading).
     func generateOnDevice(_ call: DeviceCall) async throws -> ModelReply
+    /// The cloud model alone: ONLY_IN_CLOUD requests and the explicit retry of `onDeviceFailure`.
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply
+    /// The SDK's hybrid model for a cloud-safe request: the SDK chooses device or cloud and the reply's
+    /// `modelVersion` says which one wrote it. The moment the SDK hands the request to the cloud model,
+    /// the port runs `gate.open()` first (App Check, the record) and `gate.close` after it.
+    func generateHybrid(_ request: CloudRequest, order: HybridOrder, gate: CloudGate) async throws -> ModelReply
     /// Where the App Check token for a cloud request comes from, or nil when the port needs none.
     var appCheckDestination: String? { get }
     /// Obtains the App Check token a cloud request needs, right before it. Throws when there is none:
@@ -77,6 +89,83 @@ public protocol ModelPort: Sendable {
 public extension ModelPort {
     var appCheckDestination: String? { nil }
     func confirmAppCheck() async throws {}
+
+    /// For ports without the SDK (tests, the scripted UI-test model): what the SDK's hybrid session does,
+    /// step by step (firebase-ios-sdk 12.19.3, FirebaseAI/Sources/Types/Internal/HybridModelSession.swift,
+    /// `_respond`): the primary model; when its session cannot start (the on-device model is not available)
+    /// or its request throws anything but a cancellation, the secondary model with the same prompt. The
+    /// device gets the cloud request's own text: a hybrid request has one prompt for both models.
+    func generateHybrid(_ request: CloudRequest, order: HybridOrder, gate: CloudGate) async throws -> ModelReply {
+        try await HybridEmulation.respond(self, request, order: order, gate: gate)
+    }
+}
+
+/// The SDK's hybrid session, step by step, over a port's two single-model calls (see `generateHybrid`).
+public enum HybridEmulation {
+    public static func respond(_ port: some ModelPort, _ request: CloudRequest, order: HybridOrder, gate: CloudGate) async throws -> ModelReply {
+        let device: @Sendable () async throws -> ModelReply = {
+            let availability = port.deviceAvailability()
+            guard availability == .available else { throw TaskRunner.unavailable(availability) }
+            return try await port.generateOnDevice(request.hybridDeviceCall)
+        }
+        let cloud: @Sendable () async throws -> ModelReply = {
+            try await gate.open()
+            do {
+                let reply = try await port.generateInCloud(request)
+                gate.close(nil)
+                return reply
+            } catch {
+                gate.close(error as? TaskError ?? TaskError(.unknown, String(describing: type(of: error))))
+                throw error
+            }
+        }
+        let (primary, secondary) = order == .deviceFirst ? (device, cloud) : (cloud, device)
+        do {
+            return try await primary()
+        } catch {
+            if Task.isCancelled || error is CancellationError || (error as? TaskError)?.kind == .cancelled { throw error }
+            do { return try await secondary() } catch { throw gate.cloudError ?? error }
+        }
+    }
+}
+
+/// The app's own step around a request the SDK's hybrid model hands to the cloud model. The SDK decides
+/// whether the cloud is used; the gate runs at that moment, inside the SDK's fallback:
+/// - `open()`: no token, no request (shared/RECORD.md section 1): a limited-use App Check token first
+///   (the SDK would otherwise send the request with a placeholder token), then the request is put in
+///   the record as attempted, before it leaves. Throws when the request must not be made.
+/// - `close(_:)`: the record says sent or failed.
+/// A request the device answers never opens the gate: no App Check, no record entry, nothing sent.
+public final class CloudGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _opened = false
+    private var _cloudError: TaskError?
+    private let openStep: @Sendable () async throws -> Void
+    private let closeStep: @Sendable (TaskError?) -> Void
+
+    public init(open: @escaping @Sendable () async throws -> Void, close: @escaping @Sendable (TaskError?) -> Void) {
+        openStep = open
+        closeStep = close
+    }
+
+    /// True once the SDK handed the request to the cloud model.
+    public var opened: Bool { lock.withLock { _opened } }
+    /// Why the cloud did not answer (no App Check token, an HTTP error, the network), when it did not.
+    public var cloudError: TaskError? { lock.withLock { _cloudError } }
+
+    public func open() async throws {
+        lock.withLock { _opened = true }
+        do { try await openStep() } catch {
+            let e = error as? TaskError ?? TaskError(.unknown, String(describing: type(of: error)))
+            lock.withLock { _cloudError = e }
+            throw e
+        }
+    }
+
+    public func close(_ error: TaskError?) {
+        if let error { lock.withLock { _cloudError = error } }
+        closeStep(error)
+    }
 }
 
 /// A failed task, by kind (shown with shared copy). Messages never contain user values.

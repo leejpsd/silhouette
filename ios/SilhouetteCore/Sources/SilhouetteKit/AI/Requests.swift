@@ -48,6 +48,13 @@ public struct CloudRequest: Sendable {
         return CloudText(composed: JSON.object(body).jsonText)
     }
 
+    /// The on-device side of a hybrid request: the cloud request's own instruction and prompt (a hybrid
+    /// request has one prompt for both models) with the on-device options.
+    public var hybridDeviceCall: DeviceCall {
+        DeviceCall(taskId: taskId, system: system.text, prompt: prompt.text, maxOutputTokens: maxOutputTokens,
+                   deterministic: taskId == "document.pointer.extract")
+    }
+
     /// The device-first attempt of this request: the same cloud-safe text, with the schema in the
     /// prompt where the on-device call has no schema parameter (shared/schemas/MODEL_SCHEMA.md).
     var deviceCall: DeviceCall {

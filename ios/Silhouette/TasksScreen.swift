@@ -27,9 +27,11 @@ struct TasksScreen: View {
                 if !tasks.isEmpty { card(group, tasks: tasks).gutter() }
             }
             NoteText(text: model.t("tasks.foot")).gutter()
-            // Why this app routes itself, and not through the SDK's hybrid mode (contract v1.43).
+            // Who picks device or cloud: the SDK's hybrid model, and the app's own steps around it. (The
+            // shared tasks.appRoutes.ios said the app routes itself because the hybrid needs iOS 27; the SDK's
+            // HybridModel runs on iOS 26, and the app now uses it.)
             Card(radius: 20) {
-                Text(model.t("tasks.appRoutes")).sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                Text(model.t("tasks.sdkRoutes")).sfFont(15).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
             }
             .accessibilityIdentifier("tasks.appRoutes")
             .gutter()

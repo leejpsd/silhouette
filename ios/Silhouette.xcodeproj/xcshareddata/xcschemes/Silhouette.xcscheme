@@ -44,6 +44,17 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "926C3E07F2177532E9D6383C"
+               BuildableName = "SilhouetteTests.xctest"
+               BlueprintName = "SilhouetteTests"
+               ReferencedContainer = "container:Silhouette.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "67BAE40195988A6D2B10AFB8"
                BuildableName = "SilhouetteUITests.xctest"
                BlueprintName = "SilhouetteUITests"

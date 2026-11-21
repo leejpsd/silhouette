@@ -123,9 +123,9 @@ final class JudgesRunAllUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    /// A long program name takes at most three lines of a smaller headline; "Where each task runs" says why the
-    /// app routes device or cloud itself.
-    func testProgramTitleIsTightAndTasksSayWhyTheAppRoutes() {
+    /// A long program name takes at most three lines of a smaller headline; "Where each task runs" says who
+    /// picks device or cloud: the SDK's hybrid model, with the app's own steps around it.
+    func testProgramTitleIsTightAndTasksSayWhoPicksDeviceOrCloud() {
         let app = XCUIApplication.silhouette(model: "none")
         app.launch()
         app.runPreparedHousehold()
@@ -139,7 +139,8 @@ final class JudgesRunAllUITests: XCTestCase {
         let routes = app.element("tasks.appRoutes")
         app.scrollIntoView(routes)
         XCTAssertTrue(routes.waitForExistence(timeout: 5))
-        XCTAssertTrue(routes.label.contains("hybrid mode for Apple platforms needs iOS 27"), routes.label)
+        XCTAssertTrue(routes.label.contains("Firebase AI Logic's hybrid model tries Apple's on-device model first"), routes.label)
+        XCTAssertFalse(routes.label.contains("iOS 27"), routes.label)
     }
 
     /// One press on the judges' page, without a model on this iPhone: both halves of the hybrid, one after the
@@ -246,7 +247,7 @@ final class RecordPlainWordsUITests: XCTestCase {
         app.tapButton("leaving.details")
         let headline = app.element("record.headline")
         XCTAssertTrue(headline.waitForExistence(timeout: 5))
-        XCTAssertTrue(headline.label.contains("left this iPhone") && headline.label.contains("Each carried only a silhouette"), headline.label)
+        XCTAssertTrue(headline.label.contains("left this iPhone") && headline.label.contains("None of them carried your names, numbers or dates."), headline.label)
         let lines = app.element("record.whatLeft")
         XCTAssertTrue(lines.waitForExistence(timeout: 5), "the latest request is open on what left")
         XCTAssertTrue(lines.label.contains("N12") && !lines.label.contains("1,271.88"), "placeholders, never values")

@@ -36,6 +36,7 @@
 		87C0553E99ED9EFFFCF2B767 /* SilhouetteKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2F491D8CC1DE10B2BC7D37F /* SilhouetteKit */; };
 		8AC059AAA0CB16E1B7EC51D9 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FD779D81845A02EAB71E24A /* Typography.swift */; };
 		8B0FFBF22C7FDE372C85DF34 /* DocumentAddScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D159AEB3712C77FA5EC0FF9A /* DocumentAddScreen.swift */; };
+		93162F5A7EBA57F0DB665C38 /* HybridModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05744F5019F0AE29825A17F /* HybridModelTests.swift */; };
 		95ACB34EB2B85FCBE75E107E /* DestinationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B741D90F87C027B5D94120C /* DestinationUITests.swift */; };
 		9C3BA8EE6E8A703215E02F33 /* DeviceCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA74ED67E2E119D2533780D /* DeviceCheck.swift */; };
 		9D0DE01691181DF374FA5574 /* JudgedPathUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4999DB6E450D34F7D649B7CE /* JudgedPathUITests.swift */; };
@@ -63,6 +64,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		B8DB03207D42FB92F4154229 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2EC9C52056273B7BD87495DA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 92EC949E10DFC6EF943229DC;
+			remoteInfo = Silhouette;
+		};
 		FEC367B2A32169B4404956E5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2EC9C52056273B7BD87495DA /* Project object */;
@@ -108,9 +116,11 @@
 		BB575C7D5E4DD15C461AEC2E /* DocumentFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentFlowUITests.swift; sourceTree = "<group>"; };
 		BC5B563947FD2B0049A34806 /* ProgramScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramScreen.swift; sourceTree = "<group>"; };
 		C54C17CED25970FF27D7A051 /* copy.local.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = copy.local.json; sourceTree = "<group>"; };
+		D05744F5019F0AE29825A17F /* HybridModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HybridModelTests.swift; sourceTree = "<group>"; };
 		D159AEB3712C77FA5EC0FF9A /* DocumentAddScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentAddScreen.swift; sourceTree = "<group>"; };
 		D1861B881CCF20F8BE5DD15A /* TasksScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksScreen.swift; sourceTree = "<group>"; };
 		D55FC50C26D76BB41C698B09 /* IBMPlexMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexMono-Medium.ttf"; sourceTree = "<group>"; };
+		D6DA15E304A4972D6ED7E63B /* SilhouetteTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SilhouetteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D780D09577350471E8FFE4BA /* Silhouette.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Silhouette.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D95B3CFED9CD69BF87453627 /* ReadBothWays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadBothWays.swift; sourceTree = "<group>"; };
 		DC630FCD20F81BB6EFB60C96 /* DocumentPreviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPreviewScreen.swift; sourceTree = "<group>"; };
@@ -177,9 +187,18 @@
 			children = (
 				7646644073E27FC00DC977B2 /* Packages */,
 				C2E777C91EF00F17CAF11FEC /* Silhouette */,
+				BA398A7FDA45F51F0C42069E /* SilhouetteTests */,
 				EA36CE068862C9E6434112EE /* SilhouetteUITests */,
 				C3D8E27F7C9366ED86C81568 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		BA398A7FDA45F51F0C42069E /* SilhouetteTests */ = {
+			isa = PBXGroup;
+			children = (
+				D05744F5019F0AE29825A17F /* HybridModelTests.swift */,
+			);
+			path = SilhouetteTests;
 			sourceTree = "<group>";
 		};
 		C2E777C91EF00F17CAF11FEC /* Silhouette */ = {
@@ -218,6 +237,7 @@
 			isa = PBXGroup;
 			children = (
 				D780D09577350471E8FFE4BA /* Silhouette.app */,
+				D6DA15E304A4972D6ED7E63B /* SilhouetteTests.xctest */,
 				3A8D2DAC45CB438526EB4FDA /* SilhouetteUITests.xctest */,
 			);
 			name = Products;
@@ -283,6 +303,24 @@
 			productReference = 3A8D2DAC45CB438526EB4FDA /* SilhouetteUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		926C3E07F2177532E9D6383C /* SilhouetteTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 32EE5BEDE4206FF92AB1BF00 /* Build configuration list for PBXNativeTarget "SilhouetteTests" */;
+			buildPhases = (
+				0637964A6490D4B0F3E077DA /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2DE3042CE78857E63DBC5DAE /* PBXTargetDependency */,
+			);
+			name = SilhouetteTests;
+			packageProductDependencies = (
+			);
+			productName = SilhouetteTests;
+			productReference = D6DA15E304A4972D6ED7E63B /* SilhouetteTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		92EC949E10DFC6EF943229DC /* Silhouette */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 942EE2002621493258B5F8D5 /* Build configuration list for PBXNativeTarget "Silhouette" */;
@@ -323,6 +361,9 @@
 						ProvisioningStyle = Automatic;
 						TestTargetID = 92EC949E10DFC6EF943229DC;
 					};
+					926C3E07F2177532E9D6383C = {
+						ProvisioningStyle = Automatic;
+					};
 					92EC949E10DFC6EF943229DC = {
 						ProvisioningStyle = Automatic;
 					};
@@ -347,6 +388,7 @@
 			projectRoot = "";
 			targets = (
 				92EC949E10DFC6EF943229DC /* Silhouette */,
+				926C3E07F2177532E9D6383C /* SilhouetteTests */,
 				67BAE40195988A6D2B10AFB8 /* SilhouetteUITests */,
 			);
 		};
@@ -411,6 +453,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0637964A6490D4B0F3E077DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				93162F5A7EBA57F0DB665C38 /* HybridModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		26E4972120D3A8985354B906 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -472,6 +522,11 @@
 			isa = PBXTargetDependency;
 			target = 92EC949E10DFC6EF943229DC /* Silhouette */;
 			targetProxy = FEC367B2A32169B4404956E5 /* PBXContainerItemProxy */;
+		};
+		2DE3042CE78857E63DBC5DAE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 92EC949E10DFC6EF943229DC /* Silhouette */;
+			targetProxy = B8DB03207D42FB92F4154229 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -646,6 +701,25 @@
 			};
 			name = Debug;
 		};
+		86D51F81B9DEA31DE6AF8E88 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.silhouette.benefits.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Silhouette.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Silhouette";
+			};
+			name = Release;
+		};
 		C683C8AB1A0C63ED44841B23 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -665,6 +739,25 @@
 				TEST_TARGET_NAME = Silhouette;
 			};
 			name = Release;
+		};
+		D7F67B4FBAE7C992B9FB19CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.silhouette.benefits.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Silhouette.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Silhouette";
+			};
+			name = Debug;
 		};
 		DA3317BF4BE3441D5EC1C247 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -697,6 +790,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		32EE5BEDE4206FF92AB1BF00 /* Build configuration list for PBXNativeTarget "SilhouetteTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D7F67B4FBAE7C992B9FB19CE /* Debug */,
+				86D51F81B9DEA31DE6AF8E88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		942EE2002621493258B5F8D5 /* Build configuration list for PBXNativeTarget "Silhouette" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

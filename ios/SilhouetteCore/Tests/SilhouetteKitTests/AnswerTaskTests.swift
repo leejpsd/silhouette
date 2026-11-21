@@ -53,6 +53,25 @@ final class FakePort: ModelPort, @unchecked Sendable {
         if appCheckToken == false { throw NoToken() }
     }
 
+    /// The hybrid requests made, by order, and what the SDK would report instead of the scripted replies.
+    private(set) var hybridOrders: [HybridOrder] = []
+    /// When set, the SDK's hybrid model is scripted: a reply and the model version it reports. A cloud
+    /// version opens the gate first, as the SDK hands the request to the cloud model.
+    var hybridScript: [(text: String, modelVersion: String)] = []
+
+    func generateHybrid(_ request: CloudRequest, order: HybridOrder, gate: CloudGate) async throws -> ModelReply {
+        let scripted: (text: String, modelVersion: String)? = lock.withLock {
+            hybridOrders.append(order)
+            return hybridScript.isEmpty ? nil : hybridScript.removeFirst()
+        }
+        guard let scripted else { return try await HybridEmulation.respond(self, request, order: order, gate: gate) }
+        if scripted.modelVersion != TaskRunner.onDeviceModelVersion {
+            try await gate.open()
+            gate.close(nil)
+        }
+        return ModelReply(text: scripted.text, modelVersion: scripted.modelVersion)
+    }
+
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply {
         let next: Result<String, TaskError> = lock.withLock {
             calls.append(.cloud(request.taskId))
@@ -224,13 +243,105 @@ struct AnswerTaskTests {
         #expect(log.entries.last?.fields.contains("installation") == false, "only the first request names them")
     }
 
-    @Test("PREFER_IN_CLOUD uses the device only when the cloud cannot be reached")
+    @Test("PREFER_IN_CLOUD: the SDK's hybrid model, cloud first; the device when the cloud does not answer")
     func cloudFirst() async throws {
         let port = FakePort(device: [.success("Offline answer.")], cloud: [.success("Cloud answer."), .failure(TaskError(.network, "offline"))])
         let r = try runner(port)
         #expect(try await r.runText(try explainRequest(long: true)).source == .inCloud)
         let offline = try await r.runText(try explainRequest(long: true))
         #expect(offline.source == .onDevice && offline.reason == .longOrUnsupportedLocale)
+        #expect(port.hybridOrders == [.cloudFirst, .cloudFirst])
+    }
+
+    @Test("PREFER_IN_CLOUD: any cloud failure falls back to the device (the SDK's rule); the record keeps the failed request")
+    func cloudFirstAnyFailure() async throws {
+        let log = OutboundLog()
+        let port = FakePort(device: [.success("Device answer.")], cloud: [.failure(TaskError(.quotaDaily, "per day", status: 429))])
+        let result = try await runner(port, log: log).runText(try explainRequest(long: true))
+        #expect(result.source == .onDevice && result.reason == .longOrUnsupportedLocale)
+        #expect(port.calls == [.cloud("explain.long"), .device("explain.long")])
+        #expect(log.entries.map(\.status) == [.failed("HTTP 429"), .answeredOnDevice])
+        // Neither answers: the person sees why the cloud did not, not that the device has no model.
+        let neither = FakePort(availability: .deviceNotEligible, cloud: [.failure(TaskError(.quotaDaily, "per day", status: 429))])
+        do {
+            _ = try await runner(neither).runText(try explainRequest(long: true))
+            Issue.record("no error")
+        } catch {
+            #expect((error as? TaskError)?.kind == .quotaDaily)
+        }
+    }
+
+    @Test("the badge is what the SDK reports: the model version of the reply decides device or cloud")
+    func badgeFollowsTheSDK() async throws {
+        let log = OutboundLog()
+        // The device has a model, but the SDK's hybrid model used the cloud (the device request failed inside the SDK).
+        let port = FakePort()
+        port.hybridScript = [(text: "Program facts.", modelVersion: "gemini-3.5-flash-lite-001")]
+        let cloud = try await runner(port, log: log).runText(try explainRequest())
+        #expect(cloud.source == .inCloud && cloud.reason == .onDeviceFailed && !cloud.noDeviceModel)
+        #expect(port.hybridOrders == [.deviceFirst])
+        #expect(log.entries.map(\.status) == [.sent(200)], "recorded when the SDK handed it to the cloud")
+        // The SDK reports the on-device model: nothing was sent, the answer is kept.
+        let device = FakePort(availability: .appleIntelligenceNotEnabled)
+        device.appCheckToken = true
+        device.hybridScript = [(text: "Program facts.", modelVersion: TaskRunner.onDeviceModelVersion)]
+        let deviceLog = OutboundLog()
+        let kept = try await runner(device, log: deviceLog).runText(try explainRequest())
+        #expect(kept.source == .onDevice && kept.reason == .shortText)
+        #expect(device.calls.isEmpty, "no App Check, no request")
+        #expect(deviceLog.entries.map(\.status) == [.answeredOnDevice] && !deviceLog.anythingLeft)
+    }
+
+    @Test("a device answer the SDK returns that fails the app's checks is still repeated once, ONLY_IN_CLOUD")
+    func deviceAnswerFailingChecksRetries() async throws {
+        let f = try Fixture()
+        let skeleton = Skeletonizer.skeletonize(Raw("Gross Pay 1,000.00"), allowlist: try f.bundle.allowlist(for: .en)).skeleton
+        let request = try Planner.pointers(skeleton, language: .en, template: f.bundle.prompts["pointer-extract.v4"]!, pointerSchema: f.bundle.paystubSchema)
+        // No model here at the app's check; the SDK's hybrid model still answered on the device (the model became
+        // ready in between) with a reply that is not a JSON object.
+        let log = OutboundLog()
+        let port = FakePort(availability: .modelNotReady, cloud: [.success(#"{"grossPay":"N1"}"#)])
+        port.hybridScript = [(text: "Gross pay is N1", modelVersion: TaskRunner.onDeviceModelVersion)]
+        let outcome = try await runner(port, log: log).extractPointers(request)
+        #expect(port.hybridOrders == [.deviceFirst])
+        #expect(port.calls == [.cloud("document.pointer.extract")], "the explicit retry")
+        #expect(outcome.source == .inCloud && outcome.reason == .onDeviceFailed)
+        #expect(log.entries.last?.status == .sent(200) && log.entries.last?.fields.contains("document-silhouette") == true)
+    }
+
+    @Test("without a model here a document goes through the SDK's hybrid model, which hands it to the cloud")
+    func documentWithoutModelThroughHybrid() async throws {
+        let f = try Fixture()
+        let skeleton = Skeletonizer.skeletonize(Raw("Gross Pay 1,000.00"), allowlist: try f.bundle.allowlist(for: .en)).skeleton
+        let request = try Planner.pointers(skeleton, language: .en, template: f.bundle.prompts["pointer-extract.v4"]!, pointerSchema: f.bundle.paystubSchema)
+        let port = FakePort(availability: .deviceNotEligible, cloud: [.success(#"{"grossPay":"N1"}"#)])
+        port.appCheckToken = true
+        let log = OutboundLog()
+        let outcome = try await runner(port, log: log).extractPointers(request)
+        #expect(port.hybridOrders == [.deviceFirst] && port.calls == [.appCheck, .cloud("document.pointer.extract")])
+        #expect(outcome.source == .inCloud && outcome.reason == .documentSilhouetteOnly)
+        #expect(port.cloudRequests.first?.prompt.text == request.prompt.text, "the cloud request is the contract's, unchanged")
+        #expect(log.entries.map(\.status) == [.sent(200), .sent(200)])
+    }
+
+    @Test("no token, no request inside the hybrid: when the SDK falls back to the cloud, App Check comes first")
+    func noTokenInsideHybrid() async throws {
+        let log = OutboundLog()
+        let port = FakePort(device: [.failure(TaskError(.onDeviceUnavailable, "guardrail"))], cloud: [.success("Program facts.")])
+        port.appCheckToken = false
+        do {
+            _ = try await runner(port, log: log).runText(try explainRequest())
+            Issue.record("no error")
+        } catch {
+            #expect((error as? TaskError)?.kind == .appCheck)
+        }
+        #expect(port.calls == [.device("explain.short"), .appCheck], "the model request was not made")
+        #expect(log.entries.last?.status == .blocked("noAppCheck"))
+        // A device that answers never starts App Check.
+        let answers = FakePort(device: [.success("Program facts.")])
+        answers.appCheckToken = true
+        _ = try await runner(answers).runText(try explainRequest())
+        #expect(answers.calls == [.device("explain.short")])
     }
 
     @Test("a reply that states a result is asked for once more, then refused")

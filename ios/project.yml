@@ -73,7 +73,25 @@ targets:
           "${SRCROOT}/scripts/copy-firebase-config.sh" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
     scheme:
       testTargets:
+        - SilhouetteTests
         - SilhouetteUITests
+  # Tests of the app's code against the Firebase SDK itself (the SDK's hybrid session and the app's
+  # step around its cloud side). No model and no network.
+  SilhouetteTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: SilhouetteTests
+    dependencies:
+      - target: Silhouette
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.silhouette.benefits.tests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Silhouette.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Silhouette"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
   SilhouetteUITests:
     type: bundle.ui-testing
     platform: iOS

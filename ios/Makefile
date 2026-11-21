@@ -5,7 +5,7 @@ DERIVED   := build/DerivedData
 SCREENSHOT_DIR ?= $(CURDIR)/build/screenshots
 DESTINATION := 'platform=iOS Simulator,name=$(SIMULATOR)'
 
-.PHONY: all test test-ios ui-test screenshots snapshots snapshots-device routing-proof project build edge-cases clean
+.PHONY: all test test-ios app-test ui-test screenshots snapshots snapshots-device routing-proof project build edge-cases clean
 
 all: test routing-proof build
 
@@ -16,6 +16,10 @@ test:
 ## SilhouetteCore and SilhouetteKit tests on the iOS simulator (the Skeletonizer uses the OS's ICU)
 test-ios:
 	cd SilhouetteCore && xcodebuild test -scheme SilhouetteCore-Package -destination $(DESTINATION) -derivedDataPath ../build/PackageDerivedData
+
+## Unit tests of the app against the Firebase SDK (its hybrid session and the app's step around the cloud side)
+app-test:
+	xcodebuild test -scheme Silhouette -destination $(DESTINATION) -derivedDataPath $(DERIVED) -only-testing:SilhouetteTests
 
 ## XCUITests for the flows and how they behave under the hand
 ui-test:

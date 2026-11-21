@@ -5,10 +5,13 @@
 // - App Check: the debug provider in debug builds (the token is printed in the Xcode console on the
 //   first run, "Firebase App Check debug token: …"; register it in the Firebase console), App Attest
 //   in release builds.
-// - Inference: the SDK's on-device model (`FirebaseAI.SystemLanguageModel`, Apple Foundation Models
-//   behind Firebase AI Logic) and the SDK's cloud Gemini model, each in its own single-turn session.
-//   The app does the device-first or cloud-first routing itself, so every cloud request is recorded
-//   before it is made (the SDK's HybridModel would fall back to the cloud inside the SDK).
+// - Inference, one single-turn session per request:
+//   - cloud-safe input that may run on either side (PREFER_ON_DEVICE, PREFER_IN_CLOUD): the SDK's
+//     `HybridModel` (Apple's on-device model and Gemini, in the task's order). The SDK chooses; the
+//     reply's `modelVersion` says which model wrote it. The cloud side is wrapped (`GatedModel`) so the
+//     app's App Check check and record run at the moment the SDK hands the request to the cloud;
+//   - Raw input and the parts of an on-device reading: the on-device model alone (`.systemModel()`);
+//   - ONLY_IN_CLOUD and the app's explicit retry of a device answer that fails its checks: Gemini alone.
 
 import FirebaseAILogic
 import FirebaseAppCheck
@@ -188,15 +191,49 @@ final class FirebaseModelPort: ModelPort, @unchecked Sendable {
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply {
         guard let ai else { throw TaskError(.notConfigured, "no Firebase configuration in this build", origin: "configuration-guard") }
         let session = ai.generativeModelSession(model: .geminiModel(name: request.model), instructions: request.system.text)
-        let schema = request.responseSchema.flatMap(Self.schema)
-        let config = GenerationConfig(maxOutputTokens: request.maxOutputTokens, responseMIMEType: schema == nil ? nil : "application/json",
-                                      responseSchema: schema)
         do {
-            let response = try await session.respond(to: request.prompt.text, options: .gemini(config))
+            let response = try await session.respond(to: request.prompt.text, options: .gemini(Self.cloudConfig(request)))
             return ModelReply(text: response.content, modelVersion: response.rawResponse.modelVersion)
         } catch {
             throw Self.classify(error)
         }
+    }
+
+    /// A cloud-safe request through the SDK's hybrid model (firebase-ios-sdk 12.19.3, `HybridModel` and
+    /// `HybridModelSession`): the SDK starts the primary model's session (the on-device model's fails when
+    /// it is not available) and sends the request; when either throws anything but a cancellation, it sends
+    /// the same prompt to the secondary model. Options for both sides in one value (`.hybrid`): greedy
+    /// sampling on the device for a document, the response schema in the cloud. No schema is passed to
+    /// `respond`: given one, the SDK would replace the cloud's `responseSchema` with its own conversion of
+    /// the on-device schema (GeminiModelSession.swift `buildConfig`), and the cloud request would no longer
+    /// be the one the record shows.
+    func generateHybrid(_ request: CloudRequest, order: HybridOrder, gate: CloudGate) async throws -> ModelReply {
+        guard let ai else { throw TaskError(.notConfigured, "no Firebase configuration in this build", origin: "configuration-guard") }
+        let device = FirebaseAI.SystemLanguageModel.default
+        let cloud = GatedModel(base: ai.geminiModel(name: request.model), gate: gate)
+        let model = order == .deviceFirst ? HybridModel(primary: device, secondary: cloud) : HybridModel(primary: cloud, secondary: device)
+        let session = ai.generativeModelSession(model: model, instructions: request.system.text)
+        let call = request.hybridDeviceCall
+        let options = ResponseGenerationOptions.hybrid(
+            gemini: Self.cloudConfig(request),
+            foundationModels: FirebaseAI.GenerationOptions(sampling: call.deterministic ? .greedy : nil, maximumResponseTokens: call.maxOutputTokens))
+        do {
+            let response = try await session.respond(to: request.prompt.text, options: options)
+            return ModelReply(text: response.content, modelVersion: response.rawResponse.modelVersion)
+        } catch {
+            if error is CancellationError || Task.isCancelled { throw TaskError(.cancelled, "cancelled") }
+            // The cloud's own error (no App Check token, quota, the network) when the cloud was asked; the
+            // device's otherwise.
+            if let cloudError = gate.cloudError { throw cloudError }
+            throw gate.opened ? Self.classify(error) : Self.deviceError(error)
+        }
+    }
+
+    /// The cloud request's generation config: its output limit and, for a document, the response schema.
+    static func cloudConfig(_ request: CloudRequest) -> GenerationConfig {
+        let schema = request.responseSchema.flatMap(Self.schema)
+        return GenerationConfig(maxOutputTokens: request.maxOutputTokens, responseMIMEType: schema == nil ? nil : "application/json",
+                                responseSchema: schema)
     }
 
     /// SDK and HTTP errors as task errors (messages never carry user values).
@@ -255,6 +292,75 @@ final class FirebaseModelPort: ModelPort, @unchecked Sendable {
             return .object(properties: properties, optionalProperties: props.keys.filter { !required.contains($0) },
                            propertyOrdering: props.keys, description: description, nullable: nullable)
         default: return nil
+        }
+    }
+}
+
+// MARK: - The cloud side of a hybrid request
+
+/// The cloud model of a hybrid request with the app's step around it. The SDK's hybrid session starts this
+/// model's session only when it hands the request over (`HybridModelSession.getSession(for: .secondaryModel)`
+/// right before `_respond`, or first when the cloud is the primary model), so `gate.open()` runs exactly
+/// when the request is about to leave: the App Check check (the SDK sends a request even when it cannot get
+/// a token: FirebaseInfo+Headers.swift logs the token error and sends what it got) and the record entry.
+/// It conforms to the SDK's `FirebaseAI.LanguageModel` and `_ModelSession` protocols, public but marked
+/// for internal use; the SDK is pinned to an exact version (project.yml).
+struct GatedModel: FirebaseAI.LanguageModel {
+    let base: any FirebaseAI.LanguageModel
+    let gate: CloudGate
+
+    var _modelName: String { base._modelName }
+
+    func _startSession(tools: [any ToolRepresentable]?, instructions: String?) throws -> any _ModelSession {
+        GatedSession(base: try base._startSession(tools: tools, instructions: instructions), gate: gate)
+    }
+}
+
+final class GatedSession: _ModelSession {
+    let base: any _ModelSession
+    let gate: CloudGate
+
+    init(base: any _ModelSession, gate: CloudGate) {
+        self.base = base
+        self.gate = gate
+    }
+
+    var _hasHistory: Bool { base._hasHistory }
+
+    nonisolated(nonsending) func _respond(to prompt: [any Part], schema: FirebaseAI.GenerationSchema?, includeSchemaInPrompt: Bool,
+                                          options: any GenerationOptionsRepresentable) async throws -> _ModelSessionResponse {
+        try await gate.open()
+        do {
+            let response = try await base._respond(to: prompt, schema: schema, includeSchemaInPrompt: includeSchemaInPrompt, options: options)
+            gate.close(nil)
+            return response
+        } catch {
+            gate.close(FirebaseModelPort.classify(error))
+            throw error
+        }
+    }
+
+    /// Not used by the app (every request is answered whole); the same step before the stream starts.
+    func _streamResponse(to prompt: [any Part], schema: FirebaseAI.GenerationSchema?, includeSchemaInPrompt: Bool,
+                         options: any GenerationOptionsRepresentable) -> sending AsyncThrowingStream<_ModelSessionResponse, any Error> {
+        let base = base, gate = gate
+        nonisolated(unsafe) let prompt = prompt
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    try await gate.open()
+                    for try await snapshot in base._streamResponse(to: prompt, schema: schema, includeSchemaInPrompt: includeSchemaInPrompt,
+                                                                   options: options) {
+                        continuation.yield(snapshot)
+                    }
+                    gate.close(nil)
+                    continuation.finish()
+                } catch {
+                    if gate.opened && gate.cloudError == nil { gate.close(FirebaseModelPort.classify(error)) }
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
         }
     }
 }

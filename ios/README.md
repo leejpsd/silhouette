@@ -71,6 +71,7 @@ signing team with the App Attest capability.
 make test            # swift test in SilhouetteCore (macOS)
 make test-ios        # the same package tests on the iOS simulator (the Skeletonizer uses the OS's ICU)
 make ui-test         # XCUITests: Quick Check, document and answer flows (scripted model)
+make app-test        # SilhouetteTests: the SDK's hybrid session with the app's step at its cloud side
 make screenshots     # screenshot tour into SCREENSHOT_DIR (default build/screenshots, git-ignored)
 make snapshots       # fast snapshots of every screen and state into SNAPSHOT_DIR (default build/snapshots)
 make snapshots-device  # the same with a scripted on-device model, into build/snapshots-device
@@ -233,16 +234,39 @@ weight, with open leading and line breaks between words.
 
 | Task (`shared/routing.json`) | Input | Where it runs |
 |---|---|---|
-| `document.pointer.extract` | `Skeleton` | Device first; if the device fails, the same silhouette once in the cloud (`on-device-failed`) |
-| `explain.short`, `ask.chip` | `Public` | Device first; in the cloud when this device has no model |
-| `explain.long` | `Public` | Cloud first; the device only when the cloud cannot be reached |
+| `document.pointer.extract` | `Skeleton` | Device first; if the device fails, the same silhouette once in the cloud (`on-device-failed`). Without a model here: the SDK's hybrid model, which hands it to the cloud |
+| `explain.short`, `ask.chip` | `Public` | The SDK's hybrid model, device first: the cloud when this device has no model or its request fails |
+| `explain.long` | `Public` | The SDK's hybrid model, cloud first: the device when the cloud request fails |
 | `explain.personal`, `ask.freeText` | `Raw` | The device only; never the cloud |
 | `document.photo.read` | `Raw` (photo) | Not offered: the on-device model takes text only |
 
-- The SDK's on-device model (`FirebaseAI.SystemLanguageModel`, Apple Foundation Models behind
-  Firebase AI Logic) and the cloud Gemini model each run in their own single-turn session. The app
-  decides device or cloud itself (instead of the SDK's `HybridModel`) so that every cloud request
-  is recorded and agreed to before it is made.
+- Every request is a single-turn session of Firebase AI Logic. Cloud-safe input that may run on either
+  side goes to the SDK's `HybridModel` (`FirebaseAI.SystemLanguageModel`, Apple Foundation Models, and
+  Gemini, in the task's order); the SDK chooses, and the reply's `modelVersion`
+  (`apple-foundation-models-system-language-model` or the Gemini model) is the answer's badge. `Raw`
+  input and the parts of an on-device reading use the system model alone; `ONLY_IN_CLOUD` uses Gemini
+  alone.
+- What the SDK's hybrid session does (12.19.3, `HybridModelSession.swift`): it starts the primary
+  model's session (the system model's fails when it is not available) and sends the request; when
+  either throws anything but a cancellation, it sends the same prompt to the secondary model. Cloud
+  first falls back on any cloud error, not only offline. It does not know the app's checks: a device
+  answer that returns is an answer. It has no timeout of its own (the cloud request's is the SDK's
+  `RequestOptions` default).
+- What the app still does itself, and why:
+  - The cloud side of every hybrid request is wrapped (`GatedModel`, on the SDK's `FirebaseAI.LanguageModel`
+    and `_ModelSession` protocols, marked for internal use; the SDK version is pinned). At the moment the
+    SDK hands the request to the cloud, the app gets a limited-use App Check token (the SDK would send the
+    request with a placeholder token when it cannot get one) and records the request before it leaves. A
+    request the device answers makes no App Check exchange and no record entry.
+  - A device answer that fails the app's checks (a reading that is not a JSON object) is repeated once
+    with Gemini alone (`onDeviceFailure`, `on-device-failed`).
+  - A paystub read on the device in parts, each part with its own constraint, then the reading rules
+    (`shared/validation/DEVICE_READING.md`): the SDK cannot see the rules. A document read in one request on
+    a device with a model carries the schema in the device's prompt; a hybrid request has one prompt and
+    one schema for both models (given a schema, the SDK replaces the cloud's `responseSchema` with its own
+    conversion of it), so this one stays the app's own device-first step too.
+  - `SilhouetteTests` runs the SDK's own hybrid session with fake models and the gate, call by call, and,
+    where the simulator has Apple's on-device model, one real request through `generateHybrid`.
 - Structured output: the model schema derived from the pointer schema (`ModelSchema.derive`) is
   the cloud request's response schema. On the device, each reading part's strict constraint
   (`DeviceReading.constraint`) is turned into a generation schema for the system model (a
