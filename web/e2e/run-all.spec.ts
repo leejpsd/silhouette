@@ -83,7 +83,8 @@ test('a model here: one press reads the sample on this device now, then plays th
   await expect(page.getByTestId('both-device')).toHaveText('On this device, now');
   await expect(both).toContainText('Read now on this device. The cloud answer is a recording of the same silhouette; nothing is sent now.');
   // This device read the deductions too; its last one is a different kind from the cloud's recording: said so.
-  await expect(page.getByTestId('both-compare')).toHaveText('Different: Deductions. The checks below decide what is used.');
+  await expect(page.getByTestId('both-compare')).toHaveText('Same value from both: 11 of 12');
+  await expect(page.getByTestId('both-differs')).toHaveText('Different: Deductions. The checks below decide what is used.');
   await expect(page.getByTestId('pointer-reveal')).toHaveAttribute('data-source', 'ON_DEVICE');
   await expect(page).toHaveURL(/#\/results/, { timeout: 20_000 });
   await expect(page.getByTestId('doc-effect')).toBeVisible();

@@ -24,12 +24,13 @@ describe('compareReadings', () => {
   it('leaves out what the device did not read (deductions read in a second part): 11 of 11', () => {
     const { deductions: _, ...core } = correct;
     const c = compareReadings(review(core), review(correct), ['deductions']);
-    expect(c).toEqual({ total: 11, same: 11, differs: [] });
+    expect(c).toEqual({ total: 11, same: 11, differs: [], onlyCloud: [], onlyDevice: [] });
   });
 
-  it('says a field differs when one answered it and the other did not, or with another value', () => {
+  it('lists a field only one side answered apart, and says a field differs when both answered it with other values', () => {
     const { netPay: _, ...noNet } = correct;
-    expect(compareReadings(review(noNet), review(correct)).differs).toEqual(['netPay']);
+    expect(compareReadings(review(noNet), review(correct))).toMatchObject({ differs: [], onlyCloud: ['netPay'], onlyDevice: [] });
+    expect(compareReadings(review(correct), review(noNet))).toMatchObject({ differs: [], onlyCloud: [], onlyDevice: ['netPay'] });
     expect(compareReadings(review({ ...correct, grossPay: 'N13' }), review(correct)).differs).toEqual(['grossPay']);
   });
 });

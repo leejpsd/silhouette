@@ -217,10 +217,11 @@ function BothWays({ both, docType }: { both: BothReadings; docType: FlowDocType 
         ))}
       </div>
       <p className="both-compare" data-testid="both-compare" data-same={comparison.same} data-total={comparison.total} data-differs={comparison.differs.join(',')}>
-        {comparison.differs.length === 0
-          ? t('review.both.same', { count: comparison.same, total: comparison.total })
-          : t('review.both.differs', { fields: comparison.differs.map(label).join(', ') })}
+        {t('review.both.same', { count: comparison.same, total: comparison.total })}
       </p>
+      {comparison.differs.length > 0 && <p className="small" data-testid="both-differs">{t('review.both.differs', { fields: comparison.differs.map(label).join(', ') })}</p>}
+      {comparison.onlyCloud.length > 0 && <p className="small" data-testid="both-only-cloud">{t('review.both.onlyCloud', { fields: comparison.onlyCloud.map(label).join(', ') })}</p>}
+      {comparison.onlyDevice.length > 0 && <p className="small" data-testid="both-only-device">{t('review.both.onlyDevice', { fields: comparison.onlyDevice.map(label).join(', ') })}</p>}
       <p className="small">{t('review.both.uses')}</p>
       <p className="small muted">{t(device.live ? 'review.both.noteLive' : 'review.both.note')}</p>
     </section>

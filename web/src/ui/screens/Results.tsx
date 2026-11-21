@@ -215,12 +215,14 @@ function DocumentPayoff({ filled }: { filled: readonly string[] }) {
           </div>
         ))}
       </div>
-      {now.total > 0 && (
+      {(now.total > 0 || now.upTo > 0) && (
         <>
           <p className="doc-total" data-testid="doc-total" data-total={now.total} data-up-to={now.upTo}>
-            {now.upTo > 0
-              ? t('results.docEffect.totalUpTo', { amount: formatMoney(locale, now.total), upTo: formatMoney(locale, now.upTo) })
-              : t('results.docEffect.total', { amount: formatMoney(locale, now.total) })}
+            {now.total === 0
+              ? t('results.docEffect.upToOnly', { upTo: formatMoney(locale, now.upTo) })
+              : now.upTo > 0
+                ? t('results.docEffect.totalUpTo', { amount: formatMoney(locale, now.total), upTo: formatMoney(locale, now.upTo) })
+                : t('results.docEffect.total', { amount: formatMoney(locale, now.total) })}
           </p>
           <p className="small muted">{t('results.docEffect.totalNote')}</p>
         </>

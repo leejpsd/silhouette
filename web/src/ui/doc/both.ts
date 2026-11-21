@@ -19,33 +19,45 @@ export interface BothReadings {
 }
 
 export interface Comparison {
-  /** Fields at least one of the two answered (the device's unread fields left out). */
+  /** Fields both answers have (the device's unread fields left out). */
   readonly total: number;
   /** Of those, the fields with the same value from both. */
   readonly same: number;
-  /** The fields whose values differ (one answered and the other not counts as a difference), in schema order. */
+  /** Fields both answered with different values, in schema order. */
   readonly differs: readonly string[];
+  /** Fields only the cloud's answer has (the device's checks left them out), and only the device's. */
+  readonly onlyCloud: readonly string[];
+  readonly onlyDevice: readonly string[];
 }
 
 const answered = (f: ReviewField | undefined): boolean => f !== undefined && (f.kind === 'list' ? f.items.length > 0 : f.value !== null);
 const valueOf = (f: ReviewField | undefined): unknown => (f === undefined ? null : f.kind === 'list' ? (f.items.length > 0 ? f.items.map((i) => i.value) : null) : f.value);
 
-/** Compares the two answers value by value, after rehydration (the values, not the placeholder ids). */
+/**
+ * Compares the two answers value by value, after rehydration (the values, not the placeholder ids). A field
+ * only one side has is not a difference: it is listed apart (the device's checks leave out what they cannot confirm).
+ */
 export function compareReadings(device: readonly ReviewField[], cloud: readonly ReviewField[], notRead: readonly string[] = []): Comparison {
   const names = [...new Set([...device.map((f) => f.name), ...cloud.map((f) => f.name)])];
   let total = 0;
   let same = 0;
   const differs: string[] = [];
+  const onlyCloud: string[] = [];
+  const onlyDevice: string[] = [];
   for (const name of names) {
     if (notRead.includes(name)) continue;
     const d = device.find((f) => f.name === name);
     const c = cloud.find((f) => f.name === name);
-    if (!answered(d) && !answered(c)) continue;
+    const dA = answered(d);
+    const cA = answered(c);
+    if (!dA && !cA) continue;
+    if (!dA) { onlyCloud.push(name); continue; }
+    if (!cA) { onlyDevice.push(name); continue; }
     total++;
     if (JSON.stringify(valueOf(d)) === JSON.stringify(valueOf(c))) same++;
     else differs.push(name);
   }
-  return { total, same, differs };
+  return { total, same, differs, onlyCloud, onlyDevice };
 }
 
 /** One field as an answer: the placeholder the model pointed at and the value this device put back. */
