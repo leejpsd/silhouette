@@ -124,6 +124,8 @@ struct DocumentFlowTests {
         // Every value the device kept is the cloud's too; what differs is only what the reading rules left out.
         for row in both.rows where !row.same { #expect(!row.deviceAnswered && row.cloudAnswered, "\(row.field)") }
         #expect(both.total == both.sameCount + both.differing.count)
+        #expect(both.differing.isEmpty, "what only the cloud kept is not a difference")
+        #expect(both.onlyCloud == both.rows.filter { !$0.deviceAnswered && $0.cloudAnswered }.map(\.field))
         print("both ways: same \(both.sameCount) of \(both.total); differ \(both.differing)")
         // Hidden words: not the sample, no recording.
         doc.hide("gross")

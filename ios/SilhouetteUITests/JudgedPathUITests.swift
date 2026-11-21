@@ -171,6 +171,8 @@ final class JudgesRunAllUITests: XCTestCase {
         let gross = app.element("review.both.pair.grossPay").label
         XCTAssertTrue(gross.contains("N12 1,271.88") && gross.components(separatedBy: "1,271.88").count == 3, gross)
         XCTAssertTrue(app.element("review.both.same").label.hasPrefix("Same value from both:"))
+        XCTAssertTrue(app.element("review.both.onlyCloud").label.hasPrefix("Only the cloud's answer has:"), "what the iPhone's checks left out is not a difference")
+        XCTAssertFalse(app.element("review.both.differs").exists)
         XCTAssertTrue(app.element("review.both.uses").label.contains("the iPhone's answer"))
         XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 20), "the results open with what the paystub changed")
         XCTAssertTrue(app.element("results.sample").exists)

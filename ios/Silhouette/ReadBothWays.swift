@@ -75,6 +75,15 @@ struct ReadBothWaysCard: View {
                     .padding(.top, 6)
                     .accessibilityIdentifier("review.both.differs")
             }
+            ForEach([("review.both.onlyCloud", c.onlyCloud), ("review.both.onlyDevice", c.onlyDevice)], id: \.0) { key, fields in
+                if !fields.isEmpty {
+                    Text(model.t(key, ["fields": fields.map { model.t("field.paystub.\($0)") }.joined(separator: ", ")]))
+                        .sfFont(15).foregroundStyle(theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 6)
+                        .accessibilityIdentifier(key)
+                }
+            }
             Text(model.t("review.both.uses")).sfFont(15).foregroundStyle(theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 6)

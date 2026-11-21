@@ -157,9 +157,10 @@ extension DocumentEffectCard {
     /// apart. Nothing when no program that may qualify shows an estimate.
     @ViewBuilder private var total: some View {
         let t = effect.totals
-        if t.estimated > 0 {
+        if t.estimated > 0 || t.upTo > 0 {
             VStack(alignment: .leading, spacing: 4) {
-                Text(t.upTo > 0 ? model.t("results.docEffect.totalUpTo", ["amount": model.money(t.estimated), "upTo": model.money(t.upTo)])
+                Text(t.estimated == 0 ? model.t("results.docEffect.upToOnly", ["upTo": model.money(t.upTo)])
+                     : t.upTo > 0 ? model.t("results.docEffect.totalUpTo", ["amount": model.money(t.estimated), "upTo": model.money(t.upTo)])
                      : model.t("results.docEffect.total", ["amount": model.money(t.estimated)]))
                     .font(Font(DesignFonts.uiFont(.display, weight: 900, size: 30)))
                     .foregroundStyle(theme.ink)

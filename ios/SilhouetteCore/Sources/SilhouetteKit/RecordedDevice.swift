@@ -116,9 +116,13 @@ public struct BothWaysComparison: Sendable {
     /// Every field either answered, in the review's order (schema order, deductions last).
     public let rows: [Row]
 
-    public var total: Int { rows.count }
+    /// Fields both answers have; a field only one side has is listed apart, not as a difference (the device's
+    /// checks leave out what they cannot confirm).
+    public var total: Int { rows.filter { $0.deviceAnswered && $0.cloudAnswered }.count }
     public var sameCount: Int { rows.filter(\.same).count }
-    public var differing: [String] { rows.filter { !$0.same }.map(\.field) }
+    public var differing: [String] { rows.filter { $0.deviceAnswered && $0.cloudAnswered && !$0.same }.map(\.field) }
+    public var onlyCloud: [String] { rows.filter { !$0.deviceAnswered && $0.cloudAnswered }.map(\.field) }
+    public var onlyDevice: [String] { rows.filter { $0.deviceAnswered && !$0.cloudAnswered }.map(\.field) }
 
     /// `device` and `cloud`: the same document with each reading applied.
     public init(device: DocumentSession, cloud: DocumentSession) {
