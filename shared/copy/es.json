@@ -828,7 +828,7 @@
   "preview.stage.toDevice": "La silueta va al modelo de este dispositivo…",
   "preview.stage.toCloud": "La silueta va a Firebase AI Logic en la nube…",
   "preview.stage.pointersBack": "El modelo respondió con marcadores. Devolviendo los valores en este dispositivo…",
-  "tasks.appRoutes.ios": "Por qué la app elige dispositivo o nube: el modo híbrido de Firebase AI Logic para plataformas de Apple requiere iOS 27. En iOS 26 la app pregunta primero al modelo de Apple en el dispositivo y, solo si no puede responder, envía la silueta a la nube con el mismo SDK.",
+  "tasks.appRoutes.ios": "Quién elige dispositivo o nube: en las tareas cuya entrada ya se puede enviar, el modelo híbrido de Firebase AI Logic prueba primero el modelo de Apple en el dispositivo y usa el modelo en la nube solo cuando el dispositivo no puede responder. Cada respuesta dice cuál la escribió. La app añade dos pasos propios: nada va a la nube sin un token de App Check, y un recibo de sueldo leído en este iPhone se comprueba aquí y se envía a la nube una sola vez solo si la lectura no se sostiene.",
   "review.both.title": "Leído de las dos maneras",
   "review.both.device": "En un dispositivo",
   "review.both.cloud": "En la nube",

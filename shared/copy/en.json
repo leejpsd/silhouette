@@ -828,7 +828,7 @@
   "preview.stage.toDevice": "The silhouette goes to the model on this device…",
   "preview.stage.toCloud": "The silhouette goes to Firebase AI Logic in the cloud…",
   "preview.stage.pointersBack": "The model answered with placeholders. Putting the values back on this device…",
-  "tasks.appRoutes.ios": "Why the app chooses device or cloud itself: Firebase AI Logic's hybrid mode for Apple platforms needs iOS 27. On iOS 26 the app asks Apple's on-device model first and, only when it cannot answer, sends the silhouette to the cloud through the same SDK.",
+  "tasks.appRoutes.ios": "Who picks device or cloud: for tasks whose input is already safe to send, Firebase AI Logic's hybrid model tries Apple's on-device model first and uses the cloud model only when the iPhone cannot answer. Each answer says which one wrote it. The app adds two steps of its own: nothing goes to the cloud without an App Check token, and a paystub read on this iPhone is checked here, then sent to the cloud once only if the reading does not hold up.",
   "review.both.title": "Read both ways",
   "review.both.device": "On a device",
   "review.both.cloud": "In the cloud",
