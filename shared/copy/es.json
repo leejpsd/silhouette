@@ -843,7 +843,7 @@
   "leaving.headline.none": "Nada ha salido de este dispositivo",
   "leaving.headline.sent": "{count} solicitudes salieron de este dispositivo",
   "leaving.headline.sent.one": "{count} solicitud salió de este dispositivo",
-  "leaving.headline.only": "Cada una llevaba solo una silueta: ningún nombre, número ni fecha tuyos.",
+  "leaving.headline.only": "Ninguna llevaba tus nombres, números ni fechas.",
   "leaving.sub.kept": "{count} respondidas en este dispositivo",
   "leaving.sub.kept.one": "{count} respondida en este dispositivo",
   "leaving.sub.recorded": "{count} grabaciones mostradas, nada enviado ahora",
@@ -859,5 +859,8 @@
   "results.docEffect.rowAmount": "Con una cantidad",
   "results.docEffect.total": "Unos {amount} al año",
   "results.docEffect.totalUpTo": "Unos {amount} al año, más hasta {upTo}",
-  "results.docEffect.totalNote": "Suma de los programas de abajo que muestran una cantidad. Cada uno lo deciden las reglas de este dispositivo."
+  "results.docEffect.totalNote": "Suma de los programas de abajo que muestran una cantidad. Cada uno lo deciden las reglas de este dispositivo.",
+  "review.both.onlyCloud": "Solo la respuesta de la nube tiene: {fields}. Las comprobaciones del dispositivo los dejaron fuera de su respuesta.",
+  "review.both.onlyDevice": "Solo la respuesta del dispositivo tiene: {fields}.",
+  "results.docEffect.upToOnly": "Hasta {upTo} al año"
 }
