@@ -23,7 +23,7 @@ test('a reading sent to the cloud: the headline, then the silhouette that left a
   await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
   const sheet = page.getByTestId('record-sheet');
   await expect(sheet.getByTestId('record-headline')).toHaveText(/^\d+ requests? left this device$/);
-  await expect(sheet.getByTestId('record-only')).toHaveText('Each carried only a silhouette: no names, numbers or dates of yours.');
+  await expect(sheet.getByTestId('record-only')).toHaveText('None of them carried your names, numbers or dates.');
 
   // The latest request opens by itself, on what left in plain words.
   const reading = sheet.locator('li[data-channel="ai-cloud"]').filter({ has: page.getByTestId('what-left') }).first();
