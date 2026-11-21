@@ -139,6 +139,33 @@ describe('running explanations and chips', () => {
     expect(calls.map((c) => c.params.mode)).toEqual(['prefer_on_device', 'only_in_cloud']);
   });
 
+  it('the SDK places a device-first explanation: one PREFER_ON_DEVICE request, the badge from its inferenceSource', async () => {
+    // Answered in the cloud by the SDK (no model here): no second request, and the reason says why.
+    const calls = fake(() => ({ text: () => 'From the cloud.', inferenceSource: 'in_cloud' }));
+    const cloud = await explainProgram(planExplain(input, 'short'));
+    expect(calls.map((c) => c.params.mode)).toEqual(['prefer_on_device']);
+    expect(cloud).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'short-text', ranInCloudBecause: 'no-device-model' });
+    // Answered on this device by the SDK (a ready model): the same single request, badge ON_DEVICE.
+    setModelProviderForTests(null);
+    setDeviceModelForTests('available');
+    const again = fake(() => ({ text: () => 'On this device.', inferenceSource: 'on_device' }));
+    const device = await explainProgram(planExplain(input, 'short'));
+    expect(again.map((c) => c.params.mode)).toEqual(['prefer_on_device']);
+    expect(device).toMatchObject({ inferenceSource: 'ON_DEVICE', reason: 'short-text' });
+    expect(device.ranInCloudBecause).toBeUndefined();
+  });
+
+  it('a cloud answer that cannot be read is not mistaken for a device failure: it is not sent again', async () => {
+    const calls = fake(() => ({
+      text: () => {
+        throw new Error('Response was blocked due to SAFETY');
+      },
+      inferenceSource: 'in_cloud',
+    }));
+    await expect(explainProgram(planExplain(input, 'short'))).rejects.toMatchObject({ kind: 'unknown' });
+    expect(calls.map((c) => c.params.mode)).toEqual(['prefer_on_device']);
+  });
+
   it('the body shown is the SDK serialization, keys and order included, and the record names what it carries', () => {
     const plan = planExplain(input, 'long');
     const body = requestBody(plan);

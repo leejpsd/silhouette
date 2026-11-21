@@ -124,6 +124,12 @@ export interface PointerCallOptions {
   readonly onProgress?: ((stage: PointerStage) => void) | undefined;
   /** Internal: one part of a two-part on-device reading. */
   readonly part?: DevicePart | undefined;
+  /**
+   * Internal: the first request of a two-part reading is made in PREFER_ON_DEVICE, so Firebase AI Logic
+   * decides where it runs: on this device it asks for the core fields (the device's part), in the cloud
+   * it is the whole reading of the silhouette (the cloud's single pass, the request shown before Send).
+   */
+  readonly hybridFirst?: boolean | undefined;
   /** Internal: a reading prepared ahead stops before its next part once this returns true. */
   readonly isCancelled?: (() => boolean) | undefined;
 }
@@ -163,10 +169,12 @@ export function pointerModelParams(docType: DocType, language: string, options: 
   const deviceSchema = options.skeleton
     ? deviceResponseConstraint(config.schemas[docType], config.schemaOptions, options.skeleton, part)
     : toModelSchema(pointerSchema, { ...config.schemaOptions, dialect: 'jsonschema' });
-  const devicePart = part !== 'whole';
+  // The core part asked first in PREFER_ON_DEVICE is the one part that may run in the cloud (as the whole reading).
+  const hybridCore = part === 'core' && options.hybridFirst === true && !options.deviceOnly && !options.forceCloud;
+  const devicePart = part !== 'whole' && !hybridCore;
   const system = systemText(config, docType, part);
   // A part of a two-part reading runs only on this device; only the cloud-capable form is described.
-  if (!devicePart) describeAiRequests(system, ['document-silhouette']);
+  if (!devicePart) describeAiRequests(systemText(config, docType), ['document-silhouette']);
   const generationConfig = pointerGenerationConfig(config, cloudSchema);
   return {
     mode: options.forceCloud ? InferenceMode.ONLY_IN_CLOUD : options.deviceOnly || devicePart ? InferenceMode.ONLY_ON_DEVICE : InferenceMode.PREFER_ON_DEVICE,
@@ -223,7 +231,8 @@ export function pointerModel(docType: DocType, language: string, options: Pointe
   // One model per set of placeholder ids: the on-device constraint is built from them.
   const ids = options.skeleton && !options.forceCloud ? `:${Object.values(placeholderIds(options.skeleton)).flat().join(',')}` : '';
   const mode = options.forceCloud ? ':cloud' : options.deviceOnly ? ':device' : '';
-  const part = options.part && options.part !== 'whole' && !options.forceCloud ? `:part-${options.part}` : '';
+  const hybrid = options.part === 'core' && options.hybridFirst && !options.deviceOnly && !options.forceCloud ? ':hybrid' : '';
+  const part = options.part && options.part !== 'whole' && !options.forceCloud ? `:part-${options.part}${hybrid}` : '';
   const key = `document.pointer.extract:${config.id}:${docType}:${language}${mode}${part}${ids}`;
   return modelFor(key, () => pointerModelParams(docType, language, options));
 }
@@ -299,7 +308,8 @@ async function callPointerModel(
   // asked for it: this one, while it waits for its answer. When the person keeps everything on the
   // device, or for a part of a two-part reading (only on this device), nothing is permitted, so the
   // monitor blocks any request the SDK might still make.
-  const deviceOnly = options.deviceOnly || (options.part !== undefined && options.part !== 'whole');
+  const hybridCore = options.part === 'core' && options.hybridFirst === true && !options.forceCloud;
+  const deviceOnly = options.deviceOnly || (options.part !== undefined && options.part !== 'whole' && !hybridCore);
   const release = deviceOnly ? () => undefined : permitCloudRequest(systemText(config, docType));
   let response: ModelResponse;
   try {
@@ -325,8 +335,21 @@ async function callPointerModel(
 
 const elapsedSince = (start: number) => Math.round(performance.now() - start);
 
-/** One part of a two-part on-device reading, never thrown: a pass that did not parse has problems. */
-async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: Exclude<DevicePart, 'whole'>): Promise<DevicePass> {
+type PointerCall = Awaited<ReturnType<typeof callPointerModel>>;
+
+/** The first request of a two-part reading, when Firebase AI Logic answered it in the cloud: the whole reading. */
+interface AnsweredInCloud {
+  readonly cloud: PointerCall;
+}
+
+/**
+ * One part of a two-part on-device reading, never thrown: a pass that did not parse has problems.
+ * The core asked first in PREFER_ON_DEVICE (`hybridFirst`) may come back from the cloud: that answer is
+ * returned as it is, and a failure there is thrown (the cloud failed; asking the cloud again would not help).
+ */
+async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: 'core'): Promise<DevicePass | AnsweredInCloud>;
+async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: Exclude<DevicePart, 'whole'>): Promise<DevicePass>;
+async function devicePass(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions, part: Exclude<DevicePart, 'whole'>): Promise<DevicePass | AnsweredInCloud> {
   // A reading prepared ahead that was cancelled asks the device for nothing more.
   if (options.isCancelled?.()) throw new ReadingCancelled('the reading prepared ahead was cancelled');
   const config = options.config ?? activePointerConfig();
@@ -337,12 +360,15 @@ async function devicePass(skeleton: Skeleton, docType: DocType, language: string
   let problems: string[] = [];
   let returned: string[] = [];
   try {
-    const r = await callPointerModel(skeleton, docType, language, { ...options, part, deviceOnly: false, forceCloud: false });
+    const hybridFirst = part === 'core' && options.hybridFirst === true && !options.deviceOnly;
+    const r = await callPointerModel(skeleton, docType, language, { ...options, part, hybridFirst, deviceOnly: false, forceCloud: false });
+    if (hybridFirst && r.source === 'IN_CLOUD') return { cloud: r };
     rawText = r.rawText;
     returned = Object.keys(JSON.parse(r.rawText) as Record<string, unknown>);
     // Keys the part does not have are ignored (and recorded); the constraint should rule them out.
     value = Object.fromEntries(Object.entries(r.value).filter(([k]) => fields.includes(k)));
   } catch (error) {
+    if (part === 'core' && options.hybridFirst && !options.deviceOnly && !failedOnDevice(error)) throw classifyError(error);
     rawText = (error as { rawText?: string }).rawText ?? '';
     problems = [rawText ? 'not-json' : `error:${classifyError(error).kind}`];
   }
@@ -396,7 +422,7 @@ class ReadingCancelled extends Error {}
  */
 export async function prepareDeviceReading(skeleton: Skeleton, docType: DocType, language: string, options: PointerCallOptions = {}): Promise<boolean> {
   const config = options.config ?? activePointerConfig();
-  if (!readsInParts(config, docType)) return false;
+  if (!readsInParts(config, docType) || options.checkParts === undefined) return false;
   const key = preparedKey(skeleton, docType, language, config);
   if (preparedReading?.key === key) return preparedReading.result.then((r) => r !== null);
   cancelPreparedReading();
@@ -487,11 +513,14 @@ async function readInParts(
   docType: DocType,
   language: string,
   options: PointerCallOptions,
-): Promise<{ ok: true; value: Record<string, unknown>; attempt: DeviceAttempt } | { ok: false; attempt: DeviceAttempt }> {
+): Promise<{ ok: true; value: Record<string, unknown>; attempt: DeviceAttempt } | { ok: false; attempt: DeviceAttempt } | AnsweredInCloud> {
   const config = options.config ?? activePointerConfig();
   const checkCore = (v: Record<string, unknown>) => [...(options.checkParts?.core(v) ?? [])];
-  options.onProgress?.('device-reading');
-  const core0 = await devicePass(skeleton, docType, language, options, 'core');
+  // A first request the SDK may still send to the cloud says nothing of the device until it answered there.
+  if (!options.hybridFirst) options.onProgress?.('device-reading');
+  const first = await devicePass(skeleton, docType, language, options, 'core');
+  if ('cloud' in first) return first;
+  const core0 = first;
   options.onProgress?.('checking');
   let core: DevicePass = core0.value ? { ...core0, problems: checkCore(core0.value) } : core0;
   const passes: DevicePass[] = [core];
@@ -583,16 +612,28 @@ export async function extractPointers(
   const reason = POINTER_TASK.reason as RoutingReason;
   const config = options.config ?? activePointerConfig();
   const createOptions = pointerModelParams(docType, language, options).onDeviceParams?.createOptions;
+  // Where the reading runs is Firebase AI Logic's choice (PREFER_ON_DEVICE: on this device when its
+  // model is available for these options, otherwise in the cloud), reported in `inferenceSource`. The
+  // app asks the device's status itself only for what the SDK does not do: to refuse "Keep everything on
+  // this device" without a model (ONLY_ON_DEVICE would otherwise go to the cloud in a browser without
+  // the Prompt API), for the words of the waiting screen, and to say why an answer came from the cloud.
   const deviceState = options.forceCloud ? 'unavailable' : await deviceAvailability(createOptions);
   const available = deviceState === 'available';
   if (options.deviceOnly && !available) throw new TaskError('on-device-unavailable', 'the on-device model is not available');
-  // On a device with a ready model, a paystub is read in two parts (core, then deductions). Only a
-  // core that fails its check is a failed on-device attempt; the cloud retry stays one single pass.
-  if (available && readsInParts(config, docType)) {
-    // A reading prepared ahead for this exact silhouette continues from where it is.
-    const ahead = takePrepared(preparedKey(skeleton, docType, language, config));
+  // A paystub is read on a device in two parts (core, then deductions), each checked by its own checks.
+  // Only a core that fails its check is a failed on-device attempt; the cloud retry stays one single pass.
+  if (!options.forceCloud && readsInParts(config, docType) && options.checkParts !== undefined) {
+    // A reading prepared ahead for this exact silhouette (on this device only) continues from where it is.
+    const ahead = available ? takePrepared(preparedKey(skeleton, docType, language, config)) : undefined;
     const joined = ahead ? await joinPrepared(ahead, options.onProgress) : null;
-    const read = joined ?? (await readInParts(skeleton, docType, language, { ...options, skeleton }));
+    // Otherwise the first request is the SDK's to place, unless the person keeps everything here.
+    if (!joined && !options.deviceOnly && available) options.onProgress?.('device-reading');
+    const read = joined ?? (await readInParts(skeleton, docType, language, { ...options, skeleton, hybridFirst: !options.deviceOnly }));
+    if ('cloud' in read) {
+      // The SDK sent the whole reading to the cloud (this device has no model ready for it).
+      const r = read.cloud;
+      return { value: r.value, inferenceSource: r.source, reason, usage: r.usage, ranInCloudBecause: available ? undefined : cloudBecause(deviceState) };
+    }
     if (read.ok) {
       recordAnsweredOnDevice('document');
       return { value: read.value, inferenceSource: 'ON_DEVICE', reason, deviceAttempt: read.attempt, deductionsNotRead: read.attempt.deductionsNotRead, notRead: read.attempt.notRead };
@@ -601,6 +642,8 @@ export async function extractPointers(
     if (options.deviceOnly) {
       throw Object.assign(new TaskError('on-device-unreliable', `the device could not read the silhouette reliably: ${deviceAttempt.problems.join(', ')}`), { deviceAttempt });
     }
+    // routing.json onDeviceFailure: the SDK does not repeat a request that ran on the device and was
+    // answered (it falls back only before the device is asked), so the app sends it on to the cloud.
     options.onProgress?.('sending-after-device');
     try {
       const r = await callPointerModel(skeleton, docType, language, { ...options, forceCloud: true });
@@ -609,6 +652,7 @@ export async function extractPointers(
       throw Object.assign(classifyError(cloudError), { deviceAttempt });
     }
   }
+  // The waiting screen's words only: the SDK places the request, and the answer says where it ran.
   if (available) options.onProgress?.('device-reading');
   try {
     const r = await callPointerModel(skeleton, docType, language, options);
@@ -861,17 +905,30 @@ async function noDeviceModel(call: PlannedCall, source: InferenceSource): Promis
   return status === 'available' ? undefined : cloudBecause(status);
 }
 
+/** A response's text; a failure to read it is marked with where the response came from. */
+function textOf(response: ModelResponse, source: InferenceSource): string {
+  try {
+    return response.text();
+  } catch (error) {
+    throw error !== null && typeof error === 'object' ? Object.assign(error, { source }) : error;
+  }
+}
+
 /**
  * Runs a planned text call. A PREFER_ON_DEVICE call that fails on the device is repeated once with
- * ONLY_IN_CLOUD (routing.json onDeviceFailure); its input is CloudSafe, so nothing new is sent.
+ * ONLY_IN_CLOUD (routing.json onDeviceFailure); its input is CloudSafe, so nothing new is sent. The
+ * SDK itself never does this: in PREFER_ON_DEVICE it goes to the cloud only when the device model is
+ * not available for the request, and an error on the device is passed on as it is.
  * A reply that states a result is asked for once more, then refused (OUTPUT_CHECKS.md).
  */
 async function runText(call: PlannedCall, options: RunOptions): Promise<TaskResult<ModelAnswer>> {
   const once = async (): Promise<TaskResult<ModelAnswer>> => {
     try {
+      // Firebase AI Logic places the request (the task's mode) and reports where it ran.
       const { response, source } = await runCall(call, false, options);
+      const text = textOf(response, source);
       const detail = await noDeviceModel(call, source);
-      return { value: modelAnswer(response.text()), inferenceSource: source, reason: call.reason, route: call.route, ranInCloudBecause: detail };
+      return { value: modelAnswer(text), inferenceSource: source, reason: call.reason, route: call.route, ranInCloudBecause: detail };
     } catch (error) {
       if (error instanceof TaskError && error.kind === 'cancelled') throw error;
       if (call.mode !== ON_DEVICE_FAILURE.appliesTo || !failedOnDevice(error)) throw classifyError(error);

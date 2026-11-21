@@ -137,7 +137,7 @@ describe('reading a paystub on the device in two parts', () => {
     const { calls, systems } = device({ core: json(KEY_CORE) });
     const stages: PointerStage[] = [];
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, onProgress: (s) => stages.push(s) });
-    expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions']);
+    expect(calls).toEqual(['prefer_on_device:core', 'only_on_device:deductions']);
     expect(stages).toEqual(['device-reading', 'checking', 'device-deductions', 'checking']);
     expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', reason: 'document-silhouette-only', value: KEY, deductionsNotRead: false });
     expect(result.deviceAttempt?.passes?.map((p) => [p.part, p.parsed, p.problems])).toEqual([
@@ -154,7 +154,7 @@ describe('reading a paystub on the device in two parts', () => {
     const { calls } = device({ core: json(KEY_CORE), deductions: json({ deductions: [] }) });
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
     // Asked once more (the list did not add up), then left out.
-    expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions', 'only_on_device:deductions-again']);
+    expect(calls).toEqual(['prefer_on_device:core', 'only_on_device:deductions', 'only_on_device:deductions-again']);
     expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY_CORE, deductionsNotRead: true });
     expect(result.value).not.toHaveProperty('deductions');
     expect(result.deviceAttempt?.passes?.map((p) => [p.part, p.problems])).toEqual([
@@ -175,7 +175,7 @@ describe('reading a paystub on the device in two parts', () => {
     const { calls } = device({ core: json({ ...KEY_CORE, payFrequency: 'fortnightly' }) });
     const stages: PointerStage[] = [];
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, onProgress: (s) => stages.push(s) });
-    expect(calls).toEqual(['only_on_device:core', 'cloud']);
+    expect(calls).toEqual(['prefer_on_device:core', 'cloud']);
     expect(stages).toEqual(['device-reading', 'checking', 'sending-after-device']);
     expect(result).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'on-device-failed', value: KEY });
     expect(result.deviceAttempt).toMatchObject({ parsed: true, problems: ['payFrequency:not-an-option'] });
@@ -185,7 +185,7 @@ describe('reading a paystub on the device in two parts', () => {
     const { calls } = device({ core: json({ ...KEY_CORE, ytdGross: 'N7' }), gross: json({ grossPay: 'N12', ytdGross: 'N13' }) }, 20);
     const stages: PointerStage[] = [];
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, onProgress: (s) => stages.push(s) });
-    expect(calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'only_on_device:deductions']);
+    expect(calls).toEqual(['prefer_on_device:core', 'only_on_device:gross', 'only_on_device:deductions']);
     expect(stages).toEqual(['device-reading', 'checking', 'device-gross', 'checking', 'device-deductions', 'checking']);
     expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY, deductionsNotRead: false });
     const passes = result.deviceAttempt?.passes ?? [];
@@ -201,7 +201,7 @@ describe('reading a paystub on the device in two parts', () => {
   it('year to date from the Regular line twice: one cloud retry, both parts kept for diagnosis', async () => {
     const { calls } = device({ core: json({ ...KEY_CORE, ytdGross: 'N7' }) });
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
-    expect(calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'cloud']);
+    expect(calls).toEqual(['prefer_on_device:core', 'only_on_device:gross', 'cloud']);
     expect(result).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'on-device-failed', value: KEY });
     expect(result.deviceAttempt?.passes?.map((p) => p.part)).toEqual(['core', 'gross']);
     expect(result.deviceAttempt?.problems).toContain('ytdGross:not-on-gross-line');
@@ -241,7 +241,7 @@ describe('reading a paystub on the device in two parts', () => {
     void ytdGross;
     const { calls } = device({ core: json({ ...noYtd, ytdGross: null }), gross: json({ grossPay: 'N12', ytdGross: 'N13' }) });
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
-    expect(calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'only_on_device:deductions']);
+    expect(calls).toEqual(['prefer_on_device:core', 'only_on_device:gross', 'only_on_device:deductions']);
     expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY });
   });
 
@@ -250,7 +250,7 @@ describe('reading a paystub on the device in two parts', () => {
     void ytdGross;
     const { calls } = device({ core: json({ ...noYtd, ytdGross: null }), gross: json({ grossPay: 'N12', ytdGross: null }) });
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
-    expect(calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'only_on_device:deductions']);
+    expect(calls).toEqual(['prefer_on_device:core', 'only_on_device:gross', 'only_on_device:deductions']);
     expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', reason: 'document-silhouette-only' });
     expect(result.value).not.toHaveProperty('ytdGross');
     expect(result.deviceAttempt?.passes?.[1]).toMatchObject({ part: 'gross', problems: ['ytdGross:still-missing'] });
@@ -270,7 +270,7 @@ describe('reading a paystub on the device in two parts', () => {
     const short = json({ deductions: (KEY_DEDUCTIONS as unknown[]).slice(0, 3) });
     const { calls, systems } = device({ core: json(KEY_CORE), deductions: short, deductionsAgain: json({ deductions: KEY_DEDUCTIONS }) }, 15);
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
-    expect(calls).toEqual(['only_on_device:core', 'only_on_device:deductions', 'only_on_device:deductions-again']);
+    expect(calls).toEqual(['prefer_on_device:core', 'only_on_device:deductions', 'only_on_device:deductions-again']);
     expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', value: KEY, deductionsNotRead: false, notRead: [] });
     const passes = result.deviceAttempt?.passes ?? [];
     expect(passes.map((p) => [p.part, p.problems])).toEqual([
@@ -288,7 +288,7 @@ describe('reading a paystub on the device in two parts', () => {
     const core = json({ ...KEY_CORE, ytdGross: KEY['netPay'] });
     const first = device({ core });
     const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
-    expect(first.calls).toEqual(['only_on_device:core', 'only_on_device:gross', 'cloud']);
+    expect(first.calls).toEqual(['prefer_on_device:core', 'only_on_device:gross', 'cloud']);
     expect(result.deviceAttempt?.problems).toContain('check:ytd-gross');
     const kept = device({ core });
     await expect(extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, deviceOnly: true })).rejects.toMatchObject({
@@ -317,7 +317,7 @@ describe('reading a paystub on the device in two parts', () => {
 
     const { calls } = device({ core: '{"grossPay": N12' });
     const retried = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
-    expect(calls).toEqual(['only_on_device:core', 'cloud']);
+    expect(calls).toEqual(['prefer_on_device:core', 'cloud']);
     expect(retried).toMatchObject({ reason: 'on-device-failed', deviceAttempt: { parsed: false, problems: ['not-json'] } });
   });
 
@@ -453,6 +453,121 @@ describe('reading ahead while the preview is open', () => {
     const modes = models(json(KEY));
     expect(await prepareDeviceReading(doc.skeleton, 'paystub', 'en', { checkParts })).toBe(false);
     expect(modes).toEqual([]);
+  });
+});
+
+/**
+ * A stand-in that places each request as Firebase AI Logic 3.1 does (callCloudOrDevice in
+ * @firebase/ai): PREFER_ON_DEVICE runs on the device only when `LanguageModel.availability()` says
+ * "available" for the task's createOptions, and in the cloud otherwise (the cloud parameters); an error
+ * on the device is passed on, never sent to the cloud. ONLY_IN_CLOUD always goes to the cloud.
+ */
+function sdk(deviceText: (part: Part) => string | Error, cloud: () => string | Error = () => json(KEY)) {
+  const calls: string[] = [];
+  const cloudSystems: string[] = [];
+  setModelProviderForTests(async (params) => ({
+    async generateContent() {
+      const p = params as unknown as Params & { inCloudParams?: { systemInstruction?: string } };
+      const lm = (globalThis as { LanguageModel?: { availability(o: unknown): Promise<string> } }).LanguageModel;
+      const onDevice = p.mode === 'only_on_device' || (p.mode === 'prefer_on_device' && lm !== undefined && (await lm.availability(p.onDeviceParams?.createOptions)) === 'available');
+      if (!onDevice) {
+        calls.push(`${p.mode}>cloud`);
+        cloudSystems.push(p.inCloudParams?.systemInstruction ?? '');
+        const answer = cloud();
+        if (answer instanceof Error) throw answer;
+        return { response: { text: () => answer, inferenceSource: 'in_cloud' } };
+      }
+      const part = partOf(p);
+      calls.push(`${p.mode}>device:${part}`);
+      const answer = deviceText(part);
+      if (answer instanceof Error) throw answer;
+      return { response: { text: () => answer, inferenceSource: 'on_device' } };
+    },
+  }));
+  return { calls, cloudSystems };
+}
+
+describe('Firebase AI Logic places the first request of a paystub reading (PREFER_ON_DEVICE)', () => {
+  const parts = (part: Part) => (part === 'deductions' ? json({ deductions: KEY_DEDUCTIONS }) : json(KEY_CORE));
+
+  it('one request in PREFER_ON_DEVICE: the core fields on this device, the whole reading in the cloud', () => {
+    const p = pointerModelParams('paystub', 'en', { skeleton: doc.skeleton, part: 'core', hybridFirst: true }) as unknown as Params & {
+      inCloudParams: { systemInstruction: string; generationConfig: Record<string, { properties?: Record<string, unknown> }> };
+    };
+    expect(p.mode).toBe('prefer_on_device');
+    expect(partOf(p)).toBe('core');
+    expect(p.onDeviceParams?.createOptions?.initialPrompts?.[0]?.content).toContain('answer only the fields in the schema');
+    // The cloud side is the single pass shown before Send: the shared system instruction and the whole schema.
+    expect(p.inCloudParams.systemInstruction).toBe(activePointerConfig().prompt.system);
+    const cloudSchema = p.inCloudParams.generationConfig[activePointerConfig().schemaField];
+    expect(Object.keys(cloudSchema?.properties ?? {})).toContain('deductions');
+    // Without the flag, and when the person keeps everything here, a part stays on this device.
+    expect(pointerModelParams('paystub', 'en', { skeleton: doc.skeleton, part: 'core' }).mode).toBe('only_on_device');
+    expect(pointerModelParams('paystub', 'en', { skeleton: doc.skeleton, part: 'core', hybridFirst: true, deviceOnly: true }).mode).toBe('only_on_device');
+    expect(pointerModelParams('paystub', 'en', { skeleton: doc.skeleton, part: 'deductions', hybridFirst: true }).mode).toBe('only_on_device');
+  });
+
+  it('no on-device model: the SDK sends the whole reading to the cloud, once; the badge says IN_CLOUD and why', async () => {
+    const { calls, cloudSystems } = sdk(parts);
+    const stages: PointerStage[] = [];
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, onProgress: (s) => stages.push(s) });
+    expect(calls).toEqual(['prefer_on_device>cloud']);
+    expect(cloudSystems).toEqual([activePointerConfig().prompt.system]);
+    expect(result).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'document-silhouette-only', ranInCloudBecause: 'no-device-model', value: KEY });
+    expect(result.deviceAttempt).toBeUndefined();
+    // Nothing was said about this device: the SDK did not use it.
+    expect(stages).toEqual([]);
+  });
+
+  it('a model not downloaded yet: the SDK answers in the cloud, and the reason says the model is not downloaded', async () => {
+    setDeviceModelForTests('downloadable');
+    const { calls } = sdk(parts);
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toEqual(['prefer_on_device>cloud']);
+    expect(result).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'document-silhouette-only', ranInCloudBecause: 'model-not-downloaded' });
+  });
+
+  it('a ready model: the SDK runs the core on this device, and the reading continues there; the badge says ON_DEVICE', async () => {
+    setDeviceModelForTests('available');
+    const { calls } = sdk(parts);
+    const stages: PointerStage[] = [];
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, onProgress: (s) => stages.push(s) });
+    expect(calls).toEqual(['prefer_on_device>device:core', 'only_on_device>device:deductions']);
+    expect(stages).toEqual(['device-reading', 'checking', 'device-deductions', 'checking']);
+    expect(result).toMatchObject({ inferenceSource: 'ON_DEVICE', reason: 'document-silhouette-only', value: KEY });
+    expect(result.ranInCloudBecause).toBeUndefined();
+  });
+
+  it('a device answer that fails the checks is still sent on to the cloud by the app, once (the SDK does not)', async () => {
+    setDeviceModelForTests('available');
+    const { calls } = sdk((part) => (part === 'core' ? json({ ...KEY_CORE, payFrequency: 'fortnightly' }) : parts(part)));
+    const result = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(calls).toEqual(['prefer_on_device>device:core', 'only_in_cloud>cloud']);
+    expect(result).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'on-device-failed', value: KEY });
+  });
+
+  it('an error on the device is sent on to the cloud by the app, once; an error in the cloud is not repeated', async () => {
+    setDeviceModelForTests('available');
+    const tooLarge = Object.assign(new Error('The input is too large.'), { name: 'QuotaExceededError' });
+    const failed = sdk((part) => (part === 'core' ? tooLarge : parts(part)));
+    const retried = await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts });
+    expect(failed.calls).toEqual(['prefer_on_device>device:core', 'only_in_cloud>cloud']);
+    expect(retried).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'on-device-failed', deviceAttempt: { parsed: false } });
+
+    setDeviceModelForTests('absent');
+    const offline = sdk(parts, () => new TypeError('Failed to fetch'));
+    await expect(extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts })).rejects.toMatchObject({ kind: 'network' });
+    expect(offline.calls).toEqual(['prefer_on_device>cloud']);
+    const unreadable = sdk(parts, () => 'not json');
+    await expect(extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts })).rejects.toMatchObject({ kind: 'bad-output' });
+    expect(unreadable.calls).toEqual(['prefer_on_device>cloud']);
+  });
+
+  it('"Keep everything on this device" never asks the SDK to place anything: every part ONLY_ON_DEVICE', async () => {
+    setDeviceModelForTests('available');
+    const { calls } = sdk(parts);
+    await extractPointers(doc.skeleton, 'paystub', 'en', { validate, checkParts, deviceOnly: true });
+    expect(calls).toEqual(['only_on_device>device:core', 'only_on_device>device:deductions']);
   });
 });
 
