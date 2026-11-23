@@ -288,7 +288,7 @@ export function SendPanel({
           )}
           {deviceReady !== null && (
             <p className="small destination-line" data-testid="send-destination" data-destination={cloud ? 'cloud' : 'device'}>
-              {t(cloud ? 'send.destination.cloud' : 'send.destination.device')}
+              {t(cloud ? 'send.destination.cloudGeneral' : 'send.destination.deviceGeneral')}
             </p>
           )}
           {!online && (
