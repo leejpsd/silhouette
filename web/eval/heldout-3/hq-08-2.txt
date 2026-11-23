@@ -1,0 +1,38 @@
+Larkfield Bindery & Print                         Earnings Statement
+3410 Industrial Way, Unit 6                       Period Start Date   10/16/26
+Santa Rosa, CA 95403                              Period End Date     10/31/26
+                                                  Pay Date            11/10/26
+                                                  Document            DD-2611-00318
+                                                  Net Pay             $1,675.78
+
+Pay Group: Semi-Monthly Hourly                    OKONKWO, SAMUEL A
+Employee ID: 000318                               2087 Coffey Meadow Lane
+Location: Bindery Floor                           Santa Rosa, CA 95403
+Pay Rate: $23.60 Hourly
+
+Earnings             Rate  Hours    Current         YTD | Deductions              Current       YTD
+---------------------------------------------------------+------------------------------------------
+Regular             23.60  72.00   1,699.20   34,663.68  | Federal Income Tax       116.46  2,066.59
+Vacation            23.60  16.00     377.60    2,454.40  | Social Security          129.82  2,303.66
+Overtime            35.40   2.00      70.80      991.20  | Medicare                  30.36    538.74
+                                                         | CA Income Tax             28.31    502.36
+Gross                              2,147.60   38,109.28  | CA SDI                    27.22    483.02
+                                                         | 401(k)                    85.90  1,524.30
+                                                         | Medical                   45.00    945.00
+                                                         | Dental                     8.75    183.75
+                                                         | Total                    471.82  8,547.42
+---------------------------------------------------------+------------------------------------------
+Net Pay                            1,675.78   29,561.86
+
+Pre-tax: 401(k), Dep Care FSA, Medical.  After-tax: Roth 401(k).
+
+Employer Paid Benefits              Current         YTD
+Medical                              498.15   10,461.15
+401(k) Match                          41.56      737.48
+
+Absence Plans           Accrued    Taken  Balance
+Vacation                  72.80    52.00    20.80
+Sick                      40.00    12.00    28.00
+
+Payment Information             Account                 Amount
+Direct Deposit                  Checking ...2051      1,675.78

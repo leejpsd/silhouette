@@ -1,0 +1,43 @@
+{
+  "employerName": "REDTAIL FRAMING & CONCRETE INC",
+  "employeeName": "LUIS CARVAJAL",
+  "payFrequency": "weekly",
+  "payDate": "2-Oct-26",
+  "periodStart": "21-Sep-26",
+  "periodEnd": "27-Sep-26",
+  "grossPay": 2388.75,
+  "netPay": 1599.13,
+  "ytdGross": 74648.44,
+  "hoursWorked": 40,
+  "hourlyRate": 48.75,
+  "deductions": [
+    {
+      "amount": 248.43,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 148.1,
+      "kind": "social_security"
+    },
+    {
+      "amount": 34.64,
+      "kind": "medicare"
+    },
+    {
+      "amount": 92.68,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 31.05,
+      "kind": "other"
+    },
+    {
+      "amount": 59.72,
+      "kind": "other"
+    },
+    {
+      "amount": 175,
+      "kind": "other"
+    }
+  ]
+}

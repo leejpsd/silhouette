@@ -1,0 +1,45 @@
+{
+  "employerName": "Marrowstone Robotics Corp.",
+  "employeeName": "VILLANUEVA, ANDRES M",
+  "payFrequency": "semimonthly",
+  "payDate": "Nov 13, 2026",
+  "periodStart": "Nov 1, 2026",
+  "periodEnd": "Nov 15, 2026",
+  "grossPay": 3650,
+  "netPay": 2709.49,
+  "ytdGross": 72500,
+  "deductions": [
+    {
+      "amount": 200,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 216.67,
+      "kind": "social_security"
+    },
+    {
+      "amount": 50.67,
+      "kind": "medicare"
+    },
+    {
+      "amount": 56.39,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 45.43,
+      "kind": "other"
+    },
+    {
+      "amount": 216,
+      "kind": "retirement"
+    },
+    {
+      "amount": 132.75,
+      "kind": "health"
+    },
+    {
+      "amount": 22.6,
+      "kind": "health"
+    }
+  ]
+}

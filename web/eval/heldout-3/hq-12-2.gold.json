@@ -1,0 +1,37 @@
+{
+  "employerName": "Duneflower Window Coverings",
+  "employeeName": "Isaiah Templeton",
+  "payFrequency": "monthly",
+  "payDate": "2026-11-02",
+  "periodStart": "2026-10-01",
+  "periodEnd": "2026-10-31",
+  "grossPay": 5096.13,
+  "netPay": 4171.96,
+  "ytdGross": 51191.45,
+  "deductions": [
+    {
+      "amount": 350.33,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 314.79,
+      "kind": "social_security"
+    },
+    {
+      "amount": 73.62,
+      "kind": "medicare"
+    },
+    {
+      "amount": 100.53,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 66,
+      "kind": "other"
+    },
+    {
+      "amount": 18.9,
+      "kind": "health"
+    }
+  ]
+}

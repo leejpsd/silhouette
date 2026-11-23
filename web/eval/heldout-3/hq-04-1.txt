@@ -1,0 +1,42 @@
+Prairie Lantern Community Services                  Pay Statement
+330 SW Adams Street                                 Payment Date ..... 30-Sep-26
+Peoria, IL 61602                                    Period Start ..... 1-Sep-26
+Phone (309) 555-0148                                Period End ....... 30-Sep-26
+FEIN XX-XXX4417                                     Pay Cycle ........ Monthly
+
+PAY TO                                              EMPLOYEE DETAILS
+Gwendolyn R. Asante                                 ID 000612   Position Case Manager II
+1907 W Moss Avenue                                  Fed W-4 Single   IL-W-4 allowances 1
+Peoria, IL 61606                                    SSN XXX-XX-6630
+
+========================================================================
+SUMMARY           Gross Pay    Pre-Tax      Taxes   Post-Tax     Net Pay
+  Current          4,850.00     342.90     962.72      11.70    3,532.68
+  YTD             43,650.00   3,086.10   8,664.48     105.30   31,794.12
+========================================================================
+
+EARNINGS                                           Current           YTD
+  Salary                                          4,850.00     43,650.00
+  Gross Pay                                       4,850.00     43,650.00
+
+PRE-TAX DEDUCTIONS                                 Current           YTD
+  403(b) Retirement                                 242.50      2,182.50
+  Medical PPO                                        88.00        792.00
+  Dental                                             12.40        111.60
+
+TAXES                                              Current           YTD
+  Federal Withholding                               387.61      3,488.49
+  Social Security                                   294.48      2,650.32
+  Medicare                                           68.87        619.83
+  Illinois State Tax                                211.76      1,905.84
+
+POST-TAX DEDUCTIONS                                Current           YTD
+  Supplemental Life (after-tax)                      11.70        105.30
+
+EMPLOYER-PAID BENEFITS (not included in pay)       Current           YTD
+  403(b) Employer Match                             145.50      1,309.50
+  Medical PPO (employer)                            642.00      5,778.00
+  Long-Term Disability                               18.43        165.87
+
+Net Pay $3,532.68 deposited to Checking ****3318.
+Paid leave balances: Vacation 52.50 hrs; Sick 88.00 hrs. Questions: payroll@prairielantern.example

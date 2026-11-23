@@ -1,0 +1,53 @@
+{
+  "employerName": "Vantorre Design Partners",
+  "employeeName": "Helena Marchetti-Cruz",
+  "payFrequency": "monthly",
+  "payDate": "09/25/2026",
+  "periodStart": "09/01/2026",
+  "periodEnd": "09/30/2026",
+  "grossPay": 12250,
+  "netPay": 7111.09,
+  "ytdGross": 86250,
+  "deductions": [
+    {
+      "amount": 1907.54,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 732.73,
+      "kind": "social_security"
+    },
+    {
+      "amount": 171.37,
+      "kind": "medicare"
+    },
+    {
+      "amount": 761.93,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 153.64,
+      "kind": "other"
+    },
+    {
+      "amount": 980,
+      "kind": "retirement"
+    },
+    {
+      "amount": 287.5,
+      "kind": "other"
+    },
+    {
+      "amount": 118,
+      "kind": "health"
+    },
+    {
+      "amount": 19.4,
+      "kind": "health"
+    },
+    {
+      "amount": 6.8,
+      "kind": "health"
+    }
+  ]
+}

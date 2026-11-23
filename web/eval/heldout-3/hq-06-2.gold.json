@@ -1,0 +1,39 @@
+{
+  "employerName": "IRONWOOD GRADE PAVING CO",
+  "employeeName": "SHAWNA PETTIBONE",
+  "payFrequency": "weekly",
+  "payDate": "13-Nov-26",
+  "periodStart": "2-Nov-26",
+  "periodEnd": "8-Nov-26",
+  "grossPay": 1530.45,
+  "netPay": 1224.36,
+  "ytdGross": 52792.83,
+  "hoursWorked": 36,
+  "hourlyRate": 34.2,
+  "deductions": [
+    {
+      "amount": 102.54,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 94.89,
+      "kind": "social_security"
+    },
+    {
+      "amount": 22.19,
+      "kind": "medicare"
+    },
+    {
+      "amount": 28.31,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 19.9,
+      "kind": "other"
+    },
+    {
+      "amount": 38.26,
+      "kind": "other"
+    }
+  ]
+}

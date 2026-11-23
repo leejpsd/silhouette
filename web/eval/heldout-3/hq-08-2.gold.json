@@ -1,0 +1,47 @@
+{
+  "employerName": "Larkfield Bindery & Print",
+  "employeeName": "OKONKWO, SAMUEL A",
+  "payFrequency": "semimonthly",
+  "payDate": "11/10/26",
+  "periodStart": "10/16/26",
+  "periodEnd": "10/31/26",
+  "grossPay": 2147.6,
+  "netPay": 1675.78,
+  "ytdGross": 38109.28,
+  "hoursWorked": 72,
+  "hourlyRate": 23.6,
+  "deductions": [
+    {
+      "amount": 116.46,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 129.82,
+      "kind": "social_security"
+    },
+    {
+      "amount": 30.36,
+      "kind": "medicare"
+    },
+    {
+      "amount": 28.31,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 27.22,
+      "kind": "other"
+    },
+    {
+      "amount": 85.9,
+      "kind": "retirement"
+    },
+    {
+      "amount": 45,
+      "kind": "health"
+    },
+    {
+      "amount": 8.75,
+      "kind": "health"
+    }
+  ]
+}

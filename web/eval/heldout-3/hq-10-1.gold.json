@@ -1,0 +1,53 @@
+{
+  "employerName": "Wexley Harbor Media Group LLC",
+  "employeeName": "Simone Achterberg",
+  "payFrequency": "biweekly",
+  "payDate": "October 9, 2026",
+  "periodStart": "September 21, 2026",
+  "periodEnd": "October 4, 2026",
+  "grossPay": 3461.54,
+  "netPay": 2158.74,
+  "ytdGross": 72692.34,
+  "deductions": [
+    {
+      "amount": 207.69,
+      "kind": "retirement"
+    },
+    {
+      "amount": 71.25,
+      "kind": "health"
+    },
+    {
+      "amount": 155,
+      "kind": "other"
+    },
+    {
+      "amount": 354.23,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 200.59,
+      "kind": "social_security"
+    },
+    {
+      "amount": 46.91,
+      "kind": "medicare"
+    },
+    {
+      "amount": 150.77,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 100.21,
+      "kind": "other"
+    },
+    {
+      "amount": 1.2,
+      "kind": "other"
+    },
+    {
+      "amount": 14.95,
+      "kind": "other"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "employerName": "Northbank Literacy Alliance",
+  "employeeName": "Marcus J. Whitfield",
+  "payFrequency": "monthly",
+  "payDate": "30-Oct-26",
+  "periodStart": "1-Oct-26",
+  "periodEnd": "31-Oct-26",
+  "grossPay": 5579.17,
+  "netPay": 4042.03,
+  "ytdGross": 53029.2,
+  "deductions": [
+    {
+      "amount": 390.54,
+      "kind": "retirement"
+    },
+    {
+      "amount": 214,
+      "kind": "health"
+    },
+    {
+      "amount": 31.8,
+      "kind": "health"
+    },
+    {
+      "amount": 6.25,
+      "kind": "health"
+    },
+    {
+      "amount": 256.7,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 330.28,
+      "kind": "social_security"
+    },
+    {
+      "amount": 77.24,
+      "kind": "medicare"
+    },
+    {
+      "amount": 210.33,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 20,
+      "kind": "other"
+    }
+  ]
+}

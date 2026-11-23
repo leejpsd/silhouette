@@ -1,0 +1,49 @@
+{
+  "employerName": "Orchard Street Tutoring Collective",
+  "employeeName": "Devin Kowalczyk",
+  "payFrequency": "biweekly",
+  "payDate": "November 20, 2026",
+  "periodStart": "November 2, 2026",
+  "periodEnd": "November 15, 2026",
+  "grossPay": 2427.69,
+  "netPay": 1866.48,
+  "ytdGross": 56224.56,
+  "deductions": [
+    {
+      "amount": 72.83,
+      "kind": "retirement"
+    },
+    {
+      "amount": 113.03,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 150.52,
+      "kind": "social_security"
+    },
+    {
+      "amount": 35.2,
+      "kind": "medicare"
+    },
+    {
+      "amount": 91.6,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 69.94,
+      "kind": "other"
+    },
+    {
+      "amount": 1.2,
+      "kind": "other"
+    },
+    {
+      "amount": 10.49,
+      "kind": "other"
+    },
+    {
+      "amount": 16.4,
+      "kind": "health"
+    }
+  ]
+}

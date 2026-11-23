@@ -1,0 +1,38 @@
+{
+  "employerName": "PINECREST LINEN SERVICE",
+  "employeeName": "DUBOIS, MARCUS T",
+  "payFrequency": "semimonthly",
+  "payDate": "11-20-2026",
+  "periodStart": "11-01-2026",
+  "periodEnd": "11-15-2026",
+  "grossPay": 1632,
+  "netPay": 1261.66,
+  "hoursWorked": 68,
+  "hourlyRate": 20.4,
+  "deductions": [
+    {
+      "amount": 84.86,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 101.18,
+      "kind": "social_security"
+    },
+    {
+      "amount": 23.66,
+      "kind": "medicare"
+    },
+    {
+      "amount": 19.42,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 21.22,
+      "kind": "other"
+    },
+    {
+      "amount": 120,
+      "kind": "other"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+PINECREST LINEN SERVICE
+450 Ivy St  Chico CA 95928  530-555-0114
+
+EMPLOYEE ..... DUBOIS, MARCUS T  (#0981)
+PAY DATE ..... 11-20-2026
+PERIOD ....... 11-01-2026 thru 11-15-2026   (paid twice a month)
+DEPARTMENT ... Route Delivery
+
+DAILY HOURS
+  11-02 Mon  8.00         11-03 Tue  8.00         11-04 Wed  8.00
+  11-05 Thu  8.00         11-06 Fri  8.00         11-09 Mon  8.00
+  11-10 Tue  8.00         11-11 Wed  HOL 8.00     11-12 Thu  8.00
+  11-13 Fri  4.00 + PTO 4.00
+
+EARNINGS
+  Regular               68.00 hrs @ 20.40             1,387.20
+  Holiday (Nov 11)      8.00 hrs @ 20.40                163.20
+  PTO                   4.00 hrs @ 20.40                 81.60
+  Total Gross                                         1,632.00
+
+WITHHOLDINGS
+  Federal Income Tax                                    -84.86
+  Social Security                                      -101.18
+  Medicare                                              -23.66
+  California Income Tax                                 -19.42
+  CA SDI                                                -21.22
+  Earnings Withholding Order                           -120.00
+  Total Withholdings                                   -370.34
+
+NET                                                   1,261.66
+
+AMOUNT DEPOSITED
+  Savings xxxx7720                                      200.00
+  Checking xxxx3361                                   1,061.66
+  Total                                               1,261.66
+
+PAID BY COMPANY (not deducted, shown for your information)
+  Medical premium (100% employer paid)                  388.00
+
+PAID SICK LEAVE AVAILABLE: 24.00 HRS
+Earnings withholding order: remaining balance $1,080.00.

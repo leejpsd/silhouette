@@ -1,0 +1,51 @@
+{
+  "employerName": "HALVORSEN VALLEY MEDICAL CENTER",
+  "employeeName": "NGUYEN, THERESA L",
+  "payFrequency": "biweekly",
+  "payDate": "09/18/2026",
+  "periodStart": "08/30/2026",
+  "periodEnd": "09/12/2026",
+  "grossPay": 6018.3,
+  "netPay": 3806.21,
+  "ytdGross": 94064.4,
+  "hoursWorked": 64,
+  "hourlyRate": 64.8,
+  "deductions": [
+    {
+      "amount": 841.33,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 367.83,
+      "kind": "social_security"
+    },
+    {
+      "amount": 86.03,
+      "kind": "medicare"
+    },
+    {
+      "amount": 340.99,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 77.13,
+      "kind": "other"
+    },
+    {
+      "amount": 361.1,
+      "kind": "retirement"
+    },
+    {
+      "amount": 74.3,
+      "kind": "health"
+    },
+    {
+      "amount": 11.2,
+      "kind": "health"
+    },
+    {
+      "amount": 52.18,
+      "kind": "other"
+    }
+  ]
+}

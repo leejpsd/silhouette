@@ -1,0 +1,53 @@
+{
+  "employerName": "Tidemark Civil Engineers, Inc.",
+  "employeeName": "Jordan Abernathy",
+  "payFrequency": "monthly",
+  "payDate": "10/30/2026",
+  "periodStart": "10/01/2026",
+  "periodEnd": "10/31/2026",
+  "grossPay": 7483.33,
+  "netPay": 5394.48,
+  "ytdGross": 74833.3,
+  "deductions": [
+    {
+      "amount": 652.09,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 452.06,
+      "kind": "social_security"
+    },
+    {
+      "amount": 105.72,
+      "kind": "medicare"
+    },
+    {
+      "amount": 223.37,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 94.79,
+      "kind": "other"
+    },
+    {
+      "amount": 354.17,
+      "kind": "retirement"
+    },
+    {
+      "amount": 162,
+      "kind": "health"
+    },
+    {
+      "amount": 24.1,
+      "kind": "health"
+    },
+    {
+      "amount": 5.95,
+      "kind": "health"
+    },
+    {
+      "amount": 14.6,
+      "kind": "other"
+    }
+  ]
+}

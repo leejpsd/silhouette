@@ -1,0 +1,43 @@
+{
+  "employerName": "TULEBROOK COLD STORAGE INC.",
+  "employeeName": "Rafael Mendoza-Ibarra",
+  "payFrequency": "biweekly",
+  "payDate": "11/06/2026",
+  "periodStart": "10/18/2026",
+  "periodEnd": "10/31/2026",
+  "grossPay": 1774.9,
+  "netPay": 1445.71,
+  "ytdGross": 36559.27,
+  "hoursWorked": 76.25,
+  "hourlyRate": 19.85,
+  "deductions": [
+    {
+      "amount": 63.86,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 107.5,
+      "kind": "social_security"
+    },
+    {
+      "amount": 25.14,
+      "kind": "medicare"
+    },
+    {
+      "amount": 15.8,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 22.54,
+      "kind": "other"
+    },
+    {
+      "amount": 53.25,
+      "kind": "retirement"
+    },
+    {
+      "amount": 41.1,
+      "kind": "health"
+    }
+  ]
+}

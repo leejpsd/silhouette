@@ -1,0 +1,26 @@
+{
+  "employerName": "Pecan Flats Feed & Hardware",
+  "employeeName": "Wade Hollister",
+  "payFrequency": "weekly",
+  "payDate": "Sep 18, 2026",
+  "periodStart": "Sep 7, 2026",
+  "periodEnd": "Sep 13, 2026",
+  "grossPay": 714.95,
+  "netPay": 628.79,
+  "hoursWorked": 40,
+  "hourlyRate": 15.8,
+  "deductions": [
+    {
+      "amount": 31.46,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 44.33,
+      "kind": "social_security"
+    },
+    {
+      "amount": 10.37,
+      "kind": "medicare"
+    }
+  ]
+}

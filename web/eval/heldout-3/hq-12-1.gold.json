@@ -1,0 +1,41 @@
+{
+  "employerName": "Fernhollow Solar Supply",
+  "employeeName": "Natalie Boyce-Ward",
+  "payFrequency": "monthly",
+  "payDate": "2026-09-30",
+  "periodStart": "2026-09-01",
+  "periodEnd": "2026-09-30",
+  "grossPay": 7047.35,
+  "netPay": 4920.26,
+  "ytdGross": 58742.8,
+  "deductions": [
+    {
+      "amount": 777.74,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 430.49,
+      "kind": "social_security"
+    },
+    {
+      "amount": 100.68,
+      "kind": "medicare"
+    },
+    {
+      "amount": 271.55,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 90.26,
+      "kind": "other"
+    },
+    {
+      "amount": 352.37,
+      "kind": "retirement"
+    },
+    {
+      "amount": 104,
+      "kind": "health"
+    }
+  ]
+}

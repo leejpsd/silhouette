@@ -1,0 +1,45 @@
+{
+  "employerName": "Prairie Lantern Community Services",
+  "employeeName": "Gwendolyn R. Asante",
+  "payFrequency": "monthly",
+  "payDate": "30-Sep-26",
+  "periodStart": "1-Sep-26",
+  "periodEnd": "30-Sep-26",
+  "grossPay": 4850,
+  "netPay": 3532.68,
+  "ytdGross": 43650,
+  "deductions": [
+    {
+      "amount": 242.5,
+      "kind": "retirement"
+    },
+    {
+      "amount": 88,
+      "kind": "health"
+    },
+    {
+      "amount": 12.4,
+      "kind": "health"
+    },
+    {
+      "amount": 387.61,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 294.48,
+      "kind": "social_security"
+    },
+    {
+      "amount": 68.87,
+      "kind": "medicare"
+    },
+    {
+      "amount": 211.76,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 11.7,
+      "kind": "other"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+                                 COYOTE WELLS MEDICAL CENTER
+            4800 Arlington Heights Road  |  Riverside, CA 92505  |  (951) 555-0158
+
+NAME: BRANNIGAN, OWEN P                 EMPL ID: 0103377      PAY DATE: 11/20/2026
+DEPT: TELEMETRY 3                       JOB: CNA              PERIOD: 11/01/2026 TO 11/14/2026
+UNION: ALLIED CARE WORKERS LCL 14       BASE RATE: 26.15      FREQUENCY: BIWEEKLY
+
+EARNINGS                         HOURS      RATE     CURRENT  YTD HOURS   YTD AMOUNT
+REGULAR                          72.00     26.15    1,882.80    1612.00    42,153.80
+HOLIDAY NOT WORKED                8.00     26.15      209.20      48.00     1,255.20
+EVENING SHIFT DIFF               40.00      2.00       80.00    1104.00     2,208.00
+TOTAL EARNINGS                   80.00              2,172.00               45,617.00
+
+TAXES                                        CURRENT          YTD    DEDUCTIONS               CURRENT        YTD
+FEDERAL WITHHOLDING                           151.47     3,181.22    MEDICAL (PRE)              38.65     888.95
+SOCIAL SECURITY                               132.27     2,777.97    UNION DUES                 31.40     722.20
+MEDICARE                                       30.93       649.60
+CA STATE WITHHOLDING                           34.56       725.84
+CA SDI                                         27.73       582.39
+TOTAL TAXES                                   376.96     7,917.02    TOTAL DEDUCTIONS           70.05   1,611.15
+
+                                        CURRENT       YTD
+GROSS                                   2,172.00      45,617.00
+FED TAXABLE GROSS                       2,133.35      44,728.05
+NET PAY                                 1,724.99      36,088.83
+
+LEAVE                 BEGIN   EARNED    TAKEN      END
+PTO                   64.00     6.15     0.00    70.15
+EXTENDED SICK         88.50     1.54     0.00    90.04
+
+EMPLOYER PAID: MEDICAL 655.10   PENSION 155.86
+
+MESSAGES:
+  VETERANS DAY 11/11/2026 - HOLIDAY NOT WORKED, PAID AT STRAIGHT TIME.
+  PTO ACCRUAL RATE 0.0769 PER PAID HOUR ON 80.00 PAID HOURS.
+  BENEFIT ELECTIONS FOR 2027 ARE DUE 11/16/2026.
+
+............................ DETACH AND RETAIN FOR YOUR RECORDS ............................
+
+COYOTE WELLS MEDICAL CENTER                                 ADVICE NO. 00841006
+Riverside, CA 92505                                         DATE 11/20/2026
+
+DEPOSITED TO THE ACCOUNT OF   BRANNIGAN, OWEN P
+  CHECKING   XXXXXX0447                                          $1,724.99
+  TOTAL DIRECT DEPOSIT                                           $1,724.99
+
+                            NON-NEGOTIABLE  -  THIS IS NOT A CHECK

@@ -1,0 +1,39 @@
+Kestrel Point Instruments LLC                     Earnings Statement
+1290 Lakeside Mesa Drive                          Period Start Date   09/16/26
+Sunnyvale, CA 94085                               Period End Date     09/30/26
+                                                  Pay Date            10/09/26
+                                                  Document            DD-2610-00452
+                                                  Net Pay             $2,287.54
+
+Pay Group: Semi-Monthly Hourly                    HOLLOWAY, PRIYA D
+Employee ID: 100452                               815 Pastoria Court
+Location: SNV-02 Test Lab                         Sunnyvale, CA 94086
+Pay Rate: $41.20 Hourly
+
+Earnings             Rate  Hours    Current         YTD | Deductions              Current       YTD
+---------------------------------------------------------+------------------------------------------
+Regular             41.20  80.00   3,296.00   57,350.40  | Federal Income Tax       375.92  6,030.34
+Sick Pay            41.20   8.00     329.60    1,648.00  | Social Security          213.66  3,427.44
+Overtime            61.80   1.50      92.70      648.90  | Medicare                  49.97    801.60
+                                                         | CA Income Tax            138.90  2,228.17
+Gross                              3,718.30   59,647.30  | CA SDI                    44.80    718.66
+                                                         | 401(k)                   260.28  4,175.29
+                                                         | Dep Care FSA             208.33  3,958.27
+                                                         | Medical                   63.90  1,214.10
+                                                         | Roth 401(k)               75.00    900.00
+                                                         | Total                  1,430.76 23,453.87
+---------------------------------------------------------+------------------------------------------
+Net Pay                            2,287.54   36,193.43
+
+Pre-tax: 401(k), Dep Care FSA, Medical.  After-tax: Roth 401(k).
+
+Employer Paid Benefits              Current         YTD
+Medical                              521.60    9,910.40
+401(k) Match                         152.27    2,442.65
+
+Absence Plans           Accrued    Taken  Balance
+Vacation                  83.25    40.00    43.25
+Sick                      48.00    16.00    32.00
+
+Payment Information             Account                 Amount
+Direct Deposit                  Checking ...8846      2,287.54

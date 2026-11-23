@@ -1,0 +1,53 @@
+{
+  "employerName": "Thistlewood Analytics, Inc.",
+  "employeeName": "PARK, JULIANNE S",
+  "payFrequency": "semimonthly",
+  "payDate": "Oct 15, 2026",
+  "periodStart": "Oct 1, 2026",
+  "periodEnd": "Oct 15, 2026",
+  "grossPay": 5437.5,
+  "netPay": 3315.39,
+  "ytdGross": 94812.5,
+  "deductions": [
+    {
+      "amount": 699.75,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 330.02,
+      "kind": "social_security"
+    },
+    {
+      "amount": 77.18,
+      "kind": "medicare"
+    },
+    {
+      "amount": 286.31,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 69.2,
+      "kind": "other"
+    },
+    {
+      "amount": 395,
+      "kind": "retirement"
+    },
+    {
+      "amount": 96.2,
+      "kind": "health"
+    },
+    {
+      "amount": 14.35,
+      "kind": "health"
+    },
+    {
+      "amount": 4.1,
+      "kind": "health"
+    },
+    {
+      "amount": 150,
+      "kind": "retirement"
+    }
+  ]
+}

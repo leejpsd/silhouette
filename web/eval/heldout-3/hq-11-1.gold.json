@@ -1,0 +1,42 @@
+{
+  "employerName": "MARIPOSA CREEK PACKING CO.",
+  "employeeName": "ALVARADO, ROSA I",
+  "payFrequency": "semimonthly",
+  "payDate": "09-25-2026",
+  "periodStart": "09-01-2026",
+  "periodEnd": "09-15-2026",
+  "grossPay": 1790.65,
+  "netPay": 1337.57,
+  "hoursWorked": 80,
+  "hourlyRate": 18.75,
+  "deductions": [
+    {
+      "amount": 72.49,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 109.63,
+      "kind": "social_security"
+    },
+    {
+      "amount": 25.64,
+      "kind": "medicare"
+    },
+    {
+      "amount": 15.21,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 22.99,
+      "kind": "other"
+    },
+    {
+      "amount": 22.5,
+      "kind": "health"
+    },
+    {
+      "amount": 184.62,
+      "kind": "other"
+    }
+  ]
+}

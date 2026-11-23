@@ -1,0 +1,44 @@
+Northbank Literacy Alliance                         Pay Statement
+1150 N Main Street, Floor 2                         Payment Date ..... 30-Oct-26
+Rockford, IL 61103                                  Period Start ..... 1-Oct-26
+Phone (815) 555-0126                                Period End ....... 31-Oct-26
+FEIN XX-XXX9052                                     Pay Cycle ........ Monthly
+
+PAY TO                                              EMPLOYEE DETAILS
+Marcus J. Whitfield                                 ID 000207   Position Program Director
+3812 Spring Creek Road                              Fed W-4 Married   IL-W-4 allowances 3
+Rockford, IL 61107                                  SSN XXX-XX-1849
+
+========================================================================
+SUMMARY           Gross Pay    Pre-Tax      Taxes   Post-Tax     Net Pay
+  Current          5,579.17     642.59     874.55      20.00    4,042.03
+  YTD             53,029.20   6,232.53   8,312.47     200.00   38,284.20
+========================================================================
+
+EARNINGS                                           Current           YTD
+  Salary                                          5,416.67     52,866.70
+  Retro Salary Adjustment                           162.50        162.50
+  Gross Pay                                       5,579.17     53,029.20
+
+PRE-TAX DEDUCTIONS                                 Current           YTD
+  403(b) Retirement                                 390.54      3,712.03
+  Medical PPO                                       214.00      2,140.00
+  Dental                                             31.80        318.00
+  Vision                                              6.25         62.50
+
+TAXES                                              Current           YTD
+  Federal Withholding                               256.70      2,439.90
+  Social Security                                   330.28      3,139.26
+  Medicare                                           77.24        734.15
+  Illinois State Tax                                210.33      1,999.16
+
+POST-TAX DEDUCTIONS                                Current           YTD
+  United Way Pledge (after-tax)                      20.00        200.00
+
+EMPLOYER-PAID BENEFITS (not included in pay)       Current           YTD
+  403(b) Employer Match                             167.36      1,590.73
+  Medical PPO (employer)                            698.00      6,980.00
+
+Net Pay $4,042.03 deposited to Checking ****7064.
+Monthly salary rose from 5,254.17 to 5,416.67 effective 1-Sep-26; the retro adjustment pays the difference for September.
+Paid leave: Vacation 96.00 hrs; Sick 120.00 hrs.

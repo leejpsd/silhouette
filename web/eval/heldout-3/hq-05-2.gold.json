@@ -1,0 +1,43 @@
+{
+  "employerName": "COYOTE WELLS MEDICAL CENTER",
+  "employeeName": "BRANNIGAN, OWEN P",
+  "payFrequency": "biweekly",
+  "payDate": "11/20/2026",
+  "periodStart": "11/01/2026",
+  "periodEnd": "11/14/2026",
+  "grossPay": 2172,
+  "netPay": 1724.99,
+  "ytdGross": 45617,
+  "hoursWorked": 72,
+  "hourlyRate": 26.15,
+  "deductions": [
+    {
+      "amount": 151.47,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 132.27,
+      "kind": "social_security"
+    },
+    {
+      "amount": 30.93,
+      "kind": "medicare"
+    },
+    {
+      "amount": 34.56,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 27.73,
+      "kind": "other"
+    },
+    {
+      "amount": 38.65,
+      "kind": "health"
+    },
+    {
+      "amount": 31.4,
+      "kind": "other"
+    }
+  ]
+}

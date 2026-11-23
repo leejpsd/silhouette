@@ -1,0 +1,47 @@
+{
+  "employerName": "CALLOWAY RIDGE DISTRIBUTION LLC",
+  "employeeName": "Danielle Okafor",
+  "payFrequency": "biweekly",
+  "payDate": "09/25/2026",
+  "periodStart": "09/06/2026",
+  "periodEnd": "09/19/2026",
+  "grossPay": 2070.4,
+  "netPay": 1519.13,
+  "ytdGross": 38971.6,
+  "hoursWorked": 80,
+  "hourlyRate": 22.4,
+  "deductions": [
+    {
+      "amount": 157.64,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 124.18,
+      "kind": "social_security"
+    },
+    {
+      "amount": 29.04,
+      "kind": "medicare"
+    },
+    {
+      "amount": 43.3,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 26.04,
+      "kind": "other"
+    },
+    {
+      "amount": 103.52,
+      "kind": "retirement"
+    },
+    {
+      "amount": 58.4,
+      "kind": "health"
+    },
+    {
+      "amount": 9.15,
+      "kind": "health"
+    }
+  ]
+}

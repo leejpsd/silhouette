@@ -1,0 +1,34 @@
+{
+  "employerName": "Saltgrass Kitchen & Bar",
+  "employeeName": "Tomas Echeverria",
+  "payFrequency": "weekly",
+  "payDate": "2026-09-11",
+  "periodStart": "2026-08-31",
+  "periodEnd": "2026-09-06",
+  "grossPay": 1011.61,
+  "netPay": 846.82,
+  "hoursWorked": 31.5,
+  "hourlyRate": 17.5,
+  "deductions": [
+    {
+      "amount": 61.71,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 62.72,
+      "kind": "social_security"
+    },
+    {
+      "amount": 14.67,
+      "kind": "medicare"
+    },
+    {
+      "amount": 12.54,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 13.15,
+      "kind": "other"
+    }
+  ]
+}

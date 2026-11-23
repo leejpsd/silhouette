@@ -1,0 +1,51 @@
+{
+  "employerName": "Kestrel Point Instruments LLC",
+  "employeeName": "HOLLOWAY, PRIYA D",
+  "payFrequency": "semimonthly",
+  "payDate": "10/09/26",
+  "periodStart": "09/16/26",
+  "periodEnd": "09/30/26",
+  "grossPay": 3718.3,
+  "netPay": 2287.54,
+  "ytdGross": 59647.3,
+  "hoursWorked": 80,
+  "hourlyRate": 41.2,
+  "deductions": [
+    {
+      "amount": 375.92,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 213.66,
+      "kind": "social_security"
+    },
+    {
+      "amount": 49.97,
+      "kind": "medicare"
+    },
+    {
+      "amount": 138.9,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 44.8,
+      "kind": "other"
+    },
+    {
+      "amount": 260.28,
+      "kind": "retirement"
+    },
+    {
+      "amount": 208.33,
+      "kind": "other"
+    },
+    {
+      "amount": 63.9,
+      "kind": "health"
+    },
+    {
+      "amount": 75,
+      "kind": "retirement"
+    }
+  ]
+}

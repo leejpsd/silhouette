@@ -1,0 +1,30 @@
+{
+  "employerName": "Two Mesas Auto Glass",
+  "employeeName": "Brenda Saucedo",
+  "payFrequency": "weekly",
+  "payDate": "Nov 6, 2026",
+  "periodStart": "Oct 26, 2026",
+  "periodEnd": "Nov 1, 2026",
+  "grossPay": 708.4,
+  "netPay": 619.5,
+  "hoursWorked": 38.5,
+  "hourlyRate": 18.4,
+  "deductions": [
+    {
+      "amount": 26.21,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 43.92,
+      "kind": "social_security"
+    },
+    {
+      "amount": 10.27,
+      "kind": "medicare"
+    },
+    {
+      "amount": 8.5,
+      "kind": "other"
+    }
+  ]
+}

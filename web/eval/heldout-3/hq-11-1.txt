@@ -1,0 +1,44 @@
+MARIPOSA CREEK PACKING CO.
+8800 W Olive Ave  Merced CA 95348  209-555-0187
+
+EMPLOYEE ..... ALVARADO, ROSA I  (#22610)
+PAY DATE ..... 09-25-2026
+PERIOD ....... 09-01-2026 thru 09-15-2026   (paid twice a month)
+DEPARTMENT ... Packing Line 2
+
+DAILY HOURS
+  09-01 Tue  8.00         09-02 Wed  9.50         09-03 Thu  8.00
+  09-04 Fri  10.00        09-07 Mon  HOL 8.00     09-08 Tue  8.00
+  09-09 Wed  8.00         09-10 Thu  9.50         09-11 Fri  8.00
+  09-14 Mon  8.00         09-15 Tue  8.00
+
+EARNINGS
+  Regular               80.00 hrs @ 18.75             1,500.00
+  Holiday (Sep 7)       8.00 hrs @ 18.75                150.00
+  Overtime              5.00 hrs @ 28.13                140.65
+  Total Gross                                         1,790.65
+
+WITHHOLDINGS
+  Federal Income Tax                                    -72.49
+  Social Security                                      -109.63
+  Medicare                                              -25.64
+  California Income Tax                                 -15.21
+  CA SDI                                                -22.99
+  Medical (pre-tax)                                     -22.50
+  Child Support Order                                  -184.62
+  Total Withholdings                                   -453.08
+
+NET                                                   1,337.57
+
+AMOUNT DEPOSITED
+  Savings xxxx4105                                       50.00
+  Checking xxxx4113                                   1,287.57
+  Total                                               1,337.57
+
+PAID BY COMPANY (not deducted, shown for your information)
+  Medical premium                                       402.30
+  Workers comp insurance                                 61.97
+
+PAID SICK LEAVE AVAILABLE: 18.50 HRS
+Child support order no. FS-2026-0388 is sent to the state disbursement unit.
+Overtime rate is 1.5 x 18.75, rounded to 28.13.
