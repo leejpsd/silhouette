@@ -862,5 +862,7 @@
   "results.docEffect.totalNote": "Suma de los programas de abajo que muestran una cantidad. Cada uno lo deciden las reglas de este dispositivo.",
   "review.both.onlyCloud": "Solo la respuesta de la nube tiene: {fields}. Las comprobaciones del dispositivo los dejaron fuera de su respuesta.",
   "review.both.onlyDevice": "Solo la respuesta del dispositivo tiene: {fields}.",
-  "results.docEffect.upToOnly": "Hasta {upTo} al año"
+  "results.docEffect.upToOnly": "Hasta {upTo} al año",
+  "send.destination.cloudGeneral": "Va a Firebase AI Logic en la nube: solo lo que se muestra arriba",
+  "send.destination.deviceGeneral": "Primero responde el modelo de este dispositivo; solo si no puede, lo que se muestra arriba va a la nube"
 }

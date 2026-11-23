@@ -1067,6 +1067,13 @@
     },
     {
       "language": "en",
+      "platform": "ios",
+      "key": "send.destination.deviceGeneral",
+      "text": "Answered first by the model on this device; only if it can't, what is shown above goes to the cloud",
+      "shown": "Answered first by the model on this iPhone; only if it can't, what is shown above goes to the cloud"
+    },
+    {
+      "language": "en",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "On this device",
@@ -2130,6 +2137,13 @@
       "shown": "Only the phone's answer has: {fields}."
     },
     {
+      "language": "en",
+      "platform": "android",
+      "key": "send.destination.deviceGeneral",
+      "text": "Answered first by the model on this device; only if it can't, what is shown above goes to the cloud",
+      "shown": "Answered first by the model on this phone; only if it can't, what is shown above goes to the cloud"
+    },
+    {
       "language": "es",
       "platform": "ios",
       "key": "badge.onDevice",
@@ -3083,6 +3097,13 @@
     },
     {
       "language": "es",
+      "platform": "ios",
+      "key": "send.destination.deviceGeneral",
+      "text": "Primero responde el modelo de este dispositivo; solo si no puede, lo que se muestra arriba va a la nube",
+      "shown": "Primero responde el modelo de este iPhone; solo si no puede, lo que se muestra arriba va a la nube"
+    },
+    {
+      "language": "es",
       "platform": "android",
       "key": "badge.onDevice",
       "text": "En este dispositivo",
@@ -4032,6 +4053,13 @@
       "key": "results.docEffect.totalNote",
       "text": "Suma de los programas de abajo que muestran una cantidad. Cada uno lo deciden las reglas de este dispositivo.",
       "shown": "Suma de los programas de abajo que muestran una cantidad. Cada uno lo deciden las reglas de este teléfono."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "send.destination.deviceGeneral",
+      "text": "Primero responde el modelo de este dispositivo; solo si no puede, lo que se muestra arriba va a la nube",
+      "shown": "Primero responde el modelo de este teléfono; solo si no puede, lo que se muestra arriba va a la nube"
     }
   ]
 }
