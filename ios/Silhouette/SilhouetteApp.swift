@@ -21,6 +21,10 @@ struct SilhouetteApp: App {
                 model.autoRunDeviceCheck = repetitions
                 model.open(.deviceCheck)
             }
+            if options.heldOutRun {
+                model.autoRunHeldOut = true
+                model.open(.deviceCheck)
+            }
             return model
         })
         self.options = options
@@ -75,8 +79,12 @@ struct LaunchOptions {
     /// three times), for collecting a run without tapping through the app. The run file is saved in the
     /// app's Documents folder when it finishes.
     let deviceCheckRun: Int?
+    /// `-HeldOutRun`: open the on-device check and read the 24 held-out paystubs at once (where the on-device
+    /// model is available). The run file is saved in the app's Documents folder when it finishes.
+    let heldOutRun: Bool
 
     init(arguments: [String]) {
+        heldOutRun = arguments.contains("-HeldOutRun")
         resetAll = arguments.contains("-UITestResetAll")
         offline = arguments.contains("-UITestOffline")
         if let i = arguments.firstIndex(of: "-DeviceCheckRun"), i + 1 < arguments.count, let n = Int(arguments[i + 1]) {

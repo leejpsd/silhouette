@@ -328,3 +328,112 @@ final class DeviceCheckRun {
     }
 }
 
+
+/// The 24 held-out paystubs (web/eval/heldout/, bundled as `Shared/heldout/`) read on this iPhone as the app
+/// reads a document: the silhouette made here, the device first with the reading in parts and its checks
+/// (shared/validation/DEVICE_READING.md), and one cloud retry of the same silhouette when the device's answer
+/// fails them. The run file has the shape of the web's held-out run, so web/eval/heldout-score.mjs scores it;
+/// it is saved in the app's Documents folder when the run finishes. The screen stays on while it runs.
+@MainActor
+@Observable
+final class HeldOutRun {
+    private(set) var running = false
+    private(set) var current = 0
+    private(set) var total = 0
+    private(set) var documents: [JSON] = []
+    private(set) var file: JSON?
+    private(set) var savedURL: URL?
+    /// How long the whole run took, once finished.
+    private(set) var seconds: Double?
+
+    private let model: AppModel
+    init(model: AppModel) { self.model = model }
+
+    private var bundle: SharedBundle { model.bundle }
+    private var schema: JSON { bundle.paystubSchema }
+
+    /// The bundled held-out paystubs.
+    nonisolated static func documents(_ bundle: SharedBundle) -> [HeldOutDocument] {
+        HeldOut.load(directory: bundle.directory.appendingPathComponent("heldout", isDirectory: true))
+    }
+
+    /// Held-out runs recorded on an iPhone and bundled with the app (eval/on-device/heldout/), newest first.
+    /// The answer keys of the bundled paystubs, for scoring a run file.
+    static func golds(_ bundle: SharedBundle) -> [String: JSON] {
+        if let cachedGolds { return cachedGolds }
+        let golds = HeldOut.golds(documents(bundle))
+        cachedGolds = golds
+        return golds
+    }
+    private static var cachedGolds: [String: JSON]?
+
+    static var bundledRecordings: [(name: String, file: JSON)] {
+        let urls = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: "Shared/recordings/heldout") ?? []
+        return urls.compactMap { url in (try? JSON.parse(Data(contentsOf: url))).flatMap { HeldOut.isRunFile($0) ? (url.lastPathComponent, $0) : nil } }
+            .sorted { ($0.file["date"]?.stringValue ?? "") > ($1.file["date"]?.stringValue ?? "") }
+    }
+
+    static func save(_ file: JSON) -> URL? {
+        guard let folder = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+        let url = folder.appendingPathComponent(HeldOut.fileName(file))
+        guard (try? Data((file.jsonText + "\n").utf8).write(to: url, options: .atomic)) != nil else { return nil }
+        return url
+    }
+
+    func run() async {
+        guard !running else { return }
+        running = true
+        documents = []
+        file = nil
+        savedURL = nil
+        seconds = nil
+        let started = Date()
+        let availability = model.port.deviceAvailability()
+        // Several minutes: the screen is kept on, so the run is not stopped by the phone locking.
+        let wasIdleDisabled = UIApplication.shared.isIdleTimerDisabled
+        UIApplication.shared.isIdleTimerDisabled = true
+        let docs = Self.documents(bundle)
+        total = docs.count
+        for (i, doc) in docs.enumerated() {
+            current = i + 1
+            documents.append(await read(doc))
+        }
+        let env = DeviceCheckRun.environment
+        let finished = HeldOut.runFile(date: DeviceCheckRun.iso(started), browser: env.browser, platform: env.platform, userAgent: env.userAgent,
+                                       availability: [("systemLanguageModel", availability.rawValue)], device: DeviceCheckRun.deviceBlock,
+                                       documents: documents)
+        file = finished
+        savedURL = Self.save(finished)
+        seconds = Date().timeIntervalSince(started)
+        UIApplication.shared.isIdleTimerDisabled = wasIdleDisabled
+        running = false
+    }
+
+    private func read(_ doc: HeldOutDocument) async -> JSON {
+        let started = Date()
+        let ms = { Date().timeIntervalSince(started) * 1000 }
+        guard let allowlist = try? bundle.allowlist(for: .en) else {
+            return HeldOut.failed(doc, schema: schema, map: Raw(PlaceholderMap()), error: "the allowlist could not be loaded", attempt: nil, latencyMs: ms())
+        }
+        let silhouette = Skeletonizer.skeletonize(doc.text, allowlist: allowlist)
+        // The same prompt, parts and checks as a document read in the app (and as the on-device check).
+        let version = model.lastConfig?.promptPointerExtractV ?? model.currentConfig.promptPointerExtractV
+        guard let template = model.pointerTemplate(version: version),
+              let request = try? Planner.pointers(silhouette.skeleton, language: .en, template: template, pointerSchema: schema) else {
+            return HeldOut.failed(doc, schema: schema, map: silhouette.map, error: "unknown: no pointer prompt", attempt: nil, latencyMs: ms())
+        }
+        let inParts = template.id == "pointer-extract.v5" && version >= 5 && !bundle.prompts.deviceParts.isEmpty
+            ? ReadingInParts(template: template, parts: bundle.prompts.deviceParts, schema: schema, skeleton: silhouette.skeleton,
+                             map: silhouette.map, jurisdiction: bundle.packInfo.jurisdiction, language: "en")
+            : nil
+        do {
+            let outcome = try await model.runner.extractPointers(request, inParts: inParts)
+            return HeldOut.record(doc, schema: schema, map: silhouette.map, outcome: outcome, latencyMs: ms())
+        } catch {
+            let e = (error as? DeviceReadingFailed)?.error ?? (error as? TaskError) ?? TaskError(.unknown, String(describing: error))
+            let origin = [e.origin, e.errorType].compactMap { $0 }.joined(separator: ", ")
+            return HeldOut.failed(doc, schema: schema, map: silhouette.map, error: "\(e.kind.rawValue): \(e.detail)\(origin.isEmpty ? "" : " (\(origin))")",
+                                  attempt: (error as? DeviceReadingFailed)?.attempt, latencyMs: ms())
+        }
+    }
+}

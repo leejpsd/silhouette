@@ -73,4 +73,43 @@ final class DeviceCheckUITests: XCTestCase {
         XCTAssertTrue(app.element("deviceCheck.baselineNote").waitForExistence(timeout: 5), "the baseline says it is the baseline")
         XCTAssertTrue(app.element("deviceCheck.recordingMeta").label.replacingOccurrences(of: "\u{00A0}", with: " ").contains("November 17, 2026"))
     }
+
+    /// The held-out paystubs with the scripted model: one button under the check's live run starts the
+    /// reading of all 24, the progress counts them, and the run file is saved when it finishes, with the
+    /// figures scored from it.
+    func testHeldOutRunStartsAndFinishes() {
+        let app = XCUIApplication.silhouette(model: "device")
+        app.launch()
+        openCheck(app)
+        let button = app.buttons["heldout.run"]
+        XCTAssertTrue(button.waitForExistence(timeout: 5), "the held-out run is offered where the check's live run is")
+        XCTAssertTrue(button.label.contains("24"), button.label)
+        let started = Date()
+        app.tapButton("heldout.run")
+        let status = app.element("heldout.status")
+        XCTAssertTrue(status.waitForExistence(timeout: 10), "the run shows its progress")
+        XCTAssertTrue(status.label.contains("of 24"), status.label)
+        XCTAssertFalse(app.buttons["deviceCheck.run"].isEnabled, "one run at a time")
+        let saved = app.element("heldout.saved")
+        XCTAssertTrue(saved.waitForExistence(timeout: 300), "the run file is saved when the run finishes")
+        print("held-out run with the scripted model: \(Int(Date().timeIntervalSince(started))) s")
+        XCTAssertTrue(saved.label.contains("heldout-device-") && saved.label.contains(".json"), saved.label)
+        XCTAssertTrue(app.element("heldout.status").label.hasPrefix("Finished: 24 paystubs"), app.element("heldout.status").label)
+        XCTAssertTrue(app.buttons["heldout.share"].exists)
+        // The figures, scored from the file (the check itself did not run, so these are the held-out run's).
+        let onDevice = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "cases answered on this iPhone")).firstMatch
+        app.scrollIntoView(onDevice)
+        XCTAssertTrue(onDevice.waitForExistence(timeout: 5) && onDevice.label.contains("/ 24"), onDevice.debugDescription)
+        let wrong = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "wrong value reached the person")).firstMatch
+        XCTAssertTrue(wrong.label.hasPrefix("0 / 24"), wrong.label)
+    }
+
+    /// Without a model there is no held-out run to start.
+    func testWithoutAModelThereIsNoHeldOutRun() {
+        let app = XCUIApplication.silhouette(model: "none")
+        app.launch()
+        openCheck(app)
+        XCTAssertTrue(app.element("deviceCheck.recordingMeta").waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["heldout.run"].exists)
+    }
 }

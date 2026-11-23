@@ -32,6 +32,13 @@ final class TestModelPort: ModelPort {
         }
     }
 
+    /// Right answers for the held-out paystubs (amounts and dates from their answer keys, no names), found by
+    /// their silhouettes.
+    static func heldOutAnswers(_ bundle: SharedBundle) -> [(skeleton: String, pointers: JSON)] {
+        guard let allowlist = try? bundle.allowlist(for: .en) else { return [] }
+        return HeldOutRun.documents(bundle).map { HeldOut.scriptedAnswer($0, allowlist: allowlist) }
+    }
+
     func deviceAvailability() -> DeviceAvailability { mode.hasPrefix("device") ? .available : .appleIntelligenceNotEnabled }
 
     private func pointers(in prompt: String) -> JSON? {

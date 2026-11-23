@@ -42,3 +42,16 @@ Figures are taken from the files. The photo case is not counted: on iPhone the o
 The 11-17 runs were made with the app of contract v1.17, the 11-19 runs with the app of contract v1.42; all on an iPhone 17 Pro (iOS 26.5.2). In the 11-19 runs every case, the evaluation paystub L10 included, was answered on the device: none went to the cloud. In the 11-17 runs every wrong value was in a field that feeds no result: hourly rate, hours worked, net pay, and once a pay date. In those runs the evaluation paystub L10 never ran on the device: its core part failed in about 10 ms, before the model answered, and was read in the cloud; those files record only `error:on-device-unavailable`. Runs made since record where such a call stopped and why (`failure:` in the pass's problems).
 
 Replayed under `shared/validation/DEVICE_READING.md` v2 (values that feed no result are shown only when confirmed), the 25 readings recorded on 11-17 give 17 that stay on the device, and none of them leaves a wrong value with the person.
+
+## The held-out paystubs on the iPhone
+
+The 24 paystubs of `web/eval/heldout/` (`hp-*`, frozen before measuring: see its `FROZEN.md`) are bundled with the app as they are, with their answer keys. On an iPhone with the on-device model ready, the on-device check screen offers **Read the 24 held-out paystubs** under its own run. Each paystub is read as the app reads a document: the silhouette is made on the iPhone, the on-device model reads it in parts with the checks of `shared/validation/DEVICE_READING.md`, and the same silhouette is read once in the cloud only when the device's answer fails them. The run takes several minutes; the screen stays on until it finishes. It can also be started without tapping: launch the app with the argument `-HeldOutRun`.
+
+The run file (`heldout-device-<date>-silhouette0-ios<version>.json`) has the shape of the web's held-out run and is saved in the app's Documents folder (Files, On My iPhone, Silhouette); **Share the results** sends the same file. It can be copied from the phone with
+
+```sh
+xcrun devicectl device copy from --device <device id> --domain-type appDataContainer --domain-identifier app.silhouette.benefits \
+  --source Documents/heldout-device-<date>-silhouette0-ios<version>.json --destination .
+```
+
+and scored with `node web/eval/heldout-score.mjs <file>`. Put the file in [`heldout/`](heldout/), unchanged: the app then bundles it and lists it under the recordings, with its figures scored in the app the way that script scores them (names word for word).

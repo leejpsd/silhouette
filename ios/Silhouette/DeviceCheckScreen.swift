@@ -11,6 +11,8 @@ struct DeviceCheckScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
     @State private var run: DeviceCheckRun?
+    /// The held-out paystubs read on this iPhone.
+    @State private var heldOut: HeldOutRun?
     @State private var repeatCases = false
     /// A recording being shown (bundled or opened), instead of the live run.
     @State private var recording: (file: JSON, name: String)?
@@ -18,6 +20,10 @@ struct DeviceCheckScreen: View {
     @State private var badFile = false
 
     private var available: Bool { model.deviceModelAvailable }
+    /// A run is going: the on-device check or the held-out paystubs (one at a time).
+    private var busy: Bool { run?.running == true || heldOut?.running == true }
+    /// The recording shown is a held-out run.
+    private var heldOutShown: Bool { recording.map { HeldOut.isRunFile($0.file) } ?? false }
 
     /// Runs recorded on an iPhone and bundled with the app (eval/on-device/: the baseline and the
     /// latest), newest first.
@@ -79,7 +85,7 @@ struct DeviceCheckScreen: View {
                     .accessibilityIdentifier("deviceCheck.share")
                 }
                 PrimaryButton(label: model.t("deviceCheck.run"), id: "deviceCheck.run", busy: run?.running == true) { start() }
-                    .disabled(!available || run?.running == true)
+                    .disabled(!available || busy)
             }
         }
     }
@@ -106,8 +112,10 @@ struct DeviceCheckScreen: View {
                     NoteText(text: model.t("deviceCheck.baselineNote"), size: 15).accessibilityIdentifier("deviceCheck.baselineNote")
                 }
             }
-            NoteText(text: model.t("deviceCheck.lead"), size: 15)
-            NoteText(text: model.t("deviceCheck.cloudNote"))
+            if !heldOutShown {
+                NoteText(text: model.t("deviceCheck.lead"), size: 15)
+                NoteText(text: model.t("deviceCheck.cloudNote"))
+            }
             // A recording made elsewhere is not about this iPhone: no "no model here" card over it.
             if !available && recording == nil {
                 NoticeCard(text: model.t("deviceCheck.noModel"), systemImage: "iphone.slash").accessibilityIdentifier("deviceCheck.noModel")
@@ -116,7 +124,7 @@ struct DeviceCheckScreen: View {
                 Toggle(model.t("deviceCheck.repeat"), isOn: $repeatCases)
                     .sfFont(15)
                     .tint(theme.ink)
-                    .disabled(run?.running == true)
+                    .disabled(busy)
                     .padding(16)
                     .background(RoundedRectangle(cornerRadius: 20).fill(theme.sheet))
                     .accessibilityIdentifier("deviceCheck.repeat")
@@ -140,6 +148,10 @@ struct DeviceCheckScreen: View {
             }
             // Results arrive below the status line; nothing above them moves while a run streams in.
             if let shown, !(shown["cases"]?.arrayValue ?? []).isEmpty { headlines(shown); summary(shown); caseList(shown) }
+            // A held-out run recorded on an iPhone.
+            if let recording, heldOutShown { heldOutSection(recording.file, recorded: true) }
+            // The held-out paystubs, read live: only where the check's live run is.
+            if recording == nil && available { heldOutLive }
             // Back to a live run, only where one can run.
             if recording != nil && available { actions }
             recordings
@@ -153,7 +165,13 @@ struct DeviceCheckScreen: View {
             // The fast snapshot capture opens this screen running, or showing the bundled recording.
             if model.snapshotDeviceCheck == "run" { start() }
             if model.snapshotDeviceCheck == "recording", let r = Self.bundledRecordings.first { recording = (r.file, r.name) }
+            if model.snapshotDeviceCheck == "heldout", let r = HeldOutRun.bundledRecordings.first { recording = (r.file, r.name) }
+            if model.snapshotDeviceCheck == "heldout-run" { startHeldOut() }
             model.snapshotDeviceCheck = nil
+            if model.autoRunHeldOut {
+                model.autoRunHeldOut = false
+                if available { startHeldOut() }
+            }
             if let repetitions = model.autoRunDeviceCheck {
                 model.autoRunDeviceCheck = nil
                 if available {
@@ -171,13 +189,20 @@ struct DeviceCheckScreen: View {
             guard case .success(let url) = result else { return }
             let scoped = url.startAccessingSecurityScopedResource()
             defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-            if let json = try? JSON.parse(Data(contentsOf: url)), DeviceCheck.isRunFile(json) {
+            if let json = try? JSON.parse(Data(contentsOf: url)), DeviceCheck.isRunFile(json) || HeldOut.isRunFile(json) {
                 badFile = false
                 recording = (json, url.lastPathComponent)
             } else {
                 badFile = true
             }
         }
+    }
+
+    private func startHeldOut() {
+        guard !busy else { return }
+        let r = heldOut ?? HeldOutRun(model: model)
+        heldOut = r
+        Task { await r.run() }
     }
 
     private func start() {
@@ -192,6 +217,110 @@ struct DeviceCheckScreen: View {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
         guard (try? Data((file.jsonText + "\n").utf8).write(to: url)) != nil else { return nil }
         return url
+    }
+
+    // MARK: Held-out paystubs
+
+    private var golds: [String: JSON] { HeldOutRun.golds(model.bundle) }
+
+    /// The live run: what it is, one button, its progress, and its figures as they come in.
+    private var heldOutLive: some View {
+        let count = String(HeldOutRun.documents(model.bundle).count)
+        return VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(text: model.t("heldout.title", ["count": count]), large: false)
+            NoteText(text: model.t("heldout.lead"), size: 15)
+            PrimaryButton(label: model.t("heldout.run", ["count": count]), id: "heldout.run", busy: heldOut?.running == true) { startHeldOut() }
+                .disabled(busy)
+            NoteText(text: model.t("heldout.runNote"), size: 12)
+            if let heldOut {
+                Group {
+                    if heldOut.running {
+                        SpinnerLine(text: model.t("deviceCheck.running", ["n": String(heldOut.current), "total": String(heldOut.total)]))
+                    } else if let seconds = heldOut.seconds {
+                        NoteText(text: model.t("heldout.done", ["count": String(heldOut.total), "time": Self.duration(seconds)]), size: 15)
+                    }
+                }
+                .accessibilityIdentifier("heldout.status")
+                if let saved = heldOut.savedURL, !heldOut.running {
+                    NoteText(text: model.t("deviceCheck.saved", ["file": saved.lastPathComponent]))
+                        .accessibilityIdentifier("heldout.saved")
+                    ShareLink(item: saved) {
+                        Label(model.t("deviceCheck.download"), systemImage: "square.and.arrow.up")
+                            .sfFont(17, weight: .semibold)
+                            .foregroundStyle(theme.ink)
+                            .frame(maxWidth: .infinity, minHeight: 48)
+                            .background(Capsule().fill(theme.sheet))
+                    }
+                    .accessibilityIdentifier("heldout.share")
+                }
+                if !heldOut.documents.isEmpty {
+                    heldOutFigures(heldOut.file ?? .object(JSONObject([("documents", .array(heldOut.documents))])), recorded: false)
+                }
+            }
+        }
+        .padding(.top, 8)
+    }
+
+    /// "4 min 12 s", "48 s".
+    static func duration(_ seconds: Double) -> String {
+        let s = Int(seconds.rounded())
+        return s >= 60 ? "\(s / 60) min \(s % 60) s" : "\(s) s"
+    }
+
+    /// A recorded held-out run: what it is, then its figures.
+    private func heldOutSection(_ file: JSON, recorded: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(text: model.t("heldout.title", ["count": String(HeldOut.figures(file, golds: golds).documents)]), large: false)
+                .accessibilityIdentifier("heldout.title")
+            NoteText(text: model.t("heldout.lead"), size: 15)
+            heldOutFigures(file, recorded: recorded)
+        }
+    }
+
+    /// The figures of a held-out run, scored here as web/eval/heldout-score.mjs scores them, then one line per paystub.
+    private func heldOutFigures(_ file: JSON, recorded: Bool) -> some View {
+        let f = HeldOut.figures(file, golds: golds)
+        let n = String(f.documents)
+        let seconds = { (ms: Double?) in ms.map { String(format: "%.1f", $0 / 1000) } ?? "–" }
+        return VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 10) {
+                headline("\(f.onDevice) / \(n)", model.t(recorded ? "deviceCheck.headline.onRecordingDevice" : "deviceCheck.headline.onDevice"))
+                headline("\(f.incomeAllRight) / \(n)", model.t("deviceCheck.headline.incomeRight"))
+                headline("\(f.wrongShown) / \(n)", model.t(f.wrongShown == 0 ? "deviceCheck.headline.wrongNone" : "deviceCheck.headline.wrong"))
+                headline("\(f.firstCorrect) / \(f.firstTotal)", model.t("heldout.firstFields"))
+                if f.medianMs != nil {
+                    headline("\(seconds(f.medianMs)) s", model.t("heldout.median", ["min": seconds(f.minMs), "max": seconds(f.maxMs)]))
+                }
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("heldout.headlines")
+            NoteText(text: model.t("deviceCheck.summary", ["onDevice": String(f.onDevice), "total": n, "afterDevice": String(f.retried),
+                                                           "inCloud": String(max(0, f.inCloud - f.retried)), "notRun": String(f.notRun)]))
+            NoteText(text: model.t("heldout.scoring"), size: 12)
+            ListCard {
+                ForEach(Array(f.rows.enumerated()), id: \.offset) { i, r in
+                    if i > 0 { RowDivider(inset: 0) }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(verbatim: r.id).sfFont(15, weight: .semibold).foregroundStyle(theme.ink)
+                        let ran = r.ran == "IN_CLOUD" && r.retried ? model.t("deviceCheck.ran.afterDevice") : model.t("deviceCheck.ran.\(r.ran)")
+                        Text("\(model.t("deviceCheck.col.ran")): \(ran) · \(model.t("deviceCheck.col.time")): \(seconds(r.latencyMs)) s")
+                            .sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                        Text(model.t("heldout.rowFields", ["first": r.first.map { "\($0.correct) / \($0.total)" } ?? "–",
+                                                           "shown": "\(r.shown.correct) / \(r.shown.total)"]))
+                            .sfFont(13).foregroundStyle(theme.note).fixedSize(horizontal: false, vertical: true)
+                        if !r.wrong.isEmpty {
+                            Text(model.t("heldout.rowWrong", ["fields": r.wrong.joined(separator: ", ")]))
+                                .sfFont(13, weight: .semibold).foregroundStyle(theme.ink).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("heldout.documents")
+        }
     }
 
     // MARK: Parts
@@ -326,7 +455,25 @@ struct DeviceCheckScreen: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("deviceCheck.recording")
                 }
-                if !bundled.isEmpty { RowDivider(inset: 64) }
+                ForEach(Array(HeldOutRun.bundledRecordings.enumerated()), id: \.element.name) { i, r in
+                    if i > 0 || !bundled.isEmpty { RowDivider(inset: 64) }
+                    let shown = recording?.name == r.name
+                    Button { recording = (r.file, r.name) } label: {
+                        ListRow(title: model.t("heldout.recordingRow", ["count": String(HeldOut.figures(r.file, golds: golds).documents),
+                                                                        "date": Self.recordedDate(r.file, model)]),
+                                subtitle: [Self.deviceName(r.file), r.file["platform"]?.stringValue, Self.recordedTime(r.file["date"]?.stringValue)]
+                                    .compactMap { $0 }.joined(separator: " · "),
+                                chevron: !shown, titleSize: 15, titleWeight: .semibold) {
+                            IconTile(systemImage: "doc.text.magnifyingglass")
+                        } trailing: {
+                            if shown { Image(systemName: "checkmark").sfFont(15, weight: .semibold).foregroundStyle(theme.ink).accessibilityHidden(true) }
+                        }
+                    }
+                    .accessibilityAddTraits(shown ? .isSelected : [])
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("heldout.recording")
+                }
+                if !bundled.isEmpty || !HeldOutRun.bundledRecordings.isEmpty { RowDivider(inset: 64) }
                 Button { opening = true } label: {
                     ListRow(title: model.t("deviceCheck.open"), titleSize: 15, titleWeight: .semibold) { IconTile(systemImage: "folder") }
                 }

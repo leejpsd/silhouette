@@ -40,6 +40,18 @@ for run in "$IOS_DIR"/eval/on-device/device-check-*.json; do
   [ -e "$run" ] && cp "$run" "$DEST/recordings/"
 done
 
+# The held-out paystubs (web/eval/heldout/, frozen before measuring), as they are: the 24 paystubs and their
+# answer keys, for the held-out run on this device. The W-2s of that folder are no longer held out.
+mkdir -p "$DEST/heldout"
+for doc in "$IOS_DIR"/../web/eval/heldout/hp-*.txt "$IOS_DIR"/../web/eval/heldout/hp-*.gold.json; do
+  [ -e "$doc" ] && cp "$doc" "$DEST/heldout/"
+done
+# Held-out runs recorded on an iPhone (eval/on-device/heldout/).
+mkdir -p "$DEST/recordings/heldout"
+for run in "$IOS_DIR"/eval/on-device/heldout/*.json; do
+  [ -e "$run" ] && cp "$run" "$DEST/recordings/heldout/"
+done
+
 # The recorded cloud reading of the sample paystub (routing.json recordedCloud): the same file the web app
 # uses, bundled as it is.
 mkdir -p "$DEST/recordings/cloud"

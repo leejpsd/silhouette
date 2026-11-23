@@ -141,6 +141,8 @@ final class AppModel {
     @ObservationIgnored var snapshotDeviceCheck: String?
     /// `-DeviceCheckRun`: the on-device check starts by itself with this many repetitions.
     @ObservationIgnored var autoRunDeviceCheck: Int?
+    /// `-HeldOutRun`: the held-out paystubs are read by themselves when the on-device check opens.
+    @ObservationIgnored var autoRunHeldOut = false
 
     @ObservationIgnored private let store: AnswerStore
     @ObservationIgnored private let defaults: UserDefaults
@@ -168,7 +170,7 @@ final class AppModel {
         self.testModel = testModel
         port = testModel.map { mode in
             TestModelPort(mode: mode, answerKeys: ((try? SampleAnswerKeyExtractor(bundle: bundle))?.entries.map { ($0.skeleton.text, $0.pointers) } ?? [])
-                + TestModelPort.checkAnswers(bundle))
+                + TestModelPort.checkAnswers(bundle) + TestModelPort.heldOutAnswers(bundle))
         } ?? FirebaseModelPort()
         let rc = RemoteConfigService(defaults: bundle.remoteConfigTemplate.map(AppConfig.defaultValues) ?? [:])
         remoteConfig = rc

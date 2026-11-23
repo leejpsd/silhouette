@@ -32,7 +32,18 @@
     "deviceCheck.baselineNote": "The first run, kept as the baseline. It was made with an earlier version of the app; the latest recording, listed first, shows the app as it is now.",
     "judges.recordedFigures": "Recorded on an {device}, {date}",
     "answer.notePersonal": "Written on this iPhone from your answers. Nothing was sent.",
-    "tasks.sdkRoutes": "Who picks device or cloud: for tasks whose input is already safe to send, Firebase AI Logic's hybrid model tries Apple's on-device model first and uses the cloud model only when the iPhone cannot answer. Each answer says which one wrote it. The app adds two steps of its own: nothing goes to the cloud without an App Check token, and a paystub read on this iPhone is checked here, then sent to the cloud once only if the reading does not hold up."
+    "tasks.sdkRoutes": "Who picks device or cloud: for tasks whose input is already safe to send, Firebase AI Logic's hybrid model tries Apple's on-device model first and uses the cloud model only when the iPhone cannot answer. Each answer says which one wrote it. The app adds two steps of its own: nothing goes to the cloud without an App Check token, and a paystub read on this iPhone is checked here, then sent to the cloud once only if the reading does not hold up.",
+    "heldout.title": "{count} paystubs it was never tuned on",
+    "heldout.lead": "Written independently of the prompts, word lists and checks, and committed before any model read them. Each one is read as the app reads a document: the silhouette is made on this iPhone, the on-device model reads it in parts, the app checks the answer, and only when the answer fails the checks is the same silhouette read once in the cloud.",
+    "heldout.run": "Read the {count} held-out paystubs",
+    "heldout.runNote": "Takes several minutes. Keep the app open: the screen stays on until the run finishes.",
+    "heldout.done": "Finished: {count} paystubs in {time}.",
+    "heldout.firstFields": "fields right in the device's first answer, before the app's checks",
+    "heldout.median": "median time per paystub, a cloud retry included (from {min} to {max} s)",
+    "heldout.scoring": "Scored against each paystub's answer key: amounts to the cent, dates and pay frequency exactly, names word for word (punctuation aside), deductions as a set of amounts. The same scoring as the run in Chrome.",
+    "heldout.recordingRow": "{count} held-out paystubs, {date}",
+    "heldout.rowFields": "Fields right: {first} in the device's first answer, {shown} in what the person is shown",
+    "heldout.rowWrong": "Wrong value shown: {fields}"
   },
   "es": {
     "deviceCheck.saved": "Guardado en este iPhone: Archivos, En mi iPhone, Silhouette, {file}.",
@@ -66,7 +77,18 @@
     "deviceCheck.baselineNote": "La primera ejecución, conservada como referencia. Se hizo con una versión anterior de la app; la grabación más reciente, la primera de la lista, muestra la app tal como es ahora.",
     "judges.recordedFigures": "Grabado en un {device}, {date}",
     "answer.notePersonal": "Escrito en este iPhone a partir de tus respuestas. No se envió nada.",
-    "tasks.sdkRoutes": "Quién elige dispositivo o nube: en las tareas cuya entrada ya se puede enviar, el modelo híbrido de Firebase AI Logic prueba primero el modelo de Apple en el dispositivo y usa el modelo en la nube solo cuando el dispositivo no puede responder. Cada respuesta dice cuál la escribió. La app añade dos pasos propios: nada va a la nube sin un token de App Check, y un recibo de sueldo leído en este iPhone se comprueba aquí y se envía a la nube una sola vez solo si la lectura no se sostiene."
+    "tasks.sdkRoutes": "Quién elige dispositivo o nube: en las tareas cuya entrada ya se puede enviar, el modelo híbrido de Firebase AI Logic prueba primero el modelo de Apple en el dispositivo y usa el modelo en la nube solo cuando el dispositivo no puede responder. Cada respuesta dice cuál la escribió. La app añade dos pasos propios: nada va a la nube sin un token de App Check, y un recibo de sueldo leído en este iPhone se comprueba aquí y se envía a la nube una sola vez solo si la lectura no se sostiene.",
+    "heldout.title": "{count} recibos de sueldo con los que nunca se ajustó",
+    "heldout.lead": "Escritos sin relación con las instrucciones, las listas de palabras y las comprobaciones, y guardados antes de que ningún modelo los leyera. Cada uno se lee como la app lee un documento: la silueta se hace en este iPhone, el modelo del dispositivo la lee por partes, la app comprueba la respuesta y, solo si no pasa las comprobaciones, la misma silueta se lee una vez en la nube.",
+    "heldout.run": "Leer los {count} recibos reservados",
+    "heldout.runNote": "Tarda varios minutos. Mantén la app abierta: la pantalla sigue encendida hasta que termina.",
+    "heldout.done": "Terminado: {count} recibos en {time}.",
+    "heldout.firstFields": "campos correctos en la primera respuesta del dispositivo, antes de las comprobaciones de la app",
+    "heldout.median": "tiempo mediano por recibo, con el reintento en la nube incluido (de {min} a {max} s)",
+    "heldout.scoring": "Puntuado con la clave de respuestas de cada recibo: importes al centavo, fechas y frecuencia de pago exactas, nombres palabra por palabra (sin la puntuación), deducciones como conjunto de importes. La misma puntuación que la ejecución en Chrome.",
+    "heldout.recordingRow": "{count} recibos reservados, {date}",
+    "heldout.rowFields": "Campos correctos: {first} en la primera respuesta del dispositivo, {shown} en lo que se muestra a la persona",
+    "heldout.rowWrong": "Valor incorrecto mostrado: {fields}"
   },
   "ko": {}
 }

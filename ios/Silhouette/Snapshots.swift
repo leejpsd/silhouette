@@ -203,6 +203,16 @@ enum SnapshotRunner {
                 m.snapshotDeviceCheck = "recording"
                 m.open(.deviceCheck)
             },
+            // A held-out run recorded on an iPhone (eval/on-device/heldout/), when one is bundled.
+            Scene(name: "device-check-heldout", pages: 8) { m in
+                m.snapshotDeviceCheck = "heldout"
+                m.open(.deviceCheck)
+            },
+            // The held-out paystubs read by the scripted on-device model.
+            Scene(name: "device-check-heldout-run", pages: 8, wait: 30, needsDevice: true) { m in
+                m.snapshotDeviceCheck = "heldout-run"
+                m.open(.deviceCheck)
+            },
             // With `-UITestModel device`: the whole check, run by the scripted on-device model; the reading kept on
             // the device (`device-unreliable`, `device-notread`: the other outcomes).
             Scene(name: "device-check-run", pages: 6, wait: 14, needsDevice: true) { m in
