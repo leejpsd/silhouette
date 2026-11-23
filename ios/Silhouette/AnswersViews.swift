@@ -436,7 +436,8 @@ struct SendSheet: View {
             let cloudFirst = AnswerSession.destination(of: request) == .cloud
             Card {
                 Label {
-                    Text(model.t("send.goesCloud")).sfFont(15, weight: .semibold)
+                    // "Goes to the cloud" only when the request goes there first; device-first, what could leave.
+                    Text(model.t(cloudFirst || !model.deviceModelAvailable ? "send.goesCloud" : "preview.couldLeave")).sfFont(15, weight: .semibold)
                 } icon: {
                     Circle().fill(theme.redact).frame(width: 8, height: 8)
                 }
@@ -532,7 +533,7 @@ struct SendFooter: View {
             }
             // Where it goes, beside the button that sends it (contract v1.43).
             // A request this iPhone prefers to answer goes to the cloud when it has no model of its own.
-            DestinationLine(cloud: AnswerSession.destination(of: request) == .cloud || !model.deviceModelAvailable, id: "send.destination")
+            DestinationLine(cloud: AnswerSession.destination(of: request) == .cloud || !model.deviceModelAvailable, general: true, id: "send.destination")
             PrimaryButton(label: count > 1 ? model.t("send.sendLines", ["count": model.number(Double(count))]) : model.t("send.send"),
                           sends: true, id: "send.send") { model.send(key) }
                 .disabled(model.isOffline)
@@ -586,13 +587,15 @@ struct DestinationLine: View {
     @Environment(AppModel.self) private var model
     @Environment(\.theme) private var theme
     let cloud: Bool
+    /// A question or an explanation: what goes is the program's public information, not a silhouette.
+    var general = false
     var id = ""
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             WhereBadge(kind: cloud ? .cloud : .device, label: model.t(cloud ? "badge.cloud" : "badge.onDevice"))
                 .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 4 }
-            Text(model.t(cloud ? "send.destination.cloud" : "send.destination.device"))
+            Text(model.t(cloud ? (general ? "send.destination.cloudGeneral" : "send.destination.cloud") : (general ? "send.destination.deviceGeneral" : "send.destination.device")))
                 .sfFont(13).foregroundStyle(theme.ink)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)

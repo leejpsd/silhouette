@@ -35,7 +35,7 @@ final class DestinationUITests: XCTestCase {
         app.tapButton("about.explain")
         let line = app.element("send.destination")
         XCTAssertTrue(line.waitForExistence(timeout: 5))
-        XCTAssertTrue(line.label.contains("Goes to Firebase AI Logic in the cloud"), line.label)
+        XCTAssertTrue(line.label.contains("Goes to Firebase AI Logic in the cloud: only what is shown above"), line.label)
         XCTAssertTrue(app.buttons["send.showRequest"].label.hasPrefix("Show the exact request"))
         app.tapButton("send.send")
         XCTAssertTrue(app.element("answer.badge").waitForExistence(timeout: 10))
