@@ -62,7 +62,7 @@ const goldOf = (set) =>
 const reports = [];
 for (const path of process.argv.slice(2)) {
   const file = JSON.parse(readFileSync(path, 'utf8'));
-  const gold = goldOf(file.set === 'heldout-2' || file.dataset === 'heldout-2' ? 'heldout-2' : 'heldout');
+  const gold = goldOf(['heldout-2', 'heldout-3'].find((set) => file.set === set || file.dataset === set) ?? 'heldout');
   if (file.kind === 'silhouette-heldout-device') {
     const rows = file.documents.map((d) => ({ id: d.id, docType: d.docType, gold: gold[d.id], values: d.final?.values ?? null }));
     const first = file.documents.map((d) => ({ id: d.id, docType: d.docType, gold: gold[d.id], values: d.device?.values ?? null }));
