@@ -5633,12 +5633,16 @@ main h2.judge-title {
   margin: 0;
 }
 
-/* The same devices on never-seen paystubs, under the runs on the check paystubs. */
+/* The same devices on never-seen paystubs, above the runs on the check paystubs. */
 .recorded-heldout {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
   margin-top: var(--space-xs);
+}
+
+.recorded-heldout + .recorded-set {
+  margin-top: var(--space-sm);
 }
 
 .recorded-heldout-title {

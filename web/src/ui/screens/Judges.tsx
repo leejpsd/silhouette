@@ -187,6 +187,33 @@ function RecordedRuns() {
       <h2 id="recorded-title" className="section-heading">
         {t('judges.recorded.title')}
       </h2>
+      {heldout && (
+        <div className="recorded-heldout" data-testid="judges-heldout">
+          <h3 className="recorded-heldout-title">{t('judges.heldout.title', { total: heldout.chrome.documents })}</h3>
+          <ul className="link-card">
+            {(
+              [
+                ['chrome', 'Chrome 157 · Mac', t('judges.heldout.firstSet', { machine: 'Chrome 157 · Mac' }), heldout.chrome],
+                ['iphone', 'iPhone 17 Pro', t('judges.heldout.thirdSet', { machine: 'iPhone 17 Pro' }), heldout.iphone],
+              ] as const
+            ).map(([id, machine, title, f]) => (
+              <li key={id} data-testid={`judges-heldout-${id}`} data-first={f.firstWrong} data-stopped={f.stopped} data-wrong={f.incomeWrong}>
+                <a href={routeHref({ name: 'tasks' })}>
+                  <span className="source-icon" aria-hidden="true">
+                    <DeviceIcon machine={machine} size={16} />
+                  </span>
+                  <span className="source-text">
+                    <span className="source-title">{title}</span>
+                    <span className="small muted">{line(f)}</span>
+                  </span>
+                  <ChevronRight />
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="small muted">{t('judges.heldout.note')}</p>
+        </div>
+      )}
       {rows.length > 0 && (
         <p className="small muted recorded-set" data-testid="recorded-tuned">
           {t('judges.heldout.tuned')}
@@ -216,33 +243,6 @@ function RecordedRuns() {
         ))}
       </ul>
       <p className="small muted">{t('judges.recorded.note')}</p>
-      {heldout && (
-        <div className="recorded-heldout" data-testid="judges-heldout">
-          <h3 className="recorded-heldout-title">{t('judges.heldout.title', { total: heldout.chrome.documents })}</h3>
-          <ul className="link-card">
-            {(
-              [
-                ['chrome', 'Chrome 157 · Mac', t('judges.heldout.firstSet', { machine: 'Chrome 157 · Mac' }), heldout.chrome],
-                ['iphone', 'iPhone 17 Pro', t('judges.heldout.thirdSet', { machine: 'iPhone 17 Pro' }), heldout.iphone],
-              ] as const
-            ).map(([id, machine, title, f]) => (
-              <li key={id} data-testid={`judges-heldout-${id}`} data-first={f.firstWrong} data-stopped={f.stopped} data-wrong={f.incomeWrong}>
-                <a href={routeHref({ name: 'tasks' })}>
-                  <span className="source-icon" aria-hidden="true">
-                    <DeviceIcon machine={machine} size={16} />
-                  </span>
-                  <span className="source-text">
-                    <span className="source-title">{title}</span>
-                    <span className="small muted">{line(f)}</span>
-                  </span>
-                  <ChevronRight />
-                </a>
-              </li>
-            ))}
-          </ul>
-          <p className="small muted">{t('judges.heldout.note')}</p>
-        </div>
-      )}
     </section>
   );
 }
