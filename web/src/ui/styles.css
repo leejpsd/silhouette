@@ -4276,6 +4276,24 @@ main h2.judge-title {
   overflow-wrap: anywhere;
 }
 
+/* The routing reason of the cloud's answer (read now to compare, or a recording). */
+.both-reason {
+  color: var(--note);
+  font-size: var(--type-caption-size);
+  font-style: italic;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/* The live cloud reading did not complete: why, beside the recording shown instead. */
+.both-fallback {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--redact);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: var(--card);
+}
+
 .both-label {
   color: var(--note);
   font-size: var(--type-small-size);

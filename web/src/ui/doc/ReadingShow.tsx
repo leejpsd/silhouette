@@ -14,7 +14,8 @@ import { useApp } from '../context';
 import { dynamicKey } from '../i18n';
 import { Cloud, Phone } from '../design/icons';
 
-export type ShowRoute = 'device' | 'cloud' | 'cloud-after-device' | 'recorded-device' | 'recorded-cloud';
+/** `compare-cloud`: the one-press judges' path reading the same silhouette in the cloud too (routing.json bothWays). */
+export type ShowRoute = 'device' | 'cloud' | 'cloud-after-device' | 'compare-cloud' | 'recorded-device' | 'recorded-cloud';
 
 /** A field the model answered with a placeholder, and the value this device put back. */
 export interface ShowPair {
@@ -39,7 +40,7 @@ export interface ShowState {
 export const SHOW_OUT_MS = 900;
 export const SHOW_BACK_MS = 1400;
 
-const isCloud = (route: ShowRoute) => route === 'cloud' || route === 'cloud-after-device' || route === 'recorded-cloud';
+const isCloud = (route: ShowRoute) => route === 'cloud' || route === 'cloud-after-device' || route === 'compare-cloud' || route === 'recorded-cloud';
 
 /** The fields that decide the yearly income first, then the others: at most four, each with one placeholder. */
 const ORDER: Readonly<Record<string, readonly string[]>> = {
@@ -222,6 +223,7 @@ const REASON = {
   device: 'document-silhouette-only',
   cloud: 'document-silhouette-only',
   'cloud-after-device': 'on-device-failed',
+  'compare-cloud': 'compare-in-cloud',
   'recorded-device': 'recorded-on-device',
   'recorded-cloud': 'recorded-in-cloud',
 } as const satisfies Record<ShowRoute, string>;

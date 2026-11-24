@@ -2,10 +2,12 @@
 // judges' household without and with the sample paystub, both worked out by the rules on this device
 // (shared/fixtures/conformance/judges-household.json), then the yearly sums.
 import { expect, test } from '@playwright/test';
-import { noOnDeviceModel } from '../model-fakes';
+import { cloudRefusesAppCheck, noOnDeviceModel } from '../model-fakes';
 
 test('one press: without and with the paystub side by side, and the yearly amounts the rules found', async ({ page, context }) => {
   await noOnDeviceModel(context);
+  // An automated browser does not pass reCAPTCHA: the live cloud half is refused and the recording is shown.
+  await cloudRefusesAppCheck(page);
   await page.goto('/#/judges');
   await page.getByTestId('judges-run-all').getByRole('button', { name: 'Run all three steps' }).click();
   await expect(page).toHaveURL(/#\/results/, { timeout: 30_000 });

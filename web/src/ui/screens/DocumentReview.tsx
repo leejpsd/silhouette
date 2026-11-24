@@ -29,7 +29,7 @@ import { navigate, routeHref } from '../router';
 import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
 import { emptyDocument, useDocument, type FlowDocType } from '../doc/state';
-import { BOTH_ROWS, answerOf, compareReadings, type Answer, type BothReadings } from '../doc/both';
+import { BOTH_ROWS, answerOf, bothNote, compareReadings, type Answer, type BothReadings, type CloudFallback } from '../doc/both';
 import { BlockActions } from '../design/block';
 import { Alert, ArrowRight, Check, ChevronLeft, ChevronRight } from '../design/icons';
 import { Marker, Paper, ActionLabel } from '../design/parts';
@@ -186,7 +186,7 @@ function BothWays({ both, docType }: { both: BothReadings; docType: FlowDocType 
   const rows = (BOTH_ROWS[docType] ?? []).filter((name) => answerOf(device.review, name) !== null || answerOf(cloud.review, name) !== null);
   const differs = new Set(comparison.differs);
   return (
-    <section className="both-ways" data-testid="both-ways" data-live={device.live} aria-labelledby="both-ways-title">
+    <section className="both-ways" data-testid="both-ways" data-live={device.live} data-cloud-live={cloud.live} aria-labelledby="both-ways-title">
       <h2 className="both-title" id="both-ways-title">
         {t('review.both.title')}
       </h2>
@@ -197,9 +197,13 @@ function BothWays({ both, docType }: { both: BothReadings; docType: FlowDocType 
             <strong className="badge badge-device">{t(device.live ? 'review.both.deviceLive' : 'review.both.device')}</strong>
             {!device.live && <span className="both-when">{t('review.both.recordedOn', { machine: device.machine ?? '', date: device.date ?? '' })}</span>}
           </span>
-          <span className="both-side" role="columnheader" data-testid="both-cloud">
+          <span className="both-side" role="columnheader" data-testid="both-cloud" data-live={cloud.live}>
             <strong className="badge badge-cloud">{t('review.both.cloud')}</strong>
-            <span className="both-when">{t('review.both.recordedCloud', { model: cloud.model, date: cloud.date })}</span>
+            <span className="both-when">{cloud.live ? t('review.both.liveCloud', { model: cloud.model }) : t('review.both.recordedCloud', { model: cloud.model, date: cloud.date ?? '' })}</span>
+            {/* Every model answer carries its routing reason (routing.json bothWays, or recordedCloud). */}
+            <span className="both-reason" data-testid="both-cloud-reason">
+              {t(cloud.live ? 'reason.compare-in-cloud' : 'reason.recorded-in-cloud')}
+            </span>
           </span>
         </div>
         {rows.map((name) => (
@@ -223,8 +227,21 @@ function BothWays({ both, docType }: { both: BothReadings; docType: FlowDocType 
       {comparison.onlyCloud.length > 0 && <p className="small" data-testid="both-only-cloud">{t('review.both.onlyCloud', { fields: comparison.onlyCloud.map(label).join(', ') })}</p>}
       {comparison.onlyDevice.length > 0 && <p className="small" data-testid="both-only-device">{t('review.both.onlyDevice', { fields: comparison.onlyDevice.map(label).join(', ') })}</p>}
       <p className="small">{t('review.both.uses')}</p>
-      <p className="small muted">{t(device.live ? 'review.both.noteLive' : 'review.both.note')}</p>
+      <p className="small muted" data-testid="both-note">
+        {t(bothNote(both))}
+      </p>
+      {cloud.fallback && <CloudFallbackNote fallback={cloud.fallback} />}
     </section>
+  );
+}
+
+/** The live cloud reading did not complete: said so, with why, above the recording shown instead (review.both.cloudFallback). */
+function CloudFallbackNote({ fallback }: { fallback: CloudFallback }) {
+  const { t } = useApp();
+  return (
+    <p className="small both-fallback" data-testid="both-fallback" data-reason={fallback}>
+      {t('review.both.cloudFallback', { reason: t(dynamicKey(`review.both.fallback.${fallback}`)) })}
+    </p>
   );
 }
 
@@ -796,6 +813,7 @@ export function DocumentReviewScreen() {
         )}
       </div>
       {doc.extraction?.both && <BothWays both={doc.extraction.both} docType={docType} />}
+      {!doc.extraction?.both && doc.extraction?.cloudFallback && <CloudFallbackNote fallback={doc.extraction.cloudFallback} />}
       {doc.extraction && <PointerReveal review={doc.extraction.review} source={doc.extraction.inferenceSource} machine={doc.extraction.recording?.machine} recordedDate={doc.extraction.recording?.date} docType={docType} skeleton={doc.skeleton} />}
       <p className="small">{manual ? t('review.manualLead') : t('review.lead')}</p>
       {manual && manualHint && nothingTyped && (

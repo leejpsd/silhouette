@@ -1,7 +1,7 @@
 // The model is mocked at the ai/ boundary (setModelProviderForTests); everything else is real:
 // prompt loading, schema conversion, response parsing, error classification, rehydration.
 import { readFileSync } from 'node:fs';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { HybridParams } from 'firebase/ai';
 
 import { Raw, reveal } from '../core/types';
@@ -9,7 +9,7 @@ import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile } fro
 import { buildReview } from '../core/review';
 import { classifyError, TaskError } from './errors';
 import { setModelProviderForTests, type ModelPort } from './model-port';
-import { CLOUD_MODEL, POINTER_SCHEMAS, activePointerConfig, extractPointers, pointerModelParams } from './tasks';
+import { BOTH_WAYS_TIMEOUT_SECONDS, CLOUD_MODEL, CloudTimeout, POINTER_SCHEMAS, activePointerConfig, compareInCloud, extractPointers, pointerModelParams, pointerRequest } from './tasks';
 import { setConfigForTests } from '../data/remote-config';
 import { POINTER_V2, POINTER_V3, POINTER_V4, POINTER_V5, pointerConfigFor } from './pointer-config';
 import { readPhoto } from './on-device';
@@ -301,5 +301,59 @@ describe('on-device failure falls back to the cloud once (cloud-safe input only)
     await expect(readPhoto(Raw.of<Blob>(new Blob([new Uint8Array([1])], { type: 'image/png' })), 'paystub', 'en')).rejects.toBeInstanceOf(TaskError);
     expect(modes).toEqual(['only_on_device']);
     setDeviceModelForTests('absent');
+  });
+});
+
+describe('bothWays: the cloud half of the one-press judges\' path (routing.json v1.47)', () => {
+  it('reads the same silhouette once, ONLY_IN_CLOUD, with the prompt and schema of a normal Send, reason compare-in-cloud', async () => {
+    const fixture = pointersOf('paystub-en-01-correct');
+    const calls = fakeModels(JSON.stringify(fixture.pointers));
+    const result = await compareInCloud(doc.skeleton, 'paystub', 'en');
+    expect(result).toMatchObject({ inferenceSource: 'IN_CLOUD', reason: 'compare-in-cloud' });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.params.mode).toBe('only_in_cloud');
+    expect(calls[0]!.prompts).toHaveLength(1);
+    // The request a Send would make: the same system instruction, generation config and prompt.
+    const send = JSON.parse(pointerRequest(doc.skeleton, 'paystub').body) as { systemInstruction: { parts: { text: string }[] }; generationConfig: unknown; contents: { parts: { text: string }[] }[] };
+    const cloud = calls[0]!.params.inCloudParams!;
+    expect(cloud.model).toBe(CLOUD_MODEL);
+    expect(send.systemInstruction.parts[0]!.text).toBe(cloud.systemInstruction);
+    expect(send.generationConfig).toEqual(cloud.generationConfig);
+    expect(send.contents[0]!.parts[0]!.text).toBe(calls[0]!.prompts[0]);
+    // Only the silhouette: no value of the document is in the prompt.
+    expect(String(calls[0]!.prompts[0])).not.toContain('1,271.88');
+    const review = buildReview(POINTER_SCHEMAS.paystub, result.value, doc.skeleton, doc.map);
+    expect(review.find((f) => f.name === 'grossPay')?.value).toBe(1271.88);
+  });
+
+  it('passes errors on as they are (the screen falls back to the recording and says why)', async () => {
+    fakeModels(Object.assign(new Error('Firebase App Check token is invalid.'), { customErrorData: { status: 401 } }));
+    await expect(compareInCloud(doc.skeleton, 'paystub', 'en')).rejects.toSatisfy((e) => classifyError(e).kind === 'app-check');
+  });
+
+  it('gives up after the time limit, aborting the request', async () => {
+    expect(BOTH_WAYS_TIMEOUT_SECONDS).toBe(20);
+    vi.useFakeTimers();
+    try {
+      let signal: AbortSignal | undefined;
+      setModelProviderForTests(async () => ({
+        generateContent: (_request, options) => {
+          signal = options?.signal;
+          return new Promise(() => undefined);
+        },
+      }));
+      const reading = compareInCloud(doc.skeleton, 'paystub', 'en');
+      const outcome = reading.then(
+        () => 'answered',
+        (e: unknown) => e,
+      );
+      await vi.advanceTimersByTimeAsync(19_900);
+      expect(signal?.aborted).toBe(false);
+      await vi.advanceTimersByTimeAsync(200);
+      expect(await outcome).toBeInstanceOf(CloudTimeout);
+      expect(signal?.aborted).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

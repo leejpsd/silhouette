@@ -34,6 +34,16 @@ export async function fakeCloudModel(
   return { bodies };
 }
 
+/**
+ * Firebase AI Logic refusing every request as production refuses one without a valid App Check token
+ * (401), which is what an automated browser meets: reCAPTCHA does not pass it. Records the bodies that
+ * reached it. The default for tests that press "Run all three steps" without a fake cloud model, so no
+ * test ever reaches Google.
+ */
+export async function cloudRefusesAppCheck(page: Page): Promise<{ bodies: string[] }> {
+  return fakeCloudModel(page, { status: 401, body: { error: { code: 401, message: 'Firebase App Check token is invalid.', status: 'UNAUTHENTICATED' } } });
+}
+
 /** Collects every request the page makes (URL, headers, body) for leak checks. */
 export function recordRequests(page: Page): Request[] {
   const all: Request[] = [];

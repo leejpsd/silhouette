@@ -5,7 +5,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { chooseLanguage, confirmAllValues } from '../helpers';
-import { fakeCloudModel, fixturePointers, noOnDeviceModel } from '../model-fakes';
+import { cloudRefusesAppCheck, fakeCloudModel, fixturePointers, noOnDeviceModel } from '../model-fakes';
 
 const pack = JSON.parse(readFileSync(new URL('../../../shared/rulepacks/us-ca/pack.json', import.meta.url), 'utf8')) as { programs: { id: string; sources: { url: string }[] }[] };
 const copyEn = JSON.parse(readFileSync(new URL('../../../shared/rulepacks/us-ca/copy/en.json', import.meta.url), 'utf8')) as Record<string, string>;
@@ -139,6 +139,8 @@ test('one press from the judges\' page: the results, with CalEITC up to its publ
   await context.addInitScript(() => {
     delete (globalThis as { LanguageModel?: unknown }).LanguageModel;
   });
+  // An automated browser does not pass reCAPTCHA: the live cloud half is refused and the recording is shown.
+  await cloudRefusesAppCheck(page);
   await page.goto('/#/judges');
   await page.getByTestId('judges-run-all').getByRole('button', { name: 'Run all three steps' }).click();
   await expect(page).toHaveURL(/#\/results/, { timeout: 20_000 });

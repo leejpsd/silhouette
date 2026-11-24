@@ -4,7 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { Raw } from '../../core/types';
 import { buildAllowlist, buildIntroducers, skeletonize, type AllowlistFile, type PointerSchema } from '../../core/skeleton';
 import { buildReview } from '../../core/review';
-import { answerOf, compareReadings } from './both';
+import { TaskError } from '../../ai/errors';
+import { CloudTimeout } from '../../ai/tasks';
+import { answerOf, bothNote, cloudFallbackOf, compareReadings, type BothReadings } from './both';
 
 const shared = (rel: string) => readFileSync(new URL(`../../../../shared/${rel}`, import.meta.url), 'utf8');
 const schema = JSON.parse(shared('schemas/pointer.paystub.json')) as PointerSchema;
@@ -40,5 +42,32 @@ describe('answerOf', () => {
     expect(answerOf(review(correct), 'grossPay')).toEqual({ ref: 'N12', value: '1,271.88' });
     expect(answerOf(review(correct), 'deductions')).toBeNull();
     expect(answerOf(review({}), 'grossPay')).toBeNull();
+  });
+});
+
+describe('cloudFallbackOf (review.both.fallback.*)', () => {
+  it('names why the live cloud reading did not complete', () => {
+    expect(cloudFallbackOf(new Error('Not sent: App Check could not confirm this app, so the request was stopped before it left'))).toBe('appCheck');
+    expect(cloudFallbackOf(new TaskError('app-check', 'Firebase App Check token is invalid.', 401))).toBe('appCheck');
+    expect(cloudFallbackOf(Object.assign(new Error('Resource exhausted'), { customErrorData: { status: 429 } }))).toBe('quota');
+    expect(cloudFallbackOf(new TaskError('quota-daily', 'per day'))).toBe('quota');
+    expect(cloudFallbackOf(new TypeError('Failed to fetch'))).toBe('network');
+    expect(cloudFallbackOf(new CloudTimeout('no answer within 20000 ms'))).toBe('timeout');
+    expect(cloudFallbackOf(Object.assign(new Error('Internal'), { customErrorData: { status: 500 } }))).toBe('other');
+    expect(cloudFallbackOf(new TaskError('bad-output', 'not JSON'))).toBe('other');
+  });
+});
+
+describe('bothNote', () => {
+  const half = { review: [], notRead: [] };
+  const both = (deviceLive: boolean, cloudLive: boolean): BothReadings => ({
+    device: { ...half, live: deviceLive },
+    cloud: { live: cloudLive, model: 'm', review: [] },
+  });
+  it('says which halves were read now', () => {
+    expect(bothNote(both(true, true))).toBe('review.both.noteBothLive');
+    expect(bothNote(both(false, true))).toBe('review.both.noteCloudLive');
+    expect(bothNote(both(true, false))).toBe('review.both.noteLive');
+    expect(bothNote(both(false, false))).toBe('review.both.note');
   });
 });

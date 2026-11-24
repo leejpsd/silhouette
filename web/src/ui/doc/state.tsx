@@ -7,7 +7,7 @@ import type { ReviewField } from '../../core/review';
 import type { PaystubValues, W2Values } from '../../core/validate';
 import type { CloudBecause, InferenceSource, RoutingReason, TaskError } from '../../ai/tasks';
 import type { Locale } from '../i18n';
-import type { BothReadings } from './both';
+import type { BothReadings, CloudFallback } from './both';
 
 export type SourceKind = 'pdf' | 'paste' | 'photo' | 'sample' | 'manual';
 
@@ -34,6 +34,11 @@ export interface Extraction {
   readonly leftOut?: readonly { readonly field: string; readonly problem: 'not-money' | 'not-a-year' | 'not-consistent' }[] | undefined;
   /** "Run all three steps": the same silhouette read on a device and in the cloud (review.both.*); the values are the device's. */
   readonly both?: BothReadings | undefined;
+  /**
+   * "Run all three steps" when this device's reading failed its checks: the values are the cloud's, as after a
+   * Send, and there is no comparison. Set when that cloud answer is the recording: why the live reading did not complete.
+   */
+  readonly cloudFallback?: CloudFallback | undefined;
 }
 
 export interface DocumentState {

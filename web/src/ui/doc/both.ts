@@ -1,8 +1,11 @@
-// "Read both ways" (contract v1.44, review.both.*): on the one-press judges' path the sample is read on a
-// device and in the cloud, one after the other. The review then shows the two answers side by side and
-// compares them field by field, after the values were put back on this device. Nothing here decides what
-// is used: the values are the device's answer, through the same checks as any reading.
+// "Read both ways" (contract v1.44, review.both.*; v1.47 routing.json bothWays): on the one-press judges'
+// path the sample is read on a device and in the cloud, one after the other. The cloud half is read now
+// when it can be, and the recorded cloud reading when it cannot (with the reason). The review then shows
+// the two answers side by side and compares them field by field, after the values were put back on this
+// device. Nothing here decides what is used: the values are the device's answer when it passed its checks.
 import type { ReviewField } from '../../core/review';
+import { classifyError } from '../../ai/errors';
+import { CloudTimeout } from '../../ai/tasks';
 
 export interface BothReadings {
   /** The device's half: read now on this device (`live`), or a recording made on `machine`. */
@@ -14,8 +17,42 @@ export interface BothReadings {
     /** Fields the device left out as not read (the deductions of a reading without them): not compared. */
     readonly notRead: readonly string[];
   };
-  /** The cloud's half: always a recording of the same silhouette (nothing is sent on this path). */
-  readonly cloud: { readonly model: string; readonly date: string; readonly review: readonly ReviewField[] };
+  /**
+   * The cloud's half: read now from the silhouette (`live`, routing.json bothWays), or the recorded cloud
+   * reading of the same silhouette (`date`) when the live reading did not complete (`fallback`, why).
+   */
+  readonly cloud: {
+    readonly live: boolean;
+    readonly model: string;
+    readonly date?: string | undefined;
+    readonly review: readonly ReviewField[];
+    readonly fallback?: CloudFallback | undefined;
+  };
+}
+
+/** Why the live cloud reading did not complete (review.both.fallback.*). */
+export type CloudFallback = 'appCheck' | 'quota' | 'network' | 'timeout' | 'other';
+
+/** The reason a failed live cloud reading is shown with: App Check, the quota, the connection, the time limit, or another error. */
+export function cloudFallbackOf(error: unknown): CloudFallback {
+  if (error instanceof CloudTimeout) return 'timeout';
+  switch (classifyError(error).kind) {
+    case 'app-check':
+      return 'appCheck';
+    case 'quota':
+    case 'quota-daily':
+      return 'quota';
+    case 'network':
+      return 'network';
+    default:
+      return 'other';
+  }
+}
+
+/** The note under the comparison: which halves were read now (review.both.note*). */
+export function bothNote(both: BothReadings): 'review.both.noteBothLive' | 'review.both.noteCloudLive' | 'review.both.noteLive' | 'review.both.note' {
+  if (both.cloud.live) return both.device.live ? 'review.both.noteBothLive' : 'review.both.noteCloudLive';
+  return both.device.live ? 'review.both.noteLive' : 'review.both.note';
 }
 
 export interface Comparison {

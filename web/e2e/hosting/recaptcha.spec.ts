@@ -104,3 +104,49 @@ test('after a failed App Check exchange, "Try again" works without reloading, an
   expect(recaptcha.exchanges).toEqual([400, 200]);
   expect(cloud.bodies).toHaveLength(1);
 });
+
+// Contract v1.47 (routing.json bothWays): the one-press judges' path reads the cloud half live, through the
+// same App Check gate as a Send.
+async function runAll(page: Page) {
+  await page.goto('/#/judges');
+  await page.getByTestId('judges-run-all').getByRole('button', { name: 'Run all three steps' }).click();
+}
+
+test('one press: the cloud half is read now with an App Check token, and the record lists the request', async ({ page, context, baseURL }) => {
+  await noOnDeviceModel(context);
+  await serveWithPolicy(page, POLICY, new URL(baseURL ?? '').origin);
+  const recaptcha = await fakeRecaptcha(context, page);
+  const cloud = await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+  await requireAppCheck(page);
+  const aiHeaders: string[] = [];
+  page.on('request', (r) => {
+    if (new URL(r.url()).hostname === AI_HOST) aiHeaders.push(r.headers()['x-firebase-appcheck'] ?? '');
+  });
+  await runAll(page);
+  await expect(page.getByTestId('both-ways')).toHaveAttribute('data-cloud-live', 'true', { timeout: 20_000 });
+  await expect(page.getByTestId('both-cloud')).toContainText(/gemini-[\w.-]+, read now/);
+  await expect(page).toHaveURL(/#\/results/, { timeout: 20_000 });
+  expect(aiHeaders).toEqual([APP_CHECK_TOKEN]);
+  expect(recaptcha.exchanges).toEqual([200]);
+  expect(cloud.bodies).toHaveLength(1);
+  await expect(page.getByTestId('leaving-bar').locator('.count-row .count-sub')).toContainText(/^1 sent with your document’s silhouette/);
+});
+
+test('one press in an automated browser: App Check refuses, nothing leaves, the recording is shown and the review says why', async ({ page, context, baseURL }) => {
+  await noOnDeviceModel(context);
+  await serveWithPolicy(page, POLICY, new URL(baseURL ?? '').origin);
+  const recaptcha = await fakeRecaptcha(context, page, [403, 200]);
+  const cloud = await fakeCloudModel(page, { pointers: fixturePointers('paystub-en-01-correct') });
+  await requireAppCheck(page);
+  await runAll(page);
+  const fallback = page.getByTestId('both-fallback');
+  await expect(fallback).toHaveAttribute('data-reason', 'appCheck', { timeout: 20_000 });
+  await expect(fallback).toContainText('(the security check refused the request)');
+  await expect(page.getByTestId('both-cloud')).toContainText(/gemini-[\w.-]+, recorded /);
+  await expect(page).toHaveURL(/#\/results/, { timeout: 20_000 });
+  // The silhouette never left: no request reached Firebase AI Logic.
+  expect(cloud.bodies).toEqual([]);
+  expect(recaptcha.exchanges).toEqual([403]);
+  await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
+  await expect(page.getByTestId('outbound-list').locator('li[data-channel="ai-cloud"]:not([data-status="blocked"])')).toHaveCount(0);
+});

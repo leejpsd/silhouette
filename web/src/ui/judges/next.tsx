@@ -18,7 +18,8 @@ const AUTO = 'silhouette.judges-auto';
 /**
  * "Run all three steps" (judges.runAll): the stage the one-press path is at. Each screen takes its stage
  * once, does what the person would press there, and hands on: the preview reads the sample (on this
- * device when it has the model, otherwise a recording; never a cloud request without Send), the review
+ * device when it has the model, otherwise a recording, then its silhouette in the cloud now, or the
+ * recorded cloud reading when that does not complete; the button's words say the silhouette is sent), the review
  * confirms the values that decide the result and uses them, and the results open.
  */
 export type AutoStage = 'read' | 'use';

@@ -45,7 +45,9 @@ export type RoutingReason =
   /** routing.json recordedSample: the bundled sample read from an on-device run recording, nothing sent. */
   | 'recorded-on-device'
   /** routing.json recordedCloud: the bundled sample read from a recorded cloud reading of its silhouette, nothing sent now. */
-  | 'recorded-in-cloud';
+  | 'recorded-in-cloud'
+  /** routing.json bothWays: on the one-press judges' path the same silhouette is read in the cloud too, to compare. */
+  | 'compare-in-cloud';
 
 /** Every model response carries its provenance: where it ran, and why. */
 export interface TaskResult<T> {
@@ -132,6 +134,13 @@ export interface PointerCallOptions {
   readonly hybridFirst?: boolean | undefined;
   /** Internal: a reading prepared ahead stops before its next part once this returns true. */
   readonly isCancelled?: (() => boolean) | undefined;
+  /** Internal: the request is given up after this many milliseconds (routing.json bothWays), with {@link CloudTimeout}. */
+  readonly timeoutMs?: number | undefined;
+}
+
+/** A cloud request given up after its time limit (routing.json `bothWays.timeoutSeconds`). Its late answer is never used. */
+export class CloudTimeout extends Error {
+  override readonly name = 'CloudTimeout';
 }
 
 /**
@@ -312,9 +321,27 @@ async function callPointerModel(
   const deviceOnly = options.deviceOnly || (options.part !== undefined && options.part !== 'whole' && !hybridCore);
   const release = deviceOnly ? () => undefined : permitCloudRequest(systemText(config, docType));
   let response: ModelResponse;
+  // With a time limit, the request is aborted when it runs out (a fetch not yet made never leaves) and
+  // the reading is given up even if the SDK is still waiting on something else (an App Check token).
+  const controller = options.timeoutMs !== undefined ? new AbortController() : null;
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    ({ response } = await model.generateContent(prompt));
+    const call = model.generateContent(prompt, controller ? { signal: controller.signal } : undefined);
+    if (controller) {
+      call.catch(() => undefined);
+      const limit = options.timeoutMs as number;
+      const timedOut = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          controller.abort();
+          reject(new CloudTimeout(`no answer within ${limit} ms`));
+        }, limit);
+      });
+      ({ response } = await Promise.race([call, timedOut]));
+    } else {
+      ({ response } = await call);
+    }
   } finally {
+    clearTimeout(timer);
     release();
   }
   const source = sourceOf(response, 'IN_CLOUD');
@@ -702,6 +729,26 @@ export async function extractPointers(
   }
 }
 
+
+/** routing.json `bothWays`: the cloud half of the one-press judges' path. */
+const BOTH_WAYS = routing.bothWays;
+
+/**
+ * routing.json `bothWays`: on the one-press judges' path, after the device half, the same silhouette is read
+ * once in the cloud, ONLY_IN_CLOUD, with the cloud prompt and model schema of a normal Send and the App Check
+ * gate of any cloud request, reason `compare-in-cloud`, given up after `timeoutSeconds`. Its input is a
+ * Skeleton like every pointer reading; the network monitor lists the request in "Leaving your device" like
+ * a Send. Errors are thrown (a {@link CloudTimeout} after the time limit); the caller falls back to the
+ * recorded cloud reading and says why.
+ */
+export async function compareInCloud(skeleton: Skeleton, docType: DocType, language: string, options: Pick<PointerCallOptions, 'config'> = {}): Promise<PointerResult> {
+  if (BOTH_WAYS.mode !== 'ONLY_IN_CLOUD' || BOTH_WAYS.input.length !== 1 || BOTH_WAYS.input[0] !== 'Skeleton') throw new Error('routing.json changed: bothWays');
+  const r = await callPointerModel(skeleton, docType, language, { ...options, forceCloud: true, timeoutMs: BOTH_WAYS.timeoutSeconds * 1000 });
+  return { value: r.value, inferenceSource: r.source, reason: BOTH_WAYS.reason as RoutingReason, usage: r.usage };
+}
+
+/** routing.json `bothWays.timeoutSeconds`, for the words that name the limit. */
+export const BOTH_WAYS_TIMEOUT_SECONDS: number = BOTH_WAYS.timeoutSeconds;
 
 // ---------- Explanations and questions ----------
 

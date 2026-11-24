@@ -2,7 +2,7 @@
 import { bringIntoView } from '../design/motion';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { placeholderCounts, buildReview, type SourceSegment } from '../../core/review';
-import { cancelPreparedReading, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, pointerRequest, prepareDeviceReading, type PointerStage } from '../../ai/tasks';
+import { activePointerConfig, cancelPreparedReading, compareInCloud, extractPointers, ON_DEVICE_LANGUAGES, POINTER_SCHEMAS, pointerRequest, prepareDeviceReading, TaskError, type PointerStage } from '../../ai/tasks';
 import { TOKEN_FLAGS, TOKEN_SOURCE, skeletonize } from '../../core/skeleton';
 import { tidyNamePointers } from '../../core/tidy';
 import { leaveOutBoxes, readingChecks } from '../doc/reading-checks';
@@ -17,7 +17,7 @@ import { ScreenHeading } from '../Heading';
 import { InferenceBadge } from '../InferenceBadge';
 import { ModelStatus } from '../doc/ModelStatus';
 import { useDocument, type Extraction } from '../doc/state';
-import type { BothReadings } from '../doc/both';
+import { cloudFallbackOf, type BothReadings } from '../doc/both';
 import { TaskErrorNotice } from '../doc/TaskErrorNotice';
 import { OFFLINE_SAMPLE_REASON, sampleAnswerKey } from '../doc/offline-sample';
 import { recordedReading, type RecordedReading } from '../doc/recorded-reading';
@@ -34,6 +34,20 @@ import { ReadingShow, showPairs, useReadingShow, type ShowRoute } from '../doc/R
 import { setAutoRun, takeAutoRun } from '../judges/next';
 
 const PLACEHOLDER = /(⟦[DNW][0-9]+⟧)/;
+
+/**
+ * After App Check refused a request, Firebase starts again: the SDK keeps a failed provider throttled
+ * (from a second up to a day), so the next Send would otherwise fail at once without asking again.
+ */
+async function startAppCheckAgain(): Promise<void> {
+  try {
+    const { restartForAppCheck } = await import('../../ai/firebase');
+    await restartForAppCheck();
+  } catch {
+    // Firebase had not started: nothing to start again.
+  }
+  resetModelInstances();
+}
 
 /** Splits skeleton text between placeholders into visible words and everything else. */
 function splitWords(text: string): { word?: string; text: string }[] {
@@ -162,7 +176,8 @@ export function DocumentPreviewScreen() {
   }
 
   // "Run all three steps" (judges.runAll): once it is known whether this device has the model, the sample
-  // is read on this device or from a recording; never sent without Send.
+  // is read on this device or from a recording, then its silhouette in the cloud (the press that started
+  // the path is the consent: its words say the silhouette is sent).
   const autoRead = useRef<(() => void) | null>(null);
   useEffect(() => {
     autoRead.current?.();
@@ -256,11 +271,7 @@ export function DocumentPreviewScreen() {
    * provider throttled (from a second up to a day), so trying again with it would fail at once.
    */
   const retry = async () => {
-    if (doc.error?.kind === 'app-check') {
-      const { restartForAppCheck } = await import('../../ai/firebase');
-      await restartForAppCheck();
-      resetModelInstances();
-    }
+    if (doc.error?.kind === 'app-check') await startAppCheckAgain();
     await send();
   };
 
@@ -301,10 +312,14 @@ export function DocumentPreviewScreen() {
   };
 
   /**
-   * "Run all three steps" (contract v1.44, judges.runAll): both halves of the hybrid, back to back. The
-   * device's half first: read now on this device when it has the model (`live`), otherwise the recorded
-   * on-device reading; then the cloud's half, the recorded cloud reading of the same silhouette. Nothing is
-   * sent. The review shows the two answers side by side; the values used are the device's.
+   * "Run all three steps" (contract v1.44, judges.runAll; v1.47 routing.json bothWays): both halves of the
+   * hybrid, back to back. The device's half first: read now on this device when it has the model (`live`),
+   * otherwise the recorded on-device reading. Then the cloud's half: the same silhouette read now in the
+   * cloud (ONLY_IN_CLOUD, the request of a normal Send, listed in the record), or, when that does not complete
+   * (App Check, the quota, no connection, the time limit, another error), the recorded cloud reading with
+   * the reason. The press is the consent: the button's words say the silhouette is sent. The review shows
+   * the two answers side by side; the values used are the device's when it passed its checks, otherwise
+   * the cloud's, as after a Send.
    */
   const readBothWays = async (live: boolean) => {
     if (!recordedCloud || (!live && !recorded)) return;
@@ -312,38 +327,68 @@ export function DocumentPreviewScreen() {
     setSending(true);
     setStage(null);
     update({ error: null });
+    const schema = POINTER_SCHEMAS[doc.docType];
+    const tidy = (pointers: unknown) => tidyNamePointers(schema, pointers, map, introducersFor(doc.language));
     try {
-      let extraction: Extraction;
-      let device: BothReadings['device'];
+      // The device's half. A live reading that fails its checks is not an error here: the cloud's answer is used.
+      let extraction: Extraction | null = null;
+      let device: BothReadings['device'] | null = null;
       if (live) {
         reading.begin('device');
-        const result = await extractPointers(skeleton, doc.docType, doc.language, { deviceOnly: true, validate: checkAnswer, checkParts, onProgress: setStage });
-        const { pointers, leftOut } = leaveOutBoxes(doc.docType, tidyNamePointers(POINTER_SCHEMAS[doc.docType], result.value, map, introducersFor(doc.language)), map);
-        const review = buildReview(POINTER_SCHEMAS[doc.docType], pointers, skeleton, map);
-        await reading.back(showPairs(review, doc.docType), 'device');
-        extraction = { review, inferenceSource: result.inferenceSource, reason: result.reason, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead, leftOut };
-        device = { live: true, review, notRead: [...(result.notRead ?? []), ...(result.deductionsNotRead ? ['deductions'] : [])] };
+        try {
+          const result = await extractPointers(skeleton, doc.docType, doc.language, { deviceOnly: true, validate: checkAnswer, checkParts, onProgress: setStage });
+          const { pointers, leftOut } = leaveOutBoxes(doc.docType, tidy(result.value), map);
+          const review = buildReview(schema, pointers, skeleton, map);
+          await reading.back(showPairs(review, doc.docType), 'device');
+          extraction = { review, inferenceSource: result.inferenceSource, reason: result.reason, deductionsNotRead: result.deductionsNotRead, notRead: result.notRead, leftOut };
+          device = { live: true, review, notRead: [...(result.notRead ?? []), ...(result.deductionsNotRead ? ['deductions'] : [])] };
+        } catch {
+          // This device could not read it reliably: the silhouette goes on to the cloud, as after a Send.
+          reading.clear();
+        }
       } else {
         const rec = recorded as RecordedReading;
         reading.begin('recorded-device', rec.machine);
-        const review = buildReview(POINTER_SCHEMAS[doc.docType], tidyNamePointers(POINTER_SCHEMAS[doc.docType], rec.pointers, map, introducersFor(doc.language)), skeleton, map);
+        const review = buildReview(schema, tidy(rec.pointers), skeleton, map);
         const deductionsNotRead = !Object.hasOwn(rec.pointers, 'deductions');
         await reading.back(showPairs(review, doc.docType));
         recordRecordedReading({ machine: rec.machine, date: rec.date });
         extraction = { review, inferenceSource: 'RECORDED', reason: 'recorded-on-device', deductionsNotRead, recording: { machine: rec.machine, date: rec.date, path: rec.path } };
         device = { live: false, machine: rec.machine, date: rec.date, review, notRead: deductionsNotRead ? ['deductions'] : [] };
       }
-      // The second half: the same silhouette, as the cloud read it when it was recorded.
+
+      // The cloud's half: the same silhouette, read now in the cloud.
       setStage(null);
-      reading.begin('recorded-cloud');
-      const cloudReview = buildReview(POINTER_SCHEMAS[doc.docType], tidyNamePointers(POINTER_SCHEMAS[doc.docType], recordedCloud.pointers, map, introducersFor(doc.language)), skeleton, map);
-      const cloudDate = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(recordedCloud.date));
-      await reading.back(showPairs(cloudReview, doc.docType));
-      recordRecordedReading({ machine: 'Firebase AI Logic', date: cloudDate }, Date.now(), recordedCloud);
-      update({ extraction: { ...extraction, both: { device, cloud: { model: recordedCloud.model, date: cloudDate, review: cloudReview } } } });
+      const deviceFailed = device === null;
+      reading.begin(deviceFailed ? 'cloud-after-device' : 'compare-cloud');
+      let cloud: BothReadings['cloud'];
+      let cloudExtraction: Extraction;
+      try {
+        // No connection: nothing is tried (the request could not leave).
+        if (!navigator.onLine) throw new TaskError('network', 'offline');
+        const result = await compareInCloud(skeleton, doc.docType, doc.language);
+        // Ids only (the model never sees a value): shown in the record beside the exact request.
+        rememberReading(result.value as Readonly<Record<string, unknown>>);
+        const { pointers, leftOut } = leaveOutBoxes(doc.docType, tidy(result.value), map);
+        const review = buildReview(schema, pointers, skeleton, map);
+        await reading.back(showPairs(review, doc.docType));
+        cloud = { live: true, model: activePointerConfig().cloudModel, review };
+        cloudExtraction = { review, inferenceSource: result.inferenceSource, reason: deviceFailed ? 'on-device-failed' : result.reason, leftOut };
+      } catch (error) {
+        // The live reading did not complete: the recorded cloud reading of the same silhouette, and why.
+        const fallback = cloudFallbackOf(error);
+        if (fallback === 'appCheck') await startAppCheckAgain();
+        reading.begin('recorded-cloud');
+        const review = buildReview(schema, tidy(recordedCloud.pointers), skeleton, map);
+        const date = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(recordedCloud.date));
+        await reading.back(showPairs(review, doc.docType));
+        recordRecordedReading({ machine: 'Firebase AI Logic', date }, Date.now(), recordedCloud);
+        cloud = { live: false, model: recordedCloud.model, date, review, fallback };
+        cloudExtraction = { review, inferenceSource: 'RECORDED_CLOUD', reason: 'recorded-in-cloud', recording: { machine: 'Firebase AI Logic', date, path: recordedCloud.path }, cloudFallback: fallback };
+      }
+      update({ extraction: extraction && device ? { ...extraction, both: { device, cloud } } : cloudExtraction });
       navigate({ name: 'doc-review' });
     } catch (error) {
-      // The device could not read it: the error is shown, and no comparison is made for a reading that did not happen.
       reading.clear();
       readingStarted.current = false;
       update({ error: classifyError(error) });
@@ -416,7 +461,7 @@ export function DocumentPreviewScreen() {
     if (deviceStatus !== 'available' && !recorded && !recordedCloud) return;
     if (!takeAutoRun('read')) return;
     setAutoRun('use');
-    // Both halves of the hybrid: the device's (now, or its recording), then the cloud's recording.
+    // Both halves of the hybrid: the device's (now, or its recording), then the cloud's (now, or its recording).
     if (onDeviceFirst) void (recordedCloud ? readBothWays(true) : keepOnDevice());
     else if (recorded && recordedCloud) void readBothWays(false);
     else if (recordedCloud) void useRecordedCloud();

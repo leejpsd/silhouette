@@ -2,7 +2,7 @@
 // record opens on whether anything left, and each request on what left as a person reads it (the silhouette
 // with its chips) and what stayed; the exact request is folded under "For developers".
 import { expect, test } from '@playwright/test';
-import { fakeCloudModel, fixturePointers, noOnDeviceModel } from './model-fakes';
+import { cloudRefusesAppCheck, fakeCloudModel, fixturePointers, noOnDeviceModel } from './model-fakes';
 
 test('nothing sent: the record says so in words, not a zero', async ({ page }) => {
   await page.goto('/');
@@ -65,6 +65,8 @@ test('a recording is dated when it was recorded, not when it was shown', async (
 
 test('on a 390 px phone the silhouette that went fits its card, and a recording made in Chrome on a Mac shows a computer, not a phone', async ({ page, context }) => {
   await noOnDeviceModel(context);
+  // An automated browser does not pass reCAPTCHA: the live cloud half is refused and the recording is shown.
+  await cloudRefusesAppCheck(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/#/judges');
   await page.getByTestId('judges-run-all').getByRole('button', { name: 'Run all three steps' }).click();
