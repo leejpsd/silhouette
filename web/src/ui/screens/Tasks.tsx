@@ -11,6 +11,7 @@ import { countedCases, finalRan, isRunFile, summarize, type RunFile } from '../d
 import { useApp } from '../context';
 import { Recount } from '../evidence/Recount';
 import { HeldoutRecount } from '../evidence/HeldoutRecount';
+import { HELDOUT_RUN_DATES, useHeldoutDevices, useHeldoutLine, type HeldoutDevices } from '../evidence/HeldoutDevices';
 import heldoutSummary from '../../../eval/results/heldout/summary.json';
 import { dynamicKey, packDate } from '../i18n';
 import { ScreenHeading } from '../Heading';
@@ -96,7 +97,7 @@ function Figure({ value, total, met, children, testId }: { value: number; total:
  * lists and tuning documents, committed before they were read. Figures from eval/results/heldout/summary.json,
  * which a test recomputes from the result files; the button recounts them here.
  */
-function HeldOut() {
+function HeldOut({ devices }: { devices: HeldoutDevices | null }) {
   const { t, locale } = useApp();
   const f = heldoutSummary.figures;
   return (
@@ -127,6 +128,29 @@ function HeldOut() {
         })}
       </p>
       <HeldoutRecount shown={f} />
+      <IphoneHeldOut f={devices?.iphone ?? null} />
+    </div>
+  );
+}
+
+/** The iPhone 17 Pro on the third never-seen set, counted here from its run file and the set's answer keys. */
+function IphoneHeldOut({ f }: { f: HeldoutDevices['iphone'] | null }) {
+  const { t, locale } = useApp();
+  const machine = 'iPhone 17 Pro';
+  if (f === null) return <p className="small muted">{t('tasks.heldout.iphone.loading', { machine })}</p>;
+  return (
+    <div className="heldout-iphone" data-testid="heldout-iphone" data-first={f.firstWrong} data-stopped={f.stopped} data-on-device={f.onDevice} data-all-right={f.incomeAllRight} data-wrong={f.incomeWrong}>
+      <p className="measured-source">{t('tasks.heldout.iphone.title', { machine, total: f.documents, date: packDate(locale, HELDOUT_RUN_DATES.iphone) })}</p>
+      <ul className="device-headline">
+        <Figure value={f.incomeWrong} total={f.documents} met={f.incomeWrong === 0} testId="heldout-iphone-wrong">
+          {t('tasks.heldout.iphone.wrong', { machine })}
+        </Figure>
+      </ul>
+      <p className="small" data-testid="heldout-iphone-caught">
+        {t('tasks.heldout.iphone.caught', { first: f.firstWrong, total: f.documents, stopped: f.stopped, onDevice: f.onDevice, allRight: f.incomeAllRight })}
+        {f.incomeWrong > 0 && ` ${t('tasks.heldout.iphone.fromCloud', { cloud: f.incomeWrongFromCloud, wrong: f.incomeWrong })}`}
+      </p>
+      <p className="small muted">{t('tasks.heldout.iphone.source', { machine })}</p>
     </div>
   );
 }
@@ -135,6 +159,8 @@ function HeldOut() {
 function Measured() {
   const { t, locale } = useApp();
   const devices = useDeviceFigures();
+  const heldout = useHeldoutDevices();
+  const line = useHeldoutLine();
   const cloud = metrics.enPaystub;
   const exact = devices.reduce((a, d) => a + d.exact, 0);
   const exactOnDevice = devices.reduce((a, d) => a + d.exactOnDevice, 0);
@@ -145,7 +171,7 @@ function Measured() {
       </h2>
       <p className="small muted">{t('tasks.measured.lead')}</p>
       {/* Documents it had never seen first: the figures the prompts and checks were not tuned on. */}
-      <HeldOut />
+      <HeldOut devices={heldout} />
       <div className="measured-grid">
         {devices.map((d) => (
           <div key={d.path} className="measured-block" data-testid="measured-device">
@@ -160,6 +186,10 @@ function Measured() {
             >
               {recordingMachine(d.path)}
             </button>
+            {/* These runs use the check paystubs; the same device on never-seen paystubs is under them. */}
+            <p className="small muted" data-testid="measured-tuned">
+              {t('tasks.measured.tuned')}
+            </p>
             <ul className="device-headline">
               <Figure value={d.onDevice} total={d.readings} testId="measured-on-device">
                 {t('tasks.measured.onDevice')}
@@ -173,6 +203,12 @@ function Measured() {
                 </Figure>
               )}
             </ul>
+            {heldout && (
+              <p className="small measured-never-seen" data-testid="measured-never-seen">
+                <strong>{t('tasks.measured.neverSeen', { total: (/ios/.test(d.path) ? heldout.iphone : heldout.chrome).documents })}: </strong>
+                {line(/ios/.test(d.path) ? heldout.iphone : heldout.chrome)}
+              </p>
+            )}
           </div>
         ))}
         <div className="measured-block" data-testid="measured-cloud">

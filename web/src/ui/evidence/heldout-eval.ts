@@ -116,3 +116,49 @@ export function heldoutFigures(files: HeldoutFiles, golds: Readonly<Record<strin
     leaks: { bodies, withValue },
   };
 }
+
+/** One device's run over a never-seen paystub set: what the person was shown, and the device's first answers. */
+export interface HeldoutDeviceFigures {
+  readonly documents: number;
+  /** Answered on the device to the end (nothing sent). */
+  readonly onDevice: number;
+  /** Read again in the cloud from the same silhouette, after the device's answer failed the checks. */
+  readonly retried: number;
+  /** The device's first answer had a wrong yearly-income input. */
+  readonly firstWrong: number;
+  /** Of those, the ones whose wrong value was not shown: read again in the cloud, or left out for the person. */
+  readonly stopped: number;
+  /** Shown with every yearly-income input right. */
+  readonly incomeAllRight: number;
+  /** Shown with a wrong yearly-income value. */
+  readonly incomeWrong: number;
+  /** Of those, the ones whose answer came from the cloud. */
+  readonly incomeWrongFromCloud: number;
+}
+
+const sameValue = (a: unknown, b: unknown) => (empty(a) || empty(b) ? empty(a) && empty(b) : !shownWrong(a, b));
+
+/** The figures of one device run file (kind silhouette-heldout-device), paystubs only, from its answer keys. */
+export function heldoutDeviceFigures(run: { readonly documents: readonly DeviceDoc[] }, golds: Readonly<Record<string, Gold>>): HeldoutDeviceFigures {
+  const docs = run.documents.filter((d) => d.docType === 'paystub');
+  const goldOf = (id: string) => golds[id] ?? {};
+  const first = docs.filter((d) => incomeWrong(goldOf(d.id), d.device?.values));
+  // A wrong first value was stopped when what the person was shown is not that value.
+  const stopped = first.filter((d) => {
+    const gold = goldOf(d.id);
+    const device = d.device?.values ?? {};
+    const shown = d.final?.values ?? {};
+    return INCOME_INPUTS.every((f) => !shownWrong(gold[f], device[f]) || !sameValue(device[f], shown[f]));
+  });
+  const wrong = docs.filter((d) => incomeWrong(goldOf(d.id), d.final?.values));
+  return {
+    documents: docs.length,
+    onDevice: docs.filter((d) => d.ran === 'ON_DEVICE').length,
+    retried: docs.filter((d) => d.retried === true).length,
+    firstWrong: first.length,
+    stopped: stopped.length,
+    incomeAllRight: docs.filter((d) => incomeAllRight(goldOf(d.id), d.final?.values)).length,
+    incomeWrong: wrong.length,
+    incomeWrongFromCloud: wrong.filter((d) => d.ran === 'IN_CLOUD').length,
+  };
+}

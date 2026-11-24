@@ -1,7 +1,7 @@
 // "For judges: try it in two minutes" (#/judges): three steps, one button each, with invented data
 // only. It works in any browser: without an on-device model the sample's silhouette goes to the cloud
 // (offline, the bundled answer key is used), and the page says which steps run on this device.
-import { openRecordingNext, recordingLabel, recordingPaths, RECORDINGS } from './DeviceCheck';
+import { openRecordingNext, recordingLabel, recordingMachine, recordingPaths, RECORDINGS } from './DeviceCheck';
 import { countedCases, isRunFile, summarize } from '../device-check/run';
 import { useCallback, useEffect, useState } from 'react';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
@@ -10,7 +10,8 @@ import { openSamplePaystub, setAutoRun, startJudgesPath } from '../judges/next';
 import { useApp } from '../context';
 import { ScreenHeading } from '../Heading';
 import { useDocument } from '../doc/state';
-import { ArrowRight, ChevronLeft, ChevronRight, Doc, Phone, Play } from '../design/icons';
+import { ArrowRight, ChevronLeft, ChevronRight, DeviceIcon, Doc, Phone, Play } from '../design/icons';
+import { useHeldoutDevices, useHeldoutLine } from '../evidence/HeldoutDevices';
 import { BlockActions } from '../design/block';
 import { ActionLabel } from '../design/parts';
 import { navigate, routeHref } from '../router';
@@ -153,10 +154,14 @@ export function JudgesScreen() {
 /**
  * The on-device half, for a judge whose device has no model: the latest run recorded on a real iPhone
  * and the latest recorded in Chrome, with their three numbers, each one press from the full recording.
+ * Those runs use the five check paystubs the checks were changed against, so they are labelled so, and the
+ * same two devices on never-seen paystubs stand under them.
  */
 function RecordedRuns() {
   const { t, locale } = useApp();
-  const [rows, setRows] = useState<{ path: string; label: string; onDevice: number; total: number; wrong: number; readings: number }[]>([]);
+  const [rows, setRows] = useState<{ path: string; label: string; machine: string; onDevice: number; total: number; wrong: number; readings: number }[]>([]);
+  const heldout = useHeldoutDevices();
+  const line = useHeldoutLine();
   useEffect(() => {
     let live = true;
     void (async () => {
@@ -168,7 +173,7 @@ function RecordedRuns() {
         if (!isRunFile(value)) continue;
         const s = summarize(countedCases(value), value.version);
         if (s.wrongReachedPerson === null) continue;
-        found.push({ path, label: recordingLabel(path, locale), onDevice: s.onDevice, total: s.total, wrong: s.wrongReachedPerson, readings: s.extractionCases });
+        found.push({ path, label: recordingLabel(path, locale), machine: recordingMachine(path), onDevice: s.onDevice, total: s.total, wrong: s.wrongReachedPerson, readings: s.extractionCases });
       }
       if (live) setRows(found);
     })();
@@ -176,12 +181,17 @@ function RecordedRuns() {
       live = false;
     };
   }, [locale]);
-  if (rows.length === 0) return null;
+  if (rows.length === 0 && heldout === null) return null;
   return (
     <section className="recorded-runs" aria-labelledby="recorded-title" data-testid="recorded-runs">
       <h2 id="recorded-title" className="section-heading">
         {t('judges.recorded.title')}
       </h2>
+      {rows.length > 0 && (
+        <p className="small muted recorded-set" data-testid="recorded-tuned">
+          {t('judges.heldout.tuned')}
+        </p>
+      )}
       <ul className="link-card">
         {rows.map((r) => (
           <li key={r.path}>
@@ -194,7 +204,7 @@ function RecordedRuns() {
               }}
             >
               <span className="source-icon" aria-hidden="true">
-                <Phone size={16} />
+                <DeviceIcon machine={r.machine} size={16} />
               </span>
               <span className="source-text">
                 <span className="source-title">{r.label}</span>
@@ -206,6 +216,33 @@ function RecordedRuns() {
         ))}
       </ul>
       <p className="small muted">{t('judges.recorded.note')}</p>
+      {heldout && (
+        <div className="recorded-heldout" data-testid="judges-heldout">
+          <h3 className="recorded-heldout-title">{t('judges.heldout.title', { total: heldout.chrome.documents })}</h3>
+          <ul className="link-card">
+            {(
+              [
+                ['chrome', 'Chrome 157 · Mac', t('judges.heldout.firstSet', { machine: 'Chrome 157 · Mac' }), heldout.chrome],
+                ['iphone', 'iPhone 17 Pro', t('judges.heldout.thirdSet', { machine: 'iPhone 17 Pro' }), heldout.iphone],
+              ] as const
+            ).map(([id, machine, title, f]) => (
+              <li key={id} data-testid={`judges-heldout-${id}`} data-first={f.firstWrong} data-stopped={f.stopped} data-wrong={f.incomeWrong}>
+                <a href={routeHref({ name: 'tasks' })}>
+                  <span className="source-icon" aria-hidden="true">
+                    <DeviceIcon machine={machine} size={16} />
+                  </span>
+                  <span className="source-text">
+                    <span className="source-title">{title}</span>
+                    <span className="small muted">{line(f)}</span>
+                  </span>
+                  <ChevronRight />
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="small muted">{t('judges.heldout.note')}</p>
+        </div>
+      )}
     </section>
   );
 }

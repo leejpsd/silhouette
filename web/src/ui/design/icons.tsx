@@ -65,6 +65,16 @@ export const Phone = ({ size = 18 }: { size?: number }) => (
     <path d="M9 15h2" />
   </Svg>
 );
+/** A computer (a laptop): a run or an answer made on a desktop browser, never a phone. */
+export const Computer = ({ size = 18 }: { size?: number }) => (
+  <Svg size={size} view={20}>
+    <rect x="3.5" y="4" width="13" height="9" rx="1.5" />
+    <path d="M1.5 16h17" />
+  </Svg>
+);
+/** The device a run or an answer was made on, by its name ("iPhone 17 Pro", "Chrome 157 · Mac"). */
+export const DeviceIcon = ({ machine, size = 18 }: { machine: string; size?: number }) =>
+  /iphone|ipad|android|pixel|galaxy|phone/i.test(machine) ? <Phone size={size} /> : <Computer size={size} />;
 export const Lock = () => (
   <Svg>
     <rect x="4" y="9" width="12" height="9" rx="2.5" />

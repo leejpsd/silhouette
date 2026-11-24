@@ -4488,6 +4488,22 @@ main h2.judge-title {
   font-weight: 700;
 }
 
+/* The iPhone on the third never-seen set, under the first two sets, a rule above it. */
+.heldout-iphone {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--ink-border);
+}
+
+.measured-never-seen {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--ink-border);
+}
+
 .measured-why {
   margin: var(--space-xs) 0 0;
   font-weight: 600;
@@ -5584,6 +5600,24 @@ main h2.judge-title {
   border: 0;
   background: transparent;
   text-align: left;
+}
+
+.recorded-set {
+  margin: 0;
+}
+
+/* The same devices on never-seen paystubs, under the runs on the check paystubs. */
+.recorded-heldout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.recorded-heldout-title {
+  margin: 0;
+  font-size: var(--type-button-size);
+  font-weight: 700;
 }
 
 /* Sheets and modals: the sheet rises while the page dims; both leave faster than they arrive. The page
