@@ -7,19 +7,20 @@ Exact values never leave the device. A cloud model only ever receives a *silhoue
 Web, Android and iOS, built on one shared contract. Firebase AI Logic runs each model task either on the device's own model (Chrome's built-in model on the web, Apple's on-device model on iOS, Gemini Nano on Android) or on Gemini in the cloud. A deterministic rule engine on the device decides eligibility; models only point, explain and search.
 
 <p>
-  <img src="docs/images/start.png" width="210" alt="Start screen: Find public benefits you may qualify for. An example shows a paystub on this device next to what could leave: placeholders W1, W2 and N12.">
-  <img src="docs/images/results.png" width="210" alt="Results of the invented sample household: a note that it is a sample, not you; what the paystub changed (its yearly income, the results it changed); then the programs, each with its status and estimate. Leaving your device: 0.">
-  <img src="docs/images/silhouette-first-screen.png" width="210" alt="This is what could leave your device: the paystub with every name, number and date replaced by an orange token chip, and the ways on: read it from a recording on a device or in the cloud, or send the silhouette.">
+  <img src="docs/images/start.png" width="190" alt="Start screen: Find public benefits you may qualify for. An example shows a paystub on this device next to what could leave: placeholders W1, W2 and N12.">
+  <img src="docs/images/silhouette-first-screen.png" width="190" alt="This is what could leave your device: the sample paystub with every name, number and date replaced by an orange token chip. Above it, in a browser without the on-device model: recorded on a device, or in the cloud; below it, Send, which sends only the silhouette.">
+  <img src="docs/images/read-both-ways.png" width="190" alt="Read both ways: the same silhouette answered on a device (recorded on Chrome 157, Mac) and in the cloud (gemini-3.5-flash-lite, recorded), value by value: N12 to 1,271.88 on both sides. Same value from both: 11 of 11.">
+  <img src="docs/images/results.png" width="190" alt="Your results for the invented sample household: what your paystub changed, 29,233 dollars a year; may qualify 3 without the paystub and 5 with it, with an amount 0 and 3; about 4,369 dollars a year, plus up to 2,016.">
 </p>
 
 <p>
-  <img src="docs/images/ios-start.png" width="210" alt="The iOS app's start screen: the same headline and example in a native SwiftUI layout, with the privacy pill 'Nothing has left this iPhone' above the tab bar.">
-  <img src="docs/images/ios-results.png" width="210" alt="iOS on a real iPhone 17 Pro: You may qualify for 5 programs, checked on this iPhone, Rules + paystub; the sample household named as such; what the paystub changed, read by the model on this iPhone.">
-  <img src="docs/images/ios-silhouette.png" width="210" alt="iOS on a real iPhone 17 Pro: what could leave, the sample paystub as token chips, with Read on this iPhone and Keep everything on this iPhone.">
-  <img src="docs/images/ios-review.png" width="210" alt="iOS on a real iPhone 17 Pro: the iPhone's own model answered grossPay N12 and the iPhone put back 1,271.88; the line as the model saw it and the same line on this iPhone; confirm the 4 values that decide the result.">
+  <img src="docs/images/ios-start.png" width="190" alt="The iOS app's start screen: the same headline and example in a native SwiftUI layout, with the privacy pill 'Nothing has left this iPhone' above the tab bar.">
+  <img src="docs/images/ios-silhouette.png" width="190" alt="iOS on a real iPhone 17 Pro: what could leave, the sample paystub as token chips; read first by the model on this iPhone, only if it can't, the silhouette goes to the cloud; Show the exact request, Recorded cloud reading, Read on this iPhone.">
+  <img src="docs/images/ios-review.png" width="190" alt="iOS on a real iPhone 17 Pro: Read both ways, on this iPhone now and in the cloud (recorded): N12 to 1,271.88 on both sides; same value from both, 8 of 8; only the cloud's answer has the names, hours and rate, which the iPhone's checks left out.">
+  <img src="docs/images/ios-results.png" width="190" alt="iOS on a real iPhone 17 Pro: what your paystub changed, read by the model on this iPhone: may qualify 3 without and 5 with it, with an amount 0 and 3; about 4,369 dollars a year, plus up to 2,016.">
 </p>
 
-The same flow as a native SwiftUI app. The start screen is a simulator capture; the other three are from a real iPhone 17 Pro, read by Apple's on-device model through Firebase AI Logic (recorded runs under [Evidence](#evidence)).
+The same flow as a native SwiftUI app. The start screen is a simulator capture; the other three are from a real iPhone 17 Pro on 2026-11-24: the sample paystub read on the phone at that moment by Apple's on-device model through Firebase AI Logic, next to the cloud's recorded answer to the same silhouette.
 
 ### Try it
 
@@ -91,15 +92,15 @@ Every limit and amount was read from the agencies' own publications on 2026-11-1
   <img src="docs/images/silhouette-what-could-leave.png" width="250" alt="What could leave: the same paystub with every value replaced by a token chip that carries its id.">
 </p>
 
-**5. Review, confirm, sharper results.** The review opens with the reading's own answer: the model answered `"grossPay": "N12"`, and this device put back `1,271.88`. Each value found is shown next to the line it came from, to confirm or change. A badge says where it was read ("Cloud · document silhouette only" here, in a browser without an on-device model). Deterministic checks and annualization turn the confirmed document into a yearly income, and the results update: they say "Rules + paystub" (or W-2), how the document was read, and how the yearly income was worked out, with a link to change it.
+**5. Review, confirm, sharper results.** The review opens with the reading's own answer: the model answered `"grossPay": "N12"`, and this device put back `1,271.88`. Each value found is shown next to the line it came from, to confirm or change. A badge says where it was read ("Cloud · document silhouette only" here: a live reading in Safari on an iPhone, a browser without an on-device model). Deterministic checks and annualization turn the confirmed document into a yearly income, and the results update: they say "Rules + paystub" (or W-2), how the document was read, and how the yearly income was worked out, with a link to change it.
 
-<p><img src="docs/images/review.png" width="250" alt="Check what was found: the model answered grossPay N12 and this device put back 1,271.88; the same line as the model saw it (placeholders) and on this device (the value); the four values that decide the result to confirm."></p>
+<p><img src="docs/images/review.png" width="250" alt="A live cloud reading in Safari on an iPhone: Check what was found, Cloud, document silhouette only (no model on this device); the model answered grossPay N12 and this device put back 1,271.88; the same line as the model saw it (placeholders) and on this device (the values). The bar at the bottom: 1 sent with your document's silhouette, 7 technical checks, no personal data."></p>
 
-**6. "Leaving your device".** Before a request that may leave, the app lists what it carries and shows the exact request body. Afterwards the record lists every request that left, with its body, and every answer written on the device as "kept".
+**6. "Leaving your device".** Before a request that may leave, the app lists what it carries and shows the exact request body. Afterwards the record says in plain words what left: a headline ("Nothing has left this device", or how many requests left and that none of them carried your names, numbers or dates), then each request with what left (for a document, the silhouette as chips) and what was kept on the device, and the exact request body folded under "For developers". Every answer written on the device is listed as "kept".
 
 <p>
-  <img src="docs/images/send-step.png" width="250" alt="Leaving your device: what could leave is the program name and public information only; Show the exact request opens the JSON body.">
-  <img src="docs/images/record.png" width="250" alt="The record of what left: one request opened to show exactly what was sent, byte for byte, with where it went.">
+  <img src="docs/images/send-step.png" width="250" alt="Leaving your device, before an explanation is asked: what could leave is nothing about you, only the program (Federal Earned Income Tax Credit), its public information and the question; the model; what is not sent; Show the exact request; where it goes: Firebase AI Logic in the cloud, only what is shown above; Keep on device or Send.">
+  <img src="docs/images/record.png" width="250" alt="The record after a live cloud reading in Safari on an iPhone: Document silhouette, sent, response 200; what left this device, the paystub as token chips; kept on this device: 22 numbers, 3 dates, 12 words.">
 </p>
 
 ## Hybrid inference: which task runs where
