@@ -535,8 +535,17 @@ public enum DeviceReading {
         }
         let contradictions = notReadFields(usedCore, skeleton: skeleton)
         var notRead = contradictions.fields
-        let kept = JSON.object(JSONObject((usedCore.objectValue?.entries ?? []).filter { !notRead.contains($0.key) }.map { ($0.key, $0.value) }))
         if !contradictions.problems.isEmpty { passes[0].marked = contradictions.problems }
+        // A core asked without the constraint's text (section 2, a part that does not fit the window) does not
+        // ask the names: they are not read.
+        if passes[0].schemaInPrompt == false {
+            let names = partFields(schema, .core).filter { name in kind(properties(schema).first { $0.name == name }?.spec) == "text" }
+            for name in names where !notRead.contains(name) {
+                notRead.append(name)
+                passes[0].marked.append("\(name):not-asked")
+            }
+        }
+        let kept = JSON.object(JSONObject((usedCore.objectValue?.entries ?? []).filter { !notRead.contains($0.key) }.map { ($0.key, $0.value) }))
 
         func readDeductions(_ part: Part) async throws -> (pass: Pass, merged: JSON) {
             var p = try await pass(part)

@@ -121,6 +121,7 @@ struct DeviceBudgetTests {
             #expect(schema["properties"]?.objectValue?.keys == fields, "\(part.rawValue)")
             #expect(schema["required"]?.arrayValue?.compactMap(\.stringValue) == fields)
             #expect(!schemaText.contains("\"N1\""), "no id lists")
+            #expect(!fields.contains("employerName") && !fields.contains("employeeName"), "the short form does not ask the names")
         }
     }
 

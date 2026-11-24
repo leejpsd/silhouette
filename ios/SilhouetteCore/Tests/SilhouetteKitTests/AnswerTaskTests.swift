@@ -632,7 +632,7 @@ struct DeviceReadingTaskTests {
                                                  message: "exceededContextWindowSize: 4,210 tokens"))
     }
 
-    @Test("a part the model refuses for its length is asked once more, the same constraint with its fields in short form")
+    @Test("a part the model refuses for its length is asked once more in short form: the same constraint without the names, which are not read")
     func contextWindowRetry() async throws {
         let p = try plan()
         let refused = TaskError(.onDeviceUnavailable, "exceededContextWindowSize", origin: DeviceBudget.contextWindowOrigin,
@@ -643,10 +643,17 @@ struct DeviceReadingTaskTests {
         #expect(outcome.source == .onDevice)
         #expect(port.deviceCalls.map(\.part) == ["core", "core", "deductions"])
         #expect(port.deviceCalls.map(\.schemaInPrompt) == [true, false, true])
-        #expect(port.deviceCalls[0].constraint?.jsonText == port.deviceCalls[1].constraint?.jsonText)
+        // The same constraint, without the names the short form does not ask.
+        let refusedConstraint = try #require(port.deviceCalls[0].constraint)
+        #expect(port.deviceCalls[1].constraint?.jsonText == Planner.withoutNames(refusedConstraint, pointerSchema: p.parts.schema).jsonText)
         #expect(port.deviceCalls[1].prompt.hasPrefix(port.deviceCalls[0].prompt)
                 && port.deviceCalls[1].prompt.contains("Answer with JSON that matches this schema:"))
         #expect(outcome.attempt?.passes.map(\.schemaInPrompt) == [false, true])
+        // The short form does not ask the names: not in its constraint, and not read.
+        #expect(port.deviceCalls[1].constraint?["properties"]?["employerName"] == nil && port.deviceCalls[0].constraint?["properties"]?["employerName"] != nil)
+        #expect(outcome.notRead.contains("employerName") && outcome.notRead.contains("employeeName"))
+        #expect(outcome.pointers["employerName"] == nil && outcome.pointers["employeeName"] == nil)
+        #expect(outcome.attempt?.passes.first?.marked.contains("employerName:not-asked") == true)
         // Refused again without it: a failed part like any other, not asked a third time.
         let again = FakePort(device: [.failure(refused), .failure(refused)], cloud: [.success(#"{"grossPay":"N12"}"#)])
         let failed = try await runner(again, log: OutboundLog()).extractPointers(p.request, inParts: p.parts)

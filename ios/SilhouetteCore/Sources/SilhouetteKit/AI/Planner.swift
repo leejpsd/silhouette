@@ -106,7 +106,8 @@ public enum Planner {
     /// the prompt carries the part's fields as the model schema instead (shared/schemas/MODEL_SCHEMA.md,
     /// required and nullable, after the line `Answer with JSON that matches this schema:`, as for an
     /// on-device API without a schema parameter): the field names, kinds and options without the id
-    /// lists. Without either, the model leaves most fields out. `constraintText` forces the choice.
+    /// lists. Without either, the model leaves most fields out. The short form does not ask the names.
+    /// `constraintText` forces the choice.
     ///
     /// The part's text opens the user turn rather than closing the system instruction: the on-device
     /// model checks the language of the user turn, and a silhouette alone (mostly ⟦N12⟧ placeholders)
@@ -118,12 +119,35 @@ public enum Planner {
         let user = PromptTemplate.fill(template.user, ["docType": docType, "skeleton": text(skeleton)])
         let prompt = partText.isEmpty ? user : partText + "\n\n" + user
         let full = constraintText ?? DeviceBudget.fitsWithSchema(system: template.system, prompt: prompt, constraint: constraint)
+        guard !full, let pointerSchema else {
+            return DeviceCall(taskId: "document.pointer.extract", system: template.system, prompt: prompt,
+                              maxOutputTokens: 1024, constraint: constraint, part: part, deterministic: true, schemaInPrompt: full)
+        }
+        // The short form does not ask the names (DEVICE_READING.md section 2): without the id lists the model
+        // splits or extends them. They are left out of the constraint and of the model schema, and the reading
+        // marks them not read.
+        let asked = withoutNames(constraint, pointerSchema: pointerSchema)
         var shortPrompt = prompt
-        if !full, let pointerSchema, let fields = partModelSchema(pointerSchema, constraint: constraint) {
+        if let fields = partModelSchema(pointerSchema, constraint: asked) {
             shortPrompt += "\n\nAnswer with JSON that matches this schema:\n" + fields.jsonText
         }
-        return DeviceCall(taskId: "document.pointer.extract", system: template.system, prompt: full ? prompt : shortPrompt,
-                          maxOutputTokens: 1024, constraint: constraint, part: part, deterministic: true, schemaInPrompt: full)
+        return DeviceCall(taskId: "document.pointer.extract", system: template.system, prompt: shortPrompt,
+                          maxOutputTokens: 1024, constraint: asked, part: part, deterministic: true, schemaInPrompt: false)
+    }
+
+    /// A constraint without the fields of `x-kind` text (the names).
+    static func withoutNames(_ constraint: JSON, pointerSchema: JSON) -> JSON {
+        let names = Set((pointerSchema["properties"]?.objectValue?.entries ?? []).filter { $0.value["x-kind"]?.stringValue == "text" }.map(\.key))
+        guard let properties = constraint["properties"]?.objectValue, properties.keys.contains(where: names.contains) else { return constraint }
+        var out = JSONObject()
+        for (key, value) in constraint.objectValue?.entries ?? [] {
+            switch key {
+            case "properties": out[key] = .object(JSONObject(properties.entries.filter { !names.contains($0.key) }))
+            case "required": out[key] = .array((value.arrayValue ?? []).filter { !names.contains($0.stringValue ?? "") })
+            default: out[key] = value
+            }
+        }
+        return .object(out)
     }
 
     /// The model schema (required and nullable, JSON Schema dialect) of the fields a part's constraint asks for.
