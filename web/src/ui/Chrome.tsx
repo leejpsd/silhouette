@@ -11,7 +11,7 @@ import { routeHref, type Route } from './router';
 import { firstOpenStep } from './quickcheck';
 import { useDocument } from './doc/state';
 import { Count, Paper, Sheet, ActionLabel } from './design/parts';
-import { Caret, Check, CrossCircle, Phone, Trash } from './design/icons';
+import { Caret, Check, Computer, CrossCircle, Phone, Trash } from './design/icons';
 import { useWide } from './design/block';
 import { useLastReading } from './doc/last-reading';
 import { chipParts, whatLeft } from './what-left';
@@ -449,6 +449,17 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
 }
 
 /**
+ * Where an answer that stayed was written: a recording shows the machine it was recorded on (a computer for
+ * Chrome on a Mac, a phone for the iPhone), a recorded cloud answer shows no device, and an answer written
+ * now shows this device (a phone on a touch screen, a computer otherwise).
+ */
+function answeredOn(e: OutboundEntry): 'phone' | 'computer' | null {
+  if (e.recording) return e.recording.place === 'cloud' ? null : /iphone|ipad|android|pixel|galaxy|phone/i.test(e.recording.machine) ? 'phone' : 'computer';
+  const touch = typeof window !== 'undefined' && (window.matchMedia?.('(pointer: coarse)').matches ?? false);
+  return touch ? 'phone' : 'computer';
+}
+
+/**
  * One row of the leaving label: the time, what it carried and its status; where it went, the model and
  * the exact request open under "Show exactly what was sent" (on wide screens, beside the list).
  */
@@ -462,13 +473,14 @@ function OutboundItem({ entry: e, title, status, at, open, onToggle }: { entry: 
   const [copied, setCopied] = useState(false);
   const isReading = e.fields.includes('document-silhouette') && e.status === 'sent';
   const recorded = e.recording !== undefined;
+  const on = e.status === 'answered' ? answeredOn(e) : null;
   const plain = useMemo(() => (e.body === undefined ? null : whatLeft(e.body)), [e.body]);
   return (
     <li data-channel={e.channel} data-status={e.status} data-open={show} data-recorded={recorded} data-new={Date.now() - e.at < 5000 ? 'true' : undefined}>
       <span className="outbound-time">{at}</span>
       <span className="outbound-what">{title}</span>
-      <span className={`outbound-status status-${e.status}`} data-testid="outbound-status">
-        {e.status === 'answered' ? <Phone size={12} /> : e.status === 'attempted' ? <span className="spinner" aria-hidden="true" /> : e.status === 'sent' ? null : <CrossCircle />}
+      <span className={`outbound-status status-${e.status}`} data-testid="outbound-status" data-answered-on={e.status === 'answered' ? (on ?? 'none') : undefined}>
+        {e.status === 'answered' ? on === 'phone' ? <Phone size={12} /> : on === 'computer' ? <Computer size={12} /> : null : e.status === 'attempted' ? <span className="spinner" aria-hidden="true" /> : e.status === 'sent' ? null : <CrossCircle />}
         <span>{status}</span>
       </span>
       {/* A recorded reading: whose answer it was and when, under the row. */}

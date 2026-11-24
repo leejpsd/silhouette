@@ -62,3 +62,29 @@ test('a recording is dated when it was recorded, not when it was shown', async (
   await expect(row.getByRole('button', { name: 'What went to the cloud when it was recorded' })).toHaveAttribute('aria-expanded', 'true');
   await expect(row.getByTestId('what-left-doc')).toContainText('Gross Pay');
 });
+
+test('on a 390 px phone the silhouette that went fits its card, and a recording made in Chrome on a Mac shows a computer, not a phone', async ({ page, context }) => {
+  await noOnDeviceModel(context);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/#/judges');
+  await page.getByTestId('judges-run-all').getByRole('button', { name: 'Run all three steps' }).click();
+  await expect(page.getByTestId('pointer-reveal')).toBeVisible({ timeout: 20_000 });
+  await page.getByTestId('leaving-bar').getByRole('button', { name: 'Details' }).click();
+  const sheet = page.getByTestId('record-sheet');
+  await expect(sheet.getByTestId('record-sub')).toContainText('2 recordings shown');
+  const device = sheet.locator('li[data-recorded="true"]').filter({ hasText: 'Recorded on-device reading' });
+  await expect(device.getByTestId('outbound-status')).toHaveAttribute('data-answered-on', 'computer');
+  const cloud = sheet.locator('li[data-recorded="true"]').filter({ hasText: 'Recorded cloud reading' });
+  await expect(cloud.getByTestId('outbound-status')).toHaveAttribute('data-answered-on', 'none');
+  const doc = cloud.getByTestId('what-left-doc');
+  await expect(doc).toBeVisible();
+  const fit = await doc.evaluate((el) => {
+    const card = el.closest('li')!.getBoundingClientRect();
+    return { scroll: el.scrollWidth, client: el.clientWidth, right: el.getBoundingClientRect().right, cardRight: card.right };
+  });
+  expect(fit.scroll).toBeLessThanOrEqual(fit.client);
+  expect(fit.right).toBeLessThanOrEqual(fit.cardRight);
+  // Chips stay whole: none is split over two lines.
+  const split = await doc.locator('.tok').evaluateAll((toks) => toks.filter((t) => t.getClientRects().length > 1).length);
+  expect(split).toBe(0);
+});

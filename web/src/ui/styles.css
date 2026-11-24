@@ -5416,6 +5416,15 @@ main h2.judge-title {
     display: none;
   }
 
+  /* The silhouette that left fits the card: a line too long for a phone wraps between words and chips
+     (a chip is never split), in a slightly smaller monospace, instead of running past the right edge. */
+  .what-left-doc {
+    padding: 10px;
+    font-size: 11px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+
   /* A recording is dated with its own date, which may be long: it wraps rather than run under the status. */
   .outbound-list li[data-recorded='true'] .outbound-time {
     white-space: normal;
