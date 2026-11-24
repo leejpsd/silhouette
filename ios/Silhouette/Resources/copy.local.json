@@ -43,7 +43,11 @@
     "heldout.scoring": "Scored against each paystub's answer key: amounts to the cent, dates and pay frequency exactly, names word for word (punctuation aside), deductions as a set of amounts. The same scoring as the run in Chrome.",
     "heldout.recordingRow": "{count} held-out paystubs, {date}",
     "heldout.rowFields": "Fields right: {first} in the iPhone's first answer, {shown} in what the person is shown",
-    "heldout.rowWrong": "Wrong value shown: {fields}"
+    "heldout.rowWrong": "Wrong value shown: {fields}",
+    "heldout.firstIncomeWrong": "first answers of the iPhone's model with a wrong yearly-income input; the app's checks stopped {caught} of them before they were shown",
+    "heldout.incomeWrong": "readings in which a wrong yearly-income value reached the person",
+    "heldout.incomeWrongNone": "readings in which a wrong yearly-income value reached the person: none",
+    "heldout.otherWrong": "readings with a wrong name, net pay or deduction shown, values that feed no result"
   },
   "es": {
     "deviceCheck.saved": "Guardado en este iPhone: Archivos, En mi iPhone, Silhouette, {file}.",
@@ -88,7 +92,11 @@
     "heldout.scoring": "Puntuado con la clave de respuestas de cada recibo: importes al centavo, fechas y frecuencia de pago exactas, nombres palabra por palabra (sin la puntuación), deducciones como conjunto de importes. La misma puntuación que la ejecución en Chrome.",
     "heldout.recordingRow": "{count} recibos reservados, {date}",
     "heldout.rowFields": "Campos correctos: {first} en la primera respuesta del dispositivo, {shown} en lo que se muestra a la persona",
-    "heldout.rowWrong": "Valor incorrecto mostrado: {fields}"
+    "heldout.rowWrong": "Valor incorrecto mostrado: {fields}",
+    "heldout.firstIncomeWrong": "primeras respuestas del modelo del iPhone con un dato de ingreso anual incorrecto; las comprobaciones de la app detuvieron {caught} antes de mostrarlas",
+    "heldout.incomeWrong": "lecturas en las que un ingreso anual incorrecto llegó a la persona",
+    "heldout.incomeWrongNone": "lecturas en las que un ingreso anual incorrecto llegó a la persona: ninguna",
+    "heldout.otherWrong": "lecturas con un nombre, pago neto o deducción incorrectos a la vista, valores que no deciden ningún resultado"
   },
   "ko": {}
 }

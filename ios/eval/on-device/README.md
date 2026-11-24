@@ -45,7 +45,7 @@ Replayed under `shared/validation/DEVICE_READING.md` v2 (values that feed no res
 
 ## The held-out paystubs on the iPhone
 
-The 24 paystubs of `web/eval/heldout/` (`hp-*`, frozen before measuring: see its `FROZEN.md`) are bundled with the app as they are, with their answer keys. On an iPhone with the on-device model ready, the on-device check screen offers **Read the 24 held-out paystubs** under its own run. Each paystub is read as the app reads a document: the silhouette is made on the iPhone, the on-device model reads it in parts with the checks of `shared/validation/DEVICE_READING.md`, and the same silhouette is read once in the cloud only when the device's answer fails them. The run takes several minutes; the screen stays on until it finishes. It can also be started without tapping: launch the app with the argument `-HeldOutRun`.
+The 24 paystubs of `web/eval/heldout-3/` (`hq-*`, 12 layouts, written independently of the prompts, word lists, checks and tuning documents, and frozen before measuring: see its `FROZEN.md`) are bundled with the app as they are, with their answer keys. On an iPhone with the on-device model ready, the on-device check screen offers **Read the 24 held-out paystubs** under its own run. Each paystub is read as the app reads a document: the silhouette is made on the iPhone, the on-device model reads it in parts with the checks of `shared/validation/DEVICE_READING.md`, and the same silhouette is read once in the cloud only when the device's answer fails them. The run takes a few minutes; the screen stays on until it finishes. It can also be started without tapping: launch the app with the argument `-HeldOutRun`.
 
 The run file (`heldout-device-<date>-silhouette0-ios<version>.json`) has the shape of the web's held-out run and is saved in the app's Documents folder (Files, On My iPhone, Silhouette); **Share the results** sends the same file. It can be copied from the phone with
 
@@ -55,3 +55,25 @@ xcrun devicectl device copy from --device <device id> --domain-type appDataConta
 ```
 
 and scored with `node web/eval/heldout-score.mjs <file>`. Put the file in [`heldout/`](heldout/), unchanged: the app then bundles it and lists it under the recordings, with its figures scored in the app the way that script scores them (names word for word).
+
+### The measurement, 2026-11-24
+
+[`heldout/heldout-device-2026-11-24T0359-silhouette0-ios2652.json`](heldout/heldout-device-2026-11-24T0359-silhouette0-ios2652.json): the one run this set was frozen for. iPhone 17 Pro, iOS 26.5.2, Apple's on-device model through Firebase AI Logic 12.19.3, the app at contract v1.45. Figures from `web/eval/heldout-score.mjs`; the app shows the same figures from the same file.
+
+| 24 paystubs it had never seen, 1,558 to 3,496 characters each | |
+|---|---|
+| The iPhone's first answer had a wrong yearly-income input | **22 of 24** |
+| Of those, stopped by the checks before anything was shown, and read again in the cloud from the same silhouette | **22 of 22** |
+| Answered on the iPhone to the end | 2 of 24, yearly-income inputs right; names, net pay, hours, rate and deductions left out as not read |
+| Every yearly-income input right in what the person is shown | 19 of 24 |
+| **A wrong yearly-income value reached the person** | **1 of 24**, from the cloud's answer |
+| A wrong name or deduction shown (values that feed no result) | 5 of 24 |
+| Time per paystub, the cloud retry included | 6.4 s median (5.3 to 16.1 s); 2 min 49 s for the 24 |
+
+What the misses are:
+
+- **The device's first answers.** On these paystubs, two to four times the length of the bundled sample and with many more numbers, the iPhone's model mostly pointed at a placeholder that is not an amount of the period: gross pay at an employee ID or a department number, net pay at a telephone prefix or a ZIP code, sometimes at a year-to-date amount. Every such answer failed the checks of `DEVICE_READING.md` section 4 (`not-money`, `netPay:above-gross`, `check:ytd-gross`, `check:ytd-periods`), so none was shown. The runs above, where the same model had every yearly-income input right in 15 of 15 readings, use the five check paystubs the checks were changed against; this set is the held-out measure. Chrome 157's model, on the first held-out set, had a wrong yearly-income input in 12 of 24 first answers.
+- **hq-09-1, the cloud's answer.** Gross pay and year to date were taken from the neighbouring column of a summary table ("Pre-Tax Ded." instead of "Total Gross"). The checks of section 4 apply to device answers; a cloud answer meets the checks of `validation/SPEC.md` section 5, and here `net-sum` warns on the review screen (net pay above that gross pay), where the person can correct the value.
+- **Dates written `30-Sep-26`** (layouts 4 and 6, four paystubs): the silhouette does not hold them as date placeholders, so the three dates were left for the person to type. Missing, not wrong.
+
+Nothing in the prompts, word lists, schemas or checks has been changed because of what this set showed; a later change measured on it would make it no longer held out, and this README would say so.

@@ -100,8 +100,10 @@ final class DeviceCheckUITests: XCTestCase {
         let onDevice = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "cases answered on this iPhone")).firstMatch
         app.scrollIntoView(onDevice)
         XCTAssertTrue(onDevice.waitForExistence(timeout: 5) && onDevice.label.contains("/ 24"), onDevice.debugDescription)
-        let wrong = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "wrong value reached the person")).firstMatch
+        let wrong = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "wrong yearly-income value reached the person")).firstMatch
         XCTAssertTrue(wrong.label.hasPrefix("0 / 24"), wrong.label)
+        let other = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "values that feed no result")).firstMatch
+        XCTAssertTrue(other.exists && other.label.hasPrefix("0 / 24"), other.debugDescription)
     }
 
     /// Without a model there is no held-out run to start.

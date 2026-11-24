@@ -210,8 +210,12 @@ public enum HeldOut {
         /// with any value wrong; fields right of the fields the answer keys have.
         public var incomeAllRight = 0, incomeWrong = 0, wrongShown = 0, allRight = 0
         public var finalCorrect = 0, finalTotal = 0
-        /// The device's first answer, before its checks.
-        public var firstCorrect = 0, firstTotal = 0, firstIncomeWrong = 0
+        /// Readings with a wrong value shown among the fields that feed no yearly income (names, net pay,
+        /// hours, rate, deductions).
+        public var otherWrong = 0
+        /// The device's first answer, before its checks; of the first answers with a wrong yearly-income input,
+        /// those whose wrong value the person was not shown (read again in the cloud, or left out to type).
+        public var firstCorrect = 0, firstTotal = 0, firstIncomeWrong = 0, firstIncomeCaught = 0
         /// Time per paystub from start to the answer shown, retries included (milliseconds).
         public var medianMs: Double?, minMs: Double?, maxMs: Double?
     }
@@ -242,8 +246,13 @@ public enum HeldOut {
             let wrong = { (s: ReadingScore.Status?) in s == .wrong || s == .spurious }
             if DeviceCheck.incomeInputs.allSatisfy({ ok(fs[$0] ?? .missing) }) { f.incomeAllRight += 1 }
             if DeviceCheck.incomeInputs.contains(where: { wrong(fs[$0]) }) { f.incomeWrong += 1 }
-            if DeviceCheck.incomeInputs.contains(where: { wrong(ds[$0]) }) { f.firstIncomeWrong += 1 }
+            let finalIncomeWrong = DeviceCheck.incomeInputs.contains(where: { wrong(fs[$0]) })
+            if DeviceCheck.incomeInputs.contains(where: { wrong(ds[$0]) }) {
+                f.firstIncomeWrong += 1
+                if ran != "ON_DEVICE" || !finalIncomeWrong { f.firstIncomeCaught += 1 }
+            }
             if paystubFields.contains(where: { wrong(fs[$0]) }) { f.wrongShown += 1 }
+            if paystubFields.contains(where: { !DeviceCheck.incomeInputs.contains($0) && wrong(fs[$0]) }) { f.otherWrong += 1 }
             if paystubFields.allSatisfy({ ok(fs[$0] ?? .missing) }) { f.allRight += 1 }
             let expected = paystubFields.filter { !empty(gold[$0]) }
             let shown = (expected.filter { fs[$0] == .correct }.count, expected.count)

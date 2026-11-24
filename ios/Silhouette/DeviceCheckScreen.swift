@@ -285,8 +285,12 @@ struct DeviceCheckScreen: View {
         return VStack(alignment: .leading, spacing: 10) {
             VStack(alignment: .leading, spacing: 10) {
                 headline("\(f.onDevice) / \(n)", model.t(recorded ? "deviceCheck.headline.onRecordingDevice" : "deviceCheck.headline.onDevice"))
+                if f.firstIncomeWrong > 0 {
+                    headline("\(f.firstIncomeWrong) / \(n)", model.t("heldout.firstIncomeWrong", ["caught": String(f.firstIncomeCaught)]))
+                }
                 headline("\(f.incomeAllRight) / \(n)", model.t("deviceCheck.headline.incomeRight"))
-                headline("\(f.wrongShown) / \(n)", model.t(f.wrongShown == 0 ? "deviceCheck.headline.wrongNone" : "deviceCheck.headline.wrong"))
+                headline("\(f.incomeWrong) / \(n)", model.t(f.incomeWrong == 0 ? "heldout.incomeWrongNone" : "heldout.incomeWrong"))
+                headline("\(f.otherWrong) / \(n)", model.t("heldout.otherWrong"))
                 headline("\(f.firstCorrect) / \(f.firstTotal)", model.t("heldout.firstFields"))
                 if f.medianMs != nil {
                     headline("\(seconds(f.medianMs)) s", model.t("heldout.median", ["min": seconds(f.minMs), "max": seconds(f.maxMs)]))

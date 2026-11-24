@@ -55,8 +55,24 @@ struct HeldOutTests {
         #expect((f.onDevice, f.inCloud, f.retried, f.notRun) == (13, 11, 11, 0))
         #expect((f.incomeAllRight, f.incomeWrong, f.wrongShown, f.allRight) == (17, 0, 4, 7))
         #expect((f.finalCorrect, f.finalTotal) == (199, 262))
-        #expect((f.firstCorrect, f.firstTotal, f.firstIncomeWrong) == (163, 262, 12))
+        #expect((f.firstCorrect, f.firstTotal, f.firstIncomeWrong, f.firstIncomeCaught) == (163, 262, 12, 12))
+        #expect(f.otherWrong == 4)
         #expect(f.medianMs == 11944.5)
+    }
+
+    /// The measurement on the iPhone (2026-11-24, iOS 26.5.2), scored here, gives what heldout-score.mjs gives
+    /// for the same file: the device's first answer had a wrong yearly-income input on 22 paystubs, the checks
+    /// stopped all 22, and one wrong yearly-income value came from the cloud's answer.
+    @Test("the iPhone run on the bundled set agrees with the web's scorer")
+    func iPhoneRun() throws {
+        let url = Repo.ios.appendingPathComponent("eval/on-device/heldout/heldout-device-2026-11-24T0359-silhouette0-ios2652.json")
+        let file = try JSON.parse(Data(contentsOf: url))
+        #expect(file["set"]?.stringValue == "heldout-3")
+        let f = HeldOut.figures(file, golds: try Self.setGolds())
+        #expect(f.documents == 24)
+        #expect((f.onDevice, f.inCloud, f.retried, f.notRun) == (2, 22, 22, 0))
+        #expect((f.incomeAllRight, f.incomeWrong, f.wrongShown, f.otherWrong, f.allRight) == (19, 1, 6, 5, 13))
+        #expect((f.firstIncomeWrong, f.firstIncomeCaught) == (22, 22))
     }
 
     @Test("names are scored word for word")
