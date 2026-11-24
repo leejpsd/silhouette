@@ -161,7 +161,7 @@ The placeholder map stays on the device as `Raw`. The Rehydrator looks up `N12` 
 
 Each figure below is copied from a file in this repository, with its date.
 
-**Documents it had never seen, 2026-11-19** ([`web/eval/heldout/`](web/eval/heldout/), [`web/eval/heldout-2/`](web/eval/heldout-2/), results in [`web/eval/results/heldout/`](web/eval/results/heldout/)). The figures below this one were measured on documents the prompts and checks were tuned on. These sets were written independently of the prompts, word lists, rules and tuning documents, and committed before the app read them: the commit that adds each set's `FROZEN.md` (with every file's SHA-256) comes before the commit with its results. The same app code read them in the cloud and in Chrome 157 with its on-device model (device first, the checks, one cloud retry of the same silhouette).
+**Documents it had never seen, 2026-11-19** ([`web/eval/heldout/`](web/eval/heldout/), [`web/eval/heldout-2/`](web/eval/heldout-2/), results in [`web/eval/results/heldout/`](web/eval/results/heldout/)). Apart from the iPhone run that follows them, the figures below were measured on documents the prompts and checks were tuned on. These sets were written independently of the prompts, word lists, rules and tuning documents, and committed before the app read them: the commit that adds each set's `FROZEN.md` (with every file's SHA-256) comes before the commit with its results. The same app code read them in the cloud and in Chrome 157 with its on-device model (device first, the checks, one cloud retry of the same silhouette).
 
 | Never-seen documents | In the cloud | On the device first |
 |---|---|---|
@@ -173,6 +173,18 @@ Each figure below is copied from a file in this repository, with its date.
 | Request bodies containing a name, date or amount of their document | 0 of 42 | |
 
 Form W-2 was the weak part: box 1 was read from a box number, a street number or a neighbouring box. The checks were changed after each W-2 set ([`shared/CHANGELOG.md`](shared/CHANGELOG.md) v1.37, v1.38): a box answered from a number without cents, or boxes 1 and 2 that do not fit together, are now left out for the person to type. The 18 stored cloud answers, checked again with those rules and no new model call ([`web/eval/heldout-recheck.mjs`](web/eval/heldout-recheck.mjs)): box 1 right on 10, left out on 8, wrong on 0. That last line comes after seeing the sets, so neither W-2 set counts as held out any more ([`FROZEN.md`](web/eval/heldout/FROZEN.md) says so); the 24 paystubs still do. Names and deductions were weaker than the yearly-income inputs (names with "&" were cut short); neither feeds a result. `#/tasks` shows these figures and recounts them in the browser from the files.
+
+**Paystubs it had never seen, on an iPhone 17 Pro, 2026-11-24** ([`web/eval/heldout-3/`](web/eval/heldout-3/); run file and details in [`ios/eval/on-device/README.md`](ios/eval/on-device/README.md#the-measurement-2026-11-24)). A third set of 24 paystubs in 12 layouts, 1,558 to 3,496 characters each, written independently and frozen before the app read it, read once on the phone (iOS 26.5.2) the way the app reads a document: Apple's on-device model first, the checks, and one cloud retry of the same silhouette when they fail.
+
+| Never-seen paystubs on the iPhone | |
+|---|---|
+| The iPhone's first answer had a wrong yearly-income input | 22 of 24 |
+| Stopped by the checks before anything was shown, read again in the cloud from the silhouette | **22 of 22** |
+| Answered on the iPhone to the end | 2 of 24 |
+| Every yearly-income input right in what the person is shown | 19 of 24 |
+| A wrong yearly-income value reached the person | **1 of 24**, from the cloud's answer, with the review screen's sum check warning |
+
+On real-length paystubs, Apple's on-device model on iOS 26.5 mostly pointed at the wrong placeholder (an employee ID, a ZIP code); on the shorter documents the checks were tuned on, it had every yearly-income input right in 15 of 15 readings (below). The deterministic checks are what keep the device-first path safe: a wrong first answer never reached the screen, and the cloud that read it again saw only the silhouette. The one miss was the cloud's: gross pay taken from the neighbouring column of a summary table. Four paystubs write dates as `30-Sep-26`, which the silhouette does not hold as dates; they were left for the person to type. Nothing was changed because of what this set showed.
 
 **Cloud extraction, 2026-11-12** ([`web/eval/results/summary.md`](web/eval/results/summary.md)). Synthetic paystubs with known answers, real calls to `gemini-3.5-flash-lite` through the app's own code path, two runs (`v15p4`, `v15p4r`):
 
@@ -259,7 +271,7 @@ As of 2026-11-24.
 | Platform | Contract | Done and verified | Not yet |
 |---|---|---|---|
 | Web | v1.44 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise). Firebase AI Logic places every device-first request (`PREFER_ON_DEVICE`); the one-press path reads the sample both ways and compares the answers. Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
-| iOS | v1.44 | Native SwiftUI app: California pack, the paystub flow, on-device reading in parts with the shared fixtures, explanations through the SDK's `HybridModel`, the on-device check, a held-out run, and the two-minute path in one press: the sample read on this iPhone now (or the iPhone's recorded answer) and then the recorded cloud answer, compared value by value, then what the paystub changed. Seven recorded runs on a real iPhone 17 Pro; the latest answered all 23 cases on the phone | Form W-2 as a document on iPhone; a build to install without Xcode |
+| iOS | v1.45 | Native SwiftUI app: California pack, the paystub flow, on-device reading in parts with the shared fixtures, explanations through the SDK's `HybridModel`, the on-device check, a held-out run, and the two-minute path in one press: the sample read on this iPhone now (or the iPhone's recorded answer) and then the recorded cloud answer, compared value by value, then what the paystub changed. Seven recorded runs on a real iPhone 17 Pro, the latest with all 23 cases answered on the phone, and one run on 24 never-seen paystubs | Form W-2 as a document on iPhone; a build to install without Xcode |
 | Android | v1.18 | Native Compose app: California pack, document flow, on-device reading in parts with the shared fixtures, Firebase AI Logic (`firebase-ai` and `firebase-ai-ondevice`), the on-device check and the two-minute path. Verified with a scripted model | The current visual design, and a recorded run on a phone with Gemini Nano |
 
 Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/`](android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
@@ -306,7 +318,7 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 | [`firebase/`](firebase/README.md), [`firebase.json`](firebase.json) | Remote Config template, Firestore rules, hosting headers |
 | [`docs/`](docs/ARCHITECTURE.md) | Architecture and these images |
 
-**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.44. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
+**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.45. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
