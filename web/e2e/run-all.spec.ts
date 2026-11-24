@@ -72,7 +72,7 @@ test('no model here, cloud answers: the recorded device reading, then the silhou
   await expect(page.getByTestId('both-cloud-reason')).toHaveText('read in the cloud too, to compare');
   await expect(page.getByTestId('both-row-grossPay').locator('[data-way="cloud"] .both-value')).toHaveText('1,271.88');
   await expect(page.getByTestId('both-compare')).toHaveText('Same value from both: 11 of 11');
-  await expect(page.getByTestId('both-note')).toHaveText('The device answer is a recording; the cloud answer was read now, from the silhouette only.');
+  await expect(page.getByTestId('both-note')).toHaveText('The device\'s answer is a recording; the cloud answer was read now, from the silhouette only.');
   await expect(page.getByTestId('both-fallback')).toHaveCount(0);
   await expect(page.getByTestId('pointer-reveal')).toHaveAttribute('data-source', 'RECORDED');
 

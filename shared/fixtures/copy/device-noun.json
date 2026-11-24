@@ -1006,8 +1006,8 @@
       "language": "en",
       "platform": "ios",
       "key": "review.both.noteCloudLive",
-      "text": "The device answer is a recording; the cloud answer was read now, from the silhouette only.",
-      "shown": "The iPhone answer is a recording; the cloud answer was read now, from the silhouette only."
+      "text": "The device's answer is a recording; the cloud answer was read now, from the silhouette only.",
+      "shown": "The iPhone's answer is a recording; the cloud answer was read now, from the silhouette only."
     },
     {
       "language": "en",
@@ -2091,8 +2091,8 @@
       "language": "en",
       "platform": "android",
       "key": "review.both.noteCloudLive",
-      "text": "The device answer is a recording; the cloud answer was read now, from the silhouette only.",
-      "shown": "The phone answer is a recording; the cloud answer was read now, from the silhouette only."
+      "text": "The device's answer is a recording; the cloud answer was read now, from the silhouette only.",
+      "shown": "The phone's answer is a recording; the cloud answer was read now, from the silhouette only."
     },
     {
       "language": "en",

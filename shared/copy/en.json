@@ -843,7 +843,7 @@
   "reason.compare-in-cloud": "read in the cloud too, to compare",
   "review.both.liveCloud": "{model}, read now",
   "review.both.noteBothLive": "Both read now: on this device, and in the cloud from the silhouette only.",
-  "review.both.noteCloudLive": "The device answer is a recording; the cloud answer was read now, from the silhouette only.",
+  "review.both.noteCloudLive": "The device's answer is a recording; the cloud answer was read now, from the silhouette only.",
   "review.both.cloudFallback": "The cloud did not answer now ({reason}). Shown instead: the recorded cloud reading of the same silhouette.",
   "review.both.fallback.appCheck": "the security check refused the request",
   "review.both.fallback.quota": "the free quota is used up for now",

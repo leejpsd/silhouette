@@ -236,7 +236,7 @@ final class JudgesRunAllUITests: XCTestCase {
         XCTAssertEqual(app.element("review.both.cloudColumn").label, "In the cloud, gemini-3.5-flash-lite, read now")
         XCTAssertTrue(app.element("review.both.deviceColumn").label.contains("recorded on iPhone"))
         XCTAssertFalse(app.element("review.both.cloudFallback").exists)
-        XCTAssertEqual(app.element("review.both.note").label, "The iPhone answer is a recording; the cloud answer was read now, from the silhouette only.")
+        XCTAssertEqual(app.element("review.both.note").label, "The iPhone's answer is a recording; the cloud answer was read now, from the silhouette only.")
         XCTAssertTrue(app.element("review.both.uses").label.contains("the iPhone's answer"))
         XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 20))
         XCTAssertTrue(app.element("results.incomeFrom").label.contains("from a recorded on-device reading"), "the values used are the device's")
