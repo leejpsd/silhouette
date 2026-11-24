@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silhouette · Privacy</title>
+<style>
+  body { margin: 0; background: #f2f2f0; color: #0e0e0e; font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 32px; line-height: 1.1; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 19px; margin: 28px 0 8px; }
+  p, li { margin: 0 0 10px; }
+  ul { padding-left: 20px; }
+  .muted { color: #5c5c5c; font-size: 14px; }
+  code { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; background: #fff; padding: 1px 4px; border-radius: 4px; }
+  a { color: #0e0e0e; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Privacy</h1>
+  <p class="muted">Silhouette, the web app at silhouette-hybrid.web.app and the iOS app "Silhouette: Benefits Check". Effective November 24, 2026.</p>
+
+  <p>Silhouette checks which public benefits a household in California may qualify for. It is a project built for the #BuildHybridAI 2026 hackathon. It is not a government service and does not give legal or tax advice.</p>
+
+  <h2>What stays on your device</h2>
+  <ul>
+    <li>Your answers to the questions, the documents you add (a paystub or a Form W-2) and the values read from them are stored only on your device, encrypted.</li>
+    <li>Eligibility is decided by rules that run on your device.</li>
+    <li>Questions you type yourself are answered only by the model on your device and are never sent.</li>
+    <li>"Delete everything" in the app erases all of it.</li>
+  </ul>
+
+  <h2>What can leave your device, and to whom</h2>
+  <ul>
+    <li><strong>A document's silhouette</strong>, when you press Send, when you run "Run all three steps" on the judges' page, or when the model on your device cannot read the document reliably. In a silhouette every number, date and unknown word is replaced by a placeholder such as <code>N12</code>; the values themselves never leave. It is read by Google's Gemini models through Firebase AI Logic.</li>
+    <li><strong>A program's public information and a prepared question</strong>, when you ask for a general explanation of a program. Nothing about you is included.</li>
+    <li><strong>Technical checks that carry no answers or documents</strong>: Firebase App Check (reCAPTCHA Enterprise on the web, Apple App Attest on iOS), which confirms that a request comes from the real app; Firebase Remote Config, which provides the app's settings; and a Firebase installation identifier used by those services.</li>
+  </ul>
+  <p>The app lists every request that left your device under "Leaving your device", with exactly what it carried.</p>
+  <p>These requests are processed by Google as described in the <a href="https://firebase.google.com/support/privacy">Firebase privacy and security information</a> and the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. As with any website, the services can see your network address.</p>
+
+  <h2>What Silhouette does not do</h2>
+  <ul>
+    <li>No accounts, no advertising, no analytics and no tracking.</li>
+    <li>No selling or sharing of your data.</li>
+    <li>It is not directed to children under 13.</li>
+  </ul>
+
+  <h2>Changes and contact</h2>
+  <p>If this policy changes, the date at the top changes with it. Questions: open an issue on the project's public repository, <a href="https://github.com/leejpsd/silhouette">github.com/leejpsd/silhouette</a>.</p>
+</main>
+</body>
+</html>

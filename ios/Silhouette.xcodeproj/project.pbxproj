@@ -30,7 +30,9 @@
 		6A8191DD9C367DA73980B4CD /* StartScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37879975700C134AA7E61020 /* StartScreen.swift */; };
 		6AD67571E24ED05247F54373 /* FirebaseServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877AF1326F3BD861251DE365 /* FirebaseServices.swift */; };
 		75C598C0128C52A18930881E /* ResultsEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE947B1D20C99E5B2BEB57AC /* ResultsEffect.swift */; };
+		763F285479F41B8F32895A76 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 392A0E8BEC51801F65410A23 /* PrivacyInfo.xcprivacy */; };
 		776E9233997726D07EDCB5AB /* Kit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A095EFF4BC193884C33D7057 /* Kit.swift */; };
+		787B9F2E9E9480AB98DF9134 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B614AF3AB6AF4B100434DB55 /* Assets.xcassets */; };
 		78F7036A5D7E02761D30F62E /* BigShouldersDisplay-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7B712A144B453B13A389C369 /* BigShouldersDisplay-Variable.ttf */; };
 		85AFF380CFC52D9F3312AD15 /* IBMPlexMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FC4982E80DEA06BAA9B90C6D /* IBMPlexMono-Regular.ttf */; };
 		87C0553E99ED9EFFFCF2B767 /* SilhouetteKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2F491D8CC1DE10B2BC7D37F /* SilhouetteKit */; };
@@ -95,6 +97,7 @@
 		2D91941AB2B6D14B3985B5DE /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		37879975700C134AA7E61020 /* StartScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartScreen.swift; sourceTree = "<group>"; };
 		37DD37DAA9D119328A7D7CFF /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		392A0E8BEC51801F65410A23 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		3A8D2DAC45CB438526EB4FDA /* SilhouetteUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SilhouetteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACB7D1E26B21B8AC9BE852D /* JudgesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JudgesScreen.swift; sourceTree = "<group>"; };
 		3E1C4ABE3E6D1B77C73058DF /* QuickCheckUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCheckUITests.swift; sourceTree = "<group>"; };
@@ -115,6 +118,7 @@
 		A095EFF4BC193884C33D7057 /* Kit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kit.swift; sourceTree = "<group>"; };
 		A46D0998CC7C8B953CBD7B3C /* ReadingShowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingShowUITests.swift; sourceTree = "<group>"; };
 		B0D3D1A6C6DD6A28A774ECE4 /* OFL-BigShouldersDisplay.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "OFL-BigShouldersDisplay.txt"; sourceTree = "<group>"; };
+		B614AF3AB6AF4B100434DB55 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BB575C7D5E4DD15C461AEC2E /* DocumentFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentFlowUITests.swift; sourceTree = "<group>"; };
 		BC5B563947FD2B0049A34806 /* ProgramScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramScreen.swift; sourceTree = "<group>"; };
 		C54C17CED25970FF27D7A051 /* copy.local.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = copy.local.json; sourceTree = "<group>"; };
@@ -210,6 +214,7 @@
 				15BCB0F0250B09BB1D47D380 /* AnswersModel.swift */,
 				F9AFA4A5D9C3304EADDA191C /* AnswersViews.swift */,
 				789AC1A17553EB6C7133E02C /* AppModel.swift */,
+				B614AF3AB6AF4B100434DB55 /* Assets.xcassets */,
 				E2F707CD077B6CAE91B65A18 /* Chrome.swift */,
 				FAA74ED67E2E119D2533780D /* DeviceCheck.swift */,
 				1715880E42CEF6BC7DFC9ECC /* DeviceCheckScreen.swift */,
@@ -219,6 +224,7 @@
 				7AE4E05C911B96589FE1D223 /* DocumentReviewScreen.swift */,
 				3ACB7D1E26B21B8AC9BE852D /* JudgesScreen.swift */,
 				7D87DA4D3E2FD0CA6EAD2946 /* PointerCard.swift */,
+				392A0E8BEC51801F65410A23 /* PrivacyInfo.xcprivacy */,
 				BC5B563947FD2B0049A34806 /* ProgramScreen.swift */,
 				11479B1A0799AD17FB0F6303 /* QuestionScreen.swift */,
 				D95B3CFED9CD69BF87453627 /* ReadBothWays.swift */,
@@ -402,12 +408,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				787B9F2E9E9480AB98DF9134 /* Assets.xcassets in Resources */,
 				78F7036A5D7E02761D30F62E /* BigShouldersDisplay-Variable.ttf in Resources */,
 				DC48826C3E275EFF200FB6F0 /* IBMPlexMono-Medium.ttf in Resources */,
 				85AFF380CFC52D9F3312AD15 /* IBMPlexMono-Regular.ttf in Resources */,
 				A93BFF989C2A25295E218EBB /* IBMPlexMono-SemiBold.ttf in Resources */,
 				FEC102B6F2171F3C5C5464E2 /* OFL-BigShouldersDisplay.txt in Resources */,
 				1348DAA54B25BE592184D62A /* OFL-IBMPlexMono.txt in Resources */,
+				763F285479F41B8F32895A76 /* PrivacyInfo.xcprivacy in Resources */,
 				DEA6209211423E1BDCDEE84E /* copy.local.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -625,6 +633,7 @@
 				INFOPLIST_FILE = Silhouette/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Silhouette;
 				INFOPLIST_KEY_CFBundleLocalizations = "en es";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -775,6 +784,7 @@
 				INFOPLIST_FILE = Silhouette/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Silhouette;
 				INFOPLIST_KEY_CFBundleLocalizations = "en es";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
