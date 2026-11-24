@@ -329,7 +329,7 @@ final class DeviceCheckRun {
 }
 
 
-/// The 24 held-out paystubs (web/eval/heldout/, bundled as `Shared/heldout/`) read on this iPhone as the app
+/// The 24 held-out paystubs (web/eval/heldout-3/, bundled as `Shared/heldout/`) read on this iPhone as the app
 /// reads a document: the silhouette made here, the device first with the reading in parts and its checks
 /// (shared/validation/DEVICE_READING.md), and one cloud retry of the same silhouette when the device's answer
 /// fails them. The run file has the shape of the web's held-out run, so web/eval/heldout-score.mjs scores it;

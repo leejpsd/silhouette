@@ -1,5 +1,7 @@
-// The held-out paystubs (web/eval/heldout/): the set the app bundles, the run file it writes, and its
-// figures, scored as web/eval/heldout-score.mjs scores them.
+// The held-out paystubs: the set the app bundles (web/eval/heldout-3/, frozen: these tests list its files and
+// read its answer keys, never its texts), the run file it writes, and its figures, scored as
+// web/eval/heldout-score.mjs scores them. The run file and scoring tests use the earlier set
+// (web/eval/heldout/, no longer held out), whose texts and Chrome run are known.
 
 import Foundation
 import Testing
@@ -9,14 +11,38 @@ import Testing
 @Suite("Held-out paystubs")
 struct HeldOutTests {
     static let folder = Repo.ios.deletingLastPathComponent().appendingPathComponent("web/eval/heldout", isDirectory: true)
-    static let documents = HeldOut.load(directory: folder)
+    static let documents = HeldOut.load(directory: folder, prefix: "hp-")
     static let schema = try! Repo.bundle().paystubSchema
+    static let setFolder = Repo.ios.deletingLastPathComponent().appendingPathComponent("web/eval/heldout-3", isDirectory: true)
 
-    @Test("the set is the 24 paystubs, each with its answer key, and no W-2")
-    func theSet() {
+    /// The answer keys of the bundled set, from its `.gold.json` files alone.
+    static func setGolds() throws -> [String: JSON] {
+        let names = try FileManager.default.contentsOfDirectory(atPath: setFolder.path).filter { $0.hasPrefix(HeldOut.prefix) && $0.hasSuffix(".gold.json") }
+        var out: [String: JSON] = [:]
+        for name in names { out[String(name.dropLast(".gold.json".count))] = try JSON.parse(Data(contentsOf: setFolder.appendingPathComponent(name))) }
+        return out
+    }
+
+    @Test("the bundled set is web/eval/heldout-3: 24 paystubs, each with its answer key, in 12 layouts")
+    func theSet() throws {
+        #expect(HeldOut.set == "heldout-3" && HeldOut.prefix == "hq-")
+        let names = try FileManager.default.contentsOfDirectory(atPath: Self.setFolder.path)
+        let texts = names.filter { $0.hasPrefix("hq-") && $0.hasSuffix(".txt") }.map { String($0.dropLast(4)) }
+        let golds = try Self.setGolds()
+        #expect(texts.count == 24 && Set(texts) == Set(golds.keys))
+        #expect(golds.values.allSatisfy { $0["grossPay"]?.numberValue != nil })
+        #expect(Set(texts.map { $0.replacingOccurrences(of: #"-\d+$"#, with: "", options: .regularExpression) }).count == 12)
+        // The build bundles exactly this set.
+        let sync = try String(contentsOf: Repo.ios.appendingPathComponent("scripts/sync-shared.sh"), encoding: .utf8)
+        #expect(sync.contains("web/eval/heldout-3/hq-*.txt") && sync.contains("web/eval/heldout-3/hq-*.gold.json"))
+        #expect(!sync.contains("web/eval/heldout/hp-"))
+    }
+
+    @Test("the earlier set is still read by its own prefix: 24 paystubs")
+    func earlierSet() {
         #expect(Self.documents.count == 24)
         #expect(Self.documents.allSatisfy { $0.id.hasPrefix("hp-") && $0.gold["grossPay"]?.numberValue != nil })
-        #expect(Set(Self.documents.map(\.layout)).count == 12)
+        #expect(HeldOut.load(directory: Self.folder).isEmpty, "the default prefix is the bundled set's")
     }
 
     /// The Chrome run on the paystubs, scored here, gives what heldout-score.mjs gives for the same file.
@@ -59,6 +85,7 @@ struct HeldOutTests {
         let file = HeldOut.runFile(date: "2026-11-23T10:30:00.000Z", browser: "Silhouette 0.1.0", platform: "iOS 26.5.2", userAgent: "test",
                                    availability: [("systemLanguageModel", "available")], device: .null, documents: records)
         #expect(HeldOut.isRunFile(file))
+        #expect(file["set"]?.stringValue == "heldout-3")
         #expect(HeldOut.fileName(file) == "heldout-device-2026-11-23T1030-silhouette0-ios2652.json")
         let first = try #require(file["documents"]?.arrayValue?.first)
         #expect(first["final"]?["values"]?["grossPay"]?.numberValue == 2221.31)
@@ -73,7 +100,7 @@ struct HeldOutTests {
     }
 
     /// Held-out runs recorded on an iPhone (ios/eval/on-device/heldout/), when there are any: each is a run
-    /// file of the 24 paystubs that can be scored.
+    /// file of the bundled set's 24 paystubs that can be scored.
     @Test("recorded held-out runs are run files of the 24 paystubs")
     func recordings() throws {
         let dir = Repo.ios.appendingPathComponent("eval/on-device/heldout", isDirectory: true)
@@ -81,7 +108,8 @@ struct HeldOutTests {
         for url in urls {
             let file = try JSON.parse(Data(contentsOf: url))
             #expect(HeldOut.isRunFile(file), "\(url.lastPathComponent)")
-            #expect(HeldOut.figures(file, golds: HeldOut.golds(Self.documents)).documents == 24, "\(url.lastPathComponent)")
+            #expect(file["set"]?.stringValue == HeldOut.set, "\(url.lastPathComponent)")
+            #expect(HeldOut.figures(file, golds: try Self.setGolds()).documents == 24, "\(url.lastPathComponent)")
         }
     }
 }

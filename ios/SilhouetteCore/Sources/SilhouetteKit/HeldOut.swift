@@ -1,9 +1,9 @@
-// The held-out paystubs read on this device (web/eval/heldout/, frozen before measuring: its FROZEN.md):
-// the 24 paystubs `hp-*`, each read as the app reads a document, and the run file in the shape the web's
-// held-out run writes (web/eval/heldout-device.ts), so web/eval/heldout-score.mjs scores it unchanged.
-// The documents and their answer keys are synthetic, so the run file records the values the person would
-// be shown, as the web's does; no other reading records a value. The figures of a run are scored here the
-// way heldout-score.mjs scores them: names word for word, every other field by value.
+// The held-out paystubs read on this device (web/eval/heldout-3/, frozen before measuring: its FROZEN.md):
+// the 24 paystubs `hq-*`, each read as the app reads a document, and the run file in the shape the web's
+// held-out run writes (web/eval/heldout-device.ts), set "heldout-3", so web/eval/heldout-score.mjs scores it
+// unchanged. The documents and their answer keys are synthetic, so the run file records the values the person
+// would be shown, as the web's does; no other reading records a value. The figures of a run are scored here
+// the way heldout-score.mjs scores them: names word for word, every other field by value.
 
 import Foundation
 import SilhouetteCore
@@ -19,18 +19,19 @@ public struct HeldOutDocument: Sendable {
 
 public enum HeldOut {
     public static let kind = "silhouette-heldout-device"
-    public static let set = "heldout"
+    public static let set = "heldout-3"
+    /// The file prefix of the set's paystubs.
+    public static let prefix = "hq-"
     public static let paystubFields = ["employerName", "employeeName", "payFrequency", "payDate", "periodStart", "periodEnd",
                                        "grossPay", "netPay", "ytdGross", "hoursWorked", "hourlyRate", "deductions"]
     static let names: Set<String> = ["employerName", "employeeName"]
 
     // MARK: The set
 
-    /// The paystubs of a held-out folder (`hp-*.txt` with `hp-*.gold.json`), in file order. The W-2s (`hw-*`)
-    /// are not part of it: their checks were changed after they were read, so they are no longer held out.
-    public static func load(directory: URL) -> [HeldOutDocument] {
+    /// The paystubs of a held-out folder (`hq-*.txt` with `hq-*.gold.json`, or another set's prefix), in file order.
+    public static func load(directory: URL, prefix: String = HeldOut.prefix) -> [HeldOutDocument] {
         let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
-        return files.filter { $0.pathExtension == "txt" && $0.lastPathComponent.hasPrefix("hp-") }
+        return files.filter { $0.pathExtension == "txt" && $0.lastPathComponent.hasPrefix(prefix) }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
             .compactMap { url in
                 let id = url.deletingPathExtension().lastPathComponent
