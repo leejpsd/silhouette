@@ -881,7 +881,7 @@
   "tasks.heldout.iphone.title": "{machine}, un tercer conjunto de {total} nóminas nunca vistas ({date})",
   "tasks.heldout.iphone.wrong": "nóminas nunca vistas en las que un valor de ingreso anual incorrecto llegó a la persona, leídas primero por el modelo del dispositivo ({machine}), con el reintento en la nube",
   "tasks.heldout.iphone.caught": "La primera respuesta del modelo del dispositivo tenía un dato de ingreso anual incorrecto en {first} de {total}. Los controles detuvieron {stopped} de {first} antes de mostrarse, y la silueta se leyó de nuevo en la nube. {onDevice} se respondieron con el modelo del dispositivo hasta el final, sin enviar nada. Todos los datos de ingreso anual fueron correctos en {allRight} de {total}.",
-  "tasks.heldout.iphone.fromCloud": "{cloud} de {wrong} valores incorrectos vinieron de la respuesta de la nube, no del modelo del dispositivo.",
+  "tasks.heldout.iphone.fromCloud": "De la respuesta de la nube: {cloud} de {wrong}.",
   "tasks.heldout.iphone.source": "Contado en este navegador a partir del archivo de la ejecución de {machine} y las claves de respuestas del conjunto.",
   "tasks.heldout.iphone.loading": "Contando la ejecución de {machine}…"
 }

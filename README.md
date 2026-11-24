@@ -228,7 +228,7 @@ In the latest run every case was answered on the phone and nothing went to the c
 
 **Rule pack.** The engine reproduces all 189 results of 27 households worked out by hand ([`shared/rulepacks/us-ca/README.md`](shared/rulepacks/us-ca/README.md)).
 
-**Tests, as of 2026-11-19.** Web: 1,142 unit tests, including every shared conformance fixture, and 286 browser test runs (Playwright, each test on a desktop and a phone viewport). Continuous integration runs only the 30 shared contract tests, on pushes that change `shared/`; the web tests are run locally. Shared reference implementation: 30 tests. iOS (as of 2026-11-17): 120 package tests, including the shared fixtures, and 13 UI tests.
+**Tests, as of 2026-11-24.** Web: 1,173 unit tests, including every shared conformance fixture, run by continuous integration on every push that changes `web/` or `shared/` ([`.github/workflows/web-tests.yml`](.github/workflows/web-tests.yml)); and 286 browser test runs (Playwright, each test on a desktop and a phone viewport), run locally. The 30 shared contract tests run in CI on pushes that change `shared/`. Shared reference implementation: 30 tests. iOS (as of 2026-11-17): 120 package tests, including the shared fixtures, and 13 UI tests.
 
 **Not verified yet.**
 
