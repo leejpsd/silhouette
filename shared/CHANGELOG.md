@@ -1,5 +1,15 @@
 # Contract changelog
 
+## v1.45 — 2026-11-24
+
+On-device reading of long documents within a small context window.
+
+| Change | Why |
+|---|---|
+| `validation/DEVICE_READING.md` section 2, "A part that does not fit the device model's window": when the response constraint written into the input would overflow the device model's window, the constraint text is left out (the answer is still constrained by it), the part's model schema is appended after `Answer with JSON that matches this schema:`, the name fields are not asked in that form (left out as not read), and a part refused for its length is asked once more in that form. Requests that fit, and every check, are unchanged | Apple's guided generation writes every allowed id into the input; on iOS 26 a 2,500-character paystub's first part needed 5,000–9,600 tokens against a 4,096-token window, so real-length paystubs could not be read on the iPhone. Without the id lists the model split or extended names, so names are not asked in that form |
+
+Platforms: iOS implements it (the web's on-device model has room; Chrome's `omitResponseConstraintInput` would allow the same). No fixture changes: the bundled sample's requests fit and are unchanged.
+
 ## v1.44 — 2026-11-21
 
 Both halves of the hybrid on the judged path; what left the device said in plain words before any JSON; what the paystub changed shown as amounts.

@@ -40,6 +40,15 @@ The fixture's `constraints` give the exact objects for the bundled sample. A pla
 
 **A missing key equals null.** A field the answer does not contain is treated exactly as a field whose value is `null`: "not in the document". Every check, every trigger and every outcome is the same either way. A platform whose on-device API cannot express "required and nullable" (Apple's guided generation, where a field is either required or optional) declares every field optional instead; it must still forbid other keys and keep every other restriction of the constraint. `missingKeys` is then informative only.
 
+**A part that does not fit the device model's window.** Some on-device APIs write the response constraint into the model's input in full (Apple's guided generation: every allowed id of every field, about 16 tokens per id on iOS 26). When a part's request would not fit the device model's context window with that text, room for the answer kept, the platform:
+
+- leaves the constraint text out of the input but still constrains the answer with the same constraint;
+- appends, after the line `Answer with JSON that matches this schema:`, the part's model schema (`MODEL_SCHEMA.md`: the part's fields only, required and nullable, no id lists);
+- does not ask the fields of `x-kind` **text** (the names) in that form: they are left out as not read (section 5), because without the id lists the model splits or extends names;
+- asks a part refused for its length once more in this form; a second refusal is a failed part.
+
+A request that fits is unchanged, and the checks are unchanged. The record of each pass says whether the constraint text was in the input (`schemaInPrompt`).
+
 ## 3. Order of the parts
 
 1. **Core.** Ask `core`; check it (section 4.1).
