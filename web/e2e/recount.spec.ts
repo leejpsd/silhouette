@@ -60,7 +60,7 @@ test.describe('the device figures beside the never-seen results', () => {
     await expect(iphone).toHaveAttribute('data-all-right', '19');
     await expect(iphone).toHaveAttribute('data-wrong', '1');
     await expect(iphone.getByTestId('heldout-iphone-wrong')).toContainText('1 / 24');
-    await expect(iphone.getByTestId('heldout-iphone-caught')).toContainText('1 of 1 wrong values came from the cloud');
+    await expect(iphone.getByTestId('heldout-iphone-caught')).toContainText("From the cloud's answer: 1 of 1.");
     const devices = page.getByTestId('measured-device');
     await expect(devices).toHaveCount(2);
     for (const device of await devices.all()) {
