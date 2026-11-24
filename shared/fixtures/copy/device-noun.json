@@ -950,8 +950,8 @@
       "language": "en",
       "platform": "ios",
       "key": "judges.runAll.body",
-      "text": "One press: the sample paystub's silhouette is read on a device and in the cloud, the values come back to this device, and the results open.",
-      "shown": "One press: the sample paystub's silhouette is read on a device and in the cloud, the values come back to this iPhone, and the results open."
+      "text": "One press: the sample paystub is read on a device, then its silhouette is read now in the cloud through Firebase AI Logic. Only the silhouette is sent; the values come back to this device and the results open.",
+      "shown": "One press: the sample paystub is read on a device, then its silhouette is read now in the cloud through Firebase AI Logic. Only the silhouette is sent; the values come back to this iPhone and the results open."
     },
     {
       "language": "en",
@@ -994,6 +994,20 @@
       "key": "review.both.noteLive",
       "text": "Read now on this device. The cloud answer is a recording of the same silhouette; nothing is sent now.",
       "shown": "Read now on this iPhone. The cloud answer is a recording of the same silhouette; nothing is sent now."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "review.both.noteBothLive",
+      "text": "Both read now: on this device, and in the cloud from the silhouette only.",
+      "shown": "Both read now: on this iPhone, and in the cloud from the silhouette only."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
+      "key": "review.both.noteCloudLive",
+      "text": "The device answer is a recording; the cloud answer was read now, from the silhouette only.",
+      "shown": "The iPhone answer is a recording; the cloud answer was read now, from the silhouette only."
     },
     {
       "language": "en",
@@ -2021,8 +2035,8 @@
       "language": "en",
       "platform": "android",
       "key": "judges.runAll.body",
-      "text": "One press: the sample paystub's silhouette is read on a device and in the cloud, the values come back to this device, and the results open.",
-      "shown": "One press: the sample paystub's silhouette is read on a device and in the cloud, the values come back to this phone, and the results open."
+      "text": "One press: the sample paystub is read on a device, then its silhouette is read now in the cloud through Firebase AI Logic. Only the silhouette is sent; the values come back to this device and the results open.",
+      "shown": "One press: the sample paystub is read on a device, then its silhouette is read now in the cloud through Firebase AI Logic. Only the silhouette is sent; the values come back to this phone and the results open."
     },
     {
       "language": "en",
@@ -2065,6 +2079,20 @@
       "key": "review.both.noteLive",
       "text": "Read now on this device. The cloud answer is a recording of the same silhouette; nothing is sent now.",
       "shown": "Read now on this phone. The cloud answer is a recording of the same silhouette; nothing is sent now."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "review.both.noteBothLive",
+      "text": "Both read now: on this device, and in the cloud from the silhouette only.",
+      "shown": "Both read now: on this phone, and in the cloud from the silhouette only."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "review.both.noteCloudLive",
+      "text": "The device answer is a recording; the cloud answer was read now, from the silhouette only.",
+      "shown": "The phone answer is a recording; the cloud answer was read now, from the silhouette only."
     },
     {
       "language": "en",
@@ -3001,8 +3029,8 @@
       "language": "es",
       "platform": "ios",
       "key": "judges.runAll.body",
-      "text": "Un solo toque: la silueta del talón de pago de ejemplo se lee en un dispositivo y en la nube, los valores vuelven a este dispositivo y se abren los resultados.",
-      "shown": "Un solo toque: la silueta del talón de pago de ejemplo se lee en un dispositivo y en la nube, los valores vuelven a este iPhone y se abren los resultados."
+      "text": "Un solo toque: el recibo de muestra se lee en un dispositivo y luego su silueta se lee ahora en la nube con Firebase AI Logic. Solo se envía la silueta; los valores vuelven a este dispositivo y se abren los resultados.",
+      "shown": "Un solo toque: el recibo de muestra se lee en un dispositivo y luego su silueta se lee ahora en la nube con Firebase AI Logic. Solo se envía la silueta; los valores vuelven a este iPhone y se abren los resultados."
     },
     {
       "language": "es",
@@ -3038,6 +3066,13 @@
       "key": "review.both.noteLive",
       "text": "Leído ahora en este dispositivo. La respuesta de la nube es una grabación de la misma silueta; no se envía nada ahora.",
       "shown": "Leído ahora en este iPhone. La respuesta de la nube es una grabación de la misma silueta; no se envía nada ahora."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
+      "key": "review.both.noteBothLive",
+      "text": "Las dos leídas ahora: en este dispositivo y en la nube, solo a partir de la silueta.",
+      "shown": "Las dos leídas ahora: en este iPhone y en la nube, solo a partir de la silueta."
     },
     {
       "language": "es",
@@ -3960,8 +3995,8 @@
       "language": "es",
       "platform": "android",
       "key": "judges.runAll.body",
-      "text": "Un solo toque: la silueta del talón de pago de ejemplo se lee en un dispositivo y en la nube, los valores vuelven a este dispositivo y se abren los resultados.",
-      "shown": "Un solo toque: la silueta del talón de pago de ejemplo se lee en un dispositivo y en la nube, los valores vuelven a este teléfono y se abren los resultados."
+      "text": "Un solo toque: el recibo de muestra se lee en un dispositivo y luego su silueta se lee ahora en la nube con Firebase AI Logic. Solo se envía la silueta; los valores vuelven a este dispositivo y se abren los resultados.",
+      "shown": "Un solo toque: el recibo de muestra se lee en un dispositivo y luego su silueta se lee ahora en la nube con Firebase AI Logic. Solo se envía la silueta; los valores vuelven a este teléfono y se abren los resultados."
     },
     {
       "language": "es",
@@ -3997,6 +4032,13 @@
       "key": "review.both.noteLive",
       "text": "Leído ahora en este dispositivo. La respuesta de la nube es una grabación de la misma silueta; no se envía nada ahora.",
       "shown": "Leído ahora en este teléfono. La respuesta de la nube es una grabación de la misma silueta; no se envía nada ahora."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "review.both.noteBothLive",
+      "text": "Las dos leídas ahora: en este dispositivo y en la nube, solo a partir de la silueta.",
+      "shown": "Las dos leídas ahora: en este teléfono y en la nube, solo a partir de la silueta."
     },
     {
       "language": "es",

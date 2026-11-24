@@ -1,5 +1,16 @@
 # Contract changelog
 
+## v1.47 — 2026-11-24
+
+The judged path reads the cloud half live.
+
+| Change | Why |
+|---|---|
+| `routing.json` `bothWays`: on the one-press judges' path, after the device half (read now, or the recorded on-device reading without a model), the same silhouette is read once in the cloud, `ONLY_IN_CLOUD`, with the prompt, model schema and App Check gate of a normal Send, reason `compare-in-cloud`, a 20-second limit, and listed in "Leaving your device" like a Send. If it does not complete, the cloud half is `recordedCloud` and the review says why (`review.both.cloudFallback`, `review.both.fallback.appCheck` / `.quota` / `.network` / `.timeout` / `.other`). `recordedCloud.when` says so | Reviewers: in a browser without the on-device model every answer on the judged path was a recording, so the path read as a staged walkthrough |
+| `review.both.liveCloud` ("{model}, read now"), `review.both.noteBothLive`, `review.both.noteCloudLive`: the review names a live cloud answer as such; `noteLive` and `note` stay for the fallback. `reason.compare-in-cloud`. `judges.runAll.body` says that the silhouette is sent | The person must know what leaves before pressing |
+
+Platforms: web and iOS. The values used stay the device's answer when it passed the checks (v1.44), otherwise the cloud's. No fixture changes.
+
 ## v1.46 — 2026-11-24
 
 Copy only: `judges.heldout.*`, `tasks.heldout.iphone.*`, `tasks.measured.tuned` and `tasks.measured.neverSeen` label the device figures measured on the five check paystubs as such and put each device's never-seen results beside them (Chrome 157 on the first set, the iPhone 17 Pro on the third), numbers first. No behaviour or fixture changes.
