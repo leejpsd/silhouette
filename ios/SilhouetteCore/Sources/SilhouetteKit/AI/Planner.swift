@@ -97,6 +97,17 @@ public enum Planner {
         return request
     }
 
+    /// routing.json `bothWays` (contract v1.47): the same document reading, the same prompt, model schema and
+    /// silhouette as a normal Send, asked once ONLY_IN_CLOUD with the reason `compare-in-cloud`.
+    public static func compareInCloud(_ reading: CloudRequest) -> CloudRequest {
+        var request = CloudRequest(taskId: reading.taskId, mode: .onlyInCloud, reason: .compareInCloud, model: reading.model,
+                                   system: reading.system, prompt: reading.prompt, maxOutputTokens: reading.maxOutputTokens,
+                                   responseSchema: reading.responseSchema, deviceSchema: reading.deviceSchema, fields: reading.fields,
+                                   checks: reading.checks, route: reading.route, locale: reading.locale)
+        request.silhouette = reading.silhouette
+        return request
+    }
+
     /// One part of a paystub read on the device (pointer-extract-device.v1.md): the pointer prompt's
     /// system instruction; the part's text, a blank line and the user content; the part's strict
     /// response constraint. The device wording never goes into a cloud request.

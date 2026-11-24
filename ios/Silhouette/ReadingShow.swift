@@ -17,6 +17,9 @@ struct ReadingShow: Equatable {
         case cloud(afterDevice: Bool)
         /// A recorded cloud reading (routing.json `recordedCloud`): nothing is sent now.
         case recordedCloud
+        /// The judges' path's cloud half read now (routing.json `bothWays`, contract v1.47): the same silhouette,
+        /// sent to the cloud to compare with the device's answer.
+        case compareInCloud
         /// A recorded on-device reading (routing.json `recordedSample`), made on the iPhone named, on `date`
         /// (ISO day): the device's way, nothing sent.
         case recordedDevice(machine: String, date: String)
@@ -123,6 +126,7 @@ struct ReadingStageView: View {
                 : model.t("reason.document-silhouette-only") + " (" + model.t("reason.detail.noDeviceModel") + ")"
         case .recordedCloud: model.t("reason.recorded-in-cloud")
         case .recordedDevice: model.t("reason.recorded-on-device")
+        case .compareInCloud: model.t("reason.compare-in-cloud")
         }
     }
 
@@ -143,7 +147,7 @@ struct ReadingStageView: View {
     private var badge: (kind: WhereRan, label: String) {
         switch show.route {
         case .device: (.device, model.t("badge.onDevice"))
-        case .cloud: (.cloud, model.t("badge.cloud"))
+        case .cloud, .compareInCloud: (.cloud, model.t("badge.cloud"))
         case .recordedCloud: (.cloud, model.t("badge.recordedCloud"))
         case .recordedDevice: (.device, model.t("badge.recorded"))
         }
@@ -153,6 +157,7 @@ struct ReadingStageView: View {
         switch show.route {
         case .device: model.t("send.staysHere")
         case .cloud: model.t("send.goesCloud")
+        case .compareInCloud: model.t(show.both ? "review.both.cloud" : "send.goesCloud")
         case .recordedCloud: model.t(show.both ? "review.both.cloud" : "badge.recordedCloud")
         case .recordedDevice: model.t("review.both.device")
         }

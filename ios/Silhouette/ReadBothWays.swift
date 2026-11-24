@@ -1,7 +1,9 @@
 // "Read both ways" (contract v1.44): on the judges' path the sample's silhouette is read on a device and in
 // the cloud, one after the other; the review then shows the two answers side by side, value by value, above
 // the values, and says which one is used (the device's). A recorded reading says where and when it was
-// recorded; a live one says it was read now on this iPhone. Never shown for a reading that did not happen.
+// recorded; a live one says it was read now (on this iPhone, or in the cloud: contract v1.47), and a cloud
+// reading that did not complete now says why the recording is shown instead. Never shown for a reading that
+// did not happen.
 
 import SilhouetteCore
 import SilhouetteKit
@@ -14,8 +16,13 @@ struct BothWays {
     /// The iPhone a recorded device answer was made on, and when (ISO).
     let machine: String?
     let deviceDate: String?
+    /// The cloud's answer was read now (contract v1.47); otherwise it is the recording.
+    let cloudLive: Bool
     let cloudModel: String
-    let cloudDate: String
+    /// When the recorded cloud answer was recorded (ISO); nil for one read now.
+    let cloudDate: String?
+    /// Why the cloud did not answer now, when the recording is shown instead of a live answer.
+    let fallback: CloudFallback?
     let comparison: BothWaysComparison
     /// The device's answer the comparison was made with (the review must still hold it).
     let devicePointers: String
@@ -46,10 +53,19 @@ struct ReadBothWaysCard: View {
                                                                                             "date": both.deviceDate.map(model.recordedDay) ?? ""]),
                        id: "review.both.deviceColumn")
                 column(kind: .cloud, label: model.t("review.both.cloud"),
-                       note: model.t("review.both.recordedCloud", ["model": both.cloudModel, "date": model.recordedDay(both.cloudDate)]),
+                       note: both.cloudLive ? model.t("review.both.liveCloud", ["model": both.cloudModel])
+                           : model.t("review.both.recordedCloud", ["model": both.cloudModel, "date": both.cloudDate.map(model.recordedDay) ?? ""]),
                        id: "review.both.cloudColumn")
             }
             .padding(.top, 12)
+            // The live cloud reading did not complete: why, and that the recording is shown instead.
+            if let fallback = both.fallback {
+                Text(model.t("review.both.cloudFallback", ["reason": model.t(fallback.copyKey)]))
+                    .sfFont(15).foregroundStyle(theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 10)
+                    .accessibilityIdentifier("review.both.cloudFallback")
+            }
             if !rows.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach(rows) { row in pair(row) }
@@ -88,12 +104,22 @@ struct ReadBothWaysCard: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 6)
                 .accessibilityIdentifier("review.both.uses")
-            NoteText(text: model.t(both.deviceLive ? "review.both.noteLive" : "review.both.note"))
+            NoteText(text: model.t(noteKey))
                 .padding(.top, 6)
                 .accessibilityIdentifier("review.both.note")
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("review.both")
+    }
+
+    /// The note under the comparison: which answers were read now (contract v1.47).
+    private var noteKey: String {
+        switch (both.deviceLive, both.cloudLive) {
+        case (true, true): "review.both.noteBothLive"
+        case (false, true): "review.both.noteCloudLive"
+        case (true, false): "review.both.noteLive"
+        case (false, false): "review.both.note"
+        }
     }
 
     private func column(kind: WhereRan, label: String, note: String?, id: String) -> some View {

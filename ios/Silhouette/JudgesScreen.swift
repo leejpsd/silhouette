@@ -93,12 +93,14 @@ struct JudgesScreen: View {
         }
     }
 
-    /// One press: the sample paystub read on a device and in the cloud (on this iPhone when it has the model,
-    /// otherwise recordings; never a cloud request without Send), its values confirmed, the results opened.
+    /// One press: the sample paystub read on a device (on this iPhone when it has the model, otherwise the
+    /// recording) and then in the cloud, now (contract v1.47: the text says its silhouette is sent; it is the
+    /// invented sample and only its silhouette leaves), its values confirmed, the results opened.
     private var runAll: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(model.t("judges.runAll.body")).sfFont(15).foregroundStyle(theme.onHeroMuted)
                 .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("judges.runAll.body")
             Button { Task { await model.runJudgesPath() } } label: {
                 HStack(spacing: 8) {
                     if model.runningJudgesPath { ProgressView().tint(Color(red: 0.055, green: 0.055, blue: 0.055)).accessibilityHidden(true) }
@@ -191,11 +193,12 @@ extension AppModel {
         showResults()
     }
 
-    /// The judges' path in one press (contracts v1.43, v1.44): the prepared household, then the sample paystub's
-    /// silhouette read both ways, one after the other. First on a device: on this iPhone now when it has the
-    /// model (kept on this iPhone: nothing is sent without Send), else the on-device model's recorded answer
-    /// made on an iPhone. Then in the cloud: the recorded cloud reading of the same silhouette (nothing sent
-    /// now). The review shows both answers side by side and uses the device's; the values that decide the
+    /// The judges' path in one press (contracts v1.43, v1.44, v1.47): the prepared household, then the sample
+    /// paystub's silhouette read both ways, one after the other. First on a device: on this iPhone now when it
+    /// has the model (kept on this iPhone), else the on-device model's recorded answer made on an iPhone. Then in
+    /// the cloud: the same silhouette read now through Firebase AI Logic (ONLY_IN_CLOUD, App Check, in the record
+    /// like a Send; the button's text says it is sent), or, when that does not complete, the recorded cloud
+    /// reading with the reason. The review shows both answers side by side and uses the device's; the values that decide the
     /// result are confirmed, the yearly income used, and the results opened with what the paystub changed.
     /// Without a device answer the recorded cloud reading alone is used, as before. A reading that fails stays
     /// on the silhouette screen with its notice.
@@ -218,8 +221,9 @@ extension AppModel {
         }
         if !read, !deviceModelAvailable, !isOnline { read = await readDocument(review: false) }
         guard read else { readingShow = nil; return }
-        // The second half: the cloud's answer to the same silhouette, then both side by side on the review.
-        let both = await playRecordedCloudHalf()
+        // The second half: the same silhouette read now in the cloud (the recording when that does not complete),
+        // then both side by side on the review.
+        let both = await readCloudHalf()
         editDocument { $0.confirmAll() }
         if both {
             paystubPath.append(.documentReview)

@@ -548,7 +548,7 @@ final class AppModel {
 
     /// Whether a model can be reached: the device model, or the network with a Firebase configuration.
     var deviceModelAvailable: Bool { port.deviceAvailability() == .available }
-    var isOnline: Bool { testModel.map { $0.hasPrefix("cloud") || $0 == "device-unreliable" } ?? (network.isOnline && FirebaseServices.isConfigured) }
+    var isOnline: Bool { testModel.map(TestModelPort.reachesCloud) ?? (network.isOnline && FirebaseServices.isConfigured) }
 
     /// The reader for this silhouette: a model when one can be reached; otherwise, for a bundled sample
     /// only, its answer key (routing.json offlineSample); otherwise none.
@@ -825,11 +825,52 @@ final class AppModel {
         return true
     }
 
-    /// The second half of the judges' path (contract v1.44): the recorded cloud reading of the same silhouette,
-    /// shown going to the cloud and coming back, compared with the device's answer value by value. The values
-    /// used stay the device's. Nothing is sent now. Returns whether there was a cloud recording to show.
+    /// routing.json `bothWays.timeoutSeconds`: how long the live cloud half may take before the recording is used.
+    var bothWaysLimit: Duration { .seconds(bundle.routing?["bothWays"]?["timeoutSeconds"]?.numberValue ?? 20) }
+
+    /// The second half of the judges' path, read now (contract v1.47, routing.json `bothWays`): the same silhouette
+    /// read once in the cloud, ONLY_IN_CLOUD, with the prompt and model schema of a normal Send, through the App
+    /// Check gate and listed in the record like a Send, given up after `bothWaysLimit`. The device's answer stays
+    /// the one used. When the reading does not complete, the recorded cloud reading is shown instead and the
+    /// review says why. Returns whether a cloud half (live or recorded) is there to compare.
     @discardableResult
-    func playRecordedCloudHalf() async -> Bool {
+    func readCloudHalf() async -> Bool {
+        guard let silhouette, recordedCloudReading != nil, let deviceAnswer = document.pointers,
+              let source = document.extraction?.source, source == .onDevice || source == .recordedDevice else { return false }
+        // No connection: nothing is tried (and nothing recorded as leaving).
+        if testModel != nil ? !isOnline : !network.isOnline { return await playRecordedCloudHalf(fallback: .network) }
+        beginShow(.compareInCloud, both: true)
+        lastConfig = await remoteConfig.current()
+        guard let template = pointerTemplate(version: lastConfig?.promptPointerExtractV ?? currentConfig.promptPointerExtractV),
+              let reading = try? Planner.pointers(silhouette.skeleton, language: document.language, template: template,
+                                                  pointerSchema: bundle.paystubSchema)
+        else { return await playRecordedCloudHalf(fallback: .other) }
+        let request = Planner.compareInCloud(reading)
+        let outcome: PointerOutcome
+        do {
+            outcome = try await runner.readPointersInCloud(request, limit: bothWaysLimit)
+        } catch {
+            return await playRecordedCloudHalf(fallback: CloudFallback(error))
+        }
+        answers.markSent(silhouette.skeleton.text)
+        var cloud = document
+        cloud.apply(PointerResult(pointers: outcome.pointers, source: .inCloud, reason: .compareInCloud), silhouette: silhouette,
+                    schema: bundle.paystubSchema)
+        let deviceRecording = deviceRecordings.first { $0.date == document.recordedDate }
+        bothWays = BothWays(deviceLive: source == .onDevice, machine: deviceRecording.map(machineName),
+                            deviceDate: source == .recordedDevice ? document.recordedDate : nil,
+                            cloudLive: true, cloudModel: request.model, cloudDate: nil, fallback: nil,
+                            comparison: BothWaysComparison(device: document, cloud: cloud), devicePointers: deviceAnswer.jsonText)
+        await pointersBack(silhouette, of: cloud)
+        return true
+    }
+
+    /// The second half of the judges' path from the recording (contract v1.44; since v1.47 the fallback when the
+    /// live cloud half does not complete, with `fallback` saying why): the recorded cloud reading of the same
+    /// silhouette, shown going to the cloud and coming back, compared with the device's answer value by value.
+    /// The values used stay the device's. Nothing is sent now. Returns whether there was a cloud recording to show.
+    @discardableResult
+    func playRecordedCloudHalf(fallback: CloudFallback? = nil) async -> Bool {
         guard let silhouette, let recording = recordedCloudReading, let deviceAnswer = document.pointers,
               let source = document.extraction?.source, source == .onDevice || source == .recordedDevice else { return false }
         var cloud = document
@@ -844,7 +885,7 @@ final class AppModel {
         let deviceRecording = deviceRecordings.first { $0.date == document.recordedDate }
         bothWays = BothWays(deviceLive: source == .onDevice, machine: deviceRecording.map(machineName),
                             deviceDate: source == .recordedDevice ? document.recordedDate : nil,
-                            cloudModel: recording.model, cloudDate: recording.date,
+                            cloudLive: false, cloudModel: recording.model, cloudDate: recording.date, fallback: fallback,
                             comparison: BothWaysComparison(device: document, cloud: cloud), devicePointers: deviceAnswer.jsonText)
         await pointersBack(silhouette, of: cloud)
         return true

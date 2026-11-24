@@ -48,8 +48,12 @@ final class FakePort: ModelPort, @unchecked Sendable {
 
     struct NoToken: Error {}
 
+    /// How long the App Check token takes (in 20 ms steps that ignore cancellation).
+    var appCheckDelay: Duration?
+
     func confirmAppCheck() async throws {
         lock.withLock { calls.append(.appCheck) }
+        if let appCheckDelay { for _ in 0..<Int(appCheckDelay / .milliseconds(20)) { try? await Task.sleep(for: .milliseconds(20)) } }
         if appCheckToken == false { throw NoToken() }
     }
 
@@ -72,7 +76,14 @@ final class FakePort: ModelPort, @unchecked Sendable {
         return ModelReply(text: scripted.text, modelVersion: scripted.modelVersion)
     }
 
+    /// How long each cloud call takes (a call that ignores cancellation, as a slow network might).
+    var cloudDelay: Duration?
+
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply {
+        if let cloudDelay {
+            // Steps of 20 ms that ignore cancellation: at least `cloudDelay` once it runs, however busy the machine.
+            for _ in 0..<Int(cloudDelay / .milliseconds(20)) { try? await Task.sleep(for: .milliseconds(20)) }
+        }
         let next: Result<String, TaskError> = lock.withLock {
             calls.append(.cloud(request.taskId))
             cloudRequests.append(request)
@@ -742,4 +753,112 @@ final class CallCounter: @unchecked Sendable {
     private var n = 0
     func add() { lock.withLock { n += 1 } }
     var value: Int { lock.withLock { n } }
+}
+
+@Suite("Both ways: the live cloud half of the judges' path (contract v1.47)")
+struct CompareInCloudTests {
+    func reading() throws -> CloudRequest {
+        let f = try Fixture()
+        let skeleton = Skeletonizer.skeletonize(Raw("Gross Pay 1,000.00"), allowlist: try f.bundle.allowlist(for: .en)).skeleton
+        return try Planner.pointers(skeleton, language: .en, template: f.bundle.prompts["pointer-extract.v5"]!, pointerSchema: f.bundle.paystubSchema)
+    }
+
+    func runner(_ port: FakePort, log: OutboundLog) throws -> TaskRunner {
+        port.log = log
+        return TaskRunner(port: port, log: log, outputChecks: try Fixture().bundle.outputChecks)
+    }
+
+    @Test("the same request as a Send, ONLY_IN_CLOUD with compare-in-cloud; App Check first, recorded with its silhouette")
+    func liveReply() async throws {
+        let send = try reading()
+        let request = Planner.compareInCloud(send)
+        #expect(request.mode == .onlyInCloud && request.reason == .compareInCloud)
+        #expect(request.prompt.text == send.prompt.text && request.system.text == send.system.text)
+        #expect(request.responseSchema?.jsonText == send.responseSchema?.jsonText && request.model == send.model && request.fields == send.fields)
+        let log = OutboundLog()
+        let port = FakePort(availability: .available, cloud: [.success(#"{"grossPay":"N1","netPay":null}"#)])
+        port.appCheckToken = true
+        let outcome = try await runner(port, log: log).readPointersInCloud(request, limit: .seconds(20))
+        #expect(outcome.source == .inCloud && outcome.reason == .compareInCloud)
+        #expect(outcome.pointers["grossPay"]?.stringValue == "N1" && outcome.pointers["netPay"].map { _ in false } ?? true)
+        #expect(port.calls == [.appCheck, .cloud("document.pointer.extract")], "never the device, even with a model here")
+        #expect(port.cloudRequests.first?.rendering.text == send.rendering.text, "the body a Send would carry")
+        #expect(log.entries.map(\.status) == [.sent(200), .sent(200)])
+        #expect(log.entries.last?.silhouette?.text == send.silhouette?.text && log.entries.last?.fields.contains("document-silhouette") == true)
+    }
+
+    @Test("App Check refuses: nothing sent, the fallback says the security check")
+    func appCheckRefused() async throws {
+        let log = OutboundLog()
+        let port = FakePort(availability: .unavailable, cloud: [.success(#"{"grossPay":"N1"}"#)])
+        port.appCheckToken = false
+        let run = try runner(port, log: log), request = Planner.compareInCloud(try reading())
+        do throws(TaskError) {
+            _ = try await run.readPointersInCloud(request, limit: .seconds(20))
+            Issue.record("expected a refusal")
+        } catch {
+            #expect(CloudFallback(error) == .appCheck)
+        }
+        #expect(port.calls == [.appCheck], "the model request was not made")
+        #expect(log.entries.last?.status == .blocked("noAppCheck"))
+    }
+
+    @Test("no answer within the limit: given up without waiting for the call, recorded as failed for the time limit")
+    func timeLimit() async throws {
+        let log = OutboundLog()
+        let port = FakePort(availability: .unavailable, cloud: [.success(#"{"grossPay":"N1"}"#)])
+        port.cloudDelay = .seconds(6)
+        let run = try runner(port, log: log), request = Planner.compareInCloud(try reading())
+        do throws(TaskError) {
+            // The call would answer after 6 s.
+            _ = try await run.readPointersInCloud(request, limit: .milliseconds(200))
+            Issue.record("expected the time limit")
+        } catch {
+            #expect(error.kind == .timeout && CloudFallback(error) == .timeout)
+        }
+        #expect(log.entries.last?.status == .failed("timeout"))
+    }
+
+    @Test("an App Check token that does not come within the limit: the time limit, and no model request")
+    func appCheckWithinTheLimit() async throws {
+        let log = OutboundLog()
+        let port = FakePort(availability: .unavailable, cloud: [.success(#"{"grossPay":"N1"}"#)])
+        port.appCheckToken = true
+        port.appCheckDelay = .seconds(1)
+        let run = try runner(port, log: log), request = Planner.compareInCloud(try reading())
+        do throws(TaskError) {
+            _ = try await run.readPointersInCloud(request, limit: .milliseconds(200))
+            Issue.record("expected the time limit")
+        } catch {
+            #expect(CloudFallback(error) == .timeout)
+        }
+        // The token comes later: the request it was for has been given up, so it is still not made or recorded.
+        try await Task.sleep(for: .seconds(2))
+        #expect(port.calls == [.appCheck], "the model request was not made")
+        #expect(!log.entries.contains { $0.fields.contains("model-request") })
+    }
+
+    @Test("each other failure has its reason: quota, rate limit, network, a reply that is not JSON, anything else")
+    func reasons() async throws {
+        let cases: [(Result<String, TaskError>, CloudFallback)] = [
+            (.failure(TaskError(.quotaDaily, "quota", status: 429)), .quota),
+            (.failure(TaskError(.quota, "rate", status: 429)), .quota),
+            (.failure(TaskError(.unknown, "HTTP 429", status: 429)), .quota),
+            (.failure(TaskError(.network, "network")), .network),
+            (.success("Gross pay is N1"), .other),
+            (.failure(TaskError(.unknown, "HTTP 500", status: 500)), .other),
+            (.failure(TaskError(.notConfigured, "no configuration")), .other),
+        ]
+        for (reply, reason) in cases {
+            let port = FakePort(availability: .unavailable, cloud: [reply])
+            let run = try runner(port, log: OutboundLog()), request = Planner.compareInCloud(try reading())
+            do throws(TaskError) {
+                _ = try await run.readPointersInCloud(request, limit: .seconds(20))
+                Issue.record("expected \(reason)")
+            } catch {
+                #expect(CloudFallback(error) == reason, "\(error)")
+            }
+        }
+        #expect(CloudFallback.allCases.allSatisfy { (try? Repo.bundle().copy.has($0.copyKey)) == true })
+    }
 }

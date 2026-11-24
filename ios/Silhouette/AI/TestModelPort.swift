@@ -5,7 +5,8 @@
 // Variants script the states of a request: `cloud-slow` (takes longer than usual), `cloud-quota`
 // (daily limit), `cloud-blocked` (an output check stopped the reply), `device-unreliable` (the device
 // answers a reading that does not pass its checks), `device-notread` (hours worked on the gross pay's
-// placeholder, and deductions that do not add up: both left out as not read).
+// placeholder, and deductions that do not add up: both left out as not read), `device-cloud` (the device's
+// model and the cloud, both scripted), `cloud-appcheck` (App Check gives no token: no cloud request is made).
 
 import Foundation
 import SilhouetteCore
@@ -73,8 +74,19 @@ final class TestModelPort: ModelPort {
         return ModelReply(text: "This test answer was written on this iPhone.", modelVersion: TaskRunner.onDeviceModelVersion)
     }
 
+    /// Whether the scripted cloud can be reached.
+    static func reachesCloud(_ mode: String) -> Bool { mode.hasPrefix("cloud") || mode == "device-unreliable" || mode == "device-cloud" }
+
+    var appCheckDestination: String? { mode == "cloud-appcheck" ? "firebaseappcheck.googleapis.com" : nil }
+
+    struct NoToken: Error {}
+
+    func confirmAppCheck() async throws {
+        if mode == "cloud-appcheck" { throw NoToken() }
+    }
+
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply {
-        guard mode.hasPrefix("cloud") || mode == "device-unreliable" else { throw TaskError(.network, "offline") }
+        guard Self.reachesCloud(mode) else { throw TaskError(.network, "offline") }
         switch mode {
         case "cloud-slow": try await Task.sleep(for: .seconds(120))
         case "cloud-quota": throw TaskError(.quotaDaily, "scripted", status: 429)

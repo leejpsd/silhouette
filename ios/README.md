@@ -186,13 +186,19 @@ UI tests and screenshots use launch arguments that are ignored otherwise: `-UITe
 state), and `-UITestModel none|device|cloud` (a scripted model instead of Firebase: no model
 call, no network; `cloud-slow`, `cloud-quota`, `cloud-blocked` script those request states;
 `device-unreliable` a device reading that fails its checks; `device-notread` fields left out as not
-read). `-SnapshotCapture <folder>` (with a scripted model only) writes the fast snapshots.
+read; `device-cloud` the device's model and the cloud; `cloud-appcheck` App Check gives no token). `-SnapshotCapture <folder>` (with a scripted model only) writes the fast snapshots.
 
 ### The judges' path and the on-device check
 
 Both open from the draft-rules sheet only. *For judges* runs the prepared synthetic household
 (`shared/rulepacks/us-ca/judges-household.json`),
-opens the sample paystub and shows the record of what left the device. *Check the on-device model*
+opens the sample paystub and shows the record of what left the device. *Run all three steps* does it
+in one press: the sample's silhouette is read on a device (on this iPhone when it has the model,
+otherwise the on-device model's answer recorded on an iPhone), then the same silhouette is read now in
+the cloud through Firebase AI Logic (`shared/routing.json` `bothWays`: `ONLY_IN_CLOUD`, the prompt and
+model schema of a normal Send, App Check first, listed in the record, 20 seconds at most). When that
+reading does not complete, the recorded cloud reading is shown instead and the review says why. The
+review compares the two answers value by value and uses the device's. *Check the on-device model*
 runs the fixed synthetic cases of `shared/validation/DEVICE_CHECK.md` through Firebase AI Logic: five
 paystubs read in parts, explanations and prepared questions in English and Spanish, and the two
 device-only tasks. Reading a photo is not available on iPhone (the on-device model takes text only):

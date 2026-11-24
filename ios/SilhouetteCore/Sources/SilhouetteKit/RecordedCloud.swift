@@ -98,3 +98,31 @@ extension JSON {
         }
     }
 }
+
+/// Why the live cloud half of the judges' path did not complete (routing.json `bothWays.fallback`, contract
+/// v1.47): the review says it with `review.both.cloudFallback` and this reason, and shows the recorded cloud
+/// reading instead.
+public enum CloudFallback: String, Sendable, CaseIterable {
+    /// App Check refused or could not give a token.
+    case appCheck
+    /// The quota or a rate limit.
+    case quota
+    /// No connection.
+    case network
+    /// No answer within `bothWays.timeoutSeconds`.
+    case timeout
+    /// Any other error.
+    case other
+
+    public init(_ error: TaskError) {
+        switch error.kind {
+        case .appCheck: self = .appCheck
+        case .quota, .quotaDaily: self = .quota
+        case .network: self = .network
+        case .timeout: self = .timeout
+        default: self = error.status == 429 ? .quota : .other
+        }
+    }
+
+    public var copyKey: String { "review.both.fallback.\(rawValue)" }
+}

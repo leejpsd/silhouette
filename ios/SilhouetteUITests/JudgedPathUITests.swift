@@ -154,6 +154,7 @@ final class JudgesRunAllUITests: XCTestCase {
         let run = app.buttons["judges.runAll"]
         XCTAssertTrue(run.waitForExistence(timeout: 5))
         XCTAssertEqual(run.label, "Run all three steps")
+        XCTAssertTrue(app.element("judges.runAll.body").label.contains("Only the silhouette is sent"), "the button says what leaves")
         run.tap()
         let route = app.element("reading.route")
         XCTAssertTrue(route.waitForExistence(timeout: 8), "the reading is shown")
@@ -175,6 +176,11 @@ final class JudgesRunAllUITests: XCTestCase {
         XCTAssertTrue(app.element("review.both.onlyCloud").label.hasPrefix("Only the cloud's answer has:"), "what the iPhone's checks left out is not a difference")
         XCTAssertFalse(app.element("review.both.differs").exists)
         XCTAssertTrue(app.element("review.both.uses").label.contains("the iPhone's answer"))
+        // Without a connection the live cloud half is not tried: the recording, and why (contract v1.47).
+        XCTAssertTrue(app.element("review.both.cloudColumn").label.contains("recorded"), app.element("review.both.cloudColumn").label)
+        XCTAssertEqual(app.element("review.both.cloudFallback").label,
+                       "The cloud did not answer now (no connection). Shown instead: the recorded cloud reading of the same silhouette.")
+        XCTAssertTrue(app.element("review.both.note").label.hasPrefix("Both answers are recordings"), app.element("review.both.note").label)
         XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 20), "the results open with what the paystub changed")
         XCTAssertTrue(app.element("results.sample").exists)
         XCTAssertTrue(app.element("results.incomeFrom").label.contains("from a recorded on-device reading"))
@@ -203,10 +209,76 @@ final class JudgesRunAllUITests: XCTestCase {
         XCTAssertTrue(app.element("review.both").waitForExistence(timeout: 15))
         XCTAssertTrue(app.element("review.both.deviceColumn").label.contains("On this iPhone, now"))
         XCTAssertTrue(app.element("review.both.note").label.hasPrefix("Read now on this iPhone"))
+        XCTAssertTrue(app.element("review.both.cloudFallback").label.contains("(no connection)"))
         XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 30))
         XCTAssertTrue(app.element("results.badge").label.contains("Rules + paystub"))
         XCTAssertTrue(app.element("results.incomeFrom").label.contains("by the model on this iPhone"), app.element("results.incomeFrom").label)
         XCTAssertTrue(app.element("leaving.status").label.contains("Nothing has left this iPhone."))
+    }
+
+    /// The cloud half read now (contract v1.47): without a model here, the recorded on-device answer, then the
+    /// same silhouette sent once to the (scripted) cloud, shown going there with its reason; the review names the
+    /// live cloud answer, and the record lists the request with the silhouette that left.
+    func testRunAllReadsTheCloudHalfNow() {
+        let app = XCUIApplication.silhouette(model: "cloud")
+        app.launch()
+        app.openJudges()
+        app.tapButton("judges.runAll")
+        let route = app.element("reading.route")
+        XCTAssertTrue(route.waitForExistence(timeout: 8))
+        let cloud = NSPredicate(format: "label == %@", "In the cloud")
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: cloud, object: route)], timeout: 15), .completed)
+        XCTAssertEqual(app.element("reading.reason").label, "read in the cloud too, to compare")
+        XCTAssertTrue(app.element("reading.stage").label.hasPrefix("The silhouette goes to Firebase AI Logic in the cloud")
+                      || app.element("reading.stage").label.hasPrefix("The model answered with placeholders"), app.element("reading.stage").label)
+        XCTAssertFalse(app.element("reading.recordedOn").exists, "not a recording")
+        XCTAssertTrue(app.element("review.both").waitForExistence(timeout: 15))
+        XCTAssertEqual(app.element("review.both.cloudColumn").label, "In the cloud, gemini-3.5-flash-lite, read now")
+        XCTAssertTrue(app.element("review.both.deviceColumn").label.contains("recorded on iPhone"))
+        XCTAssertFalse(app.element("review.both.cloudFallback").exists)
+        XCTAssertEqual(app.element("review.both.note").label, "The iPhone answer is a recording; the cloud answer was read now, from the silhouette only.")
+        XCTAssertTrue(app.element("review.both.uses").label.contains("the iPhone's answer"))
+        XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 20))
+        XCTAssertTrue(app.element("results.incomeFrom").label.contains("from a recorded on-device reading"), "the values used are the device's")
+        let leaving = app.element("leaving.status").label
+        XCTAssertFalse(leaving.contains("Nothing has left"), leaving)
+        app.tapButton("leaving.details")
+        let headline = app.element("record.headline")
+        XCTAssertTrue(headline.waitForExistence(timeout: 5))
+        XCTAssertTrue(headline.label.contains("left this iPhone") && headline.label.contains("None of them carried your names, numbers or dates."), headline.label)
+        let lines = app.element("record.whatLeft")
+        XCTAssertTrue(lines.waitForExistence(timeout: 5), "the request opens on what left")
+        XCTAssertTrue(lines.label.contains("N12") && !lines.label.contains("1,271.88"), "placeholders, never values")
+        XCTAssertTrue(app.element("record.whatStayed").label.hasPrefix("Kept on this iPhone:"))
+    }
+
+    /// With the model here and the cloud reachable: both read now.
+    func testRunAllWithTheModelAndTheCloudReadsBothNow() {
+        let app = XCUIApplication.silhouette(model: "device-cloud")
+        app.launch()
+        app.openJudges()
+        app.tapButton("judges.runAll")
+        XCTAssertTrue(app.element("review.both").waitForExistence(timeout: 40))
+        XCTAssertTrue(app.element("review.both.deviceColumn").label.contains("On this iPhone, now"))
+        XCTAssertTrue(app.element("review.both.cloudColumn").label.hasSuffix("read now"), app.element("review.both.cloudColumn").label)
+        XCTAssertTrue(app.element("review.both.note").label.hasPrefix("Both read now: on this iPhone"), app.element("review.both.note").label)
+        XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 30))
+        XCTAssertTrue(app.element("results.incomeFrom").label.contains("by the model on this iPhone"), app.element("results.incomeFrom").label)
+    }
+
+    /// App Check refuses: no model request is made; the recording is shown with the reason, and the path goes on.
+    func testRunAllFallsBackToTheRecordingWhenAppCheckRefuses() {
+        let app = XCUIApplication.silhouette(model: "cloud-appcheck")
+        app.launch()
+        app.openJudges()
+        app.tapButton("judges.runAll")
+        let fallback = app.element("review.both.cloudFallback")
+        XCTAssertTrue(fallback.waitForExistence(timeout: 40))
+        XCTAssertEqual(fallback.label,
+                       "The cloud did not answer now (the security check refused the request). Shown instead: the recorded cloud reading of the same silhouette.")
+        XCTAssertTrue(app.element("review.both.cloudColumn").label.contains("recorded"))
+        XCTAssertTrue(app.element("review.both.note").label.hasPrefix("Both answers are recordings"))
+        XCTAssertTrue(app.element("results.docEffect").waitForExistence(timeout: 20), "the path never stops on an error")
     }
 
     /// What the paystub changed, as amounts: the results without and with it, from the rules, and the yearly total.

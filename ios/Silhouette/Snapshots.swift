@@ -178,6 +178,10 @@ enum SnapshotRunner {
             Scene(name: "both-cloud-back") { m in m.startJudgesSample(); await m.stillBoth(cloud: true, .back) },
             Scene(name: "review-both", pages: 3, wait: 1.0) { m in await m.readBothWaysForSnapshot() },
             Scene(name: "review-both-live", pages: 2, wait: 1.5, needsDevice: true) { m in await m.readBothWaysForSnapshot() },
+            // The cloud half read now (contract v1.47): with `-UITestModel cloud` a live answer; without a cloud,
+            // the recording with the reason the live reading did not complete.
+            Scene(name: "review-both-cloud", pages: 2, wait: 1.5) { m in await m.readBothWaysForSnapshot(live: true) },
+            Scene(name: "both-live-cloud-out") { m in m.startJudgesSample(); await m.stillBoth(cloud: true, .out, live: true) },
             Scene(name: "record-both", pages: 3, wait: 1.0, fromTop: true) { m in
                 await m.readBothWaysForSnapshot()
                 m.sheet = .record
@@ -326,7 +330,7 @@ extension AppModel {
 
     /// Snapshots: one half of the sample read both ways, held still. The device's answer is the recorded
     /// on-device reading; the cloud's, the recorded cloud reading.
-    func stillBoth(cloud: Bool, _ phase: ReadingShow.Phase) async {
+    func stillBoth(cloud: Bool, _ phase: ReadingShow.Phase, live: Bool = false) async {
         guard let silhouette, let found = await RecordedDeviceReading.matching(
             deviceRecordings, silhouette: silhouette, language: document.language, key: sampleKey,
             schema: bundle.paystubSchema, jurisdiction: bundle.packInfo.jurisdiction) else { return }
@@ -335,16 +339,17 @@ extension AppModel {
         if cloud, let recording = recordedCloudReading {
             answer.apply(recording.result, silhouette: silhouette, schema: bundle.paystubSchema)
         }
-        let route: ReadingShow.Route = cloud ? .recordedCloud : .recordedDevice(machine: machineName(found.recording), date: found.recording.day)
+        let route: ReadingShow.Route = cloud ? (live ? .compareInCloud : .recordedCloud) : .recordedDevice(machine: machineName(found.recording), date: found.recording.day)
         readingShow = ReadingShow(route: route, phase: phase, pairs: phase == .back ? ReadingShow.pairs(answer, silhouette: silhouette) : [],
                                   still: 0.3, both: true)
     }
 
-    /// Snapshots: the judges' path read both ways, at the review (the device now when it has the model).
-    func readBothWaysForSnapshot() async {
+    /// Snapshots: the judges' path read both ways, at the review (the device now when it has the model). `live`:
+    /// the cloud half read now as on the one press (contract v1.47; the scripted cloud, or the fallback without it).
+    func readBothWaysForSnapshot(live: Bool = false) async {
         startJudgesSample()
         if deviceModelAvailable { await readDocument(keepOnDevice: true, review: false) } else { await useRecordedDevice(both: true) }
-        await playRecordedCloudHalf()
+        if live { await readCloudHalf() } else { await playRecordedCloudHalf() }
         editDocument { $0.confirmAll() }
         paystubPath.append(.documentReview)
     }

@@ -187,6 +187,8 @@ public struct TaskError: Error, Sendable, CustomStringConvertible {
         /// The reply stated a result twice (shared/prompts/OUTPUT_CHECKS.md).
         case blocked
         case network
+        /// No answer within the time limit the task sets (routing.json `bothWays.timeoutSeconds`).
+        case timeout
         case onDeviceUnavailable = "on-device-unavailable"
         /// The device read a document but its answer did not pass the checks, and the person chose to
         /// keep everything on the device (DEVICE_READING.md section 7).

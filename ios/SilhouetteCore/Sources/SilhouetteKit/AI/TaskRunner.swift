@@ -203,13 +203,20 @@ public final class TaskRunner: Sendable {
         })
     }
 
-    /// ONLY_IN_CLOUD: the cloud model alone.
-    private func inCloud(_ request: CloudRequest) async throws(TaskError) -> ModelReply {
+    /// ONLY_IN_CLOUD: the cloud model alone. `limit`: the App Check token and the request together are given up
+    /// after this long (`timeout`), and the record says the request failed for that reason.
+    private func inCloud(_ request: CloudRequest, limit: Duration? = nil) async throws(TaskError) -> ModelReply {
         try checkCancelled()
         let gate = cloudGate(request)
-        do { try await gate.open() } catch { throw Self.taskError(error) }
+        let deadline = limit.map { ContinuousClock.now + $0 }
         do {
-            let reply = try await port.generateInCloud(request)
+            if let deadline { try await Self.within(until: deadline) { try await gate.open() } } else { try await gate.open() }
+        } catch { throw Self.taskError(error) }
+        do {
+            let port = self.port
+            let reply: ModelReply
+            if let deadline { reply = try await Self.within(until: deadline) { try await port.generateInCloud(request) } }
+            else { reply = try await port.generateInCloud(request) }
             gate.close(nil)
             try checkCancelled()
             return reply
@@ -220,6 +227,31 @@ public final class TaskRunner: Sendable {
             let e = Task.isCancelled ? TaskError(.cancelled, "cancelled by the person") : TaskError(.unknown, String(describing: type(of: error)))
             gate.close(e)
             throw e
+        }
+    }
+
+    /// The work's result, or `timeout` once `limit` has passed (the work is then cancelled and not waited for:
+    /// a model call that does not stop at once cannot hold the person up).
+    static func within<T: Sendable>(_ limit: Duration, _ work: @escaping @Sendable () async throws -> T) async throws -> T {
+        try await within(until: ContinuousClock.now + limit, work)
+    }
+
+    static func within<T: Sendable>(until deadline: ContinuousClock.Instant, _ work: @escaping @Sendable () async throws -> T) async throws -> T {
+        let race = Race<T>()
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<T, Error>) in
+                race.start(continuation)
+                let worker = Task {
+                    do { race.finish(.success(try await work())) } catch { race.finish(.failure(error)) }
+                }
+                let timer = Task {
+                    try? await Task.sleep(until: deadline, clock: .continuous)
+                    race.finish(.failure(TaskError(.timeout, "no answer within the time limit", origin: "time-limit")))
+                }
+                race.hold(worker, timer)
+            }
+        } onCancel: {
+            race.finish(.failure(CancellationError()))
         }
     }
 
@@ -415,6 +447,16 @@ public final class TaskRunner: Sendable {
         return PointerOutcome(pointers: pointers, source: source, reason: reason)
     }
 
+    /// routing.json `bothWays` (contract v1.47): the silhouette read once in the cloud alone (`Planner.compareInCloud`),
+    /// through the App Check gate and the record like any cloud request, given up after `limit`. Throws the reason
+    /// it did not complete (App Check, quota, network, `timeout`, or another error); the caller falls back.
+    public func readPointersInCloud(_ request: CloudRequest, limit: Duration) async throws(TaskError) -> PointerOutcome {
+        precondition(request.mode == .onlyInCloud, "bothWays is ONLY_IN_CLOUD")
+        let reply = try await inCloud(request, limit: limit)
+        guard let pointers = Self.parsePointers(reply.text) else { throw TaskError(.badOutput, "the reply is not a JSON object") }
+        return PointerOutcome(pointers: pointers, source: .inCloud, reason: request.reason)
+    }
+
     /// The parts of DEVICE_READING.md section 3, each `ONLY_ON_DEVICE` with its strict constraint.
     private func readInParts(_ plan: ReadingInParts, progress: @Sendable (ReadingStage) -> Void) async throws -> DeviceReading.Reading {
         try await DeviceReading.read(schema: plan.schema, skeleton: plan.skeleton.text, map: plan.map, jurisdiction: plan.jurisdiction,
@@ -460,6 +502,41 @@ final class EntryBox: @unchecked Sendable {
     private var id: UUID?
     func set(_ value: UUID) { lock.withLock { id = value } }
     var value: UUID? { lock.withLock { id } }
+}
+
+/// The first of a piece of work and its time limit to finish resumes the caller, once; both are then cancelled.
+final class Race<T: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<T, Error>?
+    private var result: Result<T, Error>?
+    private var tasks: [Task<Void, Never>] = []
+
+    func start(_ continuation: CheckedContinuation<T, Error>) {
+        let early: Result<T, Error>? = lock.withLock {
+            if result == nil { self.continuation = continuation }
+            return result
+        }
+        if let early { continuation.resume(with: early) }
+    }
+
+    func hold(_ tasks: Task<Void, Never>...) {
+        let done = lock.withLock {
+            self.tasks = tasks
+            return result != nil
+        }
+        if done { tasks.forEach { $0.cancel() } }
+    }
+
+    func finish(_ outcome: Result<T, Error>) {
+        let (waiting, running): (CheckedContinuation<T, Error>?, [Task<Void, Never>]) = lock.withLock {
+            guard result == nil else { return (nil, []) }
+            result = outcome
+            defer { continuation = nil }
+            return (continuation, tasks)
+        }
+        waiting?.resume(with: outcome)
+        running.forEach { $0.cancel() }
+    }
 }
 
 /// Tracks whether the first cloud request of this run has been made.

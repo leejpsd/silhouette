@@ -21,6 +21,9 @@ public enum RoutingReason: String, Sendable, CaseIterable {
     case recordedInCloud = "recorded-in-cloud"
     /// `recordedSample`: a recorded on-device reading of the bundled sample's silhouette; nothing sent.
     case recordedOnDevice = "recorded-on-device"
+    /// `bothWays` (contract v1.47): on the one-press judges' path, the sample's silhouette read once more in the
+    /// cloud, ONLY_IN_CLOUD, to compare with the device's answer.
+    case compareInCloud = "compare-in-cloud"
 
     public var copyKey: String { "reason.\(rawValue)" }
 }
