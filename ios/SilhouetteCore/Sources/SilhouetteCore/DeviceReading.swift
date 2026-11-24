@@ -418,6 +418,8 @@ public enum DeviceReading {
         public var seconds: Double?
         /// Why the call gave no answer, when it gave none.
         public var failure: Failure?
+        /// Whether the constraint's text was in the prompt, when known (it always constrains the answer).
+        public var schemaInPrompt: Bool?
     }
 
     public static func readPass(schema: JSON, part: Part, text: String) -> Pass {
@@ -461,8 +463,11 @@ public enum DeviceReading {
         public let seconds: Double?
         /// Why the call gave no answer: where it stopped, the error type and its message.
         public let failure: Failure?
+        /// Whether the constraint's text was in the prompt (it always constrains the answer), when known.
+        public let schemaInPrompt: Bool?
 
-        public init(text: String?, error: String? = nil, seconds: Double? = nil, failure: Failure? = nil) {
+        public init(text: String?, error: String? = nil, seconds: Double? = nil, failure: Failure? = nil, schemaInPrompt: Bool? = nil) {
+            self.schemaInPrompt = schemaInPrompt
             self.text = text
             self.error = error
             self.seconds = seconds
@@ -499,6 +504,7 @@ public enum DeviceReading {
             }
             p.seconds = answer.seconds
             p.failure = answer.failure
+            p.schemaInPrompt = answer.schemaInPrompt
             return p
         }
         func checkCore(_ v: JSON) -> [String] { coreProblems(schema: schema, pointers: v, skeleton: skeleton, map: map, jurisdiction: jurisdiction) }

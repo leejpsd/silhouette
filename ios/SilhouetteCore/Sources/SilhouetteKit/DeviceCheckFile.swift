@@ -172,6 +172,8 @@ public enum DeviceCheck {
         r["extraKeys"] = .array(p.extraKeys.map(JSON.string))
         r["missingKeys"] = .array(p.missingKeys.map(JSON.string))
         r["latencyMs"] = .number(max(0, ((p.seconds ?? 0) * 1000).rounded()))
+        // Whether the constraint's text was in the prompt (DeviceBudget); the constraint applied either way.
+        if let inPrompt = p.schemaInPrompt { r["schemaInPrompt"] = .bool(inPrompt) }
         return .object(r)
     }
 

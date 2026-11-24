@@ -1,0 +1,55 @@
+{
+  "employerName": "Bramblewood Assisted Living Inc",
+  "employeeName": "Kwame A. Mensah-Boateng",
+  "payFrequency": "monthly",
+  "payDate": "10/23/2026",
+  "periodStart": "09/19/2026",
+  "periodEnd": "10/18/2026",
+  "grossPay": 5683.8,
+  "netPay": 3927.43,
+  "ytdGross": 57367.79,
+  "hoursWorked": null,
+  "hourlyRate": null,
+  "deductions": [
+    {
+      "amount": 625.22,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 352.4,
+      "kind": "social_security"
+    },
+    {
+      "amount": 82.42,
+      "kind": "medicare"
+    },
+    {
+      "amount": 233.04,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 62.52,
+      "kind": "other"
+    },
+    {
+      "amount": 284.19,
+      "kind": "retirement"
+    },
+    {
+      "amount": 49.92,
+      "kind": "health"
+    },
+    {
+      "amount": 19.34,
+      "kind": "health"
+    },
+    {
+      "amount": 6.32,
+      "kind": "health"
+    },
+    {
+      "amount": 41.0,
+      "kind": "other"
+    }
+  ]
+}

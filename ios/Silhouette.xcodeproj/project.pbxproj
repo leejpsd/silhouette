@@ -47,6 +47,7 @@
 		B75C922F11E6CC2C1DEA1DBD /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0D6CC4EF7E1E6C7E2D9D4D67 /* FirebaseCore */; };
 		BB2DA484372BD1741A6151DA /* TestModelPort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BE662B2AC082149AFC942D9 /* TestModelPort.swift */; };
 		CE4F67EEF3081322D0AF8B65 /* PointerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D87DA4D3E2FD0CA6EAD2946 /* PointerCard.swift */; };
+		D19B6E662A9B3FF16403A96E /* DeviceReadingWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64557C05CB8B65420E8BFA27 /* DeviceReadingWindowTests.swift */; };
 		D7C8EA5DEC0B9BC5474F3F2C /* SilhouetteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C333B8A099D6F56B6C32F02 /* SilhouetteApp.swift */; };
 		DC48826C3E275EFF200FB6F0 /* IBMPlexMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D55FC50C26D76BB41C698B09 /* IBMPlexMono-Medium.ttf */; };
 		DC898B5A1141FAC95FCC4614 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = B991BEDE1B0743F8C3DEDCDA /* FirebaseAppCheck */; };
@@ -100,6 +101,7 @@
 		4999DB6E450D34F7D649B7CE /* JudgedPathUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JudgedPathUITests.swift; sourceTree = "<group>"; };
 		5441F6FD2D4189F34A7C33F7 /* ResultsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsScreen.swift; sourceTree = "<group>"; };
 		5FD779D81845A02EAB71E24A /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		64557C05CB8B65420E8BFA27 /* DeviceReadingWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceReadingWindowTests.swift; sourceTree = "<group>"; };
 		7425F1034F6AFA066EB289F7 /* SilhouetteCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SilhouetteCore; path = SilhouetteCore; sourceTree = SOURCE_ROOT; };
 		789AC1A17553EB6C7133E02C /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		7AE4E05C911B96589FE1D223 /* DocumentReviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentReviewScreen.swift; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 		BA398A7FDA45F51F0C42069E /* SilhouetteTests */ = {
 			isa = PBXGroup;
 			children = (
+				64557C05CB8B65420E8BFA27 /* DeviceReadingWindowTests.swift */,
 				D05744F5019F0AE29825A17F /* HybridModelTests.swift */,
 			);
 			path = SilhouetteTests;
@@ -457,6 +460,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D19B6E662A9B3FF16403A96E /* DeviceReadingWindowTests.swift in Sources */,
 				93162F5A7EBA57F0DB665C38 /* HybridModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

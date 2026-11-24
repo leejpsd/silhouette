@@ -49,9 +49,15 @@ public struct DeviceCall: Sendable {
     /// Reading a document: the same silhouette should always give the same answer, so the port picks
     /// the most likely token at every step (greedy) where its on-device API allows it.
     public let deterministic: Bool
+    /// Whether the constraint's text goes into the prompt as well (it always constrains the answer). Apple's
+    /// on-device model writes the constraint into the prompt in full, every allowed id of every field, and
+    /// counts it against its 4,096-token window; a long silhouette's constraint alone can fill it. Planner
+    /// leaves it out when the request would not fit with it (`DeviceBudget`).
+    public var schemaInPrompt: Bool
 
     init(taskId: String, system: String, prompt: String, maxOutputTokens: Int, constraint: JSON? = nil, part: String? = nil,
-         deterministic: Bool = false) {
+         deterministic: Bool = false, schemaInPrompt: Bool = true) {
+        self.schemaInPrompt = schemaInPrompt
         self.taskId = taskId
         self.system = system
         self.prompt = prompt

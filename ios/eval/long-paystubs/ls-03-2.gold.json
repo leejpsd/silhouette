@@ -1,0 +1,55 @@
+{
+  "employerName": "Westfork Logistics Group Inc.",
+  "employeeName": "Harlan J. Whitcombe",
+  "payFrequency": "semimonthly",
+  "payDate": "11/01/2026",
+  "periodStart": "10/13/2026",
+  "periodEnd": "10/27/2026",
+  "grossPay": 2785.55,
+  "netPay": 1760.35,
+  "ytdGross": 39536.25,
+  "hoursWorked": 86.67,
+  "hourlyRate": 25.15,
+  "deductions": [
+    {
+      "amount": 306.41,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 172.7,
+      "kind": "social_security"
+    },
+    {
+      "amount": 40.39,
+      "kind": "medicare"
+    },
+    {
+      "amount": 114.21,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 30.64,
+      "kind": "other"
+    },
+    {
+      "amount": 139.28,
+      "kind": "retirement"
+    },
+    {
+      "amount": 153.54,
+      "kind": "health"
+    },
+    {
+      "amount": 18.45,
+      "kind": "health"
+    },
+    {
+      "amount": 8.58,
+      "kind": "health"
+    },
+    {
+      "amount": 41.0,
+      "kind": "other"
+    }
+  ]
+}

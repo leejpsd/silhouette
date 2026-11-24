@@ -101,16 +101,46 @@ public enum Planner {
     /// system instruction; the part's text, a blank line and the user content; the part's strict
     /// response constraint. The device wording never goes into a cloud request.
     ///
+    /// The constraint always applies to the answer. Its text (every allowed id of every field) goes into the
+    /// prompt only when the request fits the on-device window with it (`DeviceBudget`). When it does not,
+    /// the prompt carries the part's fields as the model schema instead (shared/schemas/MODEL_SCHEMA.md,
+    /// required and nullable, after the line `Answer with JSON that matches this schema:`, as for an
+    /// on-device API without a schema parameter): the field names, kinds and options without the id
+    /// lists. Without either, the model leaves most fields out. `constraintText` forces the choice.
+    ///
     /// The part's text opens the user turn rather than closing the system instruction: the on-device
     /// model checks the language of the user turn, and a silhouette alone (mostly ⟦N12⟧ placeholders)
     /// can read as a language it does not support (6 of the 38 evaluation paystubs read as Polish and
     /// were refused with `unsupportedLanguageOrLocale`). With the part's English text first, every one
     /// reads as English. The words asked are the same.
     public static func devicePart(_ skeleton: Skeleton, docType: String = "paystub", template: PromptTemplate, partText: String,
-                                  part: String, constraint: JSON) -> DeviceCall {
+                                  part: String, constraint: JSON, pointerSchema: JSON? = nil, constraintText: Bool? = nil) -> DeviceCall {
         let user = PromptTemplate.fill(template.user, ["docType": docType, "skeleton": text(skeleton)])
-        return DeviceCall(taskId: "document.pointer.extract", system: template.system, prompt: partText.isEmpty ? user : partText + "\n\n" + user,
-                          maxOutputTokens: 1024, constraint: constraint, part: part, deterministic: true)
+        let prompt = partText.isEmpty ? user : partText + "\n\n" + user
+        let full = constraintText ?? DeviceBudget.fitsWithSchema(system: template.system, prompt: prompt, constraint: constraint)
+        var shortPrompt = prompt
+        if !full, let pointerSchema, let fields = partModelSchema(pointerSchema, constraint: constraint) {
+            shortPrompt += "\n\nAnswer with JSON that matches this schema:\n" + fields.jsonText
+        }
+        return DeviceCall(taskId: "document.pointer.extract", system: template.system, prompt: full ? prompt : shortPrompt,
+                          maxOutputTokens: 1024, constraint: constraint, part: part, deterministic: true, schemaInPrompt: full)
+    }
+
+    /// The model schema (required and nullable, JSON Schema dialect) of the fields a part's constraint asks for.
+    static func partModelSchema(_ pointerSchema: JSON, constraint: JSON) -> JSON? {
+        guard let derived = try? ModelSchema.derive(pointerSchema, requiredNullable: true, dialect: .jsonschema),
+              let properties = derived["properties"]?.objectValue else { return nil }
+        let fields = constraint["properties"]?.objectValue?.keys ?? []
+        let kept = properties.entries.filter { fields.contains($0.key) }
+        var out = JSONObject()
+        for (key, value) in derived.objectValue?.entries ?? [] {
+            switch key {
+            case "properties": out[key] = .object(JSONObject(kept))
+            case "required": out[key] = .array(kept.map { .string($0.key) })
+            default: out[key] = value
+            }
+        }
+        return .object(out)
     }
 
     // MARK: On-device requests (Raw input)

@@ -1,0 +1,55 @@
+{
+  "employerName": "NORTHGATE COLD STORAGE LLC",
+  "employeeName": "Teodora V. Marchetti",
+  "payFrequency": "biweekly",
+  "payDate": "10/14/2026",
+  "periodStart": "09/26/2026",
+  "periodEnd": "10/09/2026",
+  "grossPay": 3151.78,
+  "netPay": 2105.9,
+  "ytdGross": 41731.54,
+  "hoursWorked": 80,
+  "hourlyRate": 32.0,
+  "deductions": [
+    {
+      "amount": 346.7,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 195.41,
+      "kind": "social_security"
+    },
+    {
+      "amount": 45.7,
+      "kind": "medicare"
+    },
+    {
+      "amount": 129.22,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 34.67,
+      "kind": "other"
+    },
+    {
+      "amount": 157.59,
+      "kind": "retirement"
+    },
+    {
+      "amount": 95.87,
+      "kind": "health"
+    },
+    {
+      "amount": 7.28,
+      "kind": "health"
+    },
+    {
+      "amount": 4.94,
+      "kind": "health"
+    },
+    {
+      "amount": 28.5,
+      "kind": "other"
+    }
+  ]
+}

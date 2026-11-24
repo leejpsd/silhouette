@@ -1,0 +1,55 @@
+{
+  "employerName": "Lumen Street Bakery & Cafe LLC",
+  "employeeName": "Paloma Reyes Villanueva",
+  "payFrequency": "weekly",
+  "payDate": "10/29/2026",
+  "periodStart": "10/18/2026",
+  "periodEnd": "10/24/2026",
+  "grossPay": 1079.03,
+  "netPay": 600.4,
+  "ytdGross": 26898.96,
+  "hoursWorked": 40,
+  "hourlyRate": 21.59,
+  "deductions": [
+    {
+      "amount": 118.69,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 66.9,
+      "kind": "social_security"
+    },
+    {
+      "amount": 15.65,
+      "kind": "medicare"
+    },
+    {
+      "amount": 44.24,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 11.87,
+      "kind": "other"
+    },
+    {
+      "amount": 53.95,
+      "kind": "retirement"
+    },
+    {
+      "amount": 113.54,
+      "kind": "health"
+    },
+    {
+      "amount": 5.1,
+      "kind": "health"
+    },
+    {
+      "amount": 7.69,
+      "kind": "health"
+    },
+    {
+      "amount": 41.0,
+      "kind": "other"
+    }
+  ]
+}

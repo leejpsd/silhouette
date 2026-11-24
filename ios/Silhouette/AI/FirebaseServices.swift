@@ -162,7 +162,8 @@ final class FirebaseModelPort: ModelPort, @unchecked Sendable {
         do {
             if let schema {
                 let response = try await ConstrainedReply.$schema.withValue(schema) {
-                    try await session.respond(to: call.prompt, generating: ConstrainedReply.self, includeSchemaInPrompt: true, options: options.value)
+                    try await session.respond(to: call.prompt, generating: ConstrainedReply.self, includeSchemaInPrompt: call.schemaInPrompt,
+                                              options: options.value)
                 }
                 return ModelReply(text: response.content.content.jsonString, modelVersion: response.rawResponse.modelVersion)
             }
@@ -185,7 +186,15 @@ final class FirebaseModelPort: ModelPort, @unchecked Sendable {
             message += [e.failureReason, e.recoverySuggestion].compactMap { $0 }.map { " | " + $0 }.joined()
         }
         message += " | \(ns.domain) \(ns.code)"
-        return TaskError(.onDeviceUnavailable, String(message.prefix(600)), origin: "sdk", errorType: String(reflecting: type(of: error)))
+        // The request did not fit the model's context window: the reading may ask the same part again with
+        // a shorter prompt (TaskRunner, `DeviceBudget.contextWindowOrigin`).
+        // iOS 26 throws `GenerationError.exceededContextWindowSize`, iOS 27 `LanguageModelError.contextSizeExceeded`.
+        var origin = "sdk"
+        if let generation = error as? FoundationModels.LanguageModelSession.GenerationError,
+           case .exceededContextWindowSize = generation { origin = DeviceBudget.contextWindowOrigin }
+        if #available(iOS 27.0, *), let failure = error as? FoundationModels.LanguageModelError,
+           case .contextSizeExceeded = failure { origin = DeviceBudget.contextWindowOrigin }
+        return TaskError(.onDeviceUnavailable, String(message.prefix(600)), origin: origin, errorType: String(reflecting: type(of: error)))
     }
 
     func generateInCloud(_ request: CloudRequest) async throws -> ModelReply {

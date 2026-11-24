@@ -38,11 +38,11 @@
     "heldout.run": "Read the {count} held-out paystubs",
     "heldout.runNote": "Takes several minutes. Keep the app open: the screen stays on until the run finishes.",
     "heldout.done": "Finished: {count} paystubs in {time}.",
-    "heldout.firstFields": "fields right in the device's first answer, before the app's checks",
+    "heldout.firstFields": "fields right in the iPhone's first answer, before the app's checks",
     "heldout.median": "median time per paystub, a cloud retry included (from {min} to {max} s)",
     "heldout.scoring": "Scored against each paystub's answer key: amounts to the cent, dates and pay frequency exactly, names word for word (punctuation aside), deductions as a set of amounts. The same scoring as the run in Chrome.",
     "heldout.recordingRow": "{count} held-out paystubs, {date}",
-    "heldout.rowFields": "Fields right: {first} in the device's first answer, {shown} in what the person is shown",
+    "heldout.rowFields": "Fields right: {first} in the iPhone's first answer, {shown} in what the person is shown",
     "heldout.rowWrong": "Wrong value shown: {fields}"
   },
   "es": {

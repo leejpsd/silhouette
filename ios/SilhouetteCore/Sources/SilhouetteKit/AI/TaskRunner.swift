@@ -426,17 +426,29 @@ public final class TaskRunner: Sendable {
             }
             defer { progress(.checking) }
             let constraint = DeviceReading.constraint(schema: plan.schema, skeleton: plan.skeleton.text, part: part)
-            let call = Planner.devicePart(plan.skeleton, docType: plan.docType, template: plan.template,
-                                          partText: plan.parts[part.rawValue] ?? "", part: part.rawValue, constraint: constraint)
+            let build = { (constraintText: Bool?) in
+                Planner.devicePart(plan.skeleton, docType: plan.docType, template: plan.template, partText: plan.parts[part.rawValue] ?? "",
+                                   part: part.rawValue, constraint: constraint, pointerSchema: plan.schema, constraintText: constraintText)
+            }
+            var call = build(nil)
             let started = Date()
             do throws(TaskError) {
-                let reply = try await onDevice(call, kept: nil)
-                return DeviceReading.PartAnswer(text: reply.text, seconds: Date().timeIntervalSince(started))
+                let reply: ModelReply
+                do throws(TaskError) {
+                    reply = try await onDevice(call, kept: nil)
+                } catch where error.origin == DeviceBudget.contextWindowOrigin && call.schemaInPrompt {
+                    // The estimate was short for this model: the same part, the same constraint, once more
+                    // with the part's fields in short form instead of the constraint's text.
+                    call = build(false)
+                    reply = try await onDevice(call, kept: nil)
+                }
+                return DeviceReading.PartAnswer(text: reply.text, seconds: Date().timeIntervalSince(started), schemaInPrompt: call.schemaInPrompt)
             } catch {
                 if error.kind == .cancelled { throw error }
                 return DeviceReading.PartAnswer(text: nil, error: error.kind.rawValue, seconds: Date().timeIntervalSince(started),
                                                 failure: DeviceReading.Failure(origin: error.origin ?? "app", type: error.errorType ?? "TaskError",
-                                                                               message: error.detail))
+                                                                               message: error.detail),
+                                                schemaInPrompt: call.schemaInPrompt)
             }
         }
     }

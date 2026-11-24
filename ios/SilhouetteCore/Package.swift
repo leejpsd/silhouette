@@ -22,7 +22,7 @@ let package = Package(
             dependencies: ["SilhouetteCore"],
             exclude: ["ios-edge-cases.json"]
         ),
-        .testTarget(name: "SilhouetteKitTests", dependencies: ["SilhouetteKit", "SilhouetteCore"]),
+        .testTarget(name: "SilhouetteKitTests", dependencies: ["SilhouetteKit", "SilhouetteCore"], exclude: ["token-counts.json"]),
     ],
     swiftLanguageModes: [.v6]
 )

@@ -632,6 +632,28 @@ struct DeviceReadingTaskTests {
                                                  message: "exceededContextWindowSize: 4,210 tokens"))
     }
 
+    @Test("a part the model refuses for its length is asked once more, the same constraint with its fields in short form")
+    func contextWindowRetry() async throws {
+        let p = try plan()
+        let refused = TaskError(.onDeviceUnavailable, "exceededContextWindowSize", origin: DeviceBudget.contextWindowOrigin,
+                                errorType: "FoundationModels.LanguageModelSession.GenerationError")
+        let answers = try answers("core-right-deductions-right")
+        let port = FakePort(device: [.failure(refused)] + answers.map { .success($0) })
+        let outcome = try await runner(port, log: OutboundLog()).extractPointers(p.request, inParts: p.parts)
+        #expect(outcome.source == .onDevice)
+        #expect(port.deviceCalls.map(\.part) == ["core", "core", "deductions"])
+        #expect(port.deviceCalls.map(\.schemaInPrompt) == [true, false, true])
+        #expect(port.deviceCalls[0].constraint?.jsonText == port.deviceCalls[1].constraint?.jsonText)
+        #expect(port.deviceCalls[1].prompt.hasPrefix(port.deviceCalls[0].prompt)
+                && port.deviceCalls[1].prompt.contains("Answer with JSON that matches this schema:"))
+        #expect(outcome.attempt?.passes.map(\.schemaInPrompt) == [false, true])
+        // Refused again without it: a failed part like any other, not asked a third time.
+        let again = FakePort(device: [.failure(refused), .failure(refused)], cloud: [.success(#"{"grossPay":"N12"}"#)])
+        let failed = try await runner(again, log: OutboundLog()).extractPointers(p.request, inParts: p.parts)
+        #expect(failed.reason == .onDeviceFailed && again.deviceCalls.count == 2)
+        #expect(failed.attempt?.passes.first?.failure?.origin == DeviceBudget.contextWindowOrigin)
+    }
+
     @Test("the availability guard stops a part before any SDK call, and says so")
     func guardFailureRecorded() async throws {
         let p = try plan()

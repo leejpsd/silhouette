@@ -1,0 +1,60 @@
+Westfork Logistics Group Inc.
+Corporate Payroll Office
+3100 Lakeview Parkway, Floor 4
+Tulsa, OK 74135
+
+PAY STUB                                   Pay Date 11/01/2026
+Employee            Harlan J. Whitcombe
+Employee Number     61046
+Period              10/13/2026 - 10/27/2026
+Frequency           Semi-Monthly
+Tax Profile         Federal: S/0   State: OK/1
+
+HOURS AND EARNINGS
+ Type                 Rate     Hours      Amount     YTD Amount
+ Regular               25.15    86.67    2,179.75      30,605.39
+ Overtime              37.73     6.50      245.21       3,701.87
+ Shift Differential                        110.59       1,586.77
+ Bonus                                     250.00       3,642.22
+ Gross Pay                               2,785.55      39,536.25
+
+STATUTORY DEDUCTIONS
+ Type                                  Amount     YTD Amount
+ Federal Income Tax                        306.41       4,295.81
+ Social Security                           172.70       2,424.19
+ Medicare                                   40.39         615.14
+ State Income Tax                          114.21       1,634.83
+ State Disability Ins                       30.64         440.28
+
+VOLUNTARY DEDUCTIONS
+ Type                                  Amount     YTD Amount
+ 401(k) Contribution                       139.28       1,963.67
+ Medical Plan                              153.54       2,185.26
+ Dental Plan                                18.45         266.16
+ Vision Plan                                 8.58         156.26
+ Union Dues                                 41.00         586.06
+
+ Net Pay                                 1,760.35
+
+EMPLOYER PAID BENEFITS
+ Life Insurance                           12.40         124.00
+ Health Savings Account                   25.00         250.00
+
+ Vacation hours: 44.50 available     Sick hours: 30.00 available
+ Your pay is deposited to the account ending 3306.
+ This statement is for your records. Keep it with your tax documents.
+
+IMPORTANT INFORMATION
+Your federal taxable wages this period exclude pre-tax retirement and benefit deductions shown above.
+If you believe any amount on this statement is incorrect, report it within 30 days of the pay date.
+Workplace safety training for the fourth quarter must be completed in the learning portal.
+Holiday schedule: the office is closed on Thanksgiving Day and the Friday after.
+Mileage reimbursements submitted after the 20th are paid on the following cycle.
+Employee assistance program: free confidential counseling is available around the clock.
+Electronic statements are available in the portal for seven years.
+Remember to review your beneficiary designations each year.
+Tuition assistance requests for the spring term are due by January 15.
+Parking permits renew on the first business day of the new year.
+Contact human resources to report a change of name, address or tax status.
+Flexible spending account claims for this plan year must be filed by March 31.
+Overtime must be approved in advance by your supervisor in the scheduling system.

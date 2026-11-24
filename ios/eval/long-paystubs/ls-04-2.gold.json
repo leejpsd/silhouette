@@ -1,0 +1,51 @@
+{
+  "employerName": "Meridian Harbor Dental Partners",
+  "employeeName": "Yusra N. Haddad",
+  "payFrequency": "monthly",
+  "payDate": "11/04/2026",
+  "periodStart": "10/01/2026",
+  "periodEnd": "10/30/2026",
+  "grossPay": 6751.91,
+  "netPay": 4690.13,
+  "ytdGross": 68675.1,
+  "hoursWorked": null,
+  "hourlyRate": null,
+  "deductions": [
+    {
+      "amount": 742.71,
+      "kind": "federal_tax"
+    },
+    {
+      "amount": 418.62,
+      "kind": "social_security"
+    },
+    {
+      "amount": 97.9,
+      "kind": "medicare"
+    },
+    {
+      "amount": 276.83,
+      "kind": "state_tax"
+    },
+    {
+      "amount": 74.27,
+      "kind": "other"
+    },
+    {
+      "amount": 337.6,
+      "kind": "retirement"
+    },
+    {
+      "amount": 91.6,
+      "kind": "health"
+    },
+    {
+      "amount": 18.15,
+      "kind": "health"
+    },
+    {
+      "amount": 4.1,
+      "kind": "health"
+    }
+  ]
+}

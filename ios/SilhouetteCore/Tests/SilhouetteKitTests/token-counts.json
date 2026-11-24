@@ -1,0 +1,1733 @@
+{
+ "about": "Token counts of on-device reading requests (pointer-extract.v5 with pointer-extract-device.v1, each part with its constraint's text in the prompt). text and schema: the on-device model's own count (SystemLanguageModel.tokenCount) on macOS 27 for the instruction plus prompt, and for the constraint. iphone: the count the iPhone (iOS 26.5.2, Firebase AI Logic 12.19.3) reported when it refused the first part of a held-out paystub, constraint included.",
+ "requests": [
+  {
+   "doc": "paystub-en-01",
+   "part": "core",
+   "text": 860,
+   "schema": 872
+  },
+  {
+   "doc": "paystub-en-01",
+   "part": "gross",
+   "text": 788,
+   "schema": 266
+  },
+  {
+   "doc": "paystub-en-01",
+   "part": "deductions",
+   "text": 705,
+   "schema": 255
+  },
+  {
+   "doc": "paystub-en-01",
+   "part": "deductions-again",
+   "text": 744,
+   "schema": 255
+  },
+  {
+   "doc": "en-l01-1",
+   "part": "core",
+   "text": 845,
+   "schema": 842
+  },
+  {
+   "doc": "en-l01-1",
+   "part": "gross",
+   "text": 773,
+   "schema": 266
+  },
+  {
+   "doc": "en-l01-1",
+   "part": "deductions",
+   "text": 690,
+   "schema": 255
+  },
+  {
+   "doc": "en-l01-1",
+   "part": "deductions-again",
+   "text": 729,
+   "schema": 255
+  },
+  {
+   "doc": "en-l01-2",
+   "part": "core",
+   "text": 845,
+   "schema": 842
+  },
+  {
+   "doc": "en-l01-2",
+   "part": "gross",
+   "text": 773,
+   "schema": 266
+  },
+  {
+   "doc": "en-l01-2",
+   "part": "deductions",
+   "text": 690,
+   "schema": 255
+  },
+  {
+   "doc": "en-l01-2",
+   "part": "deductions-again",
+   "text": 729,
+   "schema": 255
+  },
+  {
+   "doc": "en-l01-3",
+   "part": "core",
+   "text": 843,
+   "schema": 842
+  },
+  {
+   "doc": "en-l01-3",
+   "part": "gross",
+   "text": 771,
+   "schema": 266
+  },
+  {
+   "doc": "en-l01-3",
+   "part": "deductions",
+   "text": 688,
+   "schema": 255
+  },
+  {
+   "doc": "en-l01-3",
+   "part": "deductions-again",
+   "text": 727,
+   "schema": 255
+  },
+  {
+   "doc": "en-l02-1",
+   "part": "core",
+   "text": 810,
+   "schema": 760
+  },
+  {
+   "doc": "en-l02-1",
+   "part": "gross",
+   "text": 738,
+   "schema": 246
+  },
+  {
+   "doc": "en-l02-1",
+   "part": "deductions",
+   "text": 655,
+   "schema": 245
+  },
+  {
+   "doc": "en-l02-1",
+   "part": "deductions-again",
+   "text": 694,
+   "schema": 245
+  },
+  {
+   "doc": "en-l02-2",
+   "part": "core",
+   "text": 807,
+   "schema": 760
+  },
+  {
+   "doc": "en-l02-2",
+   "part": "gross",
+   "text": 735,
+   "schema": 246
+  },
+  {
+   "doc": "en-l02-2",
+   "part": "deductions",
+   "text": 652,
+   "schema": 245
+  },
+  {
+   "doc": "en-l02-2",
+   "part": "deductions-again",
+   "text": 691,
+   "schema": 245
+  },
+  {
+   "doc": "en-l02-3",
+   "part": "core",
+   "text": 807,
+   "schema": 760
+  },
+  {
+   "doc": "en-l02-3",
+   "part": "gross",
+   "text": 735,
+   "schema": 246
+  },
+  {
+   "doc": "en-l02-3",
+   "part": "deductions",
+   "text": 652,
+   "schema": 245
+  },
+  {
+   "doc": "en-l02-3",
+   "part": "deductions-again",
+   "text": 691,
+   "schema": 245
+  },
+  {
+   "doc": "en-l03-1",
+   "part": "core",
+   "text": 726,
+   "schema": 485
+  },
+  {
+   "doc": "en-l03-1",
+   "part": "gross",
+   "text": 654,
+   "schema": 136
+  },
+  {
+   "doc": "en-l03-1",
+   "part": "deductions",
+   "text": 571,
+   "schema": 190
+  },
+  {
+   "doc": "en-l03-1",
+   "part": "deductions-again",
+   "text": 610,
+   "schema": 190
+  },
+  {
+   "doc": "en-l03-2",
+   "part": "core",
+   "text": 726,
+   "schema": 485
+  },
+  {
+   "doc": "en-l03-2",
+   "part": "gross",
+   "text": 654,
+   "schema": 136
+  },
+  {
+   "doc": "en-l03-2",
+   "part": "deductions",
+   "text": 571,
+   "schema": 190
+  },
+  {
+   "doc": "en-l03-2",
+   "part": "deductions-again",
+   "text": 610,
+   "schema": 190
+  },
+  {
+   "doc": "en-l03-3",
+   "part": "core",
+   "text": 728,
+   "schema": 485
+  },
+  {
+   "doc": "en-l03-3",
+   "part": "gross",
+   "text": 656,
+   "schema": 136
+  },
+  {
+   "doc": "en-l03-3",
+   "part": "deductions",
+   "text": 573,
+   "schema": 190
+  },
+  {
+   "doc": "en-l03-3",
+   "part": "deductions-again",
+   "text": 612,
+   "schema": 190
+  },
+  {
+   "doc": "en-l04-1",
+   "part": "core",
+   "text": 731,
+   "schema": 485
+  },
+  {
+   "doc": "en-l04-1",
+   "part": "gross",
+   "text": 659,
+   "schema": 136
+  },
+  {
+   "doc": "en-l04-1",
+   "part": "deductions",
+   "text": 576,
+   "schema": 190
+  },
+  {
+   "doc": "en-l04-1",
+   "part": "deductions-again",
+   "text": 615,
+   "schema": 190
+  },
+  {
+   "doc": "en-l04-2",
+   "part": "core",
+   "text": 732,
+   "schema": 485
+  },
+  {
+   "doc": "en-l04-2",
+   "part": "gross",
+   "text": 660,
+   "schema": 136
+  },
+  {
+   "doc": "en-l04-2",
+   "part": "deductions",
+   "text": 577,
+   "schema": 190
+  },
+  {
+   "doc": "en-l04-2",
+   "part": "deductions-again",
+   "text": 616,
+   "schema": 190
+  },
+  {
+   "doc": "en-l04-3",
+   "part": "core",
+   "text": 734,
+   "schema": 485
+  },
+  {
+   "doc": "en-l04-3",
+   "part": "gross",
+   "text": 662,
+   "schema": 136
+  },
+  {
+   "doc": "en-l04-3",
+   "part": "deductions",
+   "text": 579,
+   "schema": 190
+  },
+  {
+   "doc": "en-l04-3",
+   "part": "deductions-again",
+   "text": 618,
+   "schema": 190
+  },
+  {
+   "doc": "en-l05-1",
+   "part": "core",
+   "text": 787,
+   "schema": 676
+  },
+  {
+   "doc": "en-l05-1",
+   "part": "gross",
+   "text": 715,
+   "schema": 206
+  },
+  {
+   "doc": "en-l05-1",
+   "part": "deductions",
+   "text": 632,
+   "schema": 225
+  },
+  {
+   "doc": "en-l05-1",
+   "part": "deductions-again",
+   "text": 671,
+   "schema": 225
+  },
+  {
+   "doc": "en-l05-2",
+   "part": "core",
+   "text": 787,
+   "schema": 676
+  },
+  {
+   "doc": "en-l05-2",
+   "part": "gross",
+   "text": 715,
+   "schema": 206
+  },
+  {
+   "doc": "en-l05-2",
+   "part": "deductions",
+   "text": 632,
+   "schema": 225
+  },
+  {
+   "doc": "en-l05-2",
+   "part": "deductions-again",
+   "text": 671,
+   "schema": 225
+  },
+  {
+   "doc": "en-l05-3",
+   "part": "core",
+   "text": 785,
+   "schema": 676
+  },
+  {
+   "doc": "en-l05-3",
+   "part": "gross",
+   "text": 713,
+   "schema": 206
+  },
+  {
+   "doc": "en-l05-3",
+   "part": "deductions",
+   "text": 630,
+   "schema": 225
+  },
+  {
+   "doc": "en-l05-3",
+   "part": "deductions-again",
+   "text": 669,
+   "schema": 225
+  },
+  {
+   "doc": "en-l06-1",
+   "part": "core",
+   "text": 890,
+   "schema": 987
+  },
+  {
+   "doc": "en-l06-1",
+   "part": "gross",
+   "text": 818,
+   "schema": 296
+  },
+  {
+   "doc": "en-l06-1",
+   "part": "deductions",
+   "text": 735,
+   "schema": 270
+  },
+  {
+   "doc": "en-l06-1",
+   "part": "deductions-again",
+   "text": 774,
+   "schema": 270
+  },
+  {
+   "doc": "en-l06-2",
+   "part": "core",
+   "text": 888,
+   "schema": 987
+  },
+  {
+   "doc": "en-l06-2",
+   "part": "gross",
+   "text": 816,
+   "schema": 296
+  },
+  {
+   "doc": "en-l06-2",
+   "part": "deductions",
+   "text": 733,
+   "schema": 270
+  },
+  {
+   "doc": "en-l06-2",
+   "part": "deductions-again",
+   "text": 772,
+   "schema": 270
+  },
+  {
+   "doc": "en-l06-3",
+   "part": "core",
+   "text": 888,
+   "schema": 987
+  },
+  {
+   "doc": "en-l06-3",
+   "part": "gross",
+   "text": 816,
+   "schema": 296
+  },
+  {
+   "doc": "en-l06-3",
+   "part": "deductions",
+   "text": 733,
+   "schema": 270
+  },
+  {
+   "doc": "en-l06-3",
+   "part": "deductions-again",
+   "text": 772,
+   "schema": 270
+  },
+  {
+   "doc": "en-l07-1",
+   "part": "core",
+   "text": 850,
+   "schema": 976
+  },
+  {
+   "doc": "en-l07-1",
+   "part": "gross",
+   "text": 778,
+   "schema": 326
+  },
+  {
+   "doc": "en-l07-1",
+   "part": "deductions",
+   "text": 695,
+   "schema": 285
+  },
+  {
+   "doc": "en-l07-1",
+   "part": "deductions-again",
+   "text": 734,
+   "schema": 285
+  },
+  {
+   "doc": "en-l07-2",
+   "part": "core",
+   "text": 850,
+   "schema": 976
+  },
+  {
+   "doc": "en-l07-2",
+   "part": "gross",
+   "text": 778,
+   "schema": 326
+  },
+  {
+   "doc": "en-l07-2",
+   "part": "deductions",
+   "text": 695,
+   "schema": 285
+  },
+  {
+   "doc": "en-l07-2",
+   "part": "deductions-again",
+   "text": 734,
+   "schema": 285
+  },
+  {
+   "doc": "en-l07-3",
+   "part": "core",
+   "text": 850,
+   "schema": 976
+  },
+  {
+   "doc": "en-l07-3",
+   "part": "gross",
+   "text": 778,
+   "schema": 326
+  },
+  {
+   "doc": "en-l07-3",
+   "part": "deductions",
+   "text": 695,
+   "schema": 285
+  },
+  {
+   "doc": "en-l07-3",
+   "part": "deductions-again",
+   "text": 734,
+   "schema": 285
+  },
+  {
+   "doc": "en-l08-1",
+   "part": "core",
+   "text": 777,
+   "schema": 660
+  },
+  {
+   "doc": "en-l08-1",
+   "part": "gross",
+   "text": 705,
+   "schema": 206
+  },
+  {
+   "doc": "en-l08-1",
+   "part": "deductions",
+   "text": 622,
+   "schema": 225
+  },
+  {
+   "doc": "en-l08-1",
+   "part": "deductions-again",
+   "text": 661,
+   "schema": 225
+  },
+  {
+   "doc": "en-l08-2",
+   "part": "core",
+   "text": 779,
+   "schema": 660
+  },
+  {
+   "doc": "en-l08-2",
+   "part": "gross",
+   "text": 707,
+   "schema": 206
+  },
+  {
+   "doc": "en-l08-2",
+   "part": "deductions",
+   "text": 624,
+   "schema": 225
+  },
+  {
+   "doc": "en-l08-2",
+   "part": "deductions-again",
+   "text": 663,
+   "schema": 225
+  },
+  {
+   "doc": "en-l08-3",
+   "part": "core",
+   "text": 779,
+   "schema": 660
+  },
+  {
+   "doc": "en-l08-3",
+   "part": "gross",
+   "text": 707,
+   "schema": 206
+  },
+  {
+   "doc": "en-l08-3",
+   "part": "deductions",
+   "text": 624,
+   "schema": 225
+  },
+  {
+   "doc": "en-l08-3",
+   "part": "deductions-again",
+   "text": 663,
+   "schema": 225
+  },
+  {
+   "doc": "en-l09-1",
+   "part": "core",
+   "text": 748,
+   "schema": 610
+  },
+  {
+   "doc": "en-l09-1",
+   "part": "gross",
+   "text": 676,
+   "schema": 186
+  },
+  {
+   "doc": "en-l09-1",
+   "part": "deductions",
+   "text": 593,
+   "schema": 215
+  },
+  {
+   "doc": "en-l09-1",
+   "part": "deductions-again",
+   "text": 632,
+   "schema": 215
+  },
+  {
+   "doc": "en-l09-2",
+   "part": "core",
+   "text": 748,
+   "schema": 610
+  },
+  {
+   "doc": "en-l09-2",
+   "part": "gross",
+   "text": 676,
+   "schema": 186
+  },
+  {
+   "doc": "en-l09-2",
+   "part": "deductions",
+   "text": 593,
+   "schema": 215
+  },
+  {
+   "doc": "en-l09-2",
+   "part": "deductions-again",
+   "text": 632,
+   "schema": 215
+  },
+  {
+   "doc": "en-l09-3",
+   "part": "core",
+   "text": 748,
+   "schema": 610
+  },
+  {
+   "doc": "en-l09-3",
+   "part": "gross",
+   "text": 676,
+   "schema": 186
+  },
+  {
+   "doc": "en-l09-3",
+   "part": "deductions",
+   "text": 593,
+   "schema": 215
+  },
+  {
+   "doc": "en-l09-3",
+   "part": "deductions-again",
+   "text": 632,
+   "schema": 215
+  },
+  {
+   "doc": "en-l10-1",
+   "part": "core",
+   "text": 808,
+   "schema": 760
+  },
+  {
+   "doc": "en-l10-1",
+   "part": "gross",
+   "text": 736,
+   "schema": 246
+  },
+  {
+   "doc": "en-l10-1",
+   "part": "deductions",
+   "text": 653,
+   "schema": 245
+  },
+  {
+   "doc": "en-l10-1",
+   "part": "deductions-again",
+   "text": 692,
+   "schema": 245
+  },
+  {
+   "doc": "en-l10-2",
+   "part": "core",
+   "text": 805,
+   "schema": 760
+  },
+  {
+   "doc": "en-l10-2",
+   "part": "gross",
+   "text": 733,
+   "schema": 246
+  },
+  {
+   "doc": "en-l10-2",
+   "part": "deductions",
+   "text": 650,
+   "schema": 245
+  },
+  {
+   "doc": "en-l10-2",
+   "part": "deductions-again",
+   "text": 689,
+   "schema": 245
+  },
+  {
+   "doc": "en-l10-3",
+   "part": "core",
+   "text": 805,
+   "schema": 760
+  },
+  {
+   "doc": "en-l10-3",
+   "part": "gross",
+   "text": 733,
+   "schema": 246
+  },
+  {
+   "doc": "en-l10-3",
+   "part": "deductions",
+   "text": 650,
+   "schema": 245
+  },
+  {
+   "doc": "en-l10-3",
+   "part": "deductions-again",
+   "text": 689,
+   "schema": 245
+  },
+  {
+   "doc": "en-l11-1",
+   "part": "core",
+   "text": 847,
+   "schema": 887
+  },
+  {
+   "doc": "en-l11-1",
+   "part": "gross",
+   "text": 775,
+   "schema": 276
+  },
+  {
+   "doc": "en-l11-1",
+   "part": "deductions",
+   "text": 692,
+   "schema": 260
+  },
+  {
+   "doc": "en-l11-1",
+   "part": "deductions-again",
+   "text": 731,
+   "schema": 260
+  },
+  {
+   "doc": "en-l11-2",
+   "part": "core",
+   "text": 800,
+   "schema": 727
+  },
+  {
+   "doc": "en-l11-2",
+   "part": "gross",
+   "text": 728,
+   "schema": 216
+  },
+  {
+   "doc": "en-l11-2",
+   "part": "deductions",
+   "text": 645,
+   "schema": 230
+  },
+  {
+   "doc": "en-l11-2",
+   "part": "deductions-again",
+   "text": 684,
+   "schema": 230
+  },
+  {
+   "doc": "en-l11-3",
+   "part": "core",
+   "text": 821,
+   "schema": 787
+  },
+  {
+   "doc": "en-l11-3",
+   "part": "gross",
+   "text": 749,
+   "schema": 236
+  },
+  {
+   "doc": "en-l11-3",
+   "part": "deductions",
+   "text": 666,
+   "schema": 240
+  },
+  {
+   "doc": "en-l11-3",
+   "part": "deductions-again",
+   "text": 705,
+   "schema": 240
+  },
+  {
+   "doc": "en-l11-4",
+   "part": "core",
+   "text": 805,
+   "schema": 737
+  },
+  {
+   "doc": "en-l11-4",
+   "part": "gross",
+   "text": 733,
+   "schema": 216
+  },
+  {
+   "doc": "en-l11-4",
+   "part": "deductions",
+   "text": 650,
+   "schema": 230
+  },
+  {
+   "doc": "en-l11-4",
+   "part": "deductions-again",
+   "text": 689,
+   "schema": 230
+  },
+  {
+   "doc": "en-l11-5",
+   "part": "core",
+   "text": 847,
+   "schema": 887
+  },
+  {
+   "doc": "en-l11-5",
+   "part": "gross",
+   "text": 775,
+   "schema": 276
+  },
+  {
+   "doc": "en-l11-5",
+   "part": "deductions",
+   "text": 692,
+   "schema": 260
+  },
+  {
+   "doc": "en-l11-5",
+   "part": "deductions-again",
+   "text": 731,
+   "schema": 260
+  },
+  {
+   "doc": "en-l11-6",
+   "part": "core",
+   "text": 805,
+   "schema": 737
+  },
+  {
+   "doc": "en-l11-6",
+   "part": "gross",
+   "text": 733,
+   "schema": 216
+  },
+  {
+   "doc": "en-l11-6",
+   "part": "deductions",
+   "text": 650,
+   "schema": 230
+  },
+  {
+   "doc": "en-l11-6",
+   "part": "deductions-again",
+   "text": 689,
+   "schema": 230
+  },
+  {
+   "doc": "en-l11-7",
+   "part": "core",
+   "text": 821,
+   "schema": 787
+  },
+  {
+   "doc": "en-l11-7",
+   "part": "gross",
+   "text": 749,
+   "schema": 236
+  },
+  {
+   "doc": "en-l11-7",
+   "part": "deductions",
+   "text": 666,
+   "schema": 240
+  },
+  {
+   "doc": "en-l11-7",
+   "part": "deductions-again",
+   "text": 705,
+   "schema": 240
+  },
+  {
+   "doc": "en-l11-8",
+   "part": "core",
+   "text": 805,
+   "schema": 737
+  },
+  {
+   "doc": "en-l11-8",
+   "part": "gross",
+   "text": 733,
+   "schema": 216
+  },
+  {
+   "doc": "en-l11-8",
+   "part": "deductions",
+   "text": 650,
+   "schema": 230
+  },
+  {
+   "doc": "en-l11-8",
+   "part": "deductions-again",
+   "text": 689,
+   "schema": 230
+  },
+  {
+   "doc": "hp-01-1",
+   "part": "core",
+   "text": 1580,
+   "schema": 2497,
+   "iphone": 9582
+  },
+  {
+   "doc": "hp-01-1",
+   "part": "gross",
+   "text": 1508,
+   "schema": 656
+  },
+  {
+   "doc": "hp-01-1",
+   "part": "deductions",
+   "text": 1425,
+   "schema": 450
+  },
+  {
+   "doc": "hp-01-1",
+   "part": "deductions-again",
+   "text": 1464,
+   "schema": 450
+  },
+  {
+   "doc": "hp-01-2",
+   "part": "core",
+   "text": 1564,
+   "schema": 2462,
+   "iphone": 9452
+  },
+  {
+   "doc": "hp-01-2",
+   "part": "gross",
+   "text": 1492,
+   "schema": 646
+  },
+  {
+   "doc": "hp-01-2",
+   "part": "deductions",
+   "text": 1409,
+   "schema": 445
+  },
+  {
+   "doc": "hp-01-2",
+   "part": "deductions-again",
+   "text": 1448,
+   "schema": 445
+  },
+  {
+   "doc": "hp-02-1",
+   "part": "core",
+   "text": 1258,
+   "schema": 1648,
+   "iphone": 6522
+  },
+  {
+   "doc": "hp-02-1",
+   "part": "gross",
+   "text": 1186,
+   "schema": 426
+  },
+  {
+   "doc": "hp-02-1",
+   "part": "deductions",
+   "text": 1103,
+   "schema": 335
+  },
+  {
+   "doc": "hp-02-1",
+   "part": "deductions-again",
+   "text": 1142,
+   "schema": 335
+  },
+  {
+   "doc": "hp-02-2",
+   "part": "core",
+   "text": 1284,
+   "schema": 1698,
+   "iphone": 6717
+  },
+  {
+   "doc": "hp-02-2",
+   "part": "gross",
+   "text": 1212,
+   "schema": 426
+  },
+  {
+   "doc": "hp-02-2",
+   "part": "deductions",
+   "text": 1129,
+   "schema": 335
+  },
+  {
+   "doc": "hp-02-2",
+   "part": "deductions-again",
+   "text": 1168,
+   "schema": 335
+  },
+  {
+   "doc": "hp-03-1",
+   "part": "core",
+   "text": 1459,
+   "schema": 2302,
+   "iphone": 8810
+  },
+  {
+   "doc": "hp-03-1",
+   "part": "gross",
+   "text": 1387,
+   "schema": 646
+  },
+  {
+   "doc": "hp-03-1",
+   "part": "deductions",
+   "text": 1304,
+   "schema": 445
+  },
+  {
+   "doc": "hp-03-1",
+   "part": "deductions-again",
+   "text": 1343,
+   "schema": 445
+  },
+  {
+   "doc": "hp-03-2",
+   "part": "core",
+   "text": 1363,
+   "schema": 2012,
+   "iphone": 7780
+  },
+  {
+   "doc": "hp-03-2",
+   "part": "gross",
+   "text": 1291,
+   "schema": 566
+  },
+  {
+   "doc": "hp-03-2",
+   "part": "deductions",
+   "text": 1208,
+   "schema": 405
+  },
+  {
+   "doc": "hp-03-2",
+   "part": "deductions-again",
+   "text": 1247,
+   "schema": 405
+  },
+  {
+   "doc": "hp-04-1",
+   "part": "core",
+   "text": 1303,
+   "schema": 1742,
+   "iphone": 6901
+  },
+  {
+   "doc": "hp-04-1",
+   "part": "gross",
+   "text": 1231,
+   "schema": 386
+  },
+  {
+   "doc": "hp-04-1",
+   "part": "deductions",
+   "text": 1148,
+   "schema": 315
+  },
+  {
+   "doc": "hp-04-1",
+   "part": "deductions-again",
+   "text": 1187,
+   "schema": 315
+  },
+  {
+   "doc": "hp-04-2",
+   "part": "core",
+   "text": 1245,
+   "schema": 1572,
+   "iphone": 6298
+  },
+  {
+   "doc": "hp-04-2",
+   "part": "gross",
+   "text": 1173,
+   "schema": 326
+  },
+  {
+   "doc": "hp-04-2",
+   "part": "deductions",
+   "text": 1090,
+   "schema": 285
+  },
+  {
+   "doc": "hp-04-2",
+   "part": "deductions-again",
+   "text": 1129,
+   "schema": 285
+  },
+  {
+   "doc": "hp-05-1",
+   "part": "core",
+   "text": 1438,
+   "schema": 2027,
+   "iphone": 7920
+  },
+  {
+   "doc": "hp-05-1",
+   "part": "gross",
+   "text": 1366,
+   "schema": 546
+  },
+  {
+   "doc": "hp-05-1",
+   "part": "deductions",
+   "text": 1283,
+   "schema": 395
+  },
+  {
+   "doc": "hp-05-1",
+   "part": "deductions-again",
+   "text": 1322,
+   "schema": 395
+  },
+  {
+   "doc": "hp-05-2",
+   "part": "core",
+   "text": 1392,
+   "schema": 1942,
+   "iphone": 7590
+  },
+  {
+   "doc": "hp-05-2",
+   "part": "gross",
+   "text": 1320,
+   "schema": 536
+  },
+  {
+   "doc": "hp-05-2",
+   "part": "deductions",
+   "text": 1237,
+   "schema": 390
+  },
+  {
+   "doc": "hp-05-2",
+   "part": "deductions-again",
+   "text": 1276,
+   "schema": 390
+  },
+  {
+   "doc": "hp-06-1",
+   "part": "core",
+   "text": 1308,
+   "schema": 1932,
+   "iphone": 7465
+  },
+  {
+   "doc": "hp-06-1",
+   "part": "gross",
+   "text": 1236,
+   "schema": 506
+  },
+  {
+   "doc": "hp-06-1",
+   "part": "deductions",
+   "text": 1153,
+   "schema": 375
+  },
+  {
+   "doc": "hp-06-1",
+   "part": "deductions-again",
+   "text": 1192,
+   "schema": 375
+  },
+  {
+   "doc": "hp-06-2",
+   "part": "core",
+   "text": 1194,
+   "schema": 1607,
+   "iphone": 6299
+  },
+  {
+   "doc": "hp-06-2",
+   "part": "gross",
+   "text": 1122,
+   "schema": 416
+  },
+  {
+   "doc": "hp-06-2",
+   "part": "deductions",
+   "text": 1039,
+   "schema": 330
+  },
+  {
+   "doc": "hp-06-2",
+   "part": "deductions-again",
+   "text": 1078,
+   "schema": 330
+  },
+  {
+   "doc": "hp-07-1",
+   "part": "core",
+   "text": 1400,
+   "schema": 2197,
+   "iphone": 8428
+  },
+  {
+   "doc": "hp-07-1",
+   "part": "gross",
+   "text": 1328,
+   "schema": 576
+  },
+  {
+   "doc": "hp-07-1",
+   "part": "deductions",
+   "text": 1245,
+   "schema": 410
+  },
+  {
+   "doc": "hp-07-1",
+   "part": "deductions-again",
+   "text": 1284,
+   "schema": 410
+  },
+  {
+   "doc": "hp-07-2",
+   "part": "core",
+   "text": 1349,
+   "schema": 2092,
+   "iphone": 8027
+  },
+  {
+   "doc": "hp-07-2",
+   "part": "gross",
+   "text": 1277,
+   "schema": 566
+  },
+  {
+   "doc": "hp-07-2",
+   "part": "deductions",
+   "text": 1194,
+   "schema": 405
+  },
+  {
+   "doc": "hp-07-2",
+   "part": "deductions-again",
+   "text": 1233,
+   "schema": 405
+  },
+  {
+   "doc": "hp-08-1",
+   "part": "core",
+   "text": 1454,
+   "schema": 2189,
+   "iphone": 8461
+  },
+  {
+   "doc": "hp-08-1",
+   "part": "gross",
+   "text": 1382,
+   "schema": 576
+  },
+  {
+   "doc": "hp-08-1",
+   "part": "deductions",
+   "text": 1299,
+   "schema": 410
+  },
+  {
+   "doc": "hp-08-1",
+   "part": "deductions-again",
+   "text": 1338,
+   "schema": 410
+  },
+  {
+   "doc": "hp-08-2",
+   "part": "core",
+   "text": 1451,
+   "schema": 2177,
+   "iphone": 8413
+  },
+  {
+   "doc": "hp-08-2",
+   "part": "gross",
+   "text": 1379,
+   "schema": 576
+  },
+  {
+   "doc": "hp-08-2",
+   "part": "deductions",
+   "text": 1296,
+   "schema": 410
+  },
+  {
+   "doc": "hp-08-2",
+   "part": "deductions-again",
+   "text": 1335,
+   "schema": 410
+  },
+  {
+   "doc": "hp-09-1",
+   "part": "core",
+   "text": 1087,
+   "schema": 1302,
+   "iphone": 5239
+  },
+  {
+   "doc": "hp-09-1",
+   "part": "gross",
+   "text": 1015,
+   "schema": 286
+  },
+  {
+   "doc": "hp-09-1",
+   "part": "deductions",
+   "text": 932,
+   "schema": 265
+  },
+  {
+   "doc": "hp-09-1",
+   "part": "deductions-again",
+   "text": 971,
+   "schema": 265
+  },
+  {
+   "doc": "hp-09-2",
+   "part": "core",
+   "text": 1134,
+   "schema": 1417,
+   "iphone": 5661
+  },
+  {
+   "doc": "hp-09-2",
+   "part": "gross",
+   "text": 1062,
+   "schema": 316
+  },
+  {
+   "doc": "hp-09-2",
+   "part": "deductions",
+   "text": 979,
+   "schema": 280
+  },
+  {
+   "doc": "hp-09-2",
+   "part": "deductions-again",
+   "text": 1018,
+   "schema": 280
+  },
+  {
+   "doc": "hp-10-1",
+   "part": "core",
+   "text": 1410,
+   "schema": 2272,
+   "iphone": 8664
+  },
+  {
+   "doc": "hp-10-1",
+   "part": "gross",
+   "text": 1338,
+   "schema": 646
+  },
+  {
+   "doc": "hp-10-1",
+   "part": "deductions",
+   "text": 1255,
+   "schema": 445
+  },
+  {
+   "doc": "hp-10-1",
+   "part": "deductions-again",
+   "text": 1294,
+   "schema": 445
+  },
+  {
+   "doc": "hp-10-2",
+   "part": "core",
+   "text": 1266,
+   "schema": 1837,
+   "iphone": 7128
+  },
+  {
+   "doc": "hp-10-2",
+   "part": "gross",
+   "text": 1194,
+   "schema": 496
+  },
+  {
+   "doc": "hp-10-2",
+   "part": "deductions",
+   "text": 1111,
+   "schema": 370
+  },
+  {
+   "doc": "hp-10-2",
+   "part": "deductions-again",
+   "text": 1150,
+   "schema": 370
+  },
+  {
+   "doc": "hp-11-1",
+   "part": "core",
+   "text": 1459,
+   "schema": 2567,
+   "iphone": 9615
+  },
+  {
+   "doc": "hp-11-1",
+   "part": "gross",
+   "text": 1387,
+   "schema": 796
+  },
+  {
+   "doc": "hp-11-1",
+   "part": "deductions",
+   "text": 1304,
+   "schema": 520
+  },
+  {
+   "doc": "hp-11-1",
+   "part": "deductions-again",
+   "text": 1343,
+   "schema": 520
+  },
+  {
+   "doc": "hp-11-2",
+   "part": "core",
+   "text": 1276,
+   "schema": 1972,
+   "iphone": 7527
+  },
+  {
+   "doc": "hp-11-2",
+   "part": "gross",
+   "text": 1204,
+   "schema": 586
+  },
+  {
+   "doc": "hp-11-2",
+   "part": "deductions",
+   "text": 1121,
+   "schema": 415
+  },
+  {
+   "doc": "hp-11-2",
+   "part": "deductions-again",
+   "text": 1160,
+   "schema": 415
+  },
+  {
+   "doc": "hp-12-1",
+   "part": "core",
+   "text": 1283,
+   "schema": 1717,
+   "iphone": 6782
+  },
+  {
+   "doc": "hp-12-1",
+   "part": "gross",
+   "text": 1211,
+   "schema": 376
+  },
+  {
+   "doc": "hp-12-1",
+   "part": "deductions",
+   "text": 1128,
+   "schema": 310
+  },
+  {
+   "doc": "hp-12-1",
+   "part": "deductions-again",
+   "text": 1167,
+   "schema": 310
+  },
+  {
+   "doc": "hp-12-2",
+   "part": "core",
+   "text": 1201,
+   "schema": 1572,
+   "iphone": 6212
+  },
+  {
+   "doc": "hp-12-2",
+   "part": "gross",
+   "text": 1129,
+   "schema": 366
+  },
+  {
+   "doc": "hp-12-2",
+   "part": "deductions",
+   "text": 1046,
+   "schema": 305
+  },
+  {
+   "doc": "hp-12-2",
+   "part": "deductions-again",
+   "text": 1085,
+   "schema": 305
+  },
+  {
+   "doc": "ls-01-1",
+   "part": "core",
+   "text": 2083,
+   "schema": 3381
+  },
+  {
+   "doc": "ls-01-1",
+   "part": "gross",
+   "text": 2011,
+   "schema": 696
+  },
+  {
+   "doc": "ls-01-1",
+   "part": "deductions",
+   "text": 1928,
+   "schema": 470
+  },
+  {
+   "doc": "ls-01-1",
+   "part": "deductions-again",
+   "text": 1967,
+   "schema": 470
+  },
+  {
+   "doc": "ls-01-2",
+   "part": "core",
+   "text": 2403,
+   "schema": 3934
+  },
+  {
+   "doc": "ls-01-2",
+   "part": "gross",
+   "text": 2331,
+   "schema": 706
+  },
+  {
+   "doc": "ls-01-2",
+   "part": "deductions",
+   "text": 2248,
+   "schema": 475
+  },
+  {
+   "doc": "ls-01-2",
+   "part": "deductions-again",
+   "text": 2287,
+   "schema": 475
+  },
+  {
+   "doc": "ls-02-1",
+   "part": "core",
+   "text": 2099,
+   "schema": 3315
+  },
+  {
+   "doc": "ls-02-1",
+   "part": "gross",
+   "text": 2027,
+   "schema": 636
+  },
+  {
+   "doc": "ls-02-1",
+   "part": "deductions",
+   "text": 1944,
+   "schema": 440
+  },
+  {
+   "doc": "ls-02-1",
+   "part": "deductions-again",
+   "text": 1983,
+   "schema": 440
+  },
+  {
+   "doc": "ls-02-2",
+   "part": "core",
+   "text": 2459,
+   "schema": 3940
+  },
+  {
+   "doc": "ls-02-2",
+   "part": "gross",
+   "text": 2387,
+   "schema": 646
+  },
+  {
+   "doc": "ls-02-2",
+   "part": "deductions",
+   "text": 2304,
+   "schema": 445
+  },
+  {
+   "doc": "ls-02-2",
+   "part": "deductions-again",
+   "text": 2343,
+   "schema": 445
+  },
+  {
+   "doc": "ls-03-1",
+   "part": "core",
+   "text": 2073,
+   "schema": 3212
+  },
+  {
+   "doc": "ls-03-1",
+   "part": "gross",
+   "text": 2001,
+   "schema": 566
+  },
+  {
+   "doc": "ls-03-1",
+   "part": "deductions",
+   "text": 1918,
+   "schema": 405
+  },
+  {
+   "doc": "ls-03-1",
+   "part": "deductions-again",
+   "text": 1957,
+   "schema": 405
+  },
+  {
+   "doc": "ls-03-2",
+   "part": "core",
+   "text": 2434,
+   "schema": 3837
+  },
+  {
+   "doc": "ls-03-2",
+   "part": "gross",
+   "text": 2362,
+   "schema": 576
+  },
+  {
+   "doc": "ls-03-2",
+   "part": "deductions",
+   "text": 2279,
+   "schema": 410
+  },
+  {
+   "doc": "ls-03-2",
+   "part": "deductions-again",
+   "text": 2318,
+   "schema": 410
+  },
+  {
+   "doc": "ls-04-1",
+   "part": "core",
+   "text": 2143,
+   "schema": 3331
+  },
+  {
+   "doc": "ls-04-1",
+   "part": "gross",
+   "text": 2071,
+   "schema": 556
+  },
+  {
+   "doc": "ls-04-1",
+   "part": "deductions",
+   "text": 1988,
+   "schema": 400
+  },
+  {
+   "doc": "ls-04-1",
+   "part": "deductions-again",
+   "text": 2027,
+   "schema": 400
+  },
+  {
+   "doc": "ls-04-2",
+   "part": "core",
+   "text": 2480,
+   "schema": 3894
+  },
+  {
+   "doc": "ls-04-2",
+   "part": "gross",
+   "text": 2408,
+   "schema": 546
+  },
+  {
+   "doc": "ls-04-2",
+   "part": "deductions",
+   "text": 2325,
+   "schema": 395
+  },
+  {
+   "doc": "ls-04-2",
+   "part": "deductions-again",
+   "text": 2364,
+   "schema": 395
+  }
+ ]
+}
