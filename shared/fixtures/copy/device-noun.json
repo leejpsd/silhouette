@@ -992,8 +992,8 @@
       "language": "en",
       "platform": "ios",
       "key": "review.both.noteLive",
-      "text": "Read now on this device. The cloud answer is a recording of the same silhouette; nothing is sent now.",
-      "shown": "Read now on this iPhone. The cloud answer is a recording of the same silhouette; nothing is sent now."
+      "text": "Read now on this device. The cloud answer is a recording of the same silhouette.",
+      "shown": "Read now on this iPhone. The cloud answer is a recording of the same silhouette."
     },
     {
       "language": "en",
@@ -2077,8 +2077,8 @@
       "language": "en",
       "platform": "android",
       "key": "review.both.noteLive",
-      "text": "Read now on this device. The cloud answer is a recording of the same silhouette; nothing is sent now.",
-      "shown": "Read now on this phone. The cloud answer is a recording of the same silhouette; nothing is sent now."
+      "text": "Read now on this device. The cloud answer is a recording of the same silhouette.",
+      "shown": "Read now on this phone. The cloud answer is a recording of the same silhouette."
     },
     {
       "language": "en",
@@ -3064,8 +3064,8 @@
       "language": "es",
       "platform": "ios",
       "key": "review.both.noteLive",
-      "text": "Leído ahora en este dispositivo. La respuesta de la nube es una grabación de la misma silueta; no se envía nada ahora.",
-      "shown": "Leído ahora en este iPhone. La respuesta de la nube es una grabación de la misma silueta; no se envía nada ahora."
+      "text": "Leído ahora en este dispositivo. La respuesta de la nube es una grabación de la misma silueta.",
+      "shown": "Leído ahora en este iPhone. La respuesta de la nube es una grabación de la misma silueta."
     },
     {
       "language": "es",
@@ -4030,8 +4030,8 @@
       "language": "es",
       "platform": "android",
       "key": "review.both.noteLive",
-      "text": "Leído ahora en este dispositivo. La respuesta de la nube es una grabación de la misma silueta; no se envía nada ahora.",
-      "shown": "Leído ahora en este teléfono. La respuesta de la nube es una grabación de la misma silueta; no se envía nada ahora."
+      "text": "Leído ahora en este dispositivo. La respuesta de la nube es una grabación de la misma silueta.",
+      "shown": "Leído ahora en este teléfono. La respuesta de la nube es una grabación de la misma silueta."
     },
     {
       "language": "es",

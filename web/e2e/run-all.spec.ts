@@ -106,7 +106,7 @@ test('no model here, App Check refuses: the recorded cloud reading instead, and 
   await expect(page.getByTestId('both-cloud')).toContainText(/gemini-[\w.-]+, recorded /);
   await expect(page.getByTestId('both-cloud-reason')).toHaveText('a recorded cloud reading of the silhouette, nothing sent now');
   await expect(page.getByTestId('both-compare')).toHaveText('Same value from both: 11 of 11');
-  await expect(page.getByTestId('both-note')).toHaveText('Both answers are recordings of this silhouette. Nothing is sent now.');
+  await expect(page.getByTestId('both-note')).toHaveText('Both answers are recordings of this silhouette.');
   await expect(page.getByTestId('both-fallback')).toHaveAttribute('data-reason', 'appCheck');
   await expect(page.getByTestId('both-fallback')).toHaveText(
     'The cloud did not answer now (the security check refused the request). Shown instead: the recorded cloud reading of the same silhouette.',
@@ -137,7 +137,7 @@ for (const [name, reason, fake, text] of [
     await expect(both).toBeVisible({ timeout: 20_000 });
     await expect(both).toHaveAttribute('data-live', 'true');
     await expect(page.getByTestId('both-device')).toHaveText('On this device, now');
-    await expect(page.getByTestId('both-note')).toHaveText('Read now on this device. The cloud answer is a recording of the same silhouette; nothing is sent now.');
+    await expect(page.getByTestId('both-note')).toHaveText('Read now on this device. The cloud answer is a recording of the same silhouette.');
     await expect(page.getByTestId('both-fallback')).toHaveAttribute('data-reason', reason);
     await expect(page.getByTestId('both-fallback')).toContainText(`(${text})`);
     await expect(page.getByTestId('pointer-reveal')).toHaveAttribute('data-source', 'ON_DEVICE');
