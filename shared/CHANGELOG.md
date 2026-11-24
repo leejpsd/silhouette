@@ -1,5 +1,9 @@
 # Contract changelog
 
+## v1.46 — 2026-11-24
+
+Copy only: `judges.heldout.*`, `tasks.heldout.iphone.*`, `tasks.measured.tuned` and `tasks.measured.neverSeen` label the device figures measured on the five check paystubs as such and put each device's never-seen results beside them (Chrome 157 on the first set, the iPhone 17 Pro on the third), numbers first. No behaviour or fixture changes.
+
 ## v1.45 — 2026-11-24
 
 On-device reading of long documents within a small context window.
