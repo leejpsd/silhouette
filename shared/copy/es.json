@@ -487,7 +487,7 @@
   "judges.checking.android": "Comprobando si este teléfono tiene el modelo del dispositivo…",
   "judges.checking.ios": "Comprobando si este iPhone tiene el modelo del dispositivo…",
   "judges.checking.web": "Comprobando si este navegador tiene el modelo del dispositivo…",
-  "judges.lead": "Tres pasos, un botón cada uno. Todo aquí es inventado: un hogar y su talón de pago de ejemplo.",
+  "judges.lead": "Un solo toque lee el talón de pago de muestra de un hogar inventado y muestra lo que cambió: puede calificar 3 → 5 programas, unos $4,369 al año.",
   "judges.step1.body": "Un hogar inventado y su talón de pago. Ves la silueta del talón; Firebase AI Logic la lee en este dispositivo, o en la nube solo como silueta, y responde señalando los campos. Este dispositivo devuelve los valores.",
   "judges.step1.button": "Lee el talón de pago de ejemplo",
   "judges.step1.title": "Lee el talón de pago de ejemplo",

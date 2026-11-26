@@ -1,5 +1,11 @@
 # Contract changelog
 
+## v1.48 — 2026-11-26
+
+Copy only: `judges.lead` opens the judges' page with what the one press shows (may qualify 3 → 5 programs, about $4,369 a year; both figures are the expected results in `fixtures/conformance/judges-household.json`) instead of describing the steps, which the page lists below it.
+
+Platforms: web. The iOS build on TestFlight keeps the v1.47 text until its next build. No fixture changes.
+
 ## v1.47 — 2026-11-24
 
 The judged path reads the cloud half live.

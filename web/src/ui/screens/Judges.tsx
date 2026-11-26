@@ -10,7 +10,7 @@ import { openSamplePaystub, setAutoRun, startJudgesPath } from '../judges/next';
 import { useApp } from '../context';
 import { ScreenHeading } from '../Heading';
 import { useDocument } from '../doc/state';
-import { ArrowRight, ChevronLeft, ChevronRight, DeviceIcon, Doc, Phone, Play } from '../design/icons';
+import { ChevronLeft, ChevronRight, DeviceIcon, Doc, Phone, Play } from '../design/icons';
 import { useHeldoutDevices, useHeldoutLine } from '../evidence/HeldoutDevices';
 import { BlockActions } from '../design/block';
 import { ActionLabel } from '../design/parts';
@@ -139,11 +139,13 @@ export function JudgesScreen() {
           </a>
         </li>
       </ul>
+      {/* The dock (on a phone, the bottom bar) offers the same one press as the button at the top, so the
+          page has a single primary action. */}
       <BlockActions>
-        <button type="button" className="action" onClick={sample}>
-          <ActionLabel>{t('judges.start')}</ActionLabel>
+        <button type="button" className="action" onClick={runAll} data-testid="judges-run-all-dock">
+          <ActionLabel>{t('judges.runAll.button')}</ActionLabel>
           <span className="action-arrow">
-            <ArrowRight />
+            <Play />
           </span>
         </button>
       </BlockActions>

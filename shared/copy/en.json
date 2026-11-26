@@ -487,7 +487,7 @@
   "judges.checking.android": "Checking whether this phone has the on-device model…",
   "judges.checking.ios": "Checking whether this iPhone has the on-device model…",
   "judges.checking.web": "Checking whether this browser has the on-device model…",
-  "judges.lead": "Three steps, one button each. Everything here is invented: a household and its sample paystub.",
+  "judges.lead": "One press reads an invented household’s sample paystub and shows what it changed: may qualify 3 → 5 programs, about $4,369 a year.",
   "judges.step1.body": "An invented household and its paystub. You see the paystub’s silhouette; Firebase AI Logic reads it on this device, or in the cloud as a silhouette only, and answers by pointing at the fields. This device puts the values back.",
   "judges.step1.button": "Read the sample paystub",
   "judges.step1.title": "Read the sample paystub",

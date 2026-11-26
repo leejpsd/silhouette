@@ -276,7 +276,7 @@ As of 2026-11-26.
 
 | Platform | Contract | Done and verified | Not yet |
 |---|---|---|---|
-| Web | v1.47 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise, enforced for Firebase AI Logic). Firebase AI Logic places every device-first request (`PREFER_ON_DEVICE`); the one-press path reads the sample on the device and then live in the cloud, and compares the answers. Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
+| Web | v1.48 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise, enforced for Firebase AI Logic). Firebase AI Logic places every device-first request (`PREFER_ON_DEVICE`); the one-press path reads the sample on the device and then live in the cloud, and compares the answers. Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
 | iOS | v1.47 | Native SwiftUI app: California pack, the paystub flow, on-device reading in parts with the shared fixtures, explanations through the SDK's `HybridModel`, App Check with App Attest, the on-device check, a held-out run, and the two-minute path in one press: the sample read on this iPhone now (or the iPhone's recorded answer) and then read live in the cloud (or the recorded cloud answer when the cloud does not answer), compared value by value, then what the paystub changed. Seven recorded runs on a real iPhone 17 Pro, the latest with all 23 cases answered on the phone, and one run on 24 never-seen paystubs; a public TestFlight build (approved for external testing 2026-11-25) | Form W-2 as a document on iPhone |
 | Android | v1.18 (behind) | Code only, not part of the submission's judged path. A native Compose port of an earlier contract: California pack, document flow, on-device reading in parts with the shared fixtures, Firebase AI Logic (`firebase-ai` and `firebase-ai-ondevice`). It has been run only against a scripted model: it has never run Gemini Nano or a cloud model | Everything since contract v1.18, the current design, and any run with a real model |
 
@@ -324,7 +324,7 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 | [`firebase/`](firebase/README.md), [`firebase.json`](firebase.json) | Remote Config template, Firestore rules, hosting headers |
 | [`docs/`](docs/ARCHITECTURE.md) | Architecture and these images |
 
-**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.47. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
+**Contract versions.** The contract is versioned in [`shared/CHANGELOG.md`](shared/CHANGELOG.md), now at v1.48. Every change comes with updated fixtures and an entry that says what changed and why, usually with the measurement that prompted it. Prompts are versioned files; older versions stay for the record, and a Remote Config key picks which bundled version an app uses. Each platform states the contract version it implements.
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

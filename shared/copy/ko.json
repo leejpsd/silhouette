@@ -487,7 +487,7 @@
   "judges.checking.android": "Checking whether this phone has the on-device model…",
   "judges.checking.ios": "Checking whether this iPhone has the on-device model…",
   "judges.checking.web": "Checking whether this browser has the on-device model…",
-  "judges.lead": "Three steps, one button each. Everything here is invented: a prepared household and a sample paystub.",
+  "judges.lead": "One press reads an invented household’s sample paystub and shows what it changed: may qualify 3 → 5 programs, about $4,369 a year.",
   "judges.step1.body": "Fills in the answers of an invented household and shows the results that the rules on this device give it. Nothing is sent.",
   "judges.step1.button": "샘플 급여명세서 읽기",
   "judges.step1.title": "Run the Quick Check for a prepared household",
