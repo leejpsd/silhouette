@@ -4,7 +4,7 @@
 
 **Hybrid inference, verified rather than trusted.** The device's own model reads the document first. Deterministic code then checks its answer (net pay not above gross pay, a year to date that fits the pay dates, an amount that is money and not an ID or a ZIP code) and lets no unconfirmed value through. Only when the device's answer fails those checks, or there is no on-device model, is the document read in the cloud, and the cloud does not see it either: it receives a *silhouette*, every number, date and unknown word replaced by a placeholder such as `N12`, `D3` or `W4`. Both models answer by pointing at placeholders, and the device puts the real values back. On 24 real-length paystubs it had never seen, the iPhone's model was wrong on its first try 22 times; the checks stopped all 22 before anything was shown, and the cloud read the silhouettes instead ([Evidence](#evidence)).
 
-A deterministic rule engine on the device decides eligibility; models only point, explain and search. A web app and a native iOS app, built on one shared contract, run every model task through Firebase AI Logic, on the device's own model (Chrome's built-in model on the web, Apple's on-device model on iOS) or on Gemini in the cloud. An Android port of the same contract exists as code but has never run a real model, so it is not part of what is shown here.
+A deterministic rule engine on the device decides eligibility; models only point, explain and search. A web app and a native iOS app, built on one shared contract, run every model task through Firebase AI Logic, on the device's own model (Chrome's built-in model on the web, Apple's on-device model on iOS) or on Gemini in the cloud. Android is not part of this entry: an early port in `android/` is no longer maintained and has never run a real model.
 
 <p>
   <img src="docs/images/start.png" width="190" alt="Start screen: Find public benefits you may qualify for. An example shows a paystub on this device next to what could leave: placeholders W1, W2 and N12.">
@@ -165,7 +165,7 @@ The placeholder map stays on the device as `Raw`. The Rehydrator looks up `N12` 
 
 Each figure below is copied from a file in this repository, with its date.
 
-**Documents it had never seen, 2026-11-19** ([`web/eval/heldout/`](web/eval/heldout/), [`web/eval/heldout-2/`](web/eval/heldout-2/), results in [`web/eval/results/heldout/`](web/eval/results/heldout/)). Apart from the iPhone run that follows them, the figures below were measured on documents the prompts and checks were tuned on. These sets were written independently of the prompts, word lists, rules and tuning documents, and committed before the app read them: the commit that adds each set's `FROZEN.md` (with every file's SHA-256) comes before the commit with its results: paystubs `83dccc5` (2026-11-19 06:25 UTC) before `9baee3d` (06:39 UTC); second W-2 set `35ca134` (07:03 UTC) before `17520b5` (07:10 UTC). Each set was written by a separate writer working only from public descriptions of US paystubs and Form W-2, with no access to the system's prompts, word lists, rules, code or the documents it was tuned on. The same app code read them in the cloud and in Chrome 157 with its on-device model (device first, the checks, one cloud retry of the same silhouette).
+**Documents it had never seen, 2026-11-19** ([`web/eval/heldout/`](web/eval/heldout/), [`web/eval/heldout-2/`](web/eval/heldout-2/), results in [`web/eval/results/heldout/`](web/eval/results/heldout/)). Apart from the iPhone run that follows them, the figures below were measured on documents the prompts and checks were tuned on. These sets were written independently of the prompts, word lists, rules and tuning documents, and committed before the app read them: the commit that adds each set's `FROZEN.md` (with every file's SHA-256) comes before the commit with its results: paystubs `83dccc5` (2026-11-19 06:25 UTC) before `9baee3d` (06:39 UTC); second W-2 set `35ca134` (07:03 UTC) before `17520b5` (07:10 UTC). Each set was written with Claude Code, in a session of its own that was given only the answer-key format and worked from public descriptions of US paystubs and Form W-2: it had no access to the system's prompts, word lists, rules, code or the documents it was tuned on. Every answer key, in these two sets and the iPhone set below, is checked against its document by [`web/eval/heldout-keys.mjs`](web/eval/heldout-keys.mjs) (`node eval/heldout-keys.mjs` in `web/`; 990 checks, none failing): each value and each deduction appears in the text as printed, and on every paystub net pay is gross pay minus the listed deductions, to the cent. The same app code read them in the cloud and in Chrome 157 with its on-device model (device first, the checks, one cloud retry of the same silhouette).
 
 | Never-seen documents | In the cloud | On the device first |
 |---|---|---|
@@ -240,12 +240,11 @@ In the latest run every case was answered on the phone and nothing went to the c
 **Not verified yet.**
 
 - Current information and other help (Google Search grounding), help nearby (Google Maps grounding) and read aloud are built behind Remote Config flags that are off by default, and are tested only with replies faked in the shapes the API documents.
-- No on-device run has been made on Android.
 - On iPhone, in the 11-17 runs one of the five check paystubs was refused by Apple's model as an unsupported language and read in the cloud instead; in the 11-19 runs the same paystub was answered on the device. The cause is open.
 
 ## What is different
 
-- **One contract, three native apps.** [`shared/`](shared/README.md) holds the specifications, a reference implementation in plain Node and conformance fixtures. Web (TypeScript), Android (Kotlin) and iOS (Swift) each implement the Skeletonizer, the Rehydrator, the Generalizer and the rule engine natively and must reproduce the fixtures byte for byte.
+- **One contract, two apps.** [`shared/`](shared/README.md) holds the specifications, a reference implementation in plain Node and conformance fixtures. Web (TypeScript) and iOS (Swift) each implement the Skeletonizer, the Rehydrator, the Generalizer and the rule engine natively and must reproduce the fixtures byte for byte.
 - **The model never sees values.** It answers with placeholder ids and closed choices. Values exist only on the device.
 - **Checks that only reject.** On-device answers pass deterministic checks before a person sees them. The checks may reject an answer, leave a field out, or ask the device again. They never pick, extend or fill in a value ([`shared/validation/DEVICE_READING.md`](shared/validation/DEVICE_READING.md)).
 - **No model decides eligibility.** Verdicts come from a three-valued rule engine reading a versioned rule pack. Model text that states a result ("you qualify") is blocked before it is shown ([`shared/prompts/OUTPUT_CHECKS.md`](shared/prompts/OUTPUT_CHECKS.md)).
@@ -262,11 +261,11 @@ Both are tested ([`web/src/ai/only-on-device.test.ts`](web/src/ai/only-on-device
 
 **Nothing before it is needed.** In a Chrome that has the built-in model, the two-minute path taken one step at a time makes no request to any other origin (the one-press path adds exactly its live cloud reading of the silhouette, with the App Check exchange before it): requests that run on the device use a Firebase app without App Check, and App Check and reCAPTCHA start only when a request is about to go to the cloud. A browser test asserts this on the network under the hosting build and policy ([`web/e2e/hosting/device-only.spec.ts`](web/e2e/hosting/device-only.spec.ts)). A first cloud Send makes eight requests the page can see, one of them with the silhouette; they are listed in [`web/README.md`](web/README.md) under "What leaves, and when". A cloud request is sent only with a limited-use App Check token: if the token exchange fails, nothing is sent.
 
-**App Check.** Cloud calls need App Check: reCAPTCHA Enterprise on the web, with limited-use tokens for Firebase AI Logic; Play Integrity on Android and App Attest on iOS for release builds. Debug tokens are for local development only. A build check fails if a production web bundle contains the debug-token code path or any value from a local env file.
+**App Check.** Cloud calls need App Check: reCAPTCHA Enterprise on the web, with limited-use tokens for Firebase AI Logic; App Attest on iOS for release builds. Debug tokens are for local development only. Why the web uses two Firebase apps and a custom provider: App Check's reCAPTCHA Enterprise provider loads reCAPTCHA as soon as it is initialized, before the SDK knows whether a request will run on the device. So `ONLY_ON_DEVICE` requests use a second Firebase app without App Check, and the hybrid app's provider is a `CustomProvider` that starts reCAPTCHA Enterprise only when Firebase AI Logic asks for a token for a request it is about to send to the cloud, one limited-use token per request ([`web/src/ai/firebase.ts`](web/src/ai/firebase.ts)). A build check fails if a production web bundle contains the debug-token code path or any value from a local env file.
 
 **Content security policy.** [`firebase.json`](firebase.json) allows connections only to the four Firebase endpoints the app calls (AI Logic, App Check, Installations, Remote Config) and reCAPTCHA, with no font or analytics hosts. A browser test runs the app under that policy and fails on any violation.
 
-**Encrypted local storage.** Answers and documents are stored encrypted with AES-256-GCM: on the web with a non-extractable WebCrypto key in IndexedDB, on Android with a Keystore key, on iOS with a Keychain key.
+**Encrypted local storage.** Answers and documents are stored encrypted with AES-256-GCM: on the web with a non-extractable WebCrypto key in IndexedDB, on iOS with a Keychain key.
 
 **Delete everything.** One action erases the encrypted store and its key, and on the web also the Firebase SDK's own App Check, installation and heartbeat databases. Only the time of deletion is kept, so the app can say the record was deleted.
 
@@ -279,10 +278,11 @@ As of 2026-11-26.
 | Platform | Contract | Done and verified | Not yet |
 |---|---|---|---|
 | Web | v1.49 | Reference implementation with the California pack, hosted with App Check (reCAPTCHA Enterprise, enforced for Firebase AI Logic). Firebase AI Logic places every device-first request (`PREFER_ON_DEVICE`); the one-press path reads the sample on the device and then live in the cloud, and compares the answers. Seven recorded on-device runs in Chrome; real cloud calls in the evaluations and on the hosted app | Search grounding and read aloud are built but switched off |
-| iOS | v1.47 | Native SwiftUI app: California pack, the paystub flow, on-device reading in parts with the shared fixtures, explanations through the SDK's `HybridModel`, App Check with App Attest, the on-device check, a held-out run, and the two-minute path in one press: the sample read on this iPhone now (or the iPhone's recorded answer) and then read live in the cloud (or the recorded cloud answer when the cloud does not answer), compared value by value, then what the paystub changed. Seven recorded runs on a real iPhone 17 Pro, the latest with all 23 cases answered on the phone, and one run on 24 never-seen paystubs; a public TestFlight build (approved for external testing 2026-11-25) | Form W-2 as a document on iPhone |
-| Android | v1.18 (behind) | Code only, not part of the submission's judged path. A native Compose port of an earlier contract: California pack, document flow, on-device reading in parts with the shared fixtures, Firebase AI Logic (`firebase-ai` and `firebase-ai-ondevice`). It has been run only against a scripted model: it has never run Gemini Nano or a cloud model | Everything since contract v1.18, the current design, and any run with a real model |
+| iOS | v1.47 (v1.48 and v1.49 change web copy only) | Native SwiftUI app: California pack, the paystub flow, on-device reading in parts with the shared fixtures, explanations through the SDK's `HybridModel`, App Check with App Attest, the on-device check, a held-out run, and the two-minute path in one press: the sample read on this iPhone now (or the iPhone's recorded answer) and then read live in the cloud (or the recorded cloud answer when the cloud does not answer), compared value by value, then what the paystub changed. Seven recorded runs on a real iPhone 17 Pro, the latest with all 23 cases answered on the phone, and one run on 24 never-seen paystubs; a public TestFlight build (approved for external testing 2026-11-25) | Form W-2 as a document on iPhone |
 
-Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/`](android/app/src/main/kotlin/app/silhouette/benefits/ai/firebase/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
+Android is not part of this entry. [`android/`](android/README.md) holds an early port of contract v1.18 that is no longer maintained and has never run a real model; it is not an example to follow.
+
+Where each app calls Firebase AI Logic: [`web/src/ai/`](web/src/ai/), [`ios/Silhouette/AI/`](ios/Silhouette/AI/).
 
 ## Run it locally
 
@@ -313,7 +313,7 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 
 **On-device runs:** open `#/device-check` in desktop Chrome with the on-device model installed, run the check, and download the results file ([how a run file is made](web/eval/results/on-device/README.md)).
 
-**Android and iOS:** see [`android/README.md`](android/README.md) and [`ios/README.md`](ios/README.md) for their requirements and test commands.
+**iOS:** see [`ios/README.md`](ios/README.md) for its requirements and test commands.
 
 ## Repository layout
 
@@ -321,7 +321,7 @@ VITE_APPCHECK_DEBUG_TOKEN=<your registered debug token>
 |---|---|
 | [`shared/`](shared/README.md) | The contract: data types, routing, specifications, rule packs, prompts, copy, design tokens, conformance fixtures, reference implementation |
 | [`web/`](web/README.md) | Web app (TypeScript, React, Vite), its tests and evaluations |
-| [`android/`](android/README.md) | Android app (Kotlin, Jetpack Compose) |
+| [`android/`](android/README.md) | An early Android port (Kotlin, Jetpack Compose), not part of this entry and no longer maintained |
 | [`ios/`](ios/README.md) | iOS app (Swift, SwiftUI) |
 | [`firebase/`](firebase/README.md), [`firebase.json`](firebase.json) | Remote Config template, Firestore rules, hosting headers |
 | [`docs/`](docs/ARCHITECTURE.md) | Architecture and these images |
@@ -336,7 +336,6 @@ More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - One jurisdiction. Two document types: paystubs and Form W-2.
 - Photos are read only by an on-device model; there is no separate text recognition library.
 - The on-device checks have known gaps, listed in [`shared/validation/DEVICE_READING.md`](shared/validation/DEVICE_READING.md) section 9.
-- Next: the current design on Android and its recorded on-device run.
 
 ## License
 

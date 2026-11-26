@@ -1,5 +1,10 @@
 # Silhouette for Android
 
+> **Not part of the entry, and no longer maintained.** This is an early port of contract v1.18. It has
+> never run Gemini Nano or a cloud model, and it does not follow the current routing: for example, its
+> `FirebaseModelPort` sends a device-first request to the cloud after its own device attempt. Do not use
+> it as an example of Firebase AI Logic hybrid inference; see `web/src/ai/` and `ios/Silhouette/AI/`.
+
 The Android app of Silhouette, which finds public benefits a person may qualify for. Exact values
 stay on the device. A cloud call only ever receives a silhouette: a document skeleton, a
 generalized profile, or public content.
