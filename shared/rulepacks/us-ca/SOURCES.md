@@ -53,7 +53,7 @@ Cross-checks:
 Sources:
 
 - **S1**: Rev. Proc. 2025-32, URL above.
-- **S2**: Notice 797 (Rev. 12-2026), URL above.
+- **S2**: Notice 797 (Rev. 12-2026), URL above. "Rev. December 2026" is the revision date printed on the IRS's own PDF, which was already posted at that URL when it was checked, so the date is the IRS's own, not a typo.
 - **S3**: "Who qualifies for the Earned Income Tax Credit (EITC)", https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/who-qualifies-for-the-earned-income-tax-credit-eitc ("Page Last Reviewed or Updated: 10-Nov-2026").
 - **S4**: 26 U.S.C. §32, U.S. Code 2024 edition on govinfo, https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapA-partIV-subpartC-sec32.htm. uscode.house.gov returned 404 to automated fetches. The percentages in Rev. Proc. 2025-32 are consistent with S4 (see the arithmetic above). The reviewer should still confirm on uscode.house.gov that H.R. 1 (P.L. 119-21) did not change §32(b)(1).
 - **S5**: Draft 2026 Schedule 3-A, https://www.irs.gov/pub/irs-dft/f1040s3a--dft.pdf ("Caution: DRAFT—NOT FOR FILING", "Created 6/24/26"). Line 8: "Are you or your spouse a U.S. citizen, U.S. national, or qualified alien? See instructions."
