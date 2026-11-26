@@ -26,8 +26,9 @@ The same flow as a native SwiftUI app. The start screen is a simulator capture; 
 
 **Hosted demo: [silhouette-hybrid.web.app](https://silhouette-hybrid.web.app/#/judges)** opens on **Run all three steps**. One press reads an invented household's sample paystub both ways, on screen: first on a device (on this device now when Chrome's on-device model is ready, otherwise the on-device model's answer recorded in Chrome on a Mac), then in the cloud, live: the same silhouette, and only the silhouette, is read now through Firebase AI Logic with App Check. If the cloud does not answer (App Check refuses the browser, the quota is used up, no connection, or 20 seconds pass), the recorded cloud reading of the same silhouette is shown instead and the review says why. The review then shows the two answers side by side, value by value ("Same value from both"), uses the device's, and the results open with what the paystub changed: without and with it, and the yearly amounts the rules found. The three steps are there one at a time too. "Leaving your device" says in plain words whether anything left, and each request opens on the silhouette that left; the exact JSON is folded under "For developers". Everything in it is invented. [`#/tasks`](https://silhouette-hybrid.web.app/#/tasks) shows why each task runs where it does, in measured figures, how the routing is enforced, and the Remote Config values in use.
 
-<!-- VIDEO_URL: replace this comment with the demo video link at release -->
-**Video: added at release.**
+**Video (2:34): [youtu.be/VpJ8vLlYEaI](https://youtu.be/VpJ8vLlYEaI).** The sample paystub read on a real iPhone 17 Pro and in Chrome, on the device and in the cloud, and the results measured on paystubs the app had never seen.
+
+**iPhone: [TestFlight](https://testflight.apple.com/join/82aUtTnh)** (iOS 26 or later): tap **For judges**, then **Run all three steps**. With Apple Intelligence turned on, the device half runs on the phone; otherwise its recording is used.
 
 To run it locally (Node 22 or later):
 
@@ -333,7 +334,7 @@ More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - One jurisdiction. Two document types: paystubs and Form W-2.
 - Photos are read only by an on-device model; there is no separate text recognition library.
 - The on-device checks have known gaps, listed in [`shared/validation/DEVICE_READING.md`](shared/validation/DEVICE_READING.md) section 9.
-- Next: the current design on Android and its recorded on-device run, and the video.
+- Next: the current design on Android and its recorded on-device run.
 
 ## License
 
