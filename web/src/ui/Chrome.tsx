@@ -397,7 +397,7 @@ export function LeavingBar({ onDelete }: { onDelete: () => Promise<void> }) {
             </p>
           )}
           {entries.length === 0 && clearedAt !== null && <p className="record-deleted">{t('leaving.recordDeleted', { date: shortDate })}</p>}
-          {entries.length > 0 ? <p>{t('leaving.bodySent')}</p> : clearedAt !== null ? <p>{t('leaving.cleared', { date })}</p> : <p>{t('leaving.body')}</p>}
+          {entries.length > 0 ? <p>{t(left.length > 0 ? 'leaving.bodySent' : 'leaving.bodyKept')}</p> : clearedAt !== null ? <p>{t('leaving.cleared', { date })}</p> : <p>{t('leaving.body')}</p>}
           {entries.length > 0 && (
             <ol className="outbound-list" data-testid="outbound-list">
               {entries.map((e) => (

@@ -208,6 +208,7 @@
   "start.resume": "Continue Quick Check",
   "q.amountUnderstood": "Understood as {amount} a year.",
   "leaving.bodySent": "Your answers and documents stay on this device, encrypted. Only the requests listed below have left it, each exactly as recorded here.",
+  "leaving.bodyKept": "Your answers and documents stay on this device, encrypted. Nothing has left it: every entry below stayed on this device.",
   "leaving.cleared": "The record of what left this device was deleted on {date}. Nothing has left this device since then.",
   "leaving.clearedShort": "Record deleted on {date}. Nothing has left since.",
   "outbound.status.attempted": "Sending",

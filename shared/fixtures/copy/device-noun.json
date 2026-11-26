@@ -207,6 +207,13 @@
     {
       "language": "en",
       "platform": "ios",
+      "key": "leaving.bodyKept",
+      "text": "Your answers and documents stay on this device, encrypted. Nothing has left it: every entry below stayed on this device.",
+      "shown": "Your answers and documents stay on this iPhone, encrypted. Nothing has left it: every entry below stayed on this iPhone."
+    },
+    {
+      "language": "en",
+      "platform": "ios",
       "key": "leaving.cleared",
       "text": "The record of what left this device was deleted on {date}. Nothing has left this device since then.",
       "shown": "The record of what left this iPhone was deleted on {date}. Nothing has left this iPhone since then."
@@ -1288,6 +1295,13 @@
       "key": "leaving.bodySent",
       "text": "Your answers and documents stay on this device, encrypted. Only the requests listed below have left it, each exactly as recorded here.",
       "shown": "Your answers and documents stay on this phone, encrypted. Only the requests listed below have left it, each exactly as recorded here."
+    },
+    {
+      "language": "en",
+      "platform": "android",
+      "key": "leaving.bodyKept",
+      "text": "Your answers and documents stay on this device, encrypted. Nothing has left it: every entry below stayed on this device.",
+      "shown": "Your answers and documents stay on this phone, encrypted. Nothing has left it: every entry below stayed on this phone."
     },
     {
       "language": "en",
@@ -2377,6 +2391,13 @@
     {
       "language": "es",
       "platform": "ios",
+      "key": "leaving.bodyKept",
+      "text": "Tus respuestas y documentos se quedan cifrados en este dispositivo. Nada ha salido: cada entrada de esta lista se quedó en este dispositivo.",
+      "shown": "Tus respuestas y documentos se quedan cifrados en este iPhone. Nada ha salido: cada entrada de esta lista se quedó en este iPhone."
+    },
+    {
+      "language": "es",
+      "platform": "ios",
       "key": "leaving.cleared",
       "text": "El registro de lo que salió de este dispositivo se borró el {date}. Desde entonces no ha salido nada.",
       "shown": "El registro de lo que salió de este iPhone se borró el {date}. Desde entonces no ha salido nada."
@@ -3339,6 +3360,13 @@
       "key": "leaving.bodySent",
       "text": "Tus respuestas y documentos se quedan cifrados en este dispositivo. Solo las solicitudes de esta lista han salido, cada una tal como se registra aquí.",
       "shown": "Tus respuestas y documentos se quedan cifrados en este teléfono. Solo las solicitudes de esta lista han salido, cada una tal como se registra aquí."
+    },
+    {
+      "language": "es",
+      "platform": "android",
+      "key": "leaving.bodyKept",
+      "text": "Tus respuestas y documentos se quedan cifrados en este dispositivo. Nada ha salido: cada entrada de esta lista se quedó en este dispositivo.",
+      "shown": "Tus respuestas y documentos se quedan cifrados en este teléfono. Nada ha salido: cada entrada de esta lista se quedó en este teléfono."
     },
     {
       "language": "es",

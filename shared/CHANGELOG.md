@@ -1,5 +1,11 @@
 # Contract changelog
 
+## v1.49 — 2026-11-26
+
+Copy only: `leaving.bodyKept`. The record's lead sentence said "Only the requests listed below have left it" whenever it listed anything, also when every entry had stayed on the device (a recorded on-device reading, marked "Nothing sent"). When nothing has left, the record now says so: "Nothing has left it: every entry below stayed on this device." `leaving.bodySent` is unchanged and still used when something has left.
+
+Platforms: web. The iOS build on TestFlight keeps the v1.47 text until its next build. `fixtures/copy/device-noun.json` is regenerated: the new sentence names the device ("this iPhone" on iOS).
+
 ## v1.48 — 2026-11-26
 
 Copy only: `judges.lead` opens the judges' page with what the one press shows (may qualify 3 → 5 programs, about $4,369 a year; both figures are the expected results in `fixtures/conformance/judges-household.json`) instead of describing the steps, which the page lists below it.

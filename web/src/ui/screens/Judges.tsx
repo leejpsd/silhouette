@@ -3,7 +3,7 @@
 // (offline, the bundled answer key is used), and the page says which steps run on this device.
 import { openRecordingNext, recordingLabel, recordingMachine, recordingPaths, RECORDINGS } from './DeviceCheck';
 import { countedCases, isRunFile, summarize } from '../device-check/run';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { pointerDeviceStatus, type DeviceStatus } from '../../ai/device-model';
 import { ModelStatus } from '../doc/ModelStatus';
 import { openSamplePaystub, setAutoRun, startJudgesPath } from '../judges/next';
@@ -12,7 +12,7 @@ import { ScreenHeading } from '../Heading';
 import { useDocument } from '../doc/state';
 import { ChevronLeft, ChevronRight, DeviceIcon, Doc, Phone, Play } from '../design/icons';
 import { useHeldoutDevices, useHeldoutLine } from '../evidence/HeldoutDevices';
-import { BlockActions } from '../design/block';
+import { BlockActions, useWide } from '../design/block';
 import { ActionLabel } from '../design/parts';
 import { navigate, routeHref } from '../router';
 import { preparedHousehold } from '../judges/household';
@@ -52,6 +52,22 @@ export function JudgesScreen() {
 
   const record = () => window.dispatchEvent(new Event(OPEN_RECORD_EVENT));
 
+  // On a phone the dock repeats "Run all three steps" only once the button at the top has scrolled out of
+  // view, so the first screen shows one primary action and the dock does not cover step 1.
+  const wide = useWide();
+  const runAllRef = useRef<HTMLDivElement>(null);
+  const [topInView, setTopInView] = useState(true);
+  useEffect(() => {
+    const el = runAllRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setTopInView(false);
+      return;
+    }
+    const io = new IntersectionObserver((seen) => setTopInView(seen[0]?.isIntersecting ?? false));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   // One press: step 1 and step 2 run on their own, on screen, as the person would press them.
   const runAll = () => {
     setAutoRun('read');
@@ -82,7 +98,7 @@ export function JudgesScreen() {
           <span>{t('reason.document-silhouette-only')}</span>
         </p>
       )}
-      <div className="judges-run-all" data-testid="judges-run-all">
+      <div className="judges-run-all" data-testid="judges-run-all" ref={runAllRef}>
         <button type="button" className="action" onClick={runAll}>
           <ActionLabel>{t('judges.runAll.button')}</ActionLabel>
           <span className="action-arrow">
@@ -140,15 +156,17 @@ export function JudgesScreen() {
         </li>
       </ul>
       {/* The dock (on a phone, the bottom bar) offers the same one press as the button at the top, so the
-          page has a single primary action. */}
-      <BlockActions>
-        <button type="button" className="action" onClick={runAll} data-testid="judges-run-all-dock">
-          <ActionLabel>{t('judges.runAll.button')}</ActionLabel>
-          <span className="action-arrow">
-            <Play />
-          </span>
-        </button>
-      </BlockActions>
+          page has a single primary action; on a phone only while that button is out of view. */}
+      {(wide || !topInView) && (
+        <BlockActions>
+          <button type="button" className="action" onClick={runAll} data-testid="judges-run-all-dock">
+            <ActionLabel>{t('judges.runAll.button')}</ActionLabel>
+            <span className="action-arrow">
+              <Play />
+            </span>
+          </button>
+        </BlockActions>
+      )}
     </div>
   );
 }
